@@ -191,6 +191,40 @@ const TIETOA = `<article class="juttu"><h1>Tietoa ${SIVU} -sivustosta</h1>
 <p>Kiistanalaisissa asioissa kerromme aina, kuka väittää mitä ja mikä asian virallinen tai oikeudellinen tila on. Syytös ja tuomio pidetään erillään. Uutiset ja kannanotot pidetään erillään: pääkirjoitukset ovat kirjoittajan omia näkemyksiä ja ne on merkitty selvästi.</p>
 <p>Vastaava päätoimittaja on ${TOIMITTAJA}. Oikaisupyynnöt ja palaute: <a href="mailto:${YHTEYS}">${YHTEYS}</a>. Käsittelemme oikaisupyynnöt viipymättä.</p></div></article>`;
 
+// ---------- Päivän kooste sähköpostiin (klo 13 Suomen aikaa) ----------
+async function kooste(env, pakota = false) {
+  const nyt = new Date();
+  const tunti = Number(nyt.toLocaleString("en-GB", { timeZone: "Europe/Helsinki", hour: "2-digit", hour12: false }));
+  const paiva = nyt.toLocaleDateString("fi-FI", { timeZone: "Europe/Helsinki" });
+  if (!pakota && tunti !== 13) return { ohitettu: "ei klo 13" };
+  if (!pakota && await env.DB.get("kooste:" + paiva)) return { ohitettu: "jo lähetetty" };
+  if (!env.BREVO_API_KEY) return { virhe: "BREVO_API_KEY puuttuu" };
+  const url = (env.SIVU_URL || "https://suomitanaan.fi").replace(/\/$/, "");
+  const raja = Date.now() - 26 * 3600e3;
+  const ids = await lue(env, "luonnokset", []);
+  const luonn = (await Promise.all(ids.map(id => lue(env, "luonnos:" + id, null)))).filter(Boolean);
+  const julk = (await lue(env, "jutut", [])).filter(j => new Date(j.julkaistu).getTime() > raja);
+  const auto = julk.filter(j => j.ai);
+  const tt = [...luonn, ...julk].filter(x => x.tiktok && x.tiktok.koukku);
+  const e = esc, h3 = t => `<h2 style="font:700 18px Georgia,serif;margin:28px 0 10px;border-top:3px solid #0b1f45;padding-top:10px">${t}</h2>`;
+  const htmlSisalto = `<div style="max-width:640px;margin:0 auto;font:15px/1.55 -apple-system,Segoe UI,sans-serif;color:#111827">
+<div style="background:#0b1f45;color:#fff;padding:18px 20px;border-radius:12px"><div style="font:700 26px Georgia,serif">Suomi <span style="color:#ffd27a">Tänään</span></div><div style="opacity:.8">Päivän kooste ${paiva}</div></div>
+${h3(`Hyväksyttävänä ${luonn.length} juttua`)}
+${luonn.length ? luonn.map(l => `<div style="margin:0 0 12px"><b>${e(l.otsikko)}</b><br><span style="color:#5b6476">${e(l.kategoria)} · ${e(l.ingressi)}</span></div>`).join("") : "<p>Ei uusia luonnoksia.</p>"}
+<p><a href="${url}/toimitus" style="display:inline-block;background:#11734f;color:#fff;padding:12px 18px;border-radius:10px;text-decoration:none;font-weight:700">Avaa toimitus ja hyväksy</a></p>
+${h3(`TikTok-käsikirjoitukset (${tt.length})`)}
+${tt.map((x, i) => `<div style="background:#f4f5f8;border-radius:10px;padding:12px 14px;margin:0 0 12px"><div style="font:700 12px sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#1d4ed8">${i + 1}. Ohjaa: ${e(x.tiktok.sivusto || "Suomi Tänään")}</div><div style="font:700 17px Georgia,serif;margin:6px 0">${e(x.tiktok.koukku)}</div><div style="white-space:pre-wrap">${e(x.tiktok.teksti)}</div></div>`).join("") || "<p>Ei käsikirjoituksia tänään.</p>"}
+${h3(`Julkaistu automaattisesti (${auto.length})`)}
+${auto.map(j => `<div style="margin:0 0 8px"><a href="${url}/uutiset/${e(j.slug)}/" style="color:#1d4ed8;font-weight:700;text-decoration:none">${e(j.otsikko)}</a> <span style="color:#5b6476">· ${e(j.kategoria)}</span></div>`).join("") || "<p>Ei automaattisia julkaisuja.</p>"}
+<p style="color:#5b6476;font-size:13px;margin-top:28px">Virheellisen jutun voit poistaa toimituksen Julkaistut-välilehdeltä.</p></div>`;
+  const r = await fetch("https://api.brevo.com/v3/smtp/email", { method: "POST", headers: { "api-key": env.BREVO_API_KEY, "content-type": "application/json", accept: "application/json" },
+    body: JSON.stringify({ sender: { email: env.KOOSTE_LAHETTAJA || "miika@eduskuntaseuranta.fi", name: "Suomi Tänään" }, to: [{ email: env.KOOSTE_EMAIL || "miika.koskela990@gmail.com" }],
+      subject: `Suomi Tänään ${paiva}: ${luonn.length} hyväksyttävää, ${tt.length} TikTok-käsikirjoitusta`, htmlContent: htmlSisalto }) });
+  if (!r.ok) return { virhe: "Brevo " + r.status + " " + (await r.text()).slice(0, 200) };
+  await env.DB.put("kooste:" + paiva, "1", { expirationTtl: 3 * 86400 });
+  return { ok: true, luonnokset: luonn.length, tiktok: tt.length, auto: auto.length };
+}
+
 // ---------- Rajapinta ----------
 const AI_KIRJOITTAJA = "Suomi Tänään (tekoälyn laatima)";
 async function julkaiseJuttu(env, b, ai) {
@@ -209,6 +243,7 @@ async function rajapinta(req, env, polku) {
   if (!sallittu(req, env)) return json({ virhe: "Ei oikeutta" }, 401);
   if (polku === "/api/nahdyt") return json(await lue(env, "nahdyt", []));
   if (polku === "/api/julkaistut") return json(await lue(env, "jutut", []));
+  if (polku === "/api/kooste") return json(await kooste(env, true));
   if (polku === "/api/luonnokset" && req.method === "GET") {
     const ids = await lue(env, "luonnokset", []);
     const out = (await Promise.all(ids.map(id => lue(env, "luonnos:" + id, null)))).filter(Boolean);
@@ -263,6 +298,7 @@ async function sitemap(env) {
 }
 
 export default {
+  async scheduled(event, env, ctx) { ctx.waitUntil(kooste(env).then(r => console.log("kooste", JSON.stringify(r)))); },
   async fetch(req, env) {
     const url = new URL(req.url);
     if (url.hostname === "www.suomitanaan.fi") return Response.redirect("https://suomitanaan.fi" + url.pathname + url.search, 301);

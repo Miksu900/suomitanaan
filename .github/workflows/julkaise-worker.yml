@@ -59,11 +59,17 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ steps.cf.outputs.account }}
         run: |
           set -e
+          if [ "${{ steps.cf.outputs.zstatus }}" = "active" ]; then SIVU_URL=https://suomitanaan.fi; else SIVU_URL=https://suomitanaan.${{ steps.cf.outputs.sub }}.workers.dev; fi
           cat > wrangler.toml <<EOF
           name = "suomitanaan"
           main = "src/index.js"
           compatibility_date = "2026-09-01"
           workers_dev = true
+          [triggers]
+          crons = ["0 10 * * *", "0 11 * * *"]
+          [vars]
+          SIVU_URL = "$SIVU_URL"
+          KOOSTE_EMAIL = "miika.koskela990@gmail.com"
           [[kv_namespaces]]
           binding = "DB"
           id = "${{ steps.cf.outputs.kv }}"
@@ -74,4 +80,5 @@ jobs:
           sed -i 's/^ *//' wrangler.toml
           npx --yes wrangler@3.99.0 deploy
           printf '%s' "${{ secrets.TOIMITUS_SALASANA }}" | npx --yes wrangler@3.99.0 secret put TOIMITUS_SALASANA
+          if [ -n "${{ secrets.BREVO_API_KEY }}" ]; then printf '%s' "${{ secrets.BREVO_API_KEY }}" | npx --yes wrangler@3.99.0 secret put BREVO_API_KEY; echo "::notice title=Kooste::Brevo-avain asetettu"; else echo "::notice title=Kooste::BREVO_API_KEY puuttuu, sähköpostikooste ei vielä lähde"; fi
           echo "::notice title=Osoite::https://suomitanaan.${{ steps.cf.outputs.sub }}.workers.dev"

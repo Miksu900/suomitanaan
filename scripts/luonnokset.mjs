@@ -55,17 +55,31 @@ Lisäksi kirjoita TikTok-käsikirjoitus (noin 30 sekuntia, 60–80 sanaa): vahva
 Vastaa PELKÄLLÄ JSON-oliolla, ei muuta tekstiä:
 {"hylkaa":false,"syy":"","otsikko":"","ingressi":"","teksti":"kappale 1\\n\\nkappale 2","kategoria":"${KATEGORIAT.join("|")}","tarkistettavat":["väite tai luku, joka toimittajan kannattaa tarkistaa lähteestä"],"tiktok":{"koukku":"","teksti":"","sivusto":"Suomi Tänään"}}`;
 
-async function kirjoita(ehdokas, teksti) {
-  const sisalto = `Lähteen tyyppi: ${ehdokas.tyyppi}\nLähde: ${ehdokas.lahde}\nOsoite: ${ehdokas.url}\nPäivämäärä: ${ehdokas.aika || "ei tiedossa"}\nOtsikko: ${ehdokas.otsikko}\n${ehdokas.lisa || ""}\n\nLähteen sisältö:\n${teksti}`;
+async function claude(system, user, maxTokens = 2500) {
   const r = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: { "x-api-key": KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-    body: JSON.stringify({ model: MALLI, max_tokens: 2500, system: OHJE, messages: [{ role: "user", content: sisalto }] }),
+    body: JSON.stringify({ model: MALLI, max_tokens: maxTokens, system, messages: [{ role: "user", content: user }] }),
   });
   if (!r.ok) throw new Error("Claude " + r.status + " " + (await r.text()).slice(0, 200));
-  const d = await r.json();
-  const t = (d.content || []).map(c => c.text || "").join("");
-  const j = JSON.parse(t.slice(t.indexOf("{"), t.lastIndexOf("}") + 1));
+  const t = ((await r.json()).content || []).map(c => c.text || "").join("");
+  return JSON.parse(t.slice(t.indexOf("{"), t.lastIndexOf("}") + 1));
+}
+
+const TARKISTUS = `Olet uutistoimituksen faktantarkistaja. Saat alkuperäislähteen ja siitä kirjoitetun jutun.
+Käy läpi JOKAINEN jutun väite: luvut, nimet, päivämäärät, tulokset, lainaukset, syy-seuraussuhteet ja tittelit.
+Väite on kunnossa vain, jos se löytyy lähteestä tai seuraa siitä suoraan. Kaikki muu on virhe, myös lähteen ulkopuolinen taustatieto.
+Vastaa PELKÄLLÄ JSON-oliolla: {"ok":true|false,"virheet":["väite ja miksi se ei ole lähteessä"]}`;
+
+async function tarkista(lahdeTeksti, j) {
+  const juttu = `OTSIKKO: ${j.otsikko}\nINGRESSI: ${j.ingressi}\nTEKSTI:\n${j.teksti}`;
+  try { return await claude(TARKISTUS, `ALKUPERÄISLÄHDE:\n${lahdeTeksti}\n\nJUTTU:\n${juttu}`, 1200); }
+  catch (e) { return { ok: false, virheet: ["Tarkistus epäonnistui: " + e.message] }; }
+}
+
+async function kirjoita(ehdokas, teksti) {
+  const sisalto = `Lähteen tyyppi: ${ehdokas.tyyppi}\nLähde: ${ehdokas.lahde}\nOsoite: ${ehdokas.url}\nPäivämäärä: ${ehdokas.aika || "ei tiedossa"}\nOtsikko: ${ehdokas.otsikko}\n${ehdokas.lisa || ""}\n\nLähteen sisältö:\n${teksti}`;
+  const j = await claude(OHJE, sisalto);
   if (!KATEGORIAT.includes(j.kategoria)) j.kategoria = ehdokas.oletusKategoria || "Kotimaa";
   return j;
 }
@@ -110,7 +124,12 @@ async function main() {
       const politiikka = j.kategoria === "Politiikka" || e.tyyppi.startsWith("Eduskunnan");
       if (politiikka) { if (nPol >= KIINTIO.politiikka) continue; nPol++; j.kategoria = "Politiikka"; }
       else { if (nAuto >= KIINTIO.muut) continue; nAuto++; }
-      valmiit.push({ ...j, automaattinen: !politiikka, lahde_url: e.url, lahdetyyppi: e.tyyppi, lahteet: [{ nimi: `${e.lahde}: ${e.otsikko}`.slice(0, 200), url: e.url }] });
+      let automaattinen = !politiikka;
+      if (automaattinen) {
+        const t = await tarkista(teksti, j);
+        if (!t.ok) { automaattinen = false; j.tarkistettavat = [...(t.virheet || []).map(v => "Faktantarkistus: " + v), ...(j.tarkistettavat || [])]; console.log("Ei läpäissyt tarkistusta, toimitukseen:", j.otsikko); nAuto--; nPol++; }
+      }
+      valmiit.push({ ...j, automaattinen, lahde_url: e.url, lahdetyyppi: e.tyyppi, lahteet: [{ nimi: `${e.lahde}: ${e.otsikko}`.slice(0, 200), url: e.url }] });
       console.log(politiikka ? "Toimitukseen:" : "Automaattisesti:", j.kategoria, j.otsikko);
     } catch (err) { console.log("Epäonnistui:", e.url, err.message); }
   }

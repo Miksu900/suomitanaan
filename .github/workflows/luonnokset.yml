@@ -2,7 +2,7 @@ name: Päivän uutisluonnokset
 # Kirjoittaa joka päivä uutisluonnokset alkuperäislähteistä toimituksen hyväksyntäjonoon (suomitanaan.fi/toimitus).
 on:
   schedule:
-    - cron: "20 9 * * *"   # noin klo 12.20 Suomen aikaa, valmiina kun heräät
+    - cron: "5 8 * * *"    # klo 11.05 Suomen aikaa (talviaikana 10.05), valmiina ennen klo 13 koostetta
     - cron: "20 18 * * *"  # noin klo 21.20: illan urheilu- ja kulttuuriuutiset
   workflow_dispatch:
     inputs:
