@@ -1,0 +1,39 @@
+name: Työkalu (testikooste, ääni)
+on:
+  workflow_dispatch:
+    inputs:
+      toiminto: { description: "kooste tai aani", required: true }
+      teksti: { description: "Teksti äänelle", required: false, default: "" }
+      aani: { description: "ElevenLabs-äänen nimi", required: false, default: "Brian" }
+permissions:
+  contents: write
+jobs:
+  aja:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Testikooste
+        if: inputs.toiminto == 'kooste'
+        env:
+          CF: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          PW: ${{ secrets.TOIMITUS_SALASANA }}
+        run: |
+          h=(-sS -H "Authorization: Bearer $CF")
+          A=$(curl "${h[@]}" https://api.cloudflare.com/client/v4/accounts | jq -r '.result[0].id')
+          SUB=$(curl "${h[@]}" "https://api.cloudflare.com/client/v4/accounts/$A/workers/subdomain" | jq -r '.result.subdomain')
+          R=$(curl -sS -H "Authorization: Bearer $PW" "https://suomitanaan.$SUB.workers.dev/api/kooste")
+          echo "::notice title=Kooste::$R"
+      - name: Ääni ElevenLabsilla
+        if: inputs.toiminto == 'aani'
+        env:
+          EL: ${{ secrets.ELEVENLABS_API_KEY }}
+          TEKSTI: ${{ inputs.teksti }}
+          NIMI: ${{ inputs.aani }}
+        run: |
+          set -e
+          V=$(curl -sS -H "xi-api-key: $EL" https://api.elevenlabs.io/v1/voices | jq -r --arg n "$NIMI" '[.voices[] | select(.name|ascii_downcase|startswith($n|ascii_downcase))][0].voice_id')
+          echo "::notice title=Ääni::$NIMI = $V"
+          mkdir out && jq -n --arg t "$TEKSTI" '{text:$t, model_id:"eleven_multilingual_v2", voice_settings:{stability:0.45, similarity_boost:0.8, style:0.35}}' > body.json
+          curl -sS -f -X POST "https://api.elevenlabs.io/v1/text-to-speech/$V?output_format=mp3_44100_128" -H "xi-api-key: $EL" -H "content-type: application/json" -d @body.json -o out/aani.mp3
+          ls -la out
+          cd out && git init -q && git checkout -q -b aani && git add -A && git -c user.name=bot -c user.email=bot@x commit -qm aani
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" aani
