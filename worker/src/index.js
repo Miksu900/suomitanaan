@@ -1,3 +1,4 @@
+import { toimitusSivu } from "./toimitus.js";
 // Suomi Tänään – uutissivusto, toimituksen hyväksyntäjono ja rajapinta yhdessä Cloudflare Workerissa.
 // Tallennus: KV (binding DB). Avaimet:
 //   luonnos:<id>     luonnos (JSON)          luonnokset   luonnosten id-lista
@@ -43,7 +44,7 @@ header.mast{background:var(--paper);border-bottom:3px solid var(--ink)}
 .mast .w{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 20px;padding-block:18px 12px}
 .logo{font:700 clamp(30px,6vw,46px)/1 var(--serif);letter-spacing:-.02em;text-decoration:none}
 .logo span{color:var(--acc)}
-.isku{font:italic 15px/1.3 var(--serif);color:var(--mute)}
+.isku{font:italic 15px/1.4 var(--serif);color:var(--mute)}.paiva{font:600 12px var(--sans);font-style:normal;letter-spacing:.08em;text-transform:uppercase;color:var(--ink)}
 nav.kat{background:var(--paper);border-bottom:1px solid var(--line)}
 nav.kat .w{display:flex;gap:4px 18px;flex-wrap:wrap;padding-block:8px;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
 nav.kat a{text-decoration:none;color:var(--mute)}nav.kat a:hover,nav.kat a.on{color:var(--acc)}
@@ -83,7 +84,7 @@ function kuori({ otsikko, kuvaus, polku, runko, ld, kat }) {
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400&family=Public+Sans:wght@400;600;700&display=swap">
 <style>${CSS}</style>${ld ? `<script type="application/ld+json">${JSON.stringify(ld).replace(/</g, "\\u003c")}</script>` : ""}</head><body>
-<header class="mast"><div class="w"><a class="logo" href="/">Suomi <span>Tänään</span></a><div class="isku">${ISKU}</div></div></header>
+<header class="mast"><div class="w"><a class="logo" href="/">Suomi <span>Tänään</span></a><div class="isku">${ISKU}<br><span class="paiva">${new Date().toLocaleDateString("fi-FI",{timeZone:"Europe/Helsinki",weekday:"long",day:"numeric",month:"long",year:"numeric"})}</span></div></div></header>
 <nav class="kat" aria-label="Osastot"><div class="w">${navi}</div></nav>
 <main class="w">${runko}</main>
 <footer><div class="w"><div><b>${SIVU}</b> · Vastaava päätoimittaja ${TOIMITTAJA} · <a href="mailto:${YHTEYS}">${YHTEYS}</a></div>
@@ -134,55 +135,6 @@ const TIETOA = `<article class="juttu"><h1>Tietoa ${SIVU} -sivustosta</h1>
 <p>Uutiset laaditaan tekoälyn avustuksella. Toimittaja lukee jokaisen jutun ja tarkistaa sen alkuperäislähteistä ennen julkaisua. Jokaisen jutun lopussa on linkit lähteisiin.</p>
 <p>Kiistanalaisissa asioissa kerromme aina, kuka väittää mitä ja mikä asian virallinen tai oikeudellinen tila on. Syytös ja tuomio pidetään erillään. Uutiset ja kannanotot pidetään erillään: pääkirjoitukset ovat kirjoittajan omia näkemyksiä ja ne on merkitty selvästi.</p>
 <p>Vastaava päätoimittaja on ${TOIMITTAJA}. Oikaisupyynnöt ja palaute: <a href="mailto:${YHTEYS}">${YHTEYS}</a>. Käsittelemme oikaisupyynnöt viipymättä.</p></div></article>`;
-
-// ---------- Toimitus (hyväksyntäjono) ----------
-const TOIMITUS = `<!doctype html><html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex">
-<title>Toimitus | ${SIVU}</title><style>${CSS}
-.t{max-width:760px;margin:0 auto;padding:20px max(16px,env(safe-area-inset-right,0px)) 60px max(16px,env(safe-area-inset-left,0px))}
-.t h1{font:700 28px var(--serif);margin:0 0 12px}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 18px}
-.tabs button,.btn{font:600 15px var(--sans);padding:10px 14px;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:8px;cursor:pointer}
-.tabs button.on,.btn.p{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}.btn.v{color:#b42318}
-.kortti{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:16px;display:grid;gap:8px}
-label{font-size:13px;font-weight:700;color:var(--mute);display:grid;gap:4px}
-input,textarea,select{font:16px/1.5 var(--sans);padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%}
-textarea{min-height:110px}textarea.pitka{min-height:280px}.rivi{display:flex;gap:8px;flex-wrap:wrap}
-.lah a{color:var(--acc);overflow-wrap:anywhere;font-size:14px}.tark{background:var(--tag);padding:8px 10px;border-radius:8px;font-size:14px}
-.tt{white-space:pre-wrap;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px;font-size:15px}
-details summary{cursor:pointer;font-weight:700}.ilmo{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-weight:600}
-</style></head><body><div class="t"><h1>Toimitus</h1>
-<form id="kirj"><label>Salasana<input id="pw" type="password" autocomplete="current-password"></label><p><button class="btn p">Kirjaudu</button></p></form>
-<div id="app" hidden><div class="tabs"><button data-v="luonnokset" class="on">Luonnokset</button><button data-v="tiktok">TikTok</button><button data-v="paakirjoitus">Uusi pääkirjoitus</button><button data-v="julkaistut">Julkaistut</button></div><div id="sisalto"></div></div></div>
-<div class="ilmo" id="ilmo" hidden></div>
-<script>
-const KAT=${JSON.stringify(KATEGORIAT)};let PW="";try{PW=sessionStorage.getItem("pw")||""}catch(e){}
-const $=s=>document.querySelector(s),e=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-function ilmo(t){const i=$("#ilmo");i.textContent=t;i.hidden=false;setTimeout(()=>i.hidden=true,2200)}
-async function api(p,b){const r=await fetch(p,{method:b?"POST":"GET",headers:{authorization:"Bearer "+PW,"content-type":"application/json"},body:b?JSON.stringify(b):undefined});if(r.status==401){PW="";try{sessionStorage.removeItem("pw")}catch(e){}$("#app").hidden=true;$("#kirj").hidden=false;throw new Error("Väärä salasana")}return r.json()}
-$("#kirj").onsubmit=async ev=>{ev.preventDefault();PW=$("#pw").value;try{await api("/api/luonnokset");try{sessionStorage.setItem("pw",PW)}catch(e){}alku()}catch(x){ilmo(x.message)}};
-let nakyma="luonnokset";document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{nakyma=b.dataset.v;document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("on",x==b));piirra()});
-function alku(){$("#kirj").hidden=true;$("#app").hidden=false;piirra()}
-const kopioi=(t,b)=>{try{navigator.clipboard.writeText(t).then(()=>ilmo("Kopioitu"),()=>ilmo("Kopiointi ei onnistunut"))}catch(x){ilmo("Kopiointi ei onnistunut")}};
-async function piirra(){const s=$("#sisalto");s.innerHTML="<p class=meta>Ladataan…</p>";
- if(nakyma=="paakirjoitus"){s.innerHTML='<div class=kortti><label>Otsikko<input id=po></label><label>Ingressi<textarea id=pi></textarea></label><label>Teksti (kappaleet tyhjällä rivillä erotettuina)<textarea id=pt class=pitka></textarea></label><div class=rivi><button class="btn p" id=pj>Julkaise pääkirjoitus</button></div></div>';
-  $("#pj").onclick=async()=>{const d={tyyppi:"paakirjoitus",otsikko:$("#po").value,ingressi:$("#pi").value,teksti:$("#pt").value,kategoria:"Pääkirjoitus",lahteet:[]};if(!d.otsikko||!d.teksti)return ilmo("Otsikko ja teksti tarvitaan");const r=await api("/api/julkaise",d);ilmo(r.ok?"Julkaistu":"Virhe");if(r.ok)location.href="/uutiset/"+r.slug+"/"};return}
- if(nakyma=="julkaistut"){const j=await api("/api/julkaistut");s.innerHTML=j.length?j.map(x=>'<div class=kortti><a href="/uutiset/'+e(x.slug)+'/" target=_blank><b>'+e(x.otsikko)+'</b></a><div class=meta>'+new Date(x.julkaistu).toLocaleString("fi-FI")+'</div><div class=rivi><button class="btn v" data-p="'+e(x.slug)+'">Poista julkaisusta</button></div></div>').join(""):"<p>Ei vielä julkaistuja juttuja.</p>";
-  s.querySelectorAll("[data-p]").forEach(b=>b.onclick=async()=>{if(b.dataset.ok!="1"){b.dataset.ok="1";b.textContent="Paina uudelleen vahvistaaksesi";return}await api("/api/poista",{slug:b.dataset.p});ilmo("Poistettu");piirra()});return}
- const l=await api("/api/luonnokset");
- if(!l.length){s.innerHTML="<p>Ei uusia luonnoksia. Uudet luonnokset tulevat joka päivä noin klo 12.30.</p>";return}
- if(nakyma=="tiktok"){s.innerHTML=l.filter(x=>x.tiktok).map(x=>'<div class=kortti><b>'+e(x.otsikko)+'</b><div class=meta>Ohjaa: '+e(x.tiktok.sivusto||"Suomi Tänään")+'</div><div class=tt>'+e("KOUKKU: "+x.tiktok.koukku+"\\n\\n"+x.tiktok.teksti)+'</div><div class=rivi><button class=btn data-k="'+e(x.id)+'">Kopioi teksti</button></div></div>').join("")||"<p>Ei käsikirjoituksia.</p>";
-  s.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{const x=l.find(y=>y.id==b.dataset.k);kopioi(x.tiktok.koukku+"\\n\\n"+x.tiktok.teksti,b)});return}
- s.innerHTML=l.map(x=>'<div class=kortti data-id="'+e(x.id)+'"><div class=meta>'+e(x.lahdetyyppi||"")+" · "+new Date(x.luotu).toLocaleString("fi-FI")+'</div>'+
- '<label>Otsikko<input name=otsikko value="'+e(x.otsikko)+'"></label><label>Ingressi<textarea name=ingressi>'+e(x.ingressi)+'</textarea></label><label>Teksti<textarea name=teksti class=pitka>'+e(x.teksti)+'</textarea></label>'+
- '<label>Osasto<select name=kategoria>'+KAT.map(k=>'<option'+(k==x.kategoria?" selected":"")+'>'+k+'</option>').join("")+'</select></label>'+
- (x.tarkistettavat&&x.tarkistettavat.length?'<div class=tark><b>Tarkista lähteestä:</b><ul>'+x.tarkistettavat.map(t=>"<li>"+e(t)+"</li>").join("")+'</ul></div>':"")+
- '<div class=lah><b>Lähteet:</b><br>'+(x.lahteet||[]).map(a=>'<a href="'+e(a.url)+'" target=_blank rel=noopener>'+e(a.nimi||a.url)+'</a>').join("<br>")+'</div>'+
- '<div class=rivi><button class="btn p" data-a=julkaise>Julkaise</button><button class="btn v" data-a=hylkaa>Hylkää</button></div></div>').join("");
- s.querySelectorAll(".kortti").forEach(k=>k.querySelectorAll("[data-a]").forEach(b=>b.onclick=async()=>{const id=k.dataset.id;
-  if(b.dataset.a=="hylkaa"){await api("/api/hylkaa",{id});ilmo("Hylätty");k.remove();return}
-  const x=l.find(y=>y.id==id),d={id,tyyppi:"uutinen",otsikko:k.querySelector("[name=otsikko]").value,ingressi:k.querySelector("[name=ingressi]").value,teksti:k.querySelector("[name=teksti]").value,kategoria:k.querySelector("[name=kategoria]").value,lahteet:x.lahteet};
-  b.disabled=true;const r=await api("/api/julkaise",d);ilmo(r.ok?"Julkaistu":"Virhe");if(r.ok)k.remove();else b.disabled=false}))}
-if(PW)api("/api/luonnokset").then(alku,()=>{});
-</script></body></html>`;
 
 // ---------- Rajapinta ----------
 async function rajapinta(req, env, polku) {
@@ -253,7 +205,7 @@ export default {
     if (url.hostname === "www.suomitanaan.fi") return Response.redirect("https://suomitanaan.fi" + url.pathname + url.search, 301);
     let p = url.pathname;
     if (p.startsWith("/api/")) return rajapinta(req, env, p.replace(/\/$/, ""));
-    if (p === "/toimitus" || p === "/toimitus/") return html(TOIMITUS, 200, "no-store");
+    if (p === "/toimitus" || p === "/toimitus/") return html(toimitusSivu(KATEGORIAT), 200, "no-store");
     if (p === "/rss.xml") return rss(env);
     if (p === "/sitemap.xml") return sitemap(env);
     if (p === "/robots.txt") return new Response("User-agent: *\nDisallow: /toimitus\nDisallow: /api/\nSitemap: https://suomitanaan.fi/sitemap.xml\n", { headers: { "content-type": "text/plain" } });

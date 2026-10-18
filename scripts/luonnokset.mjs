@@ -48,7 +48,7 @@ Säännöt:
 - Jos lähde on yksipuolinen (esim. järjestön tai yrityksen tiedote), kerro selvästi, että kyse on sen omasta näkemyksestä.
 - Äänestyksistä: kerro mitä päätettiin, äänet (jaa/ei/tyhjä/poissa jos lähteessä) ja puolueiden kannat jos ne ovat lähteessä.
 - Pituus 120–280 sanaa. Otsikko enintään 90 merkkiä, ingressi yksi tai kaksi virkettä.
-- Jos lähde ei ole uutisarvoinen (mainos, tapahtumailmoitus, rutiinitiedote ilman uutta tietoa), aseta "hylkaa": true.
+- Suomi Tänään kertoo politiikasta, päätöksistä, julkisesta taloudesta, viranomaisista ja yhteiskunnasta. Aseta "hylkaa": true, jos lähde on urheilua, viihdettä, yrityksen tuote- tai markkinointitiedote, tapahtumailmoitus tai rutiinitiedote ilman uutta tietoa.
 Lisäksi kirjoita TikTok-käsikirjoitus (noin 30 sekuntia, 60–80 sanaa): vahva koukku ensimmäiseen lauseeseen, suora ja iskevä kieli, nimeä päättäjät jos ne ovat lähteessä, faktat tarkasti lähteen mukaan, loppuun "Koko juttu ja lähteet: linkki biossa."
 Vastaa PELKÄLLÄ JSON-oliolla, ei muuta tekstiä:
 {"hylkaa":false,"syy":"","otsikko":"","ingressi":"","teksti":"kappale 1\\n\\nkappale 2","kategoria":"${KATEGORIAT.join("|")}","tarkistettavat":["väite tai luku, joka toimittajan kannattaa tarkistaa lähteestä"],"tiktok":{"koukku":"","teksti":"","sivusto":"Suomi Tänään"}}`;
@@ -79,7 +79,10 @@ async function main() {
   const aanestykset = (lahteet.aanestykset || []).filter(v => tuore(v.aika, 96) && !nahdyt.has(v.url))
     .map(v => ({ tyyppi: "Eduskunnan täysistunnon äänestys", lahde: "Eduskuntaseuranta.fi (eduskunnan avoin data)", url: v.url, otsikko: v.otsikko, aika: v.aika, oletusKategoria: "Politiikka",
       lisa: `Aihe: ${v.aiheNimi || ""}\nÄänet: jaa ${v.jaa ?? "?"}, ei ${v.ei ?? "?"}`, p: 50 + pisteet(v.otsikko) }));
-  const tiedotteet = (lahteet.tiedotteet || []).filter(t => tuore(t.aika, 48) && !nahdyt.has(t.url) && t.ryhma !== "Organisaatiot ja yritykset" || (t.lahde === "STT Info: tiedotteet" && tuore(t.aika, 24) && !nahdyt.has(t.url) && pisteet(t.otsikko) >= 6))
+  // STT Infosta vain julkishallinnon, eduskunnan ja puolueiden tiedotteet (ei urheilua, viihdettä eikä yritysten markkinointia)
+  const JULKINEN = /ministeri|valtioneuvosto|eduskun|virasto|kela|poliisi|puolue|kunta|kaupun|hyvinvointialue|tilastokeskus|verohallinto|traficom|thl|tuomioistu|syyttäj|puolustusvoim|rajavartio|suojelupoliisi|ulkoministeri|presidentti/i;
+  const tiedotteet = (lahteet.tiedotteet || []).filter(t => tuore(t.aika, 48) && !nahdyt.has(t.url) &&
+      (t.ryhma === "Valtio ja virastot" || t.ryhma === "Kunnat" || (t.lahde === "STT Info: tiedotteet" && JULKINEN.test(t.otsikko))))
     .map(t => ({ tyyppi: "Viranomaisen tai organisaation tiedote", lahde: t.lahde, url: t.url, otsikko: t.otsikko, aika: t.aika, oletusKategoria: t.ryhma === "Kunnat" ? "Kunnat" : "Kotimaa", p: pisteet(t.otsikko) + (t.ryhma === "Valtio ja virastot" ? 5 : 0) }));
 
   // Kaksi kolmasosaa äänestyksiä ja virastojen tiedotteita, loput kuumimmista aiheista
