@@ -8,7 +8,7 @@ const PW = process.env.TOIMITUS_SALASANA || "";
 const KEY = process.env.ANTHROPIC_API_KEY || "";
 const MALLI = process.env.MALLI || "claude-sonnet-5-5";
 const MAX = Number(process.env.MAX_LUONNOKSET || 10);
-const KATEGORIAT = ["Politiikka", "Talous", "Kotimaa", "Kunnat", "Ulkomaat", "Hankinnat"];
+const KATEGORIAT = ["Politiikka", "Talous", "Kotimaa", "Kunnat", "Urheilu", "Kulttuuri", "Elämä", "Ulkomaat", "Hankinnat"];
 const UA = "Mozilla/5.0 (compatible; SuomiTanaan/1.0; +https://suomitanaan.fi)";
 
 const huomio = (otsikko, viesti) => console.log(`::notice title=${otsikko}::${String(viesti).replace(/\n/g, " ").slice(0, 400)}`);
@@ -48,7 +48,9 @@ Säännöt:
 - Jos lähde on yksipuolinen (esim. järjestön tai yrityksen tiedote), kerro selvästi, että kyse on sen omasta näkemyksestä.
 - Äänestyksistä: kerro mitä päätettiin, äänet (jaa/ei/tyhjä/poissa jos lähteessä) ja puolueiden kannat jos ne ovat lähteessä.
 - Pituus 120–280 sanaa. Otsikko enintään 90 merkkiä, ingressi yksi tai kaksi virkettä.
-- Suomi Tänään kertoo politiikasta, päätöksistä, julkisesta taloudesta, viranomaisista ja yhteiskunnasta. Aseta "hylkaa": true, jos lähde on urheilua, viihdettä, yrityksen tuote- tai markkinointitiedote, tapahtumailmoitus tai rutiinitiedote ilman uutta tietoa.
+- Osastot: Politiikka (eduskunta, hallitus, puolueet, poliittiset päätökset), Talous, Kotimaa, Kunnat, Urheilu (tulokset, ottelut, siirrot, kisat), Kulttuuri (taide, musiikki, teatteri, elokuvat, kirjat, palkinnot), Elämä (terveys, ruoka, asuminen, liikenne, matkailu, arjen palvelut), Ulkomaat, Hankinnat.
+- Urheilussa kerro tulos, tärkeimmät tapahtumat ja mitä se tarkoittaa sarjatilanteelle, jos lähde kertoo sen. Kulttuurissa ja Elämässä kerro lukijalle hyödyllinen ydin.
+- Aseta "hylkaa": true, jos lähde on yrityksen tuote- tai markkinointitiedote, mainos, rekrytointi, pelkkä tapahtumailmoitus tai rutiinitiedote ilman uutta tietoa.
 Lisäksi kirjoita TikTok-käsikirjoitus (noin 30 sekuntia, 60–80 sanaa): vahva koukku ensimmäiseen lauseeseen, suora ja iskevä kieli, nimeä päättäjät jos ne ovat lähteessä, faktat tarkasti lähteen mukaan, loppuun "Koko juttu ja lähteet: linkki biossa."
 Vastaa PELKÄLLÄ JSON-oliolla, ei muuta tekstiä:
 {"hylkaa":false,"syy":"","otsikko":"","ingressi":"","teksti":"kappale 1\\n\\nkappale 2","kategoria":"${KATEGORIAT.join("|")}","tarkistettavat":["väite tai luku, joka toimittajan kannattaa tarkistaa lähteestä"],"tiktok":{"koukku":"","teksti":"","sivusto":"Suomi Tänään"}}`;
@@ -79,29 +81,42 @@ async function main() {
   const aanestykset = (lahteet.aanestykset || []).filter(v => tuore(v.aika, 96) && !nahdyt.has(v.url))
     .map(v => ({ tyyppi: "Eduskunnan täysistunnon äänestys", lahde: "Eduskuntaseuranta.fi (eduskunnan avoin data)", url: v.url, otsikko: v.otsikko, aika: v.aika, oletusKategoria: "Politiikka",
       lisa: `Aihe: ${v.aiheNimi || ""}\nÄänet: jaa ${v.jaa ?? "?"}, ei ${v.ei ?? "?"}`, p: 50 + pisteet(v.otsikko) }));
-  // STT Infosta vain julkishallinnon, eduskunnan ja puolueiden tiedotteet (ei urheilua, viihdettä eikä yritysten markkinointia)
-  const JULKINEN = /ministeri|valtioneuvosto|eduskun|virasto|kela|poliisi|puolue|kunta|kaupun|hyvinvointialue|tilastokeskus|verohallinto|traficom|thl|tuomioistu|syyttäj|puolustusvoim|rajavartio|suojelupoliisi|ulkoministeri|presidentti/i;
-  const tiedotteet = (lahteet.tiedotteet || []).filter(t => tuore(t.aika, 48) && !nahdyt.has(t.url) &&
-      (t.ryhma === "Valtio ja virastot" || t.ryhma === "Kunnat" || (t.lahde === "STT Info: tiedotteet" && JULKINEN.test(t.otsikko))))
-    .map(t => ({ tyyppi: "Viranomaisen tai organisaation tiedote", lahde: t.lahde, url: t.url, otsikko: t.otsikko, aika: t.aika, oletusKategoria: t.ryhma === "Kunnat" ? "Kunnat" : "Kotimaa", p: pisteet(t.otsikko) + (t.ryhma === "Valtio ja virastot" ? 5 : 0) }));
-
-  // Kaksi kolmasosaa äänestyksiä ja virastojen tiedotteita, loput kuumimmista aiheista
-  const valitut = [...aanestykset.sort((a, b) => b.p - a.p).slice(0, Math.ceil(MAX * 0.4)), ...tiedotteet.sort((a, b) => b.p - a.p)].slice(0, MAX * 2);
+  const JULKINEN = /ministeri|valtioneuvosto|eduskun|virasto|kela|poliisi|puolue|kunta|kaupun|hyvinvointialue|tilastokeskus|verohallinto|traficom|thl|tuomioistu|syyttäj|puolustusvoim|rajavartio|suojelupoliisi|presidentti/i;
+  const URHEILU = /liiga|sarja|ottelu|mestaruu|olympi|paralymp|MM-|EM-|maajoukku|huuhkaj|leijon|susijen|pelaaja|valmentaja|joukkue|voitti|kisat|cup\b|turnau|urheilu|hiihto|jalkapallo|jääkiekko|salibandy|koripallo|lentopallo|yleisurheilu|ravi/i;
+  const KULTTUURI = /teatteri|ooppera|baletti|museo|näyttely|festivaali|konsertti|elokuva|kirja|kirjailija|palkinto|taide|taitelij|taiteilij|musiikki|orkesteri|kulttuuri|ensi-ilta|esitys/i;
+  const ELAMA = /terveys|ruoka|ravitsem|asumi|asunto|hyvinvoin|liikunta|perhe|lapsi|lemmik|matkail|liikenne|sää|energia|sähkö|kuluttaja|hinta|eläke|kela/i;
+  const tied = (lahteet.tiedotteet || []).filter(t => tuore(t.aika, 40) && !nahdyt.has(t.url));
+  const tee = (t, tyyppi, kat, p) => ({ tyyppi, lahde: t.lahde, url: t.url, otsikko: t.otsikko, aika: t.aika, oletusKategoria: kat, p });
+  const viranomaiset = tied.filter(t => t.ryhma === "Valtio ja virastot" || t.ryhma === "Kunnat" || (t.lahde === "STT Info: tiedotteet" && JULKINEN.test(t.otsikko)))
+    .map(t => tee(t, "Viranomaisen tai organisaation tiedote", t.ryhma === "Kunnat" ? "Kunnat" : "Kotimaa", pisteet(t.otsikko) + (t.ryhma === "Valtio ja virastot" ? 5 : 0)));
+  const stt = tied.filter(t => t.lahde === "STT Info: tiedotteet" && !JULKINEN.test(t.otsikko));
+  const urheilu = stt.filter(t => URHEILU.test(t.otsikko)).map(t => tee(t, "Urheilusarjan, -liiton tai -seuran tiedote", "Urheilu", 10 + pisteet(t.otsikko)));
+  const kulttuuri = stt.filter(t => !URHEILU.test(t.otsikko) && KULTTUURI.test(t.otsikko)).map(t => tee(t, "Kulttuurilaitoksen tai -toimijan tiedote", "Kulttuuri", 5 + pisteet(t.otsikko)));
+  const elama = stt.filter(t => !URHEILU.test(t.otsikko) && !KULTTUURI.test(t.otsikko) && ELAMA.test(t.otsikko)).map(t => tee(t, "Organisaation tiedote", "Elämä", pisteet(t.otsikko)));
+  const jarj = l => l.sort((a, b) => b.p - a.p);
+  // Kiintiöt: politiikka toimittajalle, muut osastot automaattisesti
+  const KIINTIO = { politiikka: MAX, muut: Number(process.env.MAX_AUTO || 10) };
+  const valitut = [...jarj(aanestykset).slice(0, 6), ...jarj(viranomaiset).slice(0, 10), ...jarj(urheilu).slice(0, 6), ...jarj(kulttuuri).slice(0, 3), ...jarj(elama).slice(0, 3)];
+  let nPol = 0, nAuto = 0;
   const valmiit = [];
   for (const e of valitut) {
-    if (valmiit.length >= MAX) break;
+    if (nPol >= KIINTIO.politiikka && nAuto >= KIINTIO.muut) break;
     try {
       const teksti = await haeTeksti(e.url);
       if (teksti.length < 200) { console.log("Liian lyhyt lähde:", e.url); continue; }
       const j = await kirjoita(e, teksti);
-      if (j.hylkaa) { console.log("Hylätty (ei uutisarvoa):", e.otsikko, j.syy); valmiit.hylatyt = [...(valmiit.hylatyt || []), { vain_nahty: true, lahde_url: e.url }]; continue; }
-      valmiit.push({ ...j, lahde_url: e.url, lahdetyyppi: e.tyyppi, lahteet: [{ nimi: `${e.lahde}: ${e.otsikko}`.slice(0, 200), url: e.url }] });
-      console.log("Luonnos:", j.otsikko);
+      if (j.hylkaa) { console.log("Hylätty:", e.otsikko, j.syy); valmiit.hylatyt = [...(valmiit.hylatyt || []), { vain_nahty: true, lahde_url: e.url }]; continue; }
+      // Politiikka (ja kaikki äänestykset) toimittajan hyväksyttäväksi, muut osastot julkaistaan automaattisesti tekoälymerkinnällä
+      const politiikka = j.kategoria === "Politiikka" || e.tyyppi.startsWith("Eduskunnan");
+      if (politiikka) { if (nPol >= KIINTIO.politiikka) continue; nPol++; j.kategoria = "Politiikka"; }
+      else { if (nAuto >= KIINTIO.muut) continue; nAuto++; }
+      valmiit.push({ ...j, automaattinen: !politiikka, lahde_url: e.url, lahdetyyppi: e.tyyppi, lahteet: [{ nimi: `${e.lahde}: ${e.otsikko}`.slice(0, 200), url: e.url }] });
+      console.log(politiikka ? "Toimitukseen:" : "Automaattisesti:", j.kategoria, j.otsikko);
     } catch (err) { console.log("Epäonnistui:", e.url, err.message); }
   }
   if (valmiit.length || valmiit.hylatyt) {
     const r = await fetch(WORKER + "/api/luonnokset", { method: "POST", headers: { authorization: "Bearer " + PW, "content-type": "application/json" }, body: JSON.stringify([...valmiit, ...(valmiit.hylatyt || [])]) });
-    huomio("Luonnokset", `${valmiit.length} uutta luonnosta toimitukseen (${r.status}). Ehdokkaita oli ${aanestykset.length} äänestystä ja ${tiedotteet.length} tiedotetta.`);
-  } else huomio("Luonnokset", `Ei uusia luonnoksia. Ehdokkaita ${aanestykset.length} äänestystä, ${tiedotteet.length} tiedotetta.`);
+    huomio("Luonnokset", `${nPol} politiikan luonnosta toimitukseen, ${nAuto} juttua julkaistu automaattisesti (${r.status}). Ehdokkaat: ${aanestykset.length} äänestystä, ${viranomaiset.length} viranomaista, ${urheilu.length} urheilua, ${kulttuuri.length} kulttuuria, ${elama.length} elämää.`);
+  } else huomio("Luonnokset", `Ei uusia juttuja. Ehdokkaat: ${aanestykset.length} äänestystä, ${viranomaiset.length} viranomaista, ${urheilu.length} urheilua, ${kulttuuri.length} kulttuuria, ${elama.length} elämää.`);
 }
 main().catch(e => { huomio("Virhe", e.message); process.exit(1); });

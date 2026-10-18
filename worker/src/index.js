@@ -10,7 +10,7 @@ const SIVU = "Suomi Tänään";
 const ISKU = "Faktat kokonaan. Myös se, mitä muut eivät kerro.";
 const TOIMITTAJA = "Miika Koskela";
 const YHTEYS = "miika@eduskuntaseuranta.fi";
-const KATEGORIAT = ["Politiikka", "Talous", "Kotimaa", "Kunnat", "Ulkomaat", "Hankinnat"];
+const KATEGORIAT = ["Politiikka", "Talous", "Kotimaa", "Kunnat", "Urheilu", "Kulttuuri", "Elämä", "Ulkomaat", "Hankinnat"];
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const pvm = iso => { const d = new Date(iso); return isNaN(d) ? "" : d.toLocaleDateString("fi-FI", { timeZone: "Europe/Helsinki", day: "numeric", month: "numeric", year: "numeric" }); };
@@ -88,7 +88,7 @@ function kuori({ otsikko, kuvaus, polku, runko, ld, kat }) {
 <nav class="kat" aria-label="Osastot"><div class="w">${navi}</div></nav>
 <main class="w">${runko}</main>
 <footer><div class="w"><div><b>${SIVU}</b> · Vastaava päätoimittaja ${TOIMITTAJA} · <a href="mailto:${YHTEYS}">${YHTEYS}</a></div>
-<div>Uutiset laaditaan tekoälyn avustuksella alkuperäislähteistä, ja toimittaja tarkistaa jokaisen jutun ennen julkaisua. Jokaisen jutun lopussa on lähteet. <a href="/tietoa/">Tietoa ja oikaisut</a></div>
+<div>Uutiset laaditaan tekoälyn avustuksella alkuperäislähteistä. Politiikan uutiset ja pääkirjoitukset toimittaja tarkistaa ennen julkaisua, muiden osastojen tekoälyn laatimat jutut on merkitty. Jokaisen jutun lopussa on lähteet. <a href="/tietoa/">Tietoa ja oikaisut</a></div>
 <div>Katso myös: <a href="https://nytpuhutaan.fi">Nytpuhutaan.fi</a> · <a href="https://eduskuntaseuranta.fi">Eduskuntaseuranta.fi</a> · TikTok <a href="https://www.tiktok.com/@faktapiste">@faktapiste</a></div></div></footer>
 </body></html>`;
 }
@@ -122,7 +122,7 @@ async function juttusivu(env, slug) {
 <p class="ingressi">${esc(j.ingressi)}</p><div class="byline"><span><b>${esc(j.kirjoittaja || TOIMITTAJA)}</b></span><span class="meta">${pvm(j.julkaistu)} klo ${klo(j.julkaistu)}${j.muokattu ? " · päivitetty " + pvm(j.muokattu) : ""}</span></div>
 <div class="teksti">${kplt(j.teksti).map(p => `<p>${esc(p)}</p>`).join("")}</div>
 ${(j.lahteet || []).length ? `<div class="lahteet"><b>Lähteet</b><ol>${j.lahteet.map(l => `<li><a href="${esc(l.url)}" rel="noopener">${esc(l.nimi || l.url)}</a></li>`).join("")}</ol></div>` : ""}
-${j.tyyppi === "paakirjoitus" ? `<p class="huom">Pääkirjoitus on kirjoittajan oma kannanotto.</p>` : `<p class="huom">Juttu on laadittu tekoälyn avustuksella alkuperäislähteistä, ja toimittaja on tarkistanut sen ennen julkaisua. Huomasitko virheen? <a href="mailto:${YHTEYS}?subject=${encodeURIComponent("Oikaisupyyntö: " + j.otsikko)}">Lähetä oikaisupyyntö</a>.</p>`}
+${j.tyyppi === "paakirjoitus" ? `<p class="huom">Pääkirjoitus on kirjoittajan oma kannanotto.</p>` : j.ai ? `<p class="huom"><b>Tekoälyn laatima juttu.</b> Juttu on kirjoitettu automaattisesti alkuperäislähteen perusteella, eikä toimittaja ole tarkistanut sitä ennen julkaisua. Tarkista tiedot lähteestä. Huomasitko virheen? <a href="mailto:${YHTEYS}?subject=${encodeURIComponent("Oikaisupyyntö: " + j.otsikko)}">Ilmoita siitä</a>.</p>` : `<p class="huom">Juttu on laadittu tekoälyn avustuksella alkuperäislähteistä, ja toimittaja on tarkistanut sen ennen julkaisua. Huomasitko virheen? <a href="mailto:${YHTEYS}?subject=${encodeURIComponent("Oikaisupyyntö: " + j.otsikko)}">Lähetä oikaisupyyntö</a>.</p>`}
 </article>`;
   return kuori({ otsikko: `${j.otsikko} | ${SIVU}`, kuvaus: j.ingressi, polku: `/uutiset/${slug}/`, runko, kat: j.tyyppi === "paakirjoitus" ? "Pääkirjoitus" : j.kategoria,
     ld: { "@context": "https://schema.org", "@type": "NewsArticle", headline: j.otsikko, description: j.ingressi, datePublished: j.julkaistu, dateModified: j.muokattu || j.julkaistu,
@@ -132,11 +132,23 @@ ${j.tyyppi === "paakirjoitus" ? `<p class="huom">Pääkirjoitus on kirjoittajan 
 const TIETOA = `<article class="juttu"><h1>Tietoa ${SIVU} -sivustosta</h1>
 <p class="ingressi">${ISKU}</p>
 <div class="teksti"><p>${SIVU} kirjoittaa uutiset suoraan alkuperäislähteistä: eduskunnan äänestyksistä ja asiakirjoista, ministeriöiden, virastojen ja kuntien tiedotteista, tilastoista ja julkisista hankinnoista. Emme kirjoita muiden medioiden juttuja uudelleen.</p>
-<p>Uutiset laaditaan tekoälyn avustuksella. Toimittaja lukee jokaisen jutun ja tarkistaa sen alkuperäislähteistä ennen julkaisua. Jokaisen jutun lopussa on linkit lähteisiin.</p>
+<p>Uutiset laaditaan tekoälyn avustuksella. Politiikan uutiset ja pääkirjoitukset toimittaja lukee ja tarkistaa alkuperäislähteistä ennen julkaisua. Urheilun, kulttuurin, elämän ja muiden osastojen jutut kirjoitetaan automaattisesti virallisista lähteistä, kuten sarjojen, liittojen, kulttuurilaitosten ja viranomaisten tiedotteista. Ne on merkitty tekoälyn laatimiksi. Jokaisen jutun lopussa on linkit lähteisiin.</p>
 <p>Kiistanalaisissa asioissa kerromme aina, kuka väittää mitä ja mikä asian virallinen tai oikeudellinen tila on. Syytös ja tuomio pidetään erillään. Uutiset ja kannanotot pidetään erillään: pääkirjoitukset ovat kirjoittajan omia näkemyksiä ja ne on merkitty selvästi.</p>
 <p>Vastaava päätoimittaja on ${TOIMITTAJA}. Oikaisupyynnöt ja palaute: <a href="mailto:${YHTEYS}">${YHTEYS}</a>. Käsittelemme oikaisupyynnöt viipymättä.</p></div></article>`;
 
 // ---------- Rajapinta ----------
+const AI_KIRJOITTAJA = "Suomi Tänään (tekoälyn laatima)";
+async function julkaiseJuttu(env, b, ai) {
+  const nyt = new Date().toISOString();
+  const slug = slugify(b.otsikko) + "-" + crypto.randomUUID().slice(0, 4);
+  const juttu = { slug, tyyppi: b.tyyppi || "uutinen", otsikko: String(b.otsikko).trim(), ingressi: String(b.ingressi || "").trim(), teksti: String(b.teksti).trim(), kategoria: b.kategoria || "Kotimaa",
+    lahteet: b.lahteet || [], kirjoittaja: ai ? AI_KIRJOITTAJA : TOIMITTAJA, ai: !!ai, julkaistu: nyt, tiktok: b.tiktok || null };
+  await tallenna(env, "juttu:" + slug, juttu);
+  const { teksti, ...meta } = juttu;
+  const jutut = await lue(env, "jutut", []); jutut.unshift(meta); await tallenna(env, "jutut", jutut.slice(0, 3000));
+  return slug;
+}
+
 async function rajapinta(req, env, polku) {
   if (polku === "/api/tila") return json({ ok: true, jutut: (await lue(env, "jutut", [])).length, luonnokset: (await lue(env, "luonnokset", [])).length });
   if (!sallittu(req, env)) return json({ virhe: "Ei oikeutta" }, 401);
@@ -155,6 +167,7 @@ async function rajapinta(req, env, polku) {
       if (!l) continue;
       if (l.lahde_url && !nahdyt.includes(l.lahde_url)) nahdyt.push(l.lahde_url);
       if (l.vain_nahty || !l.otsikko) continue;
+      if (l.automaattinen) { await julkaiseJuttu(env, l, true); continue; }
       const id = l.id || crypto.randomUUID().slice(0, 8);
       await tallenna(env, "luonnos:" + id, { ...l, id, luotu: l.luotu || new Date().toISOString() });
       if (!ids.includes(id)) ids.push(id);
@@ -169,12 +182,7 @@ async function rajapinta(req, env, polku) {
   }
   if (polku === "/api/julkaise") {
     if (!b.otsikko || !b.teksti) return json({ ok: false, virhe: "Otsikko ja teksti tarvitaan" }, 400);
-    const nyt = new Date().toISOString();
-    const slug = slugify(b.otsikko) + "-" + crypto.randomUUID().slice(0, 4);
-    const juttu = { slug, tyyppi: b.tyyppi || "uutinen", otsikko: b.otsikko.trim(), ingressi: (b.ingressi || "").trim(), teksti: b.teksti.trim(), kategoria: b.kategoria || "Kotimaa", lahteet: b.lahteet || [], kirjoittaja: TOIMITTAJA, julkaistu: nyt };
-    await tallenna(env, "juttu:" + slug, juttu);
-    const { teksti, ...meta } = juttu;
-    const jutut = await lue(env, "jutut", []); jutut.unshift(meta); await tallenna(env, "jutut", jutut.slice(0, 3000));
+    const slug = await julkaiseJuttu(env, b, false);
     if (b.id) { await env.DB.delete("luonnos:" + b.id); await tallenna(env, "luonnokset", (await lue(env, "luonnokset", [])).filter(x => x !== b.id)); }
     return json({ ok: true, slug });
   }

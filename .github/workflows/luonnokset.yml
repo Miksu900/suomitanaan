@@ -3,6 +3,7 @@ name: Päivän uutisluonnokset
 on:
   schedule:
     - cron: "20 9 * * *"   # noin klo 12.20 Suomen aikaa, valmiina kun heräät
+    - cron: "20 18 * * *"  # noin klo 21.20: illan urheilu- ja kulttuuriuutiset
   workflow_dispatch:
     inputs:
       maara:
@@ -35,4 +36,5 @@ jobs:
           WORKER_URL: ${{ steps.osoite.outputs.url }}
           TOIMITUS_SALASANA: ${{ secrets.TOIMITUS_SALASANA }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          MAX_LUONNOKSET: ${{ inputs.maara || '10' }}
+          MAX_LUONNOKSET: ${{ inputs.maara || '8' }}
+          MAX_AUTO: "10"
