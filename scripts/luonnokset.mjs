@@ -48,6 +48,7 @@ Säännöt:
 - Jos lähde on yksipuolinen (esim. järjestön tai yrityksen tiedote), kerro selvästi, että kyse on sen omasta näkemyksestä.
 - Äänestyksistä: kerro mitä päätettiin, äänet (jaa/ei/tyhjä/poissa jos lähteessä) ja puolueiden kannat jos ne ovat lähteessä.
 - Pituus 120–280 sanaa. Otsikko enintään 90 merkkiä, ingressi yksi tai kaksi virkettä.
+- Jos lähde on englanninkielinen, kirjoita juttu sujuvalla suomella. Kerro kenen tiedote on (esim. "YK:n mukaan", "Naton tiedotteen mukaan", "Valkoisen talon mukaan"); valtioiden ja järjestöjen omat väitteet ovat niiden näkemyksiä, eivät tosiasioita.
 - Osastot: Politiikka (eduskunta, hallitus, puolueet, poliittiset päätökset), Talous, Kotimaa, Kunnat, Urheilu (tulokset, ottelut, siirrot, kisat), Kulttuuri (taide, musiikki, teatteri, elokuvat, kirjat, palkinnot), Elämä (terveys, ruoka, asuminen, liikenne, matkailu, arjen palvelut), Ulkomaat, Hankinnat.
 - Urheilussa kerro tulos, tärkeimmät tapahtumat ja mitä se tarkoittaa sarjatilanteelle, jos lähde kertoo sen. Kulttuurissa ja Elämässä kerro lukijalle hyödyllinen ydin.
 - Aseta "hylkaa": true, jos lähde on yrityksen tuote- tai markkinointitiedote, mainos, rekrytointi, pelkkä tapahtumailmoitus tai rutiinitiedote ilman uutta tietoa.
@@ -84,6 +85,52 @@ async function kirjoita(ehdokas, teksti) {
   return j;
 }
 
+// ---------- Ulkomaat: 10 kuuminta aihetta maailmalta alkuperäislähteistä ----------
+// Lähteinä vain viralliset toimijat, joiden sisältöä saa käyttää lähde mainiten (YK, EU, Nato, Yhdysvaltain ja Britannian hallitus, Ukrainan presidentti).
+const ULKO_SYOTTEET = [
+  ["YK (UN News)", "https://news.un.org/feed/subscribe/en/news/all/rss.xml"],
+  ["Euroopan parlamentti", "https://www.europarl.europa.eu/rss/doc/press-releases/en.xml"],
+  ["Euroopan komissio", "https://ec.europa.eu/commission/presscorner/api/rss?language=en"],
+  ["Nato", "https://www.nato.int/cps/rss/en/natohq/rssFeed.xsl/rssFeed.xml"],
+  ["Valkoinen talo", "https://www.whitehouse.gov/news/feed/"],
+  ["Britannian hallitus (GOV.UK)", "https://www.gov.uk/search/news-and-communications.atom"],
+  ["Ukrainan presidentti", "https://www.president.gov.ua/en/rss"],
+];
+function parseSyote(xml) {
+  const out = [];
+  for (const m of xml.matchAll(/<(item|entry)\b[\s\S]*?<\/\1>/g)) {
+    const b = m[0], g = re => { const x = b.match(re); return x ? x[1].replace(/<!\[CDATA\[|\]\]>/g, "").replace(/<[^>]+>/g, "").trim() : ""; };
+    const link = g(/<link>([\s\S]*?)<\/link>/) || (b.match(/<link[^>]*href="([^"]+)"/) || [])[1] || "";
+    const aika = g(/<pubDate>([\s\S]*?)<\/pubDate>/) || g(/<updated>([\s\S]*?)<\/updated>/) || g(/<dc:date>([\s\S]*?)<\/dc:date>/);
+    out.push({ otsikko: g(/<title[^>]*>([\s\S]*?)<\/title>/), url: link.trim(), aika: aika ? new Date(aika).toISOString() : null, kuvaus: g(/<(?:description|summary)[^>]*>([\s\S]*?)<\/(?:description|summary)>/).slice(0, 300) });
+  }
+  return out;
+}
+async function ulkoEhdokkaat(nahdyt) {
+  const kaikki = [];
+  await Promise.all(ULKO_SYOTTEET.map(async ([lahde, url]) => {
+    try {
+      const r = await fetch(url, { headers: { "user-agent": UA, accept: "application/rss+xml,application/atom+xml,application/xml,*/*" } });
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      const l = parseSyote(await r.text()).filter(x => x.url && x.otsikko && (!x.aika || Date.now() - new Date(x.aika) < 40 * 3600e3) && !nahdyt.has(x.url));
+      console.log("Ulkomaat", lahde, l.length); l.slice(0, 25).forEach(x => kaikki.push({ ...x, lahde }));
+    } catch (e) { console.log("Ulkomaat ohitettu", lahde, e.message); }
+  }));
+  return kaikki;
+}
+async function kuumatUlkomaat() {
+  try { const f = await haeJson("https://nytpuhutaan.fi/feed.json"); const raja = Date.now() - 24 * 3600e3;
+    return (f.u || []).filter(u => u.a && new Date(u.a).getTime() > raja && (u.t || []).some(t => String(t).startsWith("ulkomaat"))).slice(0, 60).map(u => u.o); }
+  catch { return []; }
+}
+async function valitseUlkomaat(ehdokkaat, otsikot, maara) {
+  if (!ehdokkaat.length) return [];
+  const lista = ehdokkaat.map((e, i) => `${i}. [${e.lahde}] ${e.otsikko} – ${e.kuvaus}`).join("\n");
+  const v = await claude(`Olet ulkomaantoimituksen uutispäällikkö. Valitse ehdokkaista enintään ${maara} uutisarvoisinta, jotka kertovat maailman tärkeimmistä ja puhutuimmista aiheista juuri nyt. Painota aiheita, joista suomalaiset mediat puhuvat (otsikot annettu), ja Suomea koskettavia asioita (Venäjä, Ukraina, Nato, EU, Yhdysvallat, talous, turvallisuus). Vältä rutiinitiedotteita, tapahtumailmoituksia ja kahta juttua samasta aiheesta. Vastaa PELKÄLLÄ JSON-oliolla {"valitut":[indeksit tärkeysjärjestyksessä]}.`,
+    `SUOMALAISTEN MEDIOIDEN ULKOMAANOTSIKOT NYT:\n${otsikot.join("\n")}\n\nEHDOKKAAT:\n${lista}`, 600);
+  return (v.valitut || []).map(i => ehdokkaat[i]).filter(Boolean).slice(0, maara);
+}
+
 async function main() {
   if (!WORKER || !PW || !KEY) { huomio("Puuttuu", "WORKER_URL, TOIMITUS_SALASANA tai ANTHROPIC_API_KEY puuttuu"); process.exit(1); }
   const nahdyt = new Set(await (await fetch(WORKER + "/api/nahdyt", { headers: { authorization: "Bearer " + PW } })).json().catch(() => []));
@@ -110,7 +157,11 @@ async function main() {
   const jarj = l => l.sort((a, b) => b.p - a.p);
   // Kiintiöt: politiikka toimittajalle, muut osastot automaattisesti
   const KIINTIO = { politiikka: MAX, muut: Number(process.env.MAX_AUTO || 10) };
-  const valitut = [...jarj(aanestykset).slice(0, 6), ...jarj(viranomaiset).slice(0, 10), ...jarj(urheilu).slice(0, 6), ...jarj(kulttuuri).slice(0, 3), ...jarj(elama).slice(0, 3)];
+  const MAX_ULKO = Number(process.env.MAX_ULKO || 10);
+  const ulko = MAX_ULKO ? (await valitseUlkomaat(await ulkoEhdokkaat(nahdyt), await kuumatUlkomaat(), MAX_ULKO).catch(e => { console.log("Ulkomaiden valinta epäonnistui", e.message); return []; }))
+    .map((e, i) => ({ tyyppi: "Kansainvälisen järjestön tai hallituksen virallinen tiedote (englanniksi)", lahde: e.lahde, url: e.url, otsikko: e.otsikko, aika: e.aika, oletusKategoria: "Ulkomaat", ulko: true, sija: i + 1 })) : [];
+  KIINTIO.muut += ulko.length;
+  const valitut = [...ulko, ...jarj(aanestykset).slice(0, 6), ...jarj(viranomaiset).slice(0, 10), ...jarj(urheilu).slice(0, 6), ...jarj(kulttuuri).slice(0, 3), ...jarj(elama).slice(0, 3)];
   let nPol = 0, nAuto = 0;
   const valmiit = [];
   for (const e of valitut) {
@@ -121,7 +172,8 @@ async function main() {
       const j = await kirjoita(e, teksti);
       if (j.hylkaa) { console.log("Hylätty:", e.otsikko, j.syy); valmiit.hylatyt = [...(valmiit.hylatyt || []), { vain_nahty: true, lahde_url: e.url }]; continue; }
       // Politiikka (ja kaikki äänestykset) toimittajan hyväksyttäväksi, muut osastot julkaistaan automaattisesti tekoälymerkinnällä
-      const politiikka = j.kategoria === "Politiikka" || e.tyyppi.startsWith("Eduskunnan");
+      if (e.ulko) j.kategoria = "Ulkomaat";
+      const politiikka = !e.ulko && (j.kategoria === "Politiikka" || e.tyyppi.startsWith("Eduskunnan"));
       if (politiikka) { if (nPol >= KIINTIO.politiikka) continue; nPol++; j.kategoria = "Politiikka"; }
       else { if (nAuto >= KIINTIO.muut) continue; nAuto++; }
       let automaattinen = !politiikka;

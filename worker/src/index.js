@@ -158,10 +158,10 @@ async function etusivu(env, kat) {
     let osiot;
     if (kat) osiot = `<div class="ruudukko">${muut.slice(4, 64).map(kortti).join("")}</div>`;
     else {
-      const kaytetty = new Set([eka, ...muut.slice(0, 4)].map(j => j.slug));
+            const kaytetty = new Set([eka, ...muut.slice(0, 4)].map(j => j.slug));
       osiot = [...KATEGORIAT, "Pääkirjoitus"].map(k => {
-        const l = jutut.filter(j => katNimi(j) === k && !kaytetty.has(j.slug)).slice(0, 6);
-        return l.length ? `<section class="osio" style="--k:${vari(k)[0]}"><div class="osio-otsikko"><h2>${esc(k)}</h2><a href="${katPolku(k)}">Kaikki →</a></div><div class="ruudukko">${l.map(kortti).join("")}</div></section>` : "";
+        const l = jutut.filter(j => katNimi(j) === k && !kaytetty.has(j.slug)).slice(0, k === "Ulkomaat" ? 10 : 6);
+        return l.length ? `<section class="osio" style="--k:${vari(k)[0]}"><div class="osio-otsikko"><h2>${k === "Ulkomaat" ? "Maailmalta: kuumimmat aiheet" : esc(k)}</h2><a href="${katPolku(k)}">Kaikki →</a></div><div class="ruudukko">${l.map(kortti).join("")}</div></section>` : "";
       }).join("");
     }
     runko = huippu + (kat ? "" : LAATIKOT) + osiot;

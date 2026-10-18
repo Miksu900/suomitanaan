@@ -38,3 +38,4 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           MAX_LUONNOKSET: ${{ inputs.maara || '8' }}
           MAX_AUTO: "10"
+          MAX_ULKO: ${{ github.event.schedule == '20 18 * * *' && '5' || '10' }}
