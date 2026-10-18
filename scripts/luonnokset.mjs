@@ -69,7 +69,8 @@ async function claude(system, user, maxTokens = 2500) {
 
 const TARKISTUS = `Olet uutistoimituksen faktantarkistaja. Saat alkuperäislähteen ja siitä kirjoitetun jutun.
 Käy läpi JOKAINEN jutun väite: luvut, nimet, päivämäärät, tulokset, lainaukset, syy-seuraussuhteet ja tittelit.
-Väite on kunnossa vain, jos se löytyy lähteestä tai seuraa siitä suoraan. Kaikki muu on virhe, myös lähteen ulkopuolinen taustatieto.
+Virhe on: väärä tai lähteestä puuttuva luku, nimi, päivämäärä, paikka, tulos tai titteli; väite, jota lähteessä ei ole; lainaus, jota lähteessä ei ole; tai väite, joka esitetään tosiasiana vaikka lähde esittää sen jonkun näkemyksenä.
+Ei ole virhe: käännöksen sanavalinta tai sävyero, joka ei muuta merkitystä, tiivistäminen tai yleistieto kuten maan pääkaupunki.
 Vastaa PELKÄLLÄ JSON-oliolla: {"ok":true|false,"virheet":["väite ja miksi se ei ole lähteessä"]}`;
 
 async function tarkista(lahdeTeksti, j) {
@@ -181,7 +182,13 @@ async function main() {
       else { if (nAuto >= KIINTIO.muut) continue; nAuto++; }
       let automaattinen = !politiikka;
       if (automaattinen) {
-        const t = await tarkista(teksti, j);
+        let t = await tarkista(teksti, j);
+        if (!t.ok) {  // yksi korjauskierros: kirjoittaja korjaa virheet, tarkistetaan uudelleen
+          try {
+            const k = await claude(OHJE, `Korjaa juttu niin, että nämä virheet poistuvat. Käytä vain lähteen tietoja.\nVIRHEET:\n${(t.virheet || []).join("\n")}\n\nJUTTU (JSON):\n${JSON.stringify(j)}\n\nLÄHDE:\n${teksti}`);
+            if (k && k.otsikko && k.teksti) { Object.assign(j, { otsikko: k.otsikko, ingressi: k.ingressi, teksti: k.teksti, tiktok: k.tiktok || j.tiktok }); t = await tarkista(teksti, j); }
+          } catch (er) { console.log("Korjaus epäonnistui", er.message); }
+        }
         if (!t.ok) { console.log("Tarkistus hylkäsi", j.otsikko + ": " + (t.virheet || []).join(" | ")); automaattinen = false; j.tarkistettavat = [...(t.virheet || []).map(v => "Faktantarkistus: " + v), ...(j.tarkistettavat || [])]; console.log("Ei läpäissyt tarkistusta, toimitukseen:", j.otsikko); nAuto--; nPol++; }
       }
       valmiit.push({ ...j, automaattinen, lahde_url: e.url, lahdetyyppi: e.tyyppi, lahteet: [{ nimi: `${e.lahde}: ${e.otsikko}`.slice(0, 200), url: e.url }] });
