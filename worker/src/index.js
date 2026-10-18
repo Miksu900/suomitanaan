@@ -33,58 +33,97 @@ const json = (d, s = 200) => new Response(JSON.stringify(d), { status: s, header
 const html = (h, s = 200, cache = "public, max-age=60") => new Response(h, { status: s, headers: { "content-type": "text/html; charset=utf-8", "cache-control": cache } });
 
 // ---------- Ulkoasu ----------
+// Jokaisella osastolla on oma värinsä; jutun kansikuva piirretään osaston väreistä (ei valokuvia, ei tekijänoikeusongelmia).
+const VARIT = {
+  Politiikka: ["#1d4ed8", "#93b4ff"], Talous: ["#0f766e", "#7fd8cb"], Kotimaa: ["#c2410c", "#ffb68a"], Kunnat: ["#7c3aed", "#c9b2ff"],
+  Urheilu: ["#15803d", "#86e3a6"], Kulttuuri: ["#be185d", "#ff9fcb"], "Elämä": ["#d97706", "#ffd27a"], Ulkomaat: ["#0e7490", "#7fdcf0"],
+  Hankinnat: ["#475569", "#b8c4d6"], "Pääkirjoitus": ["#9f1239", "#ff9fb1"],
+};
+const vari = k => VARIT[k] || VARIT.Kotimaa;
+const katNimi = j => j.tyyppi === "paakirjoitus" ? "Pääkirjoitus" : (j.kategoria || "Kotimaa");
+const katPolku = k => k === "Pääkirjoitus" ? "/paakirjoitus/" : "/aihe/" + slugify(k) + "/";
+
+function hajautus(s) { let h = 2166136261; for (const c of String(s)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+// Abstrakti kansikuva: osaston väri + jutun tunnisteesta johdettu kuvio (sama juttu = aina sama kuva)
+function kansi(j, luokka = "kansi") {
+  const k = katNimi(j), [c1, c2] = vari(k), h = hajautus(j.slug || j.otsikko), r = n => ((h >>> (n * 3)) % 1000) / 1000;
+  const malli = h % 4;
+  let kuvio = "";
+  if (malli === 0) kuvio = [0, 1, 2, 3].map(i => `<circle cx="${(r(i) * 640).toFixed(0)}" cy="${(r(i + 4) * 360).toFixed(0)}" r="${(60 + r(i + 2) * 170).toFixed(0)}" fill="${i % 2 ? c2 : "#fff"}" opacity="${(0.10 + r(i + 5) * 0.22).toFixed(2)}"/>`).join("");
+  else if (malli === 1) kuvio = [0, 1, 2, 3, 4, 5].map(i => `<rect x="${-200 + i * 150 + r(i) * 60}" y="-120" width="${40 + r(i + 1) * 70}" height="700" fill="${i % 2 ? c2 : "#fff"}" opacity="${(0.10 + r(i + 3) * 0.18).toFixed(2)}" transform="rotate(${20 + r(7) * 25} 320 180)"/>`).join("");
+  else if (malli === 2) { for (let y = 0; y < 8; y++) for (let x = 0; x < 14; x++) kuvio += `<circle cx="${30 + x * 46}" cy="${24 + y * 46}" r="${3 + ((h >> ((x + y) % 24)) & 3) * 2}" fill="#fff" opacity=".22"/>`; kuvio += `<circle cx="${420 + r(1) * 160}" cy="${150 + r(2) * 120}" r="${120 + r(3) * 60}" fill="${c2}" opacity=".45"/>`; }
+  else kuvio = [0, 1, 2].map(i => `<path d="M0 ${200 + i * 60 + r(i) * 40} C 160 ${100 + r(i + 1) * 160}, 420 ${260 + r(i + 2) * 120}, 640 ${120 + i * 70}" stroke="${i % 2 ? c2 : "#fff"}" stroke-width="${18 + r(i + 3) * 30}" fill="none" opacity="${(0.18 + r(i + 4) * 0.2).toFixed(2)}"/>`).join("");
+  return `<div class="${luokka}" style="--k1:${c1};--k2:${c2}" aria-hidden="true"><svg viewBox="0 0 640 360" preserveAspectRatio="xMidYMid slice"><rect width="640" height="360" fill="${c1}"/>${kuvio}</svg><span>${esc(k)}</span></div>`;
+}
+
 const CSS = `
-:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#121722;--mute:#5a6475;--line:#dde2ea;--acc:#123f8c;--acc-ink:#fff;--tag:#e7eefb;
---serif:"Newsreader",Georgia,"Times New Roman",serif;--sans:"Public Sans",system-ui,-apple-system,Segoe UI,sans-serif}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1118;--paper:#141a24;--ink:#e8ecf3;--mute:#9aa5b8;--line:#263044;--acc:#8fb2ff;--acc-ink:#0d1118;--tag:#1c2740;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#0d1118;--paper:#141a24;--ink:#e8ecf3;--mute:#9aa5b8;--line:#263044;--acc:#8fb2ff;--acc-ink:#0d1118;--tag:#1c2740;color-scheme:dark}
+:root{--bg:#f4f5f8;--paper:#ffffff;--ink:#111827;--mute:#5b6476;--line:#e2e6ee;--navy:#0b1f45;--navy-ink:#ffffff;--acc:#1d4ed8;
+--serif:"Newsreader",Georgia,"Times New Roman",serif;--sans:"Public Sans",system-ui,-apple-system,Segoe UI,sans-serif;--r:14px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0a0e15;--paper:#131a25;--ink:#e9edf4;--mute:#9ca7ba;--line:#242e40;--navy:#060c19;--acc:#8fb2ff;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0a0e15;--paper:#131a25;--ink:#e9edf4;--mute:#9ca7ba;--line:#242e40;--navy:#060c19;--acc:#8fb2ff;color-scheme:dark}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 var(--sans)}
-a{color:inherit}.w{max-width:1080px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-header.mast{background:var(--paper);border-bottom:3px solid var(--ink)}
-.mast .w{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 20px;padding-block:18px 12px}
-.logo{font:700 clamp(30px,6vw,46px)/1 var(--serif);letter-spacing:-.02em;text-decoration:none}
-.logo span{color:var(--acc)}
-.isku{font:italic 15px/1.4 var(--serif);color:var(--mute)}.paiva{font:600 12px var(--sans);font-style:normal;letter-spacing:.08em;text-transform:uppercase;color:var(--ink)}
-nav.kat{background:var(--paper);border-bottom:1px solid var(--line)}
-nav.kat .w{display:flex;gap:4px 18px;flex-wrap:wrap;padding-block:8px;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
-nav.kat a{text-decoration:none;color:var(--mute)}nav.kat a:hover,nav.kat a.on{color:var(--acc)}
-main{padding-block:24px 48px}
-.paa{display:grid;gap:28px}@media(min-width:900px){.paa{grid-template-columns:2fr 1fr}}
-.paajuttu h2{font:700 clamp(28px,4.5vw,42px)/1.12 var(--serif);margin:6px 0 10px;text-wrap:balance}
+a{color:inherit}.w{max-width:1140px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.mast{background:var(--navy);color:var(--navy-ink)}
+.mast .w{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:8px 24px;padding-block:22px 16px}
+.logo{font:700 clamp(32px,6.5vw,52px)/.95 var(--serif);letter-spacing:-.025em;text-decoration:none;color:#fff}
+.logo i{font-style:normal;color:#ffd27a}
+.isku{font:italic 15px/1.45 var(--serif);color:#c6d2ea;text-align:right}.paiva{font:700 11px var(--sans);font-style:normal;letter-spacing:.14em;text-transform:uppercase;color:#fff}
+.raita{display:flex;height:5px}.raita b{flex:1}
+nav.kat{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+nav.kat .w{display:flex;gap:6px;overflow-x:auto;padding-block:10px;scrollbar-width:none}nav.kat .w::-webkit-scrollbar{display:none}
+nav.kat a{flex:0 0 auto;text-decoration:none;font:700 13px var(--sans);letter-spacing:.04em;text-transform:uppercase;color:var(--mute);padding:7px 12px;border-radius:999px;border:1px solid transparent}
+nav.kat a:hover{border-color:var(--line);color:var(--ink)}nav.kat a.on{background:var(--k,var(--navy));color:#fff}
+main{padding-block:26px 56px}
+.kansi{position:relative;aspect-ratio:16/9;border-radius:var(--r);overflow:hidden;background:var(--k1);max-width:100%}
+.kansi svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.kansi span{position:absolute;left:14px;bottom:12px;font:800 12px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:#fff;background:rgba(0,0,0,.22);padding:5px 10px;border-radius:999px;backdrop-filter:blur(4px)}
+.kortti .kansi span{display:none}.kansi.iso{aspect-ratio:21/9}.kansi.iso span{font-size:13px}
+.huippu{display:grid;gap:22px;margin-bottom:34px}@media(min-width:900px){.huippu{grid-template-columns:1.6fr 1fr}}
+.paajuttu a{display:grid;gap:14px;text-decoration:none}
+.paajuttu h2{font:700 clamp(30px,4.6vw,48px)/1.06 var(--serif);margin:0;text-wrap:balance;letter-spacing:-.015em}
 .paajuttu p{font-size:19px;color:var(--mute);margin:0}
-.lista{display:grid;gap:0}.lista article{padding-block:16px;border-top:1px solid var(--line)}
-.lista h3{font:600 21px/1.25 var(--serif);margin:4px 0 6px;text-wrap:balance}.lista p{margin:0;color:var(--mute);font-size:16px}
-article a{text-decoration:none}article a:hover h2,article a:hover h3{color:var(--acc)}
-.meta{font-size:13px;color:var(--mute);letter-spacing:.02em}
-.tag{display:inline-block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--acc)}
-aside .laatikko{background:var(--paper);border:1px solid var(--line);padding:16px;margin-bottom:16px}
-aside h4{margin:0 0 8px;font:700 13px var(--sans);text-transform:uppercase;letter-spacing:.08em}
-aside p{margin:0 0 8px;font-size:15px}
-.juttu{max-width:700px}.juttu h1{font:700 clamp(30px,5vw,46px)/1.1 var(--serif);margin:8px 0 14px;text-wrap:balance}
-.juttu .ingressi{font:500 21px/1.5 var(--serif);margin:0 0 18px}
-.juttu .teksti p{margin:0 0 1em}.byline{display:flex;gap:10px;align-items:center;border-block:1px solid var(--line);padding-block:10px;margin-bottom:22px;font-size:14px}
-.lahteet{background:var(--paper);border:1px solid var(--line);padding:14px 16px;margin-top:28px;font-size:15px}
+.sivulista{display:grid;gap:14px;align-content:start}
+.mini a{display:grid;grid-template-columns:110px 1fr;gap:12px;align-items:center;text-decoration:none}.mini .kansi{border-radius:10px}.mini .kansi span{display:none}
+.mini h3{font:700 18px/1.22 var(--serif);margin:0 0 4px;text-wrap:balance}
+.osio{margin-bottom:36px}.osio-otsikko{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:4px solid var(--k);padding-top:10px;margin-bottom:16px}
+.osio-otsikko h2{font:800 15px var(--sans);letter-spacing:.12em;text-transform:uppercase;margin:0;color:var(--k)}.osio-otsikko a{font:700 13px var(--sans);color:var(--mute);text-decoration:none}
+.ruudukko{display:grid;gap:22px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.kortti a{display:grid;gap:10px;text-decoration:none}.kortti h3{font:700 21px/1.2 var(--serif);margin:0;text-wrap:balance}.kortti p{margin:0;color:var(--mute);font-size:15.5px;line-height:1.5}
+a:hover h2,a:hover h3{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px;text-decoration-color:var(--k,var(--acc))}
+.tag{font:800 11px var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--k,var(--acc))}
+.meta{font-size:13px;color:var(--mute)}.ai{font:700 10px var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--mute);border:1px solid var(--line);border-radius:999px;padding:1px 7px;margin-left:6px}
+.kolme{display:grid;gap:16px;margin-bottom:36px}@media(min-width:760px){.kolme{grid-template-columns:repeat(3,1fr)}}
+.laatikko{border-radius:var(--r);padding:18px;color:#fff;display:grid;gap:6px;text-decoration:none}
+.laatikko b{font:800 12px var(--sans);letter-spacing:.12em;text-transform:uppercase;opacity:.85}.laatikko strong{font:700 21px/1.2 var(--serif)}.laatikko span{font-size:15px;opacity:.92}
+.juttu{max-width:740px;margin:0 auto}.juttu .kansi{margin-bottom:22px}
+.juttu h1{font:700 clamp(32px,5.4vw,50px)/1.06 var(--serif);margin:8px 0 14px;text-wrap:balance;letter-spacing:-.015em}
+.juttu .ingressi{font:500 22px/1.5 var(--serif);margin:0 0 20px}
+.juttu .teksti{font-size:18px;line-height:1.7}.juttu .teksti p{margin:0 0 1.05em}
+.byline{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center;border-block:1px solid var(--line);padding-block:12px;margin-bottom:24px;font-size:14px}
+.lahteet{background:var(--paper);border-left:5px solid var(--k);border-radius:10px;padding:14px 18px;margin-top:30px;font-size:15px}
 .lahteet ol{margin:6px 0 0;padding-left:20px}.lahteet a{color:var(--acc);overflow-wrap:anywhere}
-.huom{font-size:13px;color:var(--mute);margin-top:14px}
-footer{border-top:3px solid var(--ink);background:var(--paper);padding-block:22px;font-size:14px;color:var(--mute)}
-footer .w{display:grid;gap:8px}footer a{color:var(--ink)}
-.tyhja{background:var(--paper);border:1px dashed var(--line);padding:28px;text-align:center;color:var(--mute)}
+.huom{font-size:13.5px;color:var(--mute);margin-top:16px;background:var(--paper);border-radius:10px;padding:12px 14px}
+footer{background:var(--navy);color:#c6d2ea;padding-block:28px;font-size:14px}footer .w{display:grid;gap:10px}footer a{color:#fff}footer b{color:#fff}
+.tyhja{background:var(--paper);border:1px dashed var(--line);border-radius:var(--r);padding:36px;text-align:center;color:var(--mute)}
 :focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 `;
 
 function kuori({ otsikko, kuvaus, polku, runko, ld, kat }) {
   const navi = ["Etusivu", ...KATEGORIAT, "Pääkirjoitus"].map(n => {
-    const h = n === "Etusivu" ? "/" : n === "Pääkirjoitus" ? "/paakirjoitus/" : "/aihe/" + slugify(n) + "/";
-    return `<a href="${h}"${kat === n ? ' class="on"' : ""}>${esc(n)}</a>`;
+    const h = n === "Etusivu" ? "/" : katPolku(n);
+    const k = n === "Etusivu" ? "" : ` style="--k:${vari(n)[0]}"`;
+    return `<a href="${h}"${k}${kat === n ? ' class="on"' : ""}>${esc(n)}</a>`;
   }).join("");
+  const raita = [...KATEGORIAT, "Pääkirjoitus"].map(k => `<b style="background:${vari(k)[0]}"></b>`).join("");
+  const paiva = new Date().toLocaleDateString("fi-FI", { timeZone: "Europe/Helsinki", weekday: "long", day: "numeric", month: "long", year: "numeric" });
   return `<!doctype html><html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>${esc(otsikko)}</title><meta name="description" content="${esc(kuvaus)}"><link rel="canonical" href="https://suomitanaan.fi${esc(polku)}">
-<meta property="og:title" content="${esc(otsikko)}"><meta property="og:description" content="${esc(kuvaus)}"><meta property="og:site_name" content="${SIVU}"><meta property="og:locale" content="fi_FI">
+<meta property="og:title" content="${esc(otsikko)}"><meta property="og:description" content="${esc(kuvaus)}"><meta property="og:site_name" content="${SIVU}"><meta property="og:locale" content="fi_FI"><meta name="theme-color" content="#0b1f45">
 <link rel="alternate" type="application/rss+xml" title="${SIVU}" href="/rss.xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400&family=Public+Sans:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400&family=Public+Sans:wght@400;600;700;800&display=swap">
 <style>${CSS}</style>${ld ? `<script type="application/ld+json">${JSON.stringify(ld).replace(/</g, "\\u003c")}</script>` : ""}</head><body>
-<header class="mast"><div class="w"><a class="logo" href="/">Suomi <span>Tänään</span></a><div class="isku">${ISKU}<br><span class="paiva">${new Date().toLocaleDateString("fi-FI",{timeZone:"Europe/Helsinki",weekday:"long",day:"numeric",month:"long",year:"numeric"})}</span></div></div></header>
+<header class="mast"><div class="w"><a class="logo" href="/">Suomi <i>Tänään</i></a><div class="isku">${ISKU}<br><span class="paiva">${paiva}</span></div></div><div class="raita">${raita}</div></header>
 <nav class="kat" aria-label="Osastot"><div class="w">${navi}</div></nav>
 <main class="w">${runko}</main>
 <footer><div class="w"><div><b>${SIVU}</b> · Vastaava päätoimittaja ${TOIMITTAJA} · <a href="mailto:${YHTEYS}">${YHTEYS}</a></div>
@@ -93,40 +132,56 @@ function kuori({ otsikko, kuvaus, polku, runko, ld, kat }) {
 </body></html>`;
 }
 
-const kortti = (j, iso) => `<article><a href="/uutiset/${esc(j.slug)}/"><span class="tag">${esc(j.tyyppi === "paakirjoitus" ? "Pääkirjoitus" : j.kategoria)}</span>
-${iso ? `<h2>${esc(j.otsikko)}</h2>` : `<h3>${esc(j.otsikko)}</h3>`}<p>${esc(j.ingressi)}</p></a><div class="meta">${pvm(j.julkaistu)} klo ${klo(j.julkaistu)}</div></article>`;
+const aikaMerk = j => `<div class="meta">${pvm(j.julkaistu)} klo ${klo(j.julkaistu)}${j.ai ? '<span class="ai">Tekoäly</span>' : ""}</div>`;
+const kortti = j => `<article class="kortti" style="--k:${vari(katNimi(j))[0]}"><a href="/uutiset/${esc(j.slug)}/">${kansi(j)}<span class="tag">${esc(katNimi(j))}</span><h3>${esc(j.otsikko)}</h3><p>${esc(j.ingressi)}</p></a>${aikaMerk(j)}</article>`;
+const mini = j => `<article class="mini" style="--k:${vari(katNimi(j))[0]}"><a href="/uutiset/${esc(j.slug)}/">${kansi(j)}<div><span class="tag">${esc(katNimi(j))}</span><h3>${esc(j.otsikko)}</h3></div></a></article>`;
 
-const SIVUPALKKI = `<aside>
-<div class="laatikko"><h4>Mitä tämä on</h4><p>${SIVU} kirjoittaa uutiset suoraan alkuperäislähteistä: eduskunnan äänestyksistä, viranomaisten tiedotteista, tilastoista ja virallisista asiakirjoista.</p><p>Jokaisessa jutussa on linkit lähteisiin, joten voit tarkistaa kaiken itse.</p></div>
-<div class="laatikko"><h4>Miten edustajasi äänesti?</h4><p>Jokainen eduskunnan äänestys edustajittain ja puolueittain.</p><p><a href="https://eduskuntaseuranta.fi">Eduskuntaseuranta.fi →</a></p></div>
-<div class="laatikko"><h4>Mistä mediat puhuvat</h4><p>Kaikkien suomalaisten medioiden uutiset yhdessä paikassa.</p><p><a href="https://nytpuhutaan.fi">Nytpuhutaan.fi →</a></p></div>
-</aside>`;
+const LAATIKOT = `<div class="kolme">
+<a class="laatikko" style="background:linear-gradient(135deg,#1d4ed8,#0b1f45)" href="https://eduskuntaseuranta.fi"><b>Eduskuntaseuranta</b><strong>Miten edustajasi äänesti?</strong><span>Jokainen äänestys edustajittain ja puolueittain →</span></a>
+<a class="laatikko" style="background:linear-gradient(135deg,#be185d,#7c3aed)" href="https://nytpuhutaan.fi"><b>Nytpuhutaan</b><strong>Mistä mediat puhuvat nyt?</strong><span>Kaikkien medioiden uutiset yhdessä paikassa →</span></a>
+<a class="laatikko" style="background:linear-gradient(135deg,#0f766e,#15803d)" href="/tietoa/"><b>${SIVU}</b><strong>Uutiset suoraan lähteestä</strong><span>Jokaisessa jutussa linkit alkuperäislähteisiin →</span></a>
+</div>`;
 
 async function etusivu(env, kat) {
   let jutut = await lue(env, "jutut", []);
+  const polku = kat ? katPolku(kat) : "/";
+  const otsikko = kat ? `${kat} | ${SIVU}` : `${SIVU}: uutiset alkuperäislähteistä`;
+  const kuvaus = "Uutiset suoraan alkuperäislähteistä: eduskunta, viranomaiset, urheilu ja kulttuuri. Jokaisessa jutussa lähteet.";
   if (kat === "Pääkirjoitus") jutut = jutut.filter(j => j.tyyppi === "paakirjoitus");
   else if (kat) jutut = jutut.filter(j => j.kategoria === kat && j.tyyppi !== "paakirjoitus");
-  const [eka, ...muut] = jutut;
-  const runko = eka
-    ? `<div class="paa"><div><div class="paajuttu">${kortti(eka, true)}</div><div class="lista">${muut.slice(0, 60).map(j => kortti(j)).join("")}</div></div>${SIVUPALKKI}</div>`
-    : `<div class="paa"><div class="tyhja">${kat ? "Tässä osastossa ei ole vielä juttuja." : "Ensimmäiset uutiset julkaistaan pian."}</div>${SIVUPALKKI}</div>`;
-  const otsikko = kat ? `${kat} | ${SIVU}` : `${SIVU}: uutiset alkuperäislähteistä`;
-  return kuori({ otsikko, kuvaus: "Uutiset suoraan alkuperäislähteistä: eduskunta, viranomaiset ja tilastot. Jokaisessa jutussa lähteet.", polku: kat ? (kat === "Pääkirjoitus" ? "/paakirjoitus/" : "/aihe/" + slugify(kat) + "/") : "/", runko, kat: kat || "Etusivu",
-    ld: { "@context": "https://schema.org", "@type": "WebSite", name: SIVU, url: "https://suomitanaan.fi/", inLanguage: "fi" } });
+  let runko;
+  if (!jutut.length) runko = `<div class="tyhja">${kat ? "Tässä osastossa ei ole vielä juttuja." : "Ensimmäiset uutiset julkaistaan pian."}</div>${LAATIKOT}`;
+  else {
+    const [eka, ...muut] = jutut;
+    const huippu = `<section class="huippu"><article class="paajuttu" style="--k:${vari(katNimi(eka))[0]}"><a href="/uutiset/${esc(eka.slug)}/">${kansi(eka, "kansi iso")}<h2>${esc(eka.otsikko)}</h2><p>${esc(eka.ingressi)}</p></a>${aikaMerk(eka)}</article>
+<div class="sivulista">${muut.slice(0, 4).map(mini).join("")}</div></section>`;
+    let osiot;
+    if (kat) osiot = `<div class="ruudukko">${muut.slice(4, 64).map(kortti).join("")}</div>`;
+    else {
+      const kaytetty = new Set([eka, ...muut.slice(0, 4)].map(j => j.slug));
+      osiot = [...KATEGORIAT, "Pääkirjoitus"].map(k => {
+        const l = jutut.filter(j => katNimi(j) === k && !kaytetty.has(j.slug)).slice(0, 6);
+        return l.length ? `<section class="osio" style="--k:${vari(k)[0]}"><div class="osio-otsikko"><h2>${esc(k)}</h2><a href="${katPolku(k)}">Kaikki →</a></div><div class="ruudukko">${l.map(kortti).join("")}</div></section>` : "";
+      }).join("");
+    }
+    runko = huippu + (kat ? "" : LAATIKOT) + osiot;
+  }
+  return kuori({ otsikko, kuvaus, polku, runko, kat: kat || "Etusivu", ld: { "@context": "https://schema.org", "@type": "WebSite", name: SIVU, url: "https://suomitanaan.fi/", inLanguage: "fi" } });
 }
 
 async function juttusivu(env, slug) {
   const j = await lue(env, "juttu:" + slug, null);
   if (!j) return null;
-  const runko = `<article class="juttu"><span class="tag">${esc(j.tyyppi === "paakirjoitus" ? "Pääkirjoitus" : j.kategoria)}</span><h1>${esc(j.otsikko)}</h1>
+  const k = katNimi(j);
+  const runko = `<article class="juttu" style="--k:${vari(k)[0]}">${kansi(j, "kansi iso")}<a class="tag" href="${katPolku(k)}" style="text-decoration:none">${esc(k)}</a><h1>${esc(j.otsikko)}</h1>
 <p class="ingressi">${esc(j.ingressi)}</p><div class="byline"><span><b>${esc(j.kirjoittaja || TOIMITTAJA)}</b></span><span class="meta">${pvm(j.julkaistu)} klo ${klo(j.julkaistu)}${j.muokattu ? " · päivitetty " + pvm(j.muokattu) : ""}</span></div>
 <div class="teksti">${kplt(j.teksti).map(p => `<p>${esc(p)}</p>`).join("")}</div>
 ${(j.lahteet || []).length ? `<div class="lahteet"><b>Lähteet</b><ol>${j.lahteet.map(l => `<li><a href="${esc(l.url)}" rel="noopener">${esc(l.nimi || l.url)}</a></li>`).join("")}</ol></div>` : ""}
 ${j.tyyppi === "paakirjoitus" ? `<p class="huom">Pääkirjoitus on kirjoittajan oma kannanotto.</p>` : j.ai ? `<p class="huom"><b>Tekoälyn laatima juttu.</b> Juttu on kirjoitettu automaattisesti alkuperäislähteen perusteella, eikä toimittaja ole tarkistanut sitä ennen julkaisua. Tarkista tiedot lähteestä. Huomasitko virheen? <a href="mailto:${YHTEYS}?subject=${encodeURIComponent("Oikaisupyyntö: " + j.otsikko)}">Ilmoita siitä</a>.</p>` : `<p class="huom">Juttu on laadittu tekoälyn avustuksella alkuperäislähteistä, ja toimittaja on tarkistanut sen ennen julkaisua. Huomasitko virheen? <a href="mailto:${YHTEYS}?subject=${encodeURIComponent("Oikaisupyyntö: " + j.otsikko)}">Lähetä oikaisupyyntö</a>.</p>`}
 </article>`;
-  return kuori({ otsikko: `${j.otsikko} | ${SIVU}`, kuvaus: j.ingressi, polku: `/uutiset/${slug}/`, runko, kat: j.tyyppi === "paakirjoitus" ? "Pääkirjoitus" : j.kategoria,
+  return kuori({ otsikko: `${j.otsikko} | ${SIVU}`, kuvaus: j.ingressi, polku: `/uutiset/${slug}/`, runko, kat: k,
     ld: { "@context": "https://schema.org", "@type": "NewsArticle", headline: j.otsikko, description: j.ingressi, datePublished: j.julkaistu, dateModified: j.muokattu || j.julkaistu,
-      author: { "@type": "Person", name: j.kirjoittaja || TOIMITTAJA }, publisher: { "@type": "Organization", name: SIVU }, inLanguage: "fi", mainEntityOfPage: `https://suomitanaan.fi/uutiset/${slug}/` } });
+      author: { "@type": j.ai ? "Organization" : "Person", name: j.kirjoittaja || TOIMITTAJA }, publisher: { "@type": "Organization", name: SIVU }, inLanguage: "fi", mainEntityOfPage: `https://suomitanaan.fi/uutiset/${slug}/` } });
 }
 
 const TIETOA = `<article class="juttu"><h1>Tietoa ${SIVU} -sivustosta</h1>
