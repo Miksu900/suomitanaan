@@ -1,0 +1,16 @@
+name: Selvitys (aineisto toimitukselle)
+# Hakee Eduskuntaseurannan tuoreimmat äänestykset ja tiedotteet ja tallentaa ne selvitys-haaraan luettavaksi.
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  hae:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          mkdir out && cd out
+          curl -sSL https://eduskuntaseuranta.fi/data/halytyslahteet.json -o lahteet.json
+          for u in $(jq -r '.aanestykset | sort_by(.aika) | reverse | .[0:25][] | .url' lahteet.json); do
+            id=$(basename $u); curl -sSL "$u" | sed -e 's/<script[^>]*>.*<\/script>//g' -e 's/<[^>]*>/ /g' | tr -s ' \n' | head -c 6000 > "aanestys-$id.txt"; done
+          git init -q && git checkout -q -b selvitys && git add -A && git -c user.name=bot -c user.email=bot@x commit -qm aineisto
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" selvitys
