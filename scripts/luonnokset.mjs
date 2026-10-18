@@ -91,10 +91,11 @@ const ULKO_SYOTTEET = [
   ["YK (UN News)", "https://news.un.org/feed/subscribe/en/news/all/rss.xml"],
   ["Euroopan parlamentti", "https://www.europarl.europa.eu/rss/doc/press-releases/en.xml"],
   ["Euroopan komissio", "https://ec.europa.eu/commission/presscorner/api/rss?language=en"],
-  ["Nato", "https://www.nato.int/cps/rss/en/natohq/rssFeed.xsl/rssFeed.xml"],
+  ["EU:n neuvosto", "https://www.consilium.europa.eu/en/rss/pressreleases.ashx"],
+  ["Yhdysvaltain ulkoministeriö", "https://www.state.gov/rss-feed/press-releases/feed/"],
+  ["YK:n kokoukset ja lehdistötiedotteet", "https://press.un.org/en/rss.xml"],
   ["Valkoinen talo", "https://www.whitehouse.gov/news/feed/"],
   ["Britannian hallitus (GOV.UK)", "https://www.gov.uk/search/news-and-communications.atom"],
-  ["Ukrainan presidentti", "https://www.president.gov.ua/en/rss"],
 ];
 function parseSyote(xml) {
   const out = [];
@@ -112,8 +113,9 @@ async function ulkoEhdokkaat(nahdyt) {
     try {
       const r = await fetch(url, { headers: { "user-agent": UA, accept: "application/rss+xml,application/atom+xml,application/xml,*/*" } });
       if (!r.ok) throw new Error("HTTP " + r.status);
-      const l = parseSyote(await r.text()).filter(x => x.url && x.otsikko && (!x.aika || Date.now() - new Date(x.aika) < 40 * 3600e3) && !nahdyt.has(x.url));
-      huomio("Ulkomaat " + lahde, l.length + " tuoretta"); l.slice(0, 25).forEach(x => kaikki.push({ ...x, lahde }));
+      const raaka = await r.text(); const kaikkiS = parseSyote(raaka);
+      const l = kaikkiS.filter(x => x.url && x.otsikko && (!x.aika || Date.now() - new Date(x.aika) < 72 * 3600e3) && !nahdyt.has(x.url));
+      huomio("Ulkomaat " + lahde, `${l.length} tuoretta / ${kaikkiS.length} yhteensä, uusin ${kaikkiS.map(x => x.aika).filter(Boolean).sort().pop() || "?"}, alku: ${raaka.slice(0, 80).replace(/\s+/g, " ")}`); l.slice(0, 25).forEach(x => kaikki.push({ ...x, lahde }));
     } catch (e) { huomio("Ulkomaat " + lahde, "ohitettu: " + e.message); }
   }));
   return kaikki;
@@ -126,7 +128,7 @@ async function kuumatUlkomaat() {
 async function valitseUlkomaat(ehdokkaat, otsikot, maara) {
   if (!ehdokkaat.length) return [];
   const lista = ehdokkaat.map((e, i) => `${i}. [${e.lahde}] ${e.otsikko} – ${e.kuvaus}`).join("\n");
-  const v = await claude(`Olet ulkomaantoimituksen uutispäällikkö. Valitse ehdokkaista enintään ${maara} uutisarvoisinta, jotka kertovat maailman tärkeimmistä ja puhutuimmista aiheista juuri nyt. Painota aiheita, joista suomalaiset mediat puhuvat (otsikot annettu), ja Suomea koskettavia asioita (Venäjä, Ukraina, Nato, EU, Yhdysvallat, talous, turvallisuus). Vältä rutiinitiedotteita, tapahtumailmoituksia ja kahta juttua samasta aiheesta. Vastaa PELKÄLLÄ JSON-oliolla {"valitut":[indeksit tärkeysjärjestyksessä]}.`,
+  const v = await claude(`Olet ulkomaantoimituksen uutispäällikkö. Valitse ehdokkaista enintään ${maara} uutisarvoisinta, jotka kertovat maailman tärkeimmistä ja puhutuimmista aiheista juuri nyt. Painota aiheita, joista suomalaiset mediat puhuvat (otsikot annettu), ja Suomea koskettavia asioita (Venäjä, Ukraina, Nato, EU, Yhdysvallat, talous, turvallisuus). Vältä pelkkiä tapahtumailmoituksia ja kahta juttua samasta aiheesta. Valitse aina vähintään ${Math.min(maara, 5)}, jos ehdokkaita riittää. Vastaa PELKÄLLÄ JSON-oliolla {"valitut":[indeksit tärkeysjärjestyksessä]}.`,
     `SUOMALAISTEN MEDIOIDEN ULKOMAANOTSIKOT NYT:\n${otsikot.join("\n")}\n\nEHDOKKAAT:\n${lista}`, 600);
   return (v.valitut || []).map(i => ehdokkaat[i]).filter(Boolean).slice(0, maara);
 }
