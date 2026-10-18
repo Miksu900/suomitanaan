@@ -113,8 +113,8 @@ async function ulkoEhdokkaat(nahdyt) {
       const r = await fetch(url, { headers: { "user-agent": UA, accept: "application/rss+xml,application/atom+xml,application/xml,*/*" } });
       if (!r.ok) throw new Error("HTTP " + r.status);
       const l = parseSyote(await r.text()).filter(x => x.url && x.otsikko && (!x.aika || Date.now() - new Date(x.aika) < 40 * 3600e3) && !nahdyt.has(x.url));
-      console.log("Ulkomaat", lahde, l.length); l.slice(0, 25).forEach(x => kaikki.push({ ...x, lahde }));
-    } catch (e) { console.log("Ulkomaat ohitettu", lahde, e.message); }
+      huomio("Ulkomaat " + lahde, l.length + " tuoretta"); l.slice(0, 25).forEach(x => kaikki.push({ ...x, lahde }));
+    } catch (e) { huomio("Ulkomaat " + lahde, "ohitettu: " + e.message); }
   }));
   return kaikki;
 }
@@ -160,7 +160,7 @@ async function main() {
   const MAX_ULKO = Number(process.env.MAX_ULKO || 10);
   const ulko = MAX_ULKO ? (await valitseUlkomaat(await ulkoEhdokkaat(nahdyt), await kuumatUlkomaat(), MAX_ULKO).catch(e => { console.log("Ulkomaiden valinta epäonnistui", e.message); return []; }))
     .map((e, i) => ({ tyyppi: "Kansainvälisen järjestön tai hallituksen virallinen tiedote (englanniksi)", lahde: e.lahde, url: e.url, otsikko: e.otsikko, aika: e.aika, oletusKategoria: "Ulkomaat", ulko: true, sija: i + 1 })) : [];
-  KIINTIO.muut += ulko.length;
+  KIINTIO.muut += ulko.length; huomio("Ulkomaat valittu", ulko.length + ": " + ulko.map(u => u.otsikko).join(" | "));
   const valitut = [...ulko, ...jarj(aanestykset).slice(0, 6), ...jarj(viranomaiset).slice(0, 10), ...jarj(urheilu).slice(0, 6), ...jarj(kulttuuri).slice(0, 3), ...jarj(elama).slice(0, 3)];
   let nPol = 0, nAuto = 0;
   const valmiit = [];
@@ -170,6 +170,7 @@ async function main() {
       const teksti = await haeTeksti(e.url);
       if (teksti.length < 200) { console.log("Liian lyhyt lähde:", e.url); continue; }
       const j = await kirjoita(e, teksti);
+      if (j.hylkaa && e.ulko) huomio("Ulko hylätty", e.otsikko + " / " + j.syy);
       if (j.hylkaa) { console.log("Hylätty:", e.otsikko, j.syy); valmiit.hylatyt = [...(valmiit.hylatyt || []), { vain_nahty: true, lahde_url: e.url }]; continue; }
       // Politiikka (ja kaikki äänestykset) toimittajan hyväksyttäväksi, muut osastot julkaistaan automaattisesti tekoälymerkinnällä
       if (e.ulko) j.kategoria = "Ulkomaat";
@@ -179,7 +180,7 @@ async function main() {
       let automaattinen = !politiikka;
       if (automaattinen) {
         const t = await tarkista(teksti, j);
-        if (!t.ok) { automaattinen = false; j.tarkistettavat = [...(t.virheet || []).map(v => "Faktantarkistus: " + v), ...(j.tarkistettavat || [])]; console.log("Ei läpäissyt tarkistusta, toimitukseen:", j.otsikko); nAuto--; nPol++; }
+        if (!t.ok) { huomio("Tarkistus hylkäsi", j.otsikko + ": " + (t.virheet || []).join(" | ")); automaattinen = false; j.tarkistettavat = [...(t.virheet || []).map(v => "Faktantarkistus: " + v), ...(j.tarkistettavat || [])]; console.log("Ei läpäissyt tarkistusta, toimitukseen:", j.otsikko); nAuto--; nPol++; }
       }
       valmiit.push({ ...j, automaattinen, lahde_url: e.url, lahdetyyppi: e.tyyppi, lahteet: [{ nimi: `${e.lahde}: ${e.otsikko}`.slice(0, 200), url: e.url }] });
       console.log(politiikka ? "Toimitukseen:" : "Automaattisesti:", j.kategoria, j.otsikko);
