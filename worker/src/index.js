@@ -1,4 +1,5 @@
 import { toimitusSivu } from "./toimitus.js";
+import { IKONIT } from "./ikonit.js";
 // Suomi Tänään – uutissivusto, toimituksen hyväksyntäjono ja rajapinta yhdessä Cloudflare Workerissa.
 // Tallennus: KV (binding DB). Avaimet:
 //   luonnos:<id>     luonnos (JSON)          luonnokset   luonnosten id-lista
@@ -57,6 +58,7 @@ function kansi(j, luokka = "kansi") {
 }
 
 const CSS = `
+.asenna-l{margin:6px auto 22px}.asenna-l[hidden],.asenna-l [hidden]{display:none}.asenna-b{width:100%;font:700 1rem 'Public Sans',system-ui,sans-serif;padding:14px 16px;border-radius:12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer}.asenna-l p{margin:0;color:var(--mute);font-size:.92rem}
 :root{--bg:#f4f5f8;--paper:#ffffff;--ink:#111827;--mute:#5b6476;--line:#e2e6ee;--navy:#0b1f45;--navy-ink:#ffffff;--acc:#1d4ed8;
 --serif:"Newsreader",Georgia,"Times New Roman",serif;--sans:"Public Sans",system-ui,-apple-system,Segoe UI,sans-serif;--r:14px}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0a0e15;--paper:#131a25;--ink:#e9edf4;--mute:#9ca7ba;--line:#242e40;--navy:#060c19;--acc:#8fb2ff;color-scheme:dark}}
@@ -118,7 +120,7 @@ function kuori({ otsikko, kuvaus, polku, runko, ld, kat }) {
   const paiva = new Date().toLocaleDateString("fi-FI", { timeZone: "Europe/Helsinki", weekday: "long", day: "numeric", month: "long", year: "numeric" });
   return `<!doctype html><html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>${esc(otsikko)}</title><meta name="description" content="${esc(kuvaus)}"><link rel="canonical" href="https://suomitanaan.fi${esc(polku)}">
-<meta property="og:title" content="${esc(otsikko)}"><meta property="og:description" content="${esc(kuvaus)}"><meta property="og:site_name" content="${SIVU}"><meta property="og:locale" content="fi_FI"><meta name="theme-color" content="#0b1f45">
+<meta property="og:title" content="${esc(otsikko)}"><meta property="og:description" content="${esc(kuvaus)}"><meta property="og:site_name" content="${SIVU}"><meta property="og:locale" content="fi_FI"><meta name="theme-color" content="#0b1f45"><link rel="manifest" href="/manifest.webmanifest"><link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Suomi Tänään">
 <link rel="alternate" type="application/rss+xml" title="${SIVU}" href="/rss.xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400&family=Public+Sans:wght@400;600;700;800&display=swap">
@@ -126,10 +128,10 @@ function kuori({ otsikko, kuvaus, polku, runko, ld, kat }) {
 <header class="mast"><div class="w"><a class="logo" href="/">Suomi <i>Tänään</i></a><div class="isku">${ISKU}<br><span class="paiva">${paiva}</span></div></div><div class="raita">${raita}</div></header>
 <nav class="kat" aria-label="Osastot"><div class="w">${navi}</div></nav>
 <main class="w">${runko}</main>
-<footer><div class="w"><div><b>${SIVU}</b> · Vastaava päätoimittaja ${TOIMITTAJA} · <a href="mailto:${YHTEYS}">${YHTEYS}</a></div>
+${polku === "/" ? ASENNUS_HTML : ""}<footer><div class="w"><div><b>${SIVU}</b> · Vastaava päätoimittaja ${TOIMITTAJA} · <a href="mailto:${YHTEYS}">${YHTEYS}</a></div>
 <div>Uutiset laaditaan tekoälyn avustuksella alkuperäislähteistä. Politiikan uutiset ja pääkirjoitukset toimittaja tarkistaa ennen julkaisua, muiden osastojen tekoälyn laatimat jutut on merkitty. Jokaisen jutun lopussa on lähteet. <a href="/tietoa/">Tietoa ja oikaisut</a></div>
 <div>Katso myös: <a href="https://nytpuhutaan.fi">Nytpuhutaan.fi</a> · <a href="https://eduskuntaseuranta.fi">Eduskuntaseuranta.fi</a> · TikTok <a href="https://www.tiktok.com/@faktapiste">@faktapiste</a></div></div></footer>
-</body></html>`;
+${ASENNUS_JS}</body></html>`;
 }
 
 const aikaMerk = j => `<div class="meta">${pvm(j.julkaistu)} klo ${klo(j.julkaistu)}${j.ai ? '<span class="ai">Tekoäly</span>' : ""}</div>`;
@@ -297,6 +299,21 @@ async function sitemap(env) {
     { headers: { "content-type": "application/xml; charset=utf-8", "cache-control": "public, max-age=600" } });
 }
 
+// ---------- Asennettava sovellus (PWA) ----------
+const ASENNUS_HTML = `<div class="w asenna-l" id="asenna-l" hidden><button type="button" class="asenna-b" id="asenna">📲 Asenna Suomi Tänään sovellukseksi</button><p id="asenna-ios" hidden>📱 Sovellukseksi iPhoneen: paina Safarin <b>Jaa</b>-painiketta ja valitse <b>Lisää Koti-valikkoon</b>.</p></div>`;
+const ASENNUS_JS = `<script>(function(){if("serviceWorker" in navigator)navigator.serviceWorker.register("/sw.js").catch(function(){});var L=document.getElementById("asenna-l");if(!L)return;if(window.matchMedia("(display-mode: standalone)").matches||navigator.standalone)return;var A=document.getElementById("asenna"),I=document.getElementById("asenna-ios"),ip=null;window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();ip=e;L.hidden=false;A.hidden=false});A.onclick=function(){if(!ip)return;ip.prompt();ip.userChoice.then(function(){L.hidden=true;ip=null})};if(/iphone|ipad|ipod/i.test(navigator.userAgent)){L.hidden=false;A.hidden=true;I.hidden=false}})();</script>`;
+const MANIFEST = JSON.stringify({ name: "Suomi Tänään", short_name: "Suomi Tänään", lang: "fi", description: "Uutiset suoraan alkuperäislähteistä. Faktat kokonaan.",
+  start_url: "/", scope: "/", display: "standalone", background_color: "#0b1f45", theme_color: "#0b1f45",
+  icons: [{ src: "/icon-192.png", sizes: "192x192", type: "image/png" }, { src: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    { src: "/icon-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" }] });
+// Verkko ensin (uutiset aina tuoreina), välimuisti varalla ilman verkkoa. Toimitus ja rajapinta eivät mene välimuistiin.
+const SW = `const C="st-v1";self.addEventListener("install",()=>self.skipWaiting());
+self.addEventListener("activate",e=>e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))).then(()=>self.clients.claim())));
+self.addEventListener("fetch",e=>{const r=e.request,u=new URL(r.url);if(r.method!=="GET"||u.origin!==location.origin||u.pathname.startsWith("/api")||u.pathname.startsWith("/toimitus"))return;
+e.respondWith(fetch(r).then(res=>{if(res.ok){const cp=res.clone();caches.open(C).then(c=>c.put(r,cp))}return res}).catch(()=>caches.match(r).then(m=>m||caches.match("/"))))});`;
+function ikoni(p) { const b = atob(IKONIT[p]); const a = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) a[i] = b.charCodeAt(i);
+  return new Response(a, { headers: { "content-type": "image/png", "cache-control": "public, max-age=604800" } }); }
+
 export default {
   async scheduled(event, env, ctx) { ctx.waitUntil(kooste(env).then(r => console.log("kooste", JSON.stringify(r)))); },
   async fetch(req, env) {
@@ -306,6 +323,9 @@ export default {
     if (p.startsWith("/api/")) return rajapinta(req, env, p.replace(/\/$/, ""));
     if (p === "/toimitus" || p === "/toimitus/") return html(toimitusSivu(KATEGORIAT), 200, "no-store");
     if (p === "/rss.xml") return rss(env);
+    if (p === "/manifest.webmanifest") return new Response(MANIFEST, { headers: { "content-type": "application/manifest+json", "cache-control": "public, max-age=3600" } });
+    if (p === "/sw.js") return new Response(SW, { headers: { "content-type": "text/javascript", "cache-control": "no-cache" } });
+    if (IKONIT[p]) return ikoni(p);
     if (p === "/sitemap.xml") return sitemap(env);
     if (p === "/robots.txt") return new Response("User-agent: *\nDisallow: /toimitus\nDisallow: /api/\nSitemap: https://suomitanaan.fi/sitemap.xml\n", { headers: { "content-type": "text/plain" } });
     if (!p.endsWith("/")) p += "/";
