@@ -53,6 +53,7 @@ Säännöt:
 - Urheilussa kerro tulos, tärkeimmät tapahtumat ja mitä se tarkoittaa sarjatilanteelle, jos lähde kertoo sen. Kulttuurissa ja Elämässä kerro lukijalle hyödyllinen ydin.
 - Aseta "hylkaa": true, jos lähde on yrityksen tuote- tai markkinointitiedote, mainos, rekrytointi, pelkkä tapahtumailmoitus tai rutiinitiedote ilman uutta tietoa.
 Lisäksi kirjoita TikTok-käsikirjoitus (noin 30 sekuntia, 60–80 sanaa): vahva koukku ensimmäiseen lauseeseen, suora ja iskevä kieli, nimeä päättäjät jos ne ovat lähteessä, faktat tarkasti lähteen mukaan, loppuun "Koko juttu ja lähteet: linkki biossa."
+Jos lähde viittaa Gazan terveysministeriöön tai Gazan terveysviranomaisiin, kirjoita aina "Hamasin hallinnoima Gazan terveysministeriö" ja esitä sen luvut sen ilmoittamina, ei toimituksen toteamina.
 Vastaa PELKÄLLÄ JSON-oliolla, ei muuta tekstiä:
 {"hylkaa":false,"syy":"","otsikko":"","ingressi":"","teksti":"kappale 1\\n\\nkappale 2","kategoria":"${KATEGORIAT.join("|")}","tarkistettavat":["väite tai luku, joka toimittajan kannattaa tarkistaa lähteestä"],"tiktok":{"koukku":"","teksti":"","sivusto":"Suomi Tänään"}}`;
 

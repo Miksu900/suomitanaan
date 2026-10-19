@@ -11,6 +11,10 @@ if (m.vain_nayta) { fs.mkdirSync("out", { recursive: true }); fs.writeFileSync("
   console.log("::notice title=Luonnos::" + x.id + " " + (x.lahteet || []).map(l => l.url).join(" ")); process.exit(0); }
 const teksti = (m.korvaa_teksti || x.teksti || "").trim() + (m.lisaa_kappale ? "\n\n" + m.lisaa_kappale.trim() : "");
 const lahteet = [...(x.lahteet || []), ...(m.lisaa_lahde ? [m.lisaa_lahde] : [])];
+if (m.vain_luonnos) {  // päivitä luonnos jonoon julkaisematta
+  const r2 = await api("/api/luonnokset", { ...x, teksti, lahteet, tarkistettavat: m.tarkistettavat ?? x.tarkistettavat });
+  console.log(r2.ok ? `::notice title=Luonnos päivitetty::${x.otsikko}` : `::error::${JSON.stringify(r2)}`); process.exit(r2.ok ? 0 : 1);
+}
 const r = await api("/api/julkaise", { id: x.id, tyyppi: "uutinen", otsikko: m.otsikko || x.otsikko, ingressi: m.ingressi || x.ingressi, teksti, kategoria: x.kategoria, lahteet, tiktok: x.tiktok || null });
 console.log(r.ok ? `::notice title=Julkaistu::${URL}/uutiset/${r.slug}/` : `::error::Julkaisu epäonnistui ${JSON.stringify(r)}`);
 if (!r.ok) process.exit(1);

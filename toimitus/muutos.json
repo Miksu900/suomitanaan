@@ -1,1 +1,11 @@
-{ "etsi": "turvaneuvostossa huoli Gazan", "vain_nayta": true }
+{
+ "etsi": "turvaneuvostossa huoli Gazan",
+ "vain_luonnos": true,
+ "korvaa_teksti": "YK:n turvaneuvosto kokoontui 15. lokakuuta 2026 avoimeen keskusteluun Palestiinan kysymyksestä. YK:n lehdistötiedotteen mukaan kokous pidettiin pian Hamasin ja muiden palestiinalaisten aseellisten ryhmien Israeliin kohdistamien iskujen kolmivuotispäivän jälkeen.\n\nTiedotteen mukaan Gazassa on ollut hauras tulitauko lokakuusta 2025 lähtien. Se kuuluu Yhdysvaltojen välittämän rauhansuunnitelman ensimmäiseen vaiheeseen. Turvaneuvosto tuki suunnitelmaa päätöslauselmalla 2803. Tiedotteen mukaan suunnitelman edistäminen on kuitenkin pysähtynyt.\n\nYK:n Lähi-idän rauhanprosessin virkaatekevä erityiskoordinaattori Ramiz Alakbarov kertoi vierailleensa Gazassa 11.–12. lokakuuta. Hänen mukaansa osalle asukkaista tulitauko ”on olemassa vain nimellisesti”. Hamasin hallinnoiman Gazan terveysministeriön mukaan Israelin sotilasoperaatiot ovat tulitauon aikana johtaneet noin 1 500 palestiinalaisen kuolemaan. Alakbarov varoitti myös, että Länsiranta on ”kiehumispisteessä”.\n\nPalestiinan pysyvän tarkkailijan sijainen Majed Bamya syytti Israelia väkivallasta Gazassa ja Länsirannalla sekä rauhansuunnitelmaa toteuttavan rauhanneuvoston (Board of Peace) työn estämisestä. Israelin edustajan mukaan Hamas ei ole riisunut aseitaan eikä noudata 20 kohdan suunnitelmaa. Hän sanoi myös, ettei turvaneuvosto ole nimennyt Hamasia terroristijärjestöksi.\n\nYhdysvaltain edustajan mukaan suunnitelman onnistuminen riippuu siitä, että Hamas luopuu aseistaan. Iso-Britannian edustaja vaati Israelia sallimaan avun toimittamisen laajamittaisesti. Ranskan ja Jordanian edustajat arvostelivat Israelin siirtokuntapolitiikkaa ja E1-hanketta. Ranskan edustaja arvosteli lisäksi Palestiinan hallinnon taloudellista kuristamista.",
+ "tarkistettavat": [
+  "Korjattu: Bamyan sanomiset ja Ranskan edustajan kommentti faktantarkistuksen mukaan",
+  "Korjattu: tulitauon tarkka alkupäivä poistettu (lähteen päivämäärä epäselvä)",
+  "Lisätty: Gazan terveysministeriö on Hamasin hallinnoima",
+  "Lähteen teksti katkeaa kesken EU:n edustajan puheenvuoron"
+ ]
+}
