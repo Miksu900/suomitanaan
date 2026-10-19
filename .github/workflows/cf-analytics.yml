@@ -13,7 +13,7 @@ jobs:
           echo "::notice::zone=$ZID account=$AID zerr=$(echo "$Z" | jq -c '.errors')"
           if [ -z "$AID" ]; then AID=$(curl -s -H "$H" https://api.cloudflare.com/client/v4/accounts | jq -r '.result[0].id'); echo "::notice::acc=$AID"; fi
           L=$(curl -s -H "$H" "https://api.cloudflare.com/client/v4/accounts/$AID/rum/site_info/list")
-          echo "::notice::list=$(echo "$L" | jq -c '{success,errors,sites:[.result[]?|{host:.ruleset.zone_name,auto:.auto_install,tag:.site_tag}]}')"
+          echo "::notice::list=$(echo "$L" | jq -c '[.result[]?|{host,zn:.ruleset.zone_name,auto:.auto_install,tag:.site_tag,snip:(.snippet|tostring|.[0:200])}]')"
           if [ -n "$ZID" ] && ! echo "$L" | grep -q keraysvahti; then
             R=$(curl -s -X POST -H "$H" -H "Content-Type: application/json" "https://api.cloudflare.com/client/v4/accounts/$AID/rum/site_info" -d "{\"zone_tag\":\"$ZID\",\"auto_install\":true}")
             echo "::notice::create=$(echo "$R" | jq -c '{success,errors,auto:.result.auto_install,tag:.result.site_tag}')"
