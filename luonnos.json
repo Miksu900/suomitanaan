@@ -1,0 +1,31 @@
+{
+  "hylkaa": false,
+  "syy": "",
+  "otsikko": "YK:n turvaneuvostossa huoli Gazan tilanteesta ja Länsirannan väkivallasta",
+  "ingressi": "YK:n turvaneuvoston neljännesvuosittaisessa Palestiina-keskustelussa puhujat varoittivat Gazan humanitaarisesta tilanteesta ja Länsirannan väkivallasta. Palestiina ja Israel syyttivät toisiaan, ja Yhdysvallat vaati Hamasia aseistariisuntaan.",
+  "teksti": "YK:n turvaneuvosto kokoontui 15. lokakuuta 2026 avoimeen keskusteluun Palestiinan kysymyksestä. YK:n lehdistötiedotteen mukaan kokous pidettiin pian Hamasin ja muiden palestiinalaisten aseellisten ryhmien Israeliin kohdistamien iskujen kolmivuotispäivän jälkeen.\n\nTiedotteen mukaan Gazassa on ollut hauras tulitauko 8. lokakuuta 2025 lähtien. Se kuuluu Yhdysvaltojen välittämän suunnitelman ensimmäiseen vaiheeseen, jonka turvaneuvosto hyväksyi päätöslauselmalla 2803. Tiedotteen mukaan suunnitelman edistäminen on kuitenkin pysähtynyt.\n\nYK:n Lähi-idän rauhanprosessin virkaatekevä erityiskoordinaattori Ramiz Alakbarov kertoi vierailleensa Gazassa 11.–12. lokakuuta. Hänen mukaansa osalle asukkaista tulitauko ”on olemassa vain nimellisesti”. Gazan terveysministeriön mukaan Israelin sotilasoperaatiot ovat tulitauon aikana johtaneet noin 1 500 palestiinalaisen kuolemaan. Alakbarov varoitti myös, että Länsiranta on ”kiehumispisteessä”.\n\nPalestiinan pysyvän tarkkailijan sijainen Majed Bamya syytti Israelia väkivallasta Gazassa ja Länsirannalla sekä Palestiinan hallinnon taloudellisesta kuristamisesta. Israelin edustajan mukaan Hamas ei ole riisunut aseitaan eikä noudata 20 kohdan suunnitelmaa. Hän sanoi myös, ettei turvaneuvosto ole nimennyt Hamasia terroristijärjestöksi.\n\nYhdysvaltain edustajan mukaan suunnitelman onnistuminen riippuu siitä, että Hamas luopuu aseistaan. Iso-Britannian edustaja vaati Israelia sallimaan avun toimittamisen laajamittaisesti. Ranskan ja Jordanian edustajat arvostelivat Israelin siirtokuntapolitiikkaa ja E1-hanketta.",
+  "kategoria": "Ulkomaat",
+  "tarkistettavat": [
+    "Faktantarkistus: Jutun mukaan Bamya syytti Israelia Palestiinan hallinnon taloudellisesta kuristamisesta. Lähteen mukaan Palestiinan hallinnon taloudellisesta kuristamisesta puhui Ranskan edustaja. Bamya sanoi, että Israel on estänyt Rauhanlautakunnan työtä ja pyrkii Palestiinan likvidointiin, mutta ei puhunut talouden kuristamisesta.",
+    "Tulitauon alkamispäivä 8.10.2025 ja päätöslauselman 2803 hyväksymisaika (lähteessä mainitaan 29.9.2025 Yhdysvaltain puheenvuorossa)",
+    "Gazan terveysministeriön luku noin 1 500 kuolleesta tulitauon aikana",
+    "Israelin edustajan väite Hamasin asemasta ja turvaneuvoston toimista",
+    "Lähteen teksti katkeaa kesken EU:n edustajan puheenvuoron, joten loppuosa puuttuu"
+  ],
+  "tiktok": {
+    "koukku": "Gazassa on tulitauko, mutta YK:n koordinaattorin mukaan se on vain nimellinen.",
+    "teksti": "Gazassa on tulitauko, mutta YK:n erityiskoordinaattori Ramiz Alakbarov sanoo, että osalle asukkaista se on olemassa vain nimellisesti. Turvaneuvosto kuuli torstaina, että Gazan terveysministeriön mukaan tulitauon aikana on kuollut noin 1 500 palestiinalaista. Alakbarov varoitti myös, että Länsiranta on kiehumispisteessä. Israelin mukaan Hamas ei ole riisunut aseitaan. Palestiina syyttää Israelia väkivallasta. Yhdysvallat vaatii Hamasia luopumaan aseistaan. Koko juttu ja lähteet: linkki biossa.",
+    "sivusto": "Suomi Tänään"
+  },
+  "automaattinen": false,
+  "lahde_url": "https://press.un.org/en/2026/sc16478.doc.htm",
+  "lahdetyyppi": "Kansainvälisen järjestön tai hallituksen virallinen tiedote (englanniksi)",
+  "lahteet": [
+    {
+      "nimi": "YK:n kokoukset ja lehdistötiedotteet: Speakers in Security Council Raise Alarm over Perilous State of Life in Gaza, Unprecedented Israeli Settler Violence, Expansion across West Bank",
+      "url": "https://press.un.org/en/2026/sc16478.doc.htm"
+    }
+  ],
+  "id": "3882fb27",
+  "luotu": "2026-10-18T15:17:09.191Z"
+}
