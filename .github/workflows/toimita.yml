@@ -1,0 +1,23 @@
+name: Toimita (muokkaa ja julkaise luonnos)
+on: workflow_dispatch
+permissions:
+  contents: read
+jobs:
+  toimita:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Selvitä toimituksen osoite
+        id: osoite
+        env:
+          CF: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if curl -sf -o /dev/null https://suomitanaan.fi/api/tila; then echo "url=https://suomitanaan.fi" >> $GITHUB_OUTPUT
+          else h=(-sS -H "Authorization: Bearer $CF"); A=$(curl "${h[@]}" https://api.cloudflare.com/client/v4/accounts | jq -r '.result[0].id')
+          SUB=$(curl "${h[@]}" "https://api.cloudflare.com/client/v4/accounts/$A/workers/subdomain" | jq -r '.result.subdomain'); echo "url=https://suomitanaan.$SUB.workers.dev" >> $GITHUB_OUTPUT; fi
+      - run: node scripts/toimita.mjs
+        env:
+          WORKER_URL: ${{ steps.osoite.outputs.url }}
+          TOIMITUS_SALASANA: ${{ secrets.TOIMITUS_SALASANA }}

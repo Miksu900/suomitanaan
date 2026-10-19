@@ -75,8 +75,11 @@ Vastaa PELKÄLLÄ JSON-oliolla: {"ok":true|false,"virheet":["väite ja miksi se 
 
 async function tarkista(lahdeTeksti, j) {
   const juttu = `OTSIKKO: ${j.otsikko}\nINGRESSI: ${j.ingressi}\nTEKSTI:\n${j.teksti}`;
-  try { return await claude(TARKISTUS, `ALKUPERÄISLÄHDE:\n${lahdeTeksti}\n\nJUTTU:\n${juttu}`, 1200); }
-  catch (e) { return { ok: false, virheet: ["Tarkistus epäonnistui: " + e.message] }; }
+  // Vastaus voi katketa, jos virheitä on paljon (Unexpected end of JSON input): isompi tila ja yksi uusintayritys.
+  for (let yritys = 1; yritys <= 2; yritys++) {
+    try { return await claude(TARKISTUS + "\nKirjoita kukin virhe yhdellä lyhyellä lauseella, enintään 8 virhettä.", `ALKUPERÄISLÄHDE:\n${lahdeTeksti}\n\nJUTTU:\n${juttu}`, 4000); }
+    catch (e) { if (yritys === 2) return { ok: false, virheet: ["Tarkistus epäonnistui: " + e.message] }; }
+  }
 }
 
 async function kirjoita(ehdokas, teksti) {
