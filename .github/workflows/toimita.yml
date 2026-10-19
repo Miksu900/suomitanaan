@@ -1,7 +1,7 @@
 name: Toimita (muokkaa ja julkaise luonnos)
 on: workflow_dispatch
 permissions:
-  contents: read
+  contents: write
 jobs:
   toimita:
     runs-on: ubuntu-latest
@@ -21,3 +21,8 @@ jobs:
         env:
           WORKER_URL: ${{ steps.osoite.outputs.url }}
           TOIMITUS_SALASANA: ${{ secrets.TOIMITUS_SALASANA }}
+      - name: Tallenna luonnos haaraan
+        if: hashFiles('out/luonnos.json') != ''
+        run: |
+          cd out && git init -q && git checkout -q -b luonnos && git add -A && git -c user.name=bot -c user.email=bot@x commit -qm luonnos
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" luonnos
