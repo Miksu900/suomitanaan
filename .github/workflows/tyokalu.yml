@@ -2,7 +2,7 @@ name: Työkalu (testikooste, ääni, haku)
 on:
   workflow_dispatch:
     inputs:
-      toiminto: { description: "kooste, aani tai haku", required: true }
+      toiminto: { description: "kooste, aani, haku tai teksti (puheentunnistus haarasta stt-in)", required: true }
       teksti: { description: "Teksti äänelle tai haettavat osoitteet välilyönnillä", required: false, default: "" }
       aani: { description: "ElevenLabs-äänen nimi", required: false, default: "Brian" }
 permissions:
@@ -45,3 +45,13 @@ jobs:
           jq -r .audio_base64 out/vastaus.json | base64 -d > out/aani.mp3 && jq .alignment out/vastaus.json > out/ajoitus.json && rm out/vastaus.json
           cd out && git init -q && git checkout -q -b aani && git add -A && git -c user.name=bot -c user.email=bot@x commit -qm aani
           git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" aani
+      - name: Puheentunnistus ElevenLabsilla
+        if: inputs.toiminto == 'teksti'
+        env:
+          EL: ${{ secrets.ELEVENLABS_API_KEY }}
+        run: |
+          curl -sSL -H "Authorization: Bearer ${{ github.token }}" -H "Accept: application/vnd.github.raw" "https://api.github.com/repos/${{ github.repository }}/contents/puhe.mp3?ref=stt-in" -o puhe.mp3; ls -la puhe.mp3
+          mkdir out && curl -sS -X POST https://api.elevenlabs.io/v1/speech-to-text -H "xi-api-key: $EL" -F model_id=scribe_v1 -F language_code=fin -F timestamps_granularity=word -F file=@puhe.mp3 > out/teksti.json
+          jq -r .text out/teksti.json | head -c 2000
+          cd out && git init -q && git checkout -q -b stt && git add -A && git -c user.name=bot -c user.email=bot@x commit -qm stt
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" stt
