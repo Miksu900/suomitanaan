@@ -67,6 +67,8 @@ jobs:
           L=$(npx --yes wrangler@3.99.0 secret list 2>/dev/null || true)
           echo "$L" | grep -q SUOLA || node -e 'console.log(require("crypto").randomBytes(16).toString("hex"))' | tr -d '\n' | npx --yes wrangler@3.99.0 secret put SUOLA
           printf '%s' "${{ secrets.ANTHROPIC_API_KEY }}" | npx --yes wrangler@3.99.0 secret put ANTHROPIC_API_KEY
+          # Maksut käyttöön, kun repoon on lisätty salaisuus STRIPE_SECRET_KEY (Stripe → Developers → API keys → Secret key)
+          if [ -n "${{ secrets.STRIPE_SECRET_KEY }}" ]; then printf '%s' "${{ secrets.STRIPE_SECRET_KEY }}" | npx --yes wrangler@3.99.0 secret put STRIPE_SECRET_KEY; echo "::notice title=Maksut::Stripe käytössä, pohjaesitys 29 €"; else echo "::notice title=Maksut::STRIPE_SECRET_KEY puuttuu, pohjaesitys on ilmainen"; fi
       - name: Kunnat talteen
         run: |
           git config user.name "julkaisija"; git config user.email "julkaisija@users.noreply.github.com"
