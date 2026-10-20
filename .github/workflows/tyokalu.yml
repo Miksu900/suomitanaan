@@ -39,7 +39,8 @@ jobs:
         run: |
           set -e
           if echo "$NIMI" | grep -Eq '^[A-Za-z0-9]{20}$'; then V="$NIMI"; else
-          V=$(curl -sS -H "xi-api-key: $EL" https://api.elevenlabs.io/v1/voices | jq -r --arg n "$NIMI" '[.voices[] | select(.name|ascii_downcase|startswith($n|ascii_downcase))][0].voice_id'); fi
+          if echo "$NIMI" | grep -Eq '^[A-Za-z0-9]{20}$'; then V="$NIMI"; else
+          V=$(curl -sS -H "xi-api-key: $EL" https://api.elevenlabs.io/v1/voices | jq -r --arg n "$NIMI" '[.voices[] | select(.name|ascii_downcase|startswith($n|ascii_downcase))][0].voice_id'); fi; fi
           echo "::notice title=Ääni::$NIMI = $V"
           mkdir out && jq -n --arg t "$TEKSTI" '{text:$t, model_id:"eleven_multilingual_v2", voice_settings:{stability:0.45, similarity_boost:0.8, style:0.35}}' > body.json
           curl -sS -f -X POST "https://api.elevenlabs.io/v1/text-to-speech/$V/with-timestamps?output_format=mp3_44100_128" -H "xi-api-key: $EL" -H "content-type: application/json" -d @body.json -o out/vastaus.json
