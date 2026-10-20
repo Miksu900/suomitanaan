@@ -37,15 +37,18 @@ async function rajoita(req, env) {
 }
 
 async function claude(env, malli, system, user, maxTokens) {
-  const r = await fetch("https://api.anthropic.com/v1/messages", {
+  const kutsu = (lisa) => fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: { "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-    body: JSON.stringify({ model: malli, max_tokens: maxTokens, system, messages: [{ role: "user", content: user }] }),
+    body: JSON.stringify({ model: malli, system, messages: [{ role: "user", content: user }], ...lisa }),
   });
+  // Ajattelu pois päältä (nopeampi ja halvempi). Jos malli ei hyväksy sitä, annetaan tilaa myös ajattelulle.
+  let r = await kutsu({ max_tokens: maxTokens, thinking: { type: "disabled" } });
+  if (r.status === 400) r = await kutsu({ max_tokens: maxTokens * 4 });
   if (!r.ok) throw new Error("Tekoälypalvelu ei vastannut (" + r.status + " " + (await r.text()).slice(0, 160) + ")");
   const d = await r.json();
   const t = (d.content || []).filter((c) => c.type === "text").map((c) => c.text || "").join("");
-  if (!t) throw new Error("tyhjä vastaus: " + d.stop_reason + " " + JSON.stringify((d.content || []).map((c) => c.type)) + " " + JSON.stringify(d.usage || {}));
+  if (!t) throw new Error("tyhjä vastaus: " + d.stop_reason + " " + JSON.stringify((d.content || []).map((c) => c.type)));
   return t;
 }
 
