@@ -44,7 +44,9 @@ async function claude(env, malli, system, user, maxTokens) {
   });
   if (!r.ok) throw new Error("Tekoälypalvelu ei vastannut (" + r.status + " " + (await r.text()).slice(0, 160) + ")");
   const d = await r.json();
-  return (d.content || []).map((c) => c.text || "").join("");
+  const t = (d.content || []).filter((c) => c.type === "text").map((c) => c.text || "").join("");
+  if (!t) throw new Error("tyhjä vastaus: " + d.stop_reason + " " + JSON.stringify((d.content || []).map((c) => c.type)) + " " + JSON.stringify(d.usage || {}));
+  return t;
 }
 
 function jsonista(s) {
