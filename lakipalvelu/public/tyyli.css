@@ -63,3 +63,6 @@ textarea:focus,input:focus{outline:none;border-color:var(--gold)}
 .ft{border-top:1px solid var(--line);background:var(--paper)}
 .ft-in{max-width:860px;margin:0 auto;padding:18px 16px 30px;font-size:.88rem;color:var(--mute)}
 @media print{.hd,.ft,.kysy,.esimerkit,.napit,.kolme,.huom{display:none!important}body{background:#fff;color:#000}.tulos{border:0;padding:0}.wrap{max-width:none}}
+.hinta{margin:4px 0 0;font-size:.95rem}
+.ehdot{display:flex;gap:10px;align-items:flex-start;font-weight:400!important;font-size:.92rem;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.ehdot input{width:20px;height:20px;flex:none;margin-top:2px;accent-color:var(--gold)}

@@ -1,0 +1,6 @@
+public/*.html
+public/*/
+!public/
+public/robots.txt
+public/sitemap.xml
+wrangler.toml

@@ -128,14 +128,51 @@ async function esitys(env, origin, b) {
   return { vastaus: t, lahteet: julki(h.osumat), aihe: h.aihe };
 }
 
+// ---------- maksut (Stripe Checkout) ----------
+// Maksu on käytössä vasta, kun STRIPE_SECRET_KEY on asetettu. Siihen asti pohjaesitys on ilmainen (avajaiskausi).
+const HINTA_SNT = 2900;
+const maksullinen = (env) => !!env.STRIPE_SECRET_KEY;
+async function stripe(env, polku, data) {
+  const r = await fetch("https://api.stripe.com/v1/" + polku, {
+    method: data ? "POST" : "GET",
+    headers: { Authorization: "Bearer " + env.STRIPE_SECRET_KEY, ...(data ? { "content-type": "application/x-www-form-urlencoded" } : {}) },
+    body: data ? new URLSearchParams(data).toString() : undefined,
+  });
+  return r.json();
+}
+async function aloitaMaksu(env, origin) {
+  const s = await stripe(env, "checkout/sessions", {
+    mode: "payment", locale: "fi",
+    "line_items[0][quantity]": "1",
+    "line_items[0][price_data][currency]": "eur",
+    "line_items[0][price_data][unit_amount]": String(HINTA_SNT),
+    "line_items[0][price_data][product_data][name]": "Pohjaesitys juristille",
+    "line_items[0][price_data][product_data][description]": "Tekoälyn laatima muistio oikeudellisesta tilanteesta pykäläviittauksineen. Toimitetaan heti.",
+    success_url: origin + "/pohjaesitys/?maksu={CHECKOUT_SESSION_ID}",
+    cancel_url: origin + "/pohjaesitys/?peruttu=1",
+    "custom_text[submit][message]": "Pohjaesitys toimitetaan heti maksun jälkeen. Peruuttamisoikeus päättyy, kun esitys on toimitettu.",
+  });
+  if (!s.url) throw new Error("Maksun aloitus epäonnistui");
+  return s.url;
+}
+async function tarkistaMaksu(env, id) {
+  if (!/^cs_[A-Za-z0-9_]+$/.test(id || "")) return "Maksutunnus puuttuu.";
+  const k = "maksu:" + id, n = Number((await env.DB.get(k)) || 0);
+  if (n >= 3) return "Tällä maksulla on jo laadittu pohjaesitys. Ota yhteyttä, jos tarvitset apua.";
+  const s = await stripe(env, "checkout/sessions/" + id);
+  if (s.payment_status !== "paid") return "Maksua ei ole vahvistettu.";
+  await env.DB.put(k, String(n + 1), { expirationTtl: 30 * 86400 });
+  return null;
+}
+
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
     if (url.pathname.startsWith("/api/")) {
-      if (req.method !== "POST") return json({ virhe: "Vain POST" }, 405);
+      if (req.method !== "POST" && url.pathname !== "/api/tila") return json({ virhe: "Vain POST" }, 405);
       const o = req.headers.get("Origin");
       if (o && new URL(o).host !== url.host) return json({ virhe: "Kielletty" }, 403);
-      let b; try { b = await req.json(); } catch { return json({ virhe: "Virheellinen pyyntö" }, 400); }
+      let b = {}; if (req.method === "POST") { try { b = await req.json(); } catch { return json({ virhe: "Virheellinen pyyntö" }, 400); } }
       if (b.hp) return json({ virhe: "Virheellinen pyyntö" }, 400);
       try {
         if (url.pathname === "/api/kysy") {
@@ -145,9 +182,16 @@ export default {
           const raja = await rajoita(req, env); if (raja) return json({ virhe: raja }, 429);
           return json(await vastaa(env, url.origin, k));
         }
+        if (url.pathname === "/api/tila") return json({ maksullinen: maksullinen(env), hinta: HINTA_SNT / 100 });
+        if (url.pathname === "/api/maksu") {
+          if (!maksullinen(env)) return json({ virhe: "Maksu ei ole käytössä." }, 400);
+          if (b.ehdot !== true) return json({ virhe: "Hyväksy ehdot ennen maksamista." }, 400);
+          return json({ url: await aloitaMaksu(env, url.origin) });
+        }
         if (url.pathname === "/api/esitys") {
           if (siivoa(b.kuvaus).length < 40) return json({ virhe: "Kuvaa tilanne vähintään parilla virkkeellä." }, 400);
-          const raja = await rajoita(req, env); if (raja) return json({ virhe: raja }, 429);
+          if (maksullinen(env)) { const m = await tarkistaMaksu(env, b.maksu); if (m) return json({ virhe: m }, 402); }
+          else { const raja = await rajoita(req, env); if (raja) return json({ virhe: raja }, 429); }
           return json(await esitys(env, url.origin, b));
         }
       } catch (e) {

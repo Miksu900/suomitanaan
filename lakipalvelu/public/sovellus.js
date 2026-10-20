@@ -60,15 +60,40 @@
       $("kysyLomake").onsubmit = function (e) { e.preventDefault(); laheta1(); };
     },
     esitys: function () {
-      var b = $("esitysNappi");
+      var b = $("esitysNappi"), tila = { maksullinen: false, hinta: 29 }, kentat = ["kuvaus", "tavoite", "ajat"];
+      var JALKI = '<div class="napit"><button type="button" class="btn" onclick="print()">Tulosta tai tallenna PDF</button><button type="button" class="btn toissij" id="kop">Kopioi teksti</button><a class="btn toissij" href="/toimistot/">Löydä juristi</a></div>';
+      function kytkeKopio() { var t = setInterval(function () { var k = $("kop"); if (k) { k.onclick = function () { kopioi(k); }; clearInterval(t); } }, 300); }
+      function laadi(maksu) {
+        laheta("/api/esitys", { kuvaus: $("kuvaus").value, tavoite: $("tavoite").value, ajat: $("ajat").value, hp: $("hp").value, maksu: maksu || "" }, b,
+          "Laaditaan pohjaesitystä… (noin 30–60 s)", JALKI);
+        kytkeKopio();
+      }
+      var q = new URLSearchParams(location.search), maksu = q.get("maksu");
+      try { var tall = JSON.parse(sessionStorage.getItem("pv_esitys") || "null"); if (tall) kentat.forEach(function (k) { $(k).value = tall[k] || ""; }); } catch (e) {}
+      fetch("/api/tila").then(function (r) { return r.json(); }).then(function (d) {
+        tila = d;
+        $("hinta").innerHTML = d.maksullinen ? "<b>Hinta " + String(d.hinta).replace(".", ",") + " €</b> (sis. alv). Maksu kortilla tai mobiilimaksulla. Pohjaesitys toimitetaan heti maksun jälkeen." : "<b>Avajaistarjous: pohjaesitys on nyt maksuton.</b>";
+        $("ehdotRivi").hidden = !d.maksullinen;
+        b.textContent = d.maksullinen ? "Siirry maksamaan (" + String(d.hinta).replace(".", ",") + " €)" : "Laadi pohjaesitys";
+        if (maksu && $("kuvaus").value.trim()) { history.replaceState(null, "", "/pohjaesitys/"); laadi(maksu); }
+        else if (maksu) { $("tulos").hidden = false; $("tulos").innerHTML = '<p class="virhe">Maksu on vastaanotettu, mutta kuvauksesi ei säilynyt selaimessa. Kirjoita kuvaus uudelleen ja paina nappia: maksua ei veloiteta uudestaan.</p>'; b.textContent = "Laadi pohjaesitys"; b.dataset.maksu = maksu; }
+        if (q.get("peruttu")) { $("tulos").hidden = false; $("tulos").innerHTML = '<p class="virhe">Maksu peruttiin. Mitään ei veloitettu.</p>'; }
+      }).catch(function () {});
       $("esitysLomake").onsubmit = function (e) {
         e.preventDefault();
         if ($("kuvaus").value.trim().length < 40) { $("kuvaus").focus(); return; }
-        laheta("/api/esitys", { kuvaus: $("kuvaus").value, tavoite: $("tavoite").value, ajat: $("ajat").value, hp: $("hp").value }, b,
-          "Laaditaan pohjaesitystä… (noin 30–60 s)",
-          '<div class="napit"><button type="button" class="btn" onclick="print()">Tulosta tai tallenna PDF</button><button type="button" class="btn toissij" id="kop">Kopioi teksti</button><a class="btn toissij" href="/toimistot/">Löydä juristi</a></div>');
-        var t = setInterval(function () { var k = $("kop"); if (k) { k.onclick = function () { kopioi(k); }; clearInterval(t); } }, 300);
+        if (b.dataset.maksu) { laadi(b.dataset.maksu); return; }
+        if (!tila.maksullinen) { laadi(""); return; }
+        if (!$("ehdot").checked) { $("ehdot").focus(); $("tulos").hidden = false; $("tulos").innerHTML = '<p class="virhe">Hyväksy ehdot ennen maksamista.</p>'; return; }
+        var t = {}; kentat.forEach(function (k) { t[k] = $(k).value; });
+        try { sessionStorage.setItem("pv_esitys", JSON.stringify(t)); } catch (x) {}
+        b.disabled = true; b.textContent = "Siirrytään maksamaan…";
+        fetch("/api/maksu", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ehdot: true }) })
+          .then(function (r) { return r.json(); }).then(function (d) { if (d.url) location.href = d.url; else { b.disabled = false; $("tulos").hidden = false; $("tulos").innerHTML = '<p class="virhe">' + esc(d.virhe || "Maksun aloitus epäonnistui.") + "</p>"; } })
+          .catch(function () { b.disabled = false; });
       };
+      // onnistuneen esityksen jälkeen kuvaus poistetaan selaimesta
+      new MutationObserver(function () { if ($("kop")) { try { sessionStorage.removeItem("pv_esitys"); } catch (x) {} } }).observe($("tulos"), { childList: true });
     },
     toimistot: function () {
       var L = [], sij = null, h = $("th"), out = $("toimistot"), tl = $("tl");
