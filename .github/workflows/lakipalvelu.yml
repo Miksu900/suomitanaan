@@ -1,0 +1,81 @@
+name: Pykälävahti (lakipalvelu)
+# Hakee lait Finlexistä ja toimistot YTJ:stä, rakentaa sivut ja julkaisee Cloudflare Workerin.
+on:
+  push:
+    branches: [main]
+    paths: ["lakipalvelu/**", ".github/workflows/lakipalvelu.yml"]
+  schedule:
+    - cron: "17 3 * * 1"   # maanantaisin: lait ja toimistot ajan tasalle
+  workflow_dispatch:
+    inputs:
+      testikysymys: { description: "Testikysymys julkaisun jälkeen (tyhjä = oletus)", default: "" }
+permissions:
+  contents: write
+concurrency: { group: lakipalvelu, cancel-in-progress: false }
+jobs:
+  julkaise:
+    runs-on: ubuntu-latest
+    env:
+      CF: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      API: https://api.cloudflare.com/client/v4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Lait Finlexistä
+        run: python3 lakipalvelu/data/lait.py | tail -50
+      - name: Lakitoimistot YTJ:stä
+        run: python3 lakipalvelu/data/toimistot.py
+      - name: Tili ja tallennustila
+        id: cf
+        run: |
+          set -e
+          h=(-sS -H "Authorization: Bearer $CF" -H "Content-Type: application/json")
+          A=$(curl "${h[@]}" "$API/accounts" | jq -r '.result[0].id'); echo "account=$A" >> $GITHUB_OUTPUT
+          KV=$(curl "${h[@]}" "$API/accounts/$A/storage/kv/namespaces?per_page=100" | jq -r '.result[] | select(.title=="lakipalvelu-db") | .id' | head -1)
+          [ -n "$KV" ] || KV=$(curl "${h[@]}" -X POST "$API/accounts/$A/storage/kv/namespaces" -d '{"title":"lakipalvelu-db"}' | jq -r '.result.id')
+          echo "kv=$KV" >> $GITHUB_OUTPUT
+          SUB=$(curl "${h[@]}" "$API/accounts/$A/workers/subdomain" | jq -r '.result.subdomain // empty'); echo "sub=$SUB" >> $GITHUB_OUTPUT
+      - name: Sivut
+        env:
+          PALVELU_URL: ${{ vars.LAKIPALVELU_URL || format('https://pykalavahti.{0}.workers.dev', steps.cf.outputs.sub) }}
+        run: python3 lakipalvelu/sivut.py
+      - name: Julkaise
+        working-directory: lakipalvelu
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ steps.cf.outputs.account }}
+        run: |
+          set -e
+          cat > wrangler.toml <<EOF
+          name = "pykalavahti"
+          main = "src/index.js"
+          compatibility_date = "2026-09-01"
+          workers_dev = true
+          [assets]
+          directory = "./public"
+          binding = "ASSETS"
+          not_found_handling = "404-page"
+          [[kv_namespaces]]
+          binding = "DB"
+          id = "${{ steps.cf.outputs.kv }}"
+          EOF
+          sed -i 's/^ *//' wrangler.toml
+          npx --yes wrangler@3.99.0 deploy
+          L=$(npx --yes wrangler@3.99.0 secret list 2>/dev/null || true)
+          echo "$L" | grep -q SUOLA || node -e 'console.log(require("crypto").randomBytes(16).toString("hex"))' | tr -d '\n' | npx --yes wrangler@3.99.0 secret put SUOLA
+          printf '%s' "${{ secrets.ANTHROPIC_API_KEY }}" | npx --yes wrangler@3.99.0 secret put ANTHROPIC_API_KEY
+      - name: Kunnat talteen
+        run: |
+          git config user.name "julkaisija"; git config user.email "julkaisija@users.noreply.github.com"
+          git add lakipalvelu/data/kunnat.json && (git commit -m "Pykälävahti: kuntien koordinaatit" && git pull --rebase && git push) || true
+      - name: Savutesti
+        run: |
+          U=https://pykalavahti.${{ steps.cf.outputs.sub }}.workers.dev
+          sleep 8
+          echo "::notice title=Osoite::$U  etusivu $(curl -s -o /dev/null -w '%{http_code}' $U/)  toimistot $(curl -s -o /dev/null -w '%{http_code}' $U/data/toimistot.json)  finlex-linkki $(curl -s -o /dev/null -w '%{http_code}' https://www.finlex.fi/fi/lainsaadanto/ajantasa/1978/38)"
+          Q="${{ inputs.testikysymys }}"; [ -n "$Q" ] || Q="Ostin pesukoneen kaupasta ja se hajosi 8 kuukauden kuluttua. Onko kauppa velvollinen korjaamaan sen ilmaiseksi?"
+          jq -n --arg q "$Q" '{kysymys:$q}' > q.json
+          curl -s -X POST "$U/api/kysy" -H "Origin: $U" -H "content-type: application/json" -d @q.json > v.json
+          echo "::notice title=Testivastaus::$(jq -r '(.virhe // .vastaus)' v.json | tr '\n' ' ' | cut -c1-1800)"
+          echo "::notice title=Lähteet::$(jq -r '[.lahteet[]? | "[\(.n)] \(.laki) \(.num) \(.ots)"] | join(" | ")' v.json | cut -c1-1500)"

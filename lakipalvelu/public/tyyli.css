@@ -1,0 +1,65 @@
+:root{--bg:#f6f4ef;--paper:#fff;--ink:#16191f;--mute:#5d6470;--line:#dfdbd2;--chip:#ece8df;
+--acc:#14213d;--acc-ink:#e9c46a;--gold:#b8860b;--gold-soft:#fbf3dc;--ok:#1f6f50;--warn:#a5401d;--warn-bg:#fbece4;
+--f-d:"Literata",Georgia,serif;--f-b:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1218;--paper:#171b23;--ink:#e8e6e1;--mute:#a1a7b2;--line:#2a303b;--chip:#222833;
+--acc:#e9c46a;--acc-ink:#14213d;--gold:#e9c46a;--gold-soft:#2a2516;--ok:#6fcf9f;--warn:#f0936a;--warn-bg:#35211a;color-scheme:dark}}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--f-b)}
+a{color:var(--gold);text-underline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.skip{position:absolute;left:-999px}.skip:focus{left:12px;top:8px;background:var(--paper);padding:8px;z-index:30}
+.mono{font-family:ui-monospace,Menlo,monospace;font-size:.92em}.mute{color:var(--mute)}.small{font-size:.88rem}
+.hd{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:1px solid var(--line)}
+.hd-in{max-width:860px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 16px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:9px;text-decoration:none;color:var(--ink);font:700 1.2rem/1 var(--f-d)}
+.logo{width:30px;height:30px}
+.hd nav{display:flex;gap:2px;flex-wrap:wrap}
+.hd nav a{color:var(--mute);text-decoration:none;font-weight:600;font-size:.9rem;padding:6px 9px;border-radius:8px}
+.hd nav a[aria-current],.hd nav a:hover{color:var(--ink);background:var(--chip)}
+.wrap{max-width:860px;margin:0 auto;padding:22px 16px 48px;display:flex;flex-direction:column;gap:22px}
+h1,h2,h3{text-wrap:balance;margin:0;letter-spacing:-.01em}
+h1{font:700 clamp(1.9rem,6vw,2.7rem)/1.1 var(--f-d)}
+h2{font:700 1.3rem/1.25 var(--f-d)}
+.eyebrow{margin:0 0 8px;font-size:.78rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+.lead{margin:10px 0 0;color:var(--mute);font-size:1.06rem;max-width:64ch}
+.hero{display:flex;flex-direction:column;gap:6px}
+.kysy{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.kysy label{font-weight:700;margin-top:6px}
+textarea,input[type=text],input[type=search]{width:100%;font:16px/1.5 var(--f-b);color:var(--ink);background:var(--paper);border:2px solid var(--line);border-radius:12px;padding:12px 14px}
+textarea:focus,input:focus{outline:none;border-color:var(--gold)}
+.rivi{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;cursor:pointer;font:700 1rem var(--f-b);background:var(--acc);color:var(--acc-ink);text-decoration:none;border-radius:12px;padding:12px 22px;align-self:flex-start}
+.btn:disabled{opacity:.6;cursor:wait}.btn.toissij{background:var(--chip);color:var(--ink)}
+.huom{margin:0;font-size:.9rem;color:var(--mute);background:var(--gold-soft);border-radius:10px;padding:10px 12px}
+.esimerkit{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.esim{border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:7px 13px;font:500 .88rem var(--f-b);cursor:pointer;text-align:left}
+.esim:hover{border-color:var(--gold)}
+.tulos{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;gap:12px}
+.tulos h2{font-size:1.12rem;margin-top:8px}.tulos h2:first-child{margin-top:0}
+.tulos p{margin:0}.tulos ul,.tulos ol{margin:0;padding-left:1.3em}.tulos li{margin:3px 0}
+.viite{display:inline-block;min-width:1.5em;text-align:center;font:700 .75rem var(--f-b);color:var(--acc-ink);background:var(--acc);border-radius:6px;padding:1px 5px;margin:0 1px;text-decoration:none;vertical-align:1px}
+.lahteet{border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:8px}
+.lahde{border:1px solid var(--line);border-radius:10px;padding:8px 12px;background:var(--bg)}
+.lahde summary{cursor:pointer;font-weight:600;font-size:.94rem}.lahde p{font-size:.9rem;color:var(--mute);margin-top:6px;white-space:pre-line}
+.lahde:target{border-color:var(--gold)}
+.vastuu{font-size:.85rem;color:var(--mute);border-left:3px solid var(--gold);padding-left:10px}
+.lataa{display:flex;align-items:center;gap:10px;color:var(--mute)}
+.lataa::before{content:"";width:18px;height:18px;border:3px solid var(--line);border-top-color:var(--gold);border-radius:50%;animation:p 1s linear infinite}
+@keyframes p{to{transform:rotate(360deg)}}
+.virhe{color:var(--warn);background:var(--warn-bg);border-radius:10px;padding:10px 12px;margin:0}
+.napit{display:flex;gap:10px;flex-wrap:wrap}
+.kolme{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.kortti{display:flex;flex-direction:column;gap:4px;text-decoration:none;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px}
+.kortti b{font:700 1.05rem var(--f-d);color:var(--gold)}.kortti span{color:var(--mute);font-size:.93rem}
+.kortti:hover{border-color:var(--gold)}
+.haku{display:flex;gap:8px;flex-wrap:wrap}.haku input{flex:1 1 240px}
+.suodin{display:flex;gap:14px;flex-wrap:wrap;font-size:.93rem}.suodin label{display:flex;gap:6px;align-items:center}
+.lista{display:flex;flex-direction:column;gap:8px}
+.toimisto{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.toimisto b{font-size:1rem}.toimisto .m{font-size:.88rem;color:var(--mute)}
+.laji{display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--gold);margin-right:6px}
+.proosa{max-width:68ch}.proosa h2{margin:22px 0 6px}.lait{columns:2;font-size:.92rem}
+@media (max-width:560px){.lait{columns:1}.hd nav a{font-size:.84rem;padding:6px 6px}}
+.ft{border-top:1px solid var(--line);background:var(--paper)}
+.ft-in{max-width:860px;margin:0 auto;padding:18px 16px 30px;font-size:.88rem;color:var(--mute)}
+@media print{.hd,.ft,.kysy,.esimerkit,.napit,.kolme,.huom{display:none!important}body{background:#fff;color:#000}.tulos{border:0;padding:0}.wrap{max-width:none}}
