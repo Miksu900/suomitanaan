@@ -17,7 +17,13 @@
       else if (s) { if (lista) { out.push("</ul>"); lista = false; } out.push("<p>" + inline(s) + "</p>"); }
     });
     if (lista) out.push("</ul>");
-    return out.join("");
+    // Lyhyt vastaus ja toimintaohjeet näkyvät heti, perustelut avautuvat napista (sivu pysyy simppelinä)
+    var html = out.join(""), osat = html.split(/(?=<h2>)/);
+    return osat.map(function (o, i) {
+      if (i === 0 || !/^<h2>/.test(o)) return o;
+      var ots = o.match(/^<h2>(.*?)<\/h2>/)[1], auki = /voit tehdä|juristi|Tiivistelmä/i.test(ots);
+      return '<details class="osio"' + (auki ? " open" : "") + "><summary>" + ots + "</summary>" + o.replace(/^<h2>.*?<\/h2>/, "") + "</details>";
+    }).join("");
   }
   function lahteet(l) {
     if (!l || !l.length) return "";
@@ -25,6 +31,31 @@
       return '<details class="lahde" id="l' + x.n + '"><summary>[' + x.n + "] " + esc(x.laki) + " " + esc(x.lyh) + " · " + esc((x.luku ? x.luku.replace(/^(\d+\s*[a-z]?\s*luku).*/i, "$1") + " " : "") + x.num + " " + x.ots) +
         "</summary><p>" + esc(x.ote) + (x.ote.length >= 600 ? "…" : "") + '</p><p><a href="' + esc(x.url) + '" target="_blank" rel="noopener">Avaa laki Finlexissä →</a></p></details>';
     }).join("") + "</div>";
+  }
+  function etaisyys(a, c) { if (!a || !c) return null; var r = Math.PI / 180, dl = (c[0] - a[0]) * r, dn = (c[1] - a[1]) * r;
+    var x = Math.sin(dl / 2) * Math.sin(dl / 2) + Math.cos(a[0] * r) * Math.cos(c[0] * r) * Math.sin(dn / 2) * Math.sin(dn / 2); return 12742 * Math.asin(Math.sqrt(x)); }
+  var TOIM = null;
+  function toimistot() { return TOIM || (TOIM = fetch("/data/toimistot.json").then(function (r) { return r.json(); }).then(function (d) { return d.t; })); }
+  function korttiHTML(t) {
+    return '<div class="toimisto"><b>' + esc(t.n) + '</b><span class="m"><span class="laji">' + esc(t.l) + "</span>" + esc([t.o, (t.pn + " " + t.k).trim()].filter(Boolean).join(", ")) +
+      (t._e != null ? " · noin " + Math.round(t._e) + " km" : "") + "</span>" + (t.w ? '<span class="m"><a href="' + esc(t.w) + '" target="_blank" rel="noopener nofollow">' + esc(t.w.replace(/^https?:\/\//, "")) + "</a></span>" : "") + "</div>";
+  }
+  function lahimmat(el) {
+    el.innerHTML = '<div class="lahin"><h2>Lähimmät asianajotoimistot</h2><div class="haku"><input type="search" id="lk" placeholder="Paikkakuntasi, esim. Ylivieska"><button type="button" class="btn" id="lsij">Käytä sijaintiani</button></div><div id="ll" class="lista"></div></div>';
+    function nayta(piste, nimi) {
+      toimistot().then(function (L) {
+        var r = L.filter(function (t) { return t.l === "Asianajotoimisto" && t.c; });
+        if (!piste) { var k = L.find(function (t) { return t.k.toLowerCase() === nimi.toLowerCase() && t.c; }); piste = k && k.c; }
+        if (!piste) { $("ll").innerHTML = '<p class="mute small">Paikkakuntaa ei löytynyt. Kokeile lähintä kaupunkia tai <a href="/toimistot/">hae kaikista toimistoista</a>.</p>'; return; }
+        r.forEach(function (t) { t._e = etaisyys(piste, t.c); }); r.sort(function (a, b) { return a._e - b._e; });
+        $("ll").innerHTML = r.slice(0, 5).map(korttiHTML).join("") + '<p class="small"><a href="/toimistot/?laji=Asianajotoimisto&q=' + encodeURIComponent(nimi || "") + '">Näytä lisää toimistoja →</a></p>';
+      });
+    }
+    var tm; $("lk").addEventListener("input", function () { clearTimeout(tm); var v = this.value.trim(); if (v.length >= 3) tm = setTimeout(function () { nayta(null, v); }, 350); });
+    $("lsij").onclick = function () { if (!navigator.geolocation) return; $("ll").innerHTML = '<p class="lataa">Haetaan sijaintia…</p>';
+      navigator.geolocation.getCurrentPosition(function (p) { nayta([p.coords.latitude, p.coords.longitude], ""); }, function () { $("ll").innerHTML = '<p class="mute small">Sijaintia ei saatu. Kirjoita paikkakuntasi.</p>'; }); };
+    try { var muisti = localStorage.getItem("pv_kunta"); if (muisti) { $("lk").value = muisti; nayta(null, muisti); } } catch (e) {}
+    $("lk").addEventListener("change", function () { try { localStorage.setItem("pv_kunta", this.value.trim()); } catch (e) {} });
   }
   var VASTUU = '<p class="vastuu">Tämä on yleistä tietoa laista, ei oikeudellista neuvontaa. Tekoäly voi erehtyä: tarkista pykälät ja käänny juristin puoleen, jos asialla on sinulle merkitystä.</p>';
   function laheta(polku, data, nappi, teksti, jalkeen) {
@@ -36,7 +67,8 @@
         nappi.disabled = false;
         if (d.virhe) { T.innerHTML = '<p class="virhe">' + esc(d.virhe) + "</p>"; return; }
         var n = (d.lahteet || []).length;
-        T.innerHTML = muotoile(d.vastaus, n) + VASTUU + (jalkeen || "") + lahteet(d.lahteet);
+        T.innerHTML = muotoile(d.vastaus, n) + VASTUU + (jalkeen || "") + '<div id="lahinLaatikko"></div>' + lahteet(d.lahteet);
+        lahimmat($("lahinLaatikko"));
         T.scrollIntoView({ behavior: "smooth", block: "start" });
         T.dataset.teksti = d.vastaus + "\n\nLähteet:\n" + (d.lahteet || []).map(function (x) { return "[" + x.n + "] " + x.laki + " " + x.lyh + " " + x.num + " " + x.ots + " – " + x.url; }).join("\n");
       })
@@ -122,7 +154,8 @@
       };
       fetch("/data/toimistot.json").then(function (r) { return r.json(); }).then(function (d) {
         L = d.t; L.forEach(function (t) { t._s = fold(t.n + " " + t.k + " " + t.pn); });
-        var u = new URLSearchParams(location.search).get("q"); if (u) h.value = u; piirra();
+        var qs = new URLSearchParams(location.search), u = qs.get("q"), lj = qs.get("laji"); if (u) h.value = u;
+        if (lj) document.querySelectorAll("input[name=laji]").forEach(function (r) { r.checked = r.value === lj; }); piirra();
       }).catch(function () { tl.textContent = "Toimistojen lataus epäonnistui."; });
     },
   };
