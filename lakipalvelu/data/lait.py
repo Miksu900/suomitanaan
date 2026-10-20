@@ -90,20 +90,58 @@ def pykalat(root):
     return out
 
 
-def hae(v, n):
-    """Lataa lain zip-paketin curlilla (kova aikaraja), palauttaa main.xml:n juuren."""
+LISTA = "https://opendata.finlex.fi/finlex/avoindata/v1/akn/fi/act/statute-consolidated/list?format=json&limit=10&page={p}&titleContains={t}"
+
+
+def _get(url, acc=None, aika=150):
     import subprocess, tempfile
-    url = API.format(v=v, n=n)
-    for yritys in range(3):
-        with tempfile.NamedTemporaryFile(suffix=".zip") as f:
-            r = subprocess.run(["curl", "-sS", "--compressed", "--max-time", "150", "-o", f.name, "-w", "%{http_code}",
-                                "-H", "User-Agent: " + UA["User-Agent"], "-H", "accept: application/zip", url], capture_output=True, text=True)
-            koodi = r.stdout.strip()
-            if koodi == "200":
-                with zipfile.ZipFile(f.name) as z:
-                    return ET.fromstring(z.read("main.xml"))
-        time.sleep(5 * (yritys + 1))
-    raise RuntimeError(f"HTTP {koodi} {r.stderr.strip()[:80]}")
+    with tempfile.NamedTemporaryFile() as f:
+        r = subprocess.run(["curl", "-sS", "--compressed", "--max-time", str(aika), "-o", f.name, "-w", "%{http_code}",
+                            "-H", "User-Agent: " + UA["User-Agent"]] + (["-H", "accept: " + acc] if acc else []) + [url], capture_output=True, text=True)
+        if r.stdout.strip() != "200":
+            raise RuntimeError(f"HTTP {r.stdout.strip()} {r.stderr.strip()[:60]}")
+        return open(f.name, "rb").read()
+
+
+def versiot(v, n, nimi):
+    """Lain ajantasaiset versiot (fin@VVVVNNNN). Haetaan nimellä ja suodatetaan vuoden ja numeron mukaan."""
+    import urllib.parse
+    loydetyt = set()
+    for hakusana in (nimi, nimi.split()[0] if nimi.startswith(("Laki", "laki")) is False else nimi.split(" ", 1)[1]):
+        for p in range(1, 31):
+            try:
+                d = json.loads(_get(LISTA.format(p=p, t=urllib.parse.quote(hakusana)), aika=60))
+            except Exception:
+                break
+            for x in d:
+                u = x.get("akn_uri", "")
+                if f"/statute-consolidated/{v}/{n}/fin@" in u:
+                    loydetyt.add(u)
+            if len(d) < 10:
+                break
+            time.sleep(0.3)
+        if loydetyt:
+            break
+    return sorted(loydetyt, key=lambda u: u.rsplit("@", 1)[1] or "0", reverse=True)
+
+
+def hae(v, n, nimi):
+    """Uusin voimassa oleva versio: versioista suurin, jonka voimassaolopäivä (ELI-alias) ei ole tulevaisuudessa."""
+    tanaan = time.strftime("%Y-%m-%d")
+    ehdokkaat = versiot(v, n, nimi) or [API.format(v=v, n=n).rsplit("/main.akn", 1)[0]]
+    viimeisin_virhe = None
+    for u in ehdokkaat[:4]:
+        try:
+            z = zipfile.ZipFile(io.BytesIO(_get(u + "/main.akn", "application/zip")))
+            root = ET.fromstring(z.read("main.xml"))
+        except Exception as e:
+            viimeisin_virhe = e; continue
+        alias = next((a.get("value", "") for a in root.iter(NS + "FRBRalias") if "/ajantasa/" in a.get("value", "") and a.get("value", "").endswith("/fin")), "")
+        m = re.search(r"/ajantasa/(\d{4}-\d{2}-\d{2})/", alias)
+        if m and m.group(1) > tanaan:
+            continue   # muutos ei ole vielä voimassa
+        return root, (m.group(1) if m else "")
+    raise RuntimeError(f"ei saatu ({viimeisin_virhe})")
 
 
 def main():
@@ -116,21 +154,22 @@ def main():
         v, n, nimi, aihe = rivi
         t0 = time.time()
         try:
-            root = hae(v, n)
+            root, pv = hae(v, n, nimi)
         except Exception as e:
             return rivi, None, str(e), time.time() - t0
-        return rivi, pykalat(root), None, time.time() - t0
+        return rivi, (pykalat(root), pv), None, time.time() - t0
 
     with ThreadPoolExecutor(max_workers=4) as ex:
-        for (v, n, nimi, aihe), p, err, kesto in ex.map(yksi, LAIT):
+        for (v, n, nimi, aihe), tulos, err, kesto in ex.map(yksi, LAIT):
             if err:
                 virheet.append(f"{nimi} {n}/{v}: {err}"); print(f"VIRHE {nimi}: {err}", flush=True); continue
+            p, pv = tulos
             voimassa = [x for x in p if not re.match(r"^(\d+ ?§ ?)?(on )?kumottu", x["t"], re.I)]
             lid = f"{v}-{n}"
-            json.dump({"id": lid, "nimi": nimi, "vuosi": v, "nro": n, "url": f"https://www.finlex.fi/fi/lainsaadanto/ajantasa/{v}/{n}",
+            json.dump({"id": lid, "nimi": nimi, "vuosi": v, "nro": n, "url": f"https://www.finlex.fi/fi/lainsaadanto/ajantasa/{v}/{n}", "versio": pv,
                        "p": voimassa}, open(os.path.join(OUT, "laki", lid + ".json"), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
-            luettelo.append({"id": lid, "nimi": nimi, "aihe": aihe, "kpl": len(voimassa), "lyh": f"{n}/{v}"})
-            print(f"{nimi} {n}/{v}: {len(voimassa)} pykälää ({kesto:.0f} s)", flush=True)
+            luettelo.append({"id": lid, "nimi": nimi, "aihe": aihe, "kpl": len(voimassa), "lyh": f"{n}/{v}", "versio": pv})
+            print(f"{nimi} {n}/{v}: {len(voimassa)} pykälää, versio {pv} ({kesto:.0f} s)", flush=True)
     json.dump({"haettu": time.strftime("%Y-%m-%d"), "lait": luettelo}, open(os.path.join(OUT, "lait.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=0)
     print(f"::notice title=Lait::{len(luettelo)}/{len(LAIT)} lakia, {sum(l['kpl'] for l in luettelo)} pykälää, {time.time()-alku:.0f} s" + (" | puuttuu: " + "; ".join(virheet) if virheet else ""))
     if len(luettelo) < len(LAIT) * 0.8:
