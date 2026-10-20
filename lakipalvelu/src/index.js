@@ -97,6 +97,20 @@ async function haePykalat(env, origin, kysymys) {
     }
   }
   osumat.sort((a, b) => b.pist - a.pist);
+  // Toinen vaihe: kevyt malli valitsee olennaisimmat pykälät lakien sisällysluettelosta
+  try {
+    const toc = [], kaikki = {};
+    for (const id of lait.slice(0, 3)) {
+      const laki = await data(env, origin, `/data/laki/${id}.json`);
+      laki.p.forEach((p, i) => { const k = `${id}#${i}`; kaikki[k] = { laki, p }; toc.push(`${k} | ${laki.nimi} | ${(p.luku.match(/^\d+\s*[a-z]?\s*luku[^|]{0,60}/i) || [""])[0]} | ${p.num} ${p.ots}`); });
+    }
+    const vast = jsonista(await claude(env, MALLI_HAKU, "Valitset lakien sisällysluettelosta pykälät, joista kysymykseen löytyy vastaus. Vastaa vain JSON-muodossa.",
+      `Kysymys:\n"""${kysymys}"""\n\nSisällysluettelo (tunniste | laki | luku | pykälä):\n${toc.slice(0, 1500).join("\n")}\n\nPalauta {"valitut": ["tunniste", ...]}: 4–12 olennaisinta pykälää tärkein ensin (myös määritelmät, määräajat ja oikeussuojakeinot, jos ne vaikuttavat vastaukseen).`, 500));
+    const ensin = ((vast && vast.valitut) || []).filter((k) => kaikki[k]).slice(0, 12).map((k) => ({ pist: 1000, laki: kaikki[k].laki.nimi, lyh: `${kaikki[k].laki.nro}/${kaikki[k].laki.vuosi}`, url: kaikki[k].laki.url, ...kaikki[k].p }));
+    const nahty = new Set(ensin.map((o) => o.laki + o.id));
+    osumat.splice(0, 0, ...ensin);
+    for (let i = osumat.length - 1; i >= ensin.length; i--) if (nahty.has(osumat[i].laki + osumat[i].id)) osumat.splice(i, 1);
+  } catch (e) { /* jatketaan sanahaun tuloksilla */ }
   // enintään 12 pykälää ja noin 22 000 merkkiä
   const valitut = []; let merkit = 0;
   for (const o of osumat) {
