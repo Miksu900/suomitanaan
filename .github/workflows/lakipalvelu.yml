@@ -75,9 +75,9 @@ jobs:
         run: |
           U=https://pykalavahti.${{ steps.cf.outputs.sub }}.workers.dev
           sleep 8
-          echo "::notice title=Osoite::$U  etusivu $(curl -s -o /dev/null -w '%{http_code}' $U/)  toimistot $(curl -s -o /dev/null -w '%{http_code}' $U/data/toimistot.json)  finlex-linkki $(curl -s -o /dev/null -w '%{http_code}' https://www.finlex.fi/fi/lainsaadanto/ajantasa/1978/38)"
+          echo "::notice title=Osoite::$U  etusivu $(curl -s -o /dev/null -w '%{http_code}' $U/)  toimistot $(curl -s -o /dev/null -w '%{http_code}' $U/data/toimistot.json)  finlex-linkki $(curl -s -o /dev/null -w '%{http_code}' https://www.finlex.fi/fi/lainsaadanto/1978/38)"
           Q="${{ inputs.testikysymys }}"; [ -n "$Q" ] || Q="Ostin pesukoneen kaupasta ja se hajosi 8 kuukauden kuluttua. Onko kauppa velvollinen korjaamaan sen ilmaiseksi?"
           jq -n --arg q "$Q" '{kysymys:$q}' > q.json
           curl -s -X POST "$U/api/kysy" -H "Origin: $U" -H "content-type: application/json" -d @q.json > v.json
-          echo "::notice title=Testivastaus::$(jq -r '(.virhe // .vastaus)' v.json | tr '\n' ' ' | cut -c1-1800)"
+          echo "::notice title=Testivastaus::$(jq -r '(.diag // "") + " " + (.virhe // .vastaus)' v.json | tr '\n' ' ' | cut -c1-1800)"
           echo "::notice title=Lähteet::$(jq -r '[.lahteet[]? | "[\(.n)] \(.laki) \(.num) \(.ots)"] | join(" | ")' v.json | cut -c1-1500)"

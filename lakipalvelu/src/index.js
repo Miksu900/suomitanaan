@@ -42,7 +42,7 @@ async function claude(env, malli, system, user, maxTokens) {
     headers: { "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
     body: JSON.stringify({ model: malli, max_tokens: maxTokens, system, messages: [{ role: "user", content: user }] }),
   });
-  if (!r.ok) throw new Error("Tekoälypalvelu ei vastannut (" + r.status + ")");
+  if (!r.ok) throw new Error("Tekoälypalvelu ei vastannut (" + r.status + " " + (await r.text()).slice(0, 160) + ")");
   const d = await r.json();
   return (d.content || []).map((c) => c.text || "").join("");
 }
@@ -66,11 +66,11 @@ async function haePykalat(env, origin, kysymys) {
   const lista = luettelo.lait.map((l) => `${l.id} | ${l.nimi} (${l.lyh}) | ${l.aihe}`).join("\n");
   const sys = "Olet suomalaisen oikeuden asiantuntija. Tehtäväsi on valita, mistä laeista vastaus kysymykseen löytyy, ja antaa hakusanat. Vastaa vain JSON-muodossa.";
   const u = `Lakiluettelo (tunniste | nimi | aiheet):\n${lista}\n\nKysymys:\n"""${kysymys}"""\n\nPalauta JSON:\n{"lait": ["tunniste", ...] (1–4 todennäköisintä lakia luettelosta, tärkein ensin),\n "sanat": ["sanavartalo", ...] (8–16 suomenkielistä hakusanan vartaloa ilman taivutuspäätteitä, esim. "irtisano", "koeai", "vuokranantaj", "virhe", "reklam"),\n "pykalat": ["tunniste|luku|pykälä", ...] (enintään 6 pykälää, jotka tiedät varmasti olennaisiksi, esim. "1978-38|5 luku|16 §"; jätä tyhjäksi jos et ole varma),\n "aihe": "lyhyt kuvaus oikeudellisesta kysymyksestä"}`;
-  let v;
-  try { v = jsonista(await claude(env, MALLI_HAKU, sys, u, 600)); } catch { v = null; }
+  let v, diag = "";
+  try { const raaka = await claude(env, MALLI_HAKU, sys, u, 600); v = jsonista(raaka); if (!v) diag = "jäsennys: " + raaka.slice(0, 120); } catch (e) { v = null; diag = String(e.message || e); }
   const tunnetut = new Set(luettelo.lait.map((l) => l.id));
   const lait = ((v && v.lait) || []).filter((x) => tunnetut.has(x)).slice(0, 4);
-  if (!lait.length) return { lait: [], osumat: [], aihe: "" };
+  if (!lait.length) return { lait: [], osumat: [], aihe: "", diag };
   const sanat = ((v && v.sanat) || []).map((s) => String(s).toLowerCase().trim()).filter((s) => s.length >= 3).slice(0, 16);
   const vihjeet = new Set(((v && v.pykalat) || []).map((s) => String(s).replace(/\s+/g, " ").trim()));
   const osumat = [];
@@ -112,7 +112,7 @@ const YHTEISET = `Kirjoita selkeää yleiskieltä, jota tavallinen ihminen ymmä
 
 async function vastaa(env, origin, kysymys) {
   const h = await haePykalat(env, origin, kysymys);
-  if (!h.osumat.length) return { vastaus: "En löytänyt tähän kysymykseen sopivia säännöksiä palvelun lakiaineistosta. Palvelussa on tällä hetkellä noin 40 tavallisimmin tarvittua lakia. Kokeile muotoilla kysymys toisin tai kysy juristilta.", lahteet: [] };
+  if (!h.osumat.length) return { diag: h.diag, vastaus: "En löytänyt tähän kysymykseen sopivia säännöksiä palvelun lakiaineistosta. Palvelussa on tällä hetkellä noin 40 tavallisimmin tarvittua lakia. Kokeile muotoilla kysymys toisin tai kysy juristilta.", lahteet: [] };
   const sys = `Olet Pykälävahti, palvelu joka selittää Suomen lakia tavallisille ihmisille ajantasaisen lainsäädännön pohjalta. Et ole asianajaja etkä anna sitovaa oikeudellista neuvontaa, vaan yleistä tietoa laista. ${YHTEISET}`;
   const u = `Ajantasaiset pykälät (Finlex):\n\n${lahteet(h.osumat)}\n\n---\nKäyttäjän kysymys:\n"""${kysymys}"""\n\nVastaa rakenteella:\n## Lyhyesti\n(1–3 virkettä)\n## Mitä laki sanoo\n(selitys lähdeviittein)\n## Mitä voit tehdä\n(käytännön askeleet, määräajat jos laissa)\n## Milloin kannattaa kysyä juristilta\n(1–3 kohtaa)`;
   const t = await claude(env, MALLI_VASTAUS, sys, u, 1800);

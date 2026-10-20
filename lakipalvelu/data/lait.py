@@ -98,6 +98,9 @@ def _get(url, acc=None, aika=150):
     with tempfile.NamedTemporaryFile() as f:
         r = subprocess.run(["curl", "-sS", "--compressed", "--max-time", str(aika), "-o", f.name, "-w", "%{http_code}",
                             "-H", "User-Agent: " + UA["User-Agent"]] + (["-H", "accept: " + acc] if acc else []) + [url], capture_output=True, text=True)
+        if r.stdout.strip() == "429":
+            time.sleep(20)
+            return _get(url, acc, aika)
         if r.stdout.strip() != "200":
             raise RuntimeError(f"HTTP {r.stdout.strip()} {r.stderr.strip()[:60]}")
         return open(f.name, "rb").read()
@@ -159,14 +162,14 @@ def main():
             return rivi, None, str(e), time.time() - t0
         return rivi, (pykalat(root), pv), None, time.time() - t0
 
-    with ThreadPoolExecutor(max_workers=4) as ex:
+    with ThreadPoolExecutor(max_workers=2) as ex:
         for (v, n, nimi, aihe), tulos, err, kesto in ex.map(yksi, LAIT):
             if err:
                 virheet.append(f"{nimi} {n}/{v}: {err}"); print(f"VIRHE {nimi}: {err}", flush=True); continue
             p, pv = tulos
             voimassa = [x for x in p if not re.match(r"^(\d+ ?§ ?)?(on )?kumottu", x["t"], re.I)]
             lid = f"{v}-{n}"
-            json.dump({"id": lid, "nimi": nimi, "vuosi": v, "nro": n, "url": f"https://www.finlex.fi/fi/lainsaadanto/ajantasa/{v}/{n}", "versio": pv,
+            json.dump({"id": lid, "nimi": nimi, "vuosi": v, "nro": n, "url": f"https://www.finlex.fi/fi/lainsaadanto/{v}/{n}", "versio": pv,
                        "p": voimassa}, open(os.path.join(OUT, "laki", lid + ".json"), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
             luettelo.append({"id": lid, "nimi": nimi, "aihe": aihe, "kpl": len(voimassa), "lyh": f"{n}/{v}", "versio": pv})
             print(f"{nimi} {n}/{v}: {len(voimassa)} pykälää, versio {pv} ({kesto:.0f} s)", flush=True)
