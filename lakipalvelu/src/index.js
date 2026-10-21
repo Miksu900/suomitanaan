@@ -66,6 +66,16 @@ async function data(env, origin, polku) {
 }
 
 // ---------- haku ----------
+const muuttuu = (laki, p) => (laki.tuleva && (laki.tuleva.muuttuvat || []).includes(p.id) ? laki.tuleva.pv : null);
+async function muutokset(env, origin, lait) {
+  const out = [];
+  for (const id of lait.slice(0, 3)) {
+    const l = await data(env, origin, `/data/laki/${id}.json`);
+    if (l.tuleva || (l.aanestykset && l.aanestykset.length))
+      out.push({ id, nimi: l.nimi, tuleva: l.tuleva ? { pv: l.tuleva.pv, laki: l.tuleva.laki, kpl: (l.tuleva.muuttuvat || []).length } : null, aanestykset: l.aanestykset || [] });
+  }
+  return out;
+}
 async function haePykalat(env, origin, kysymys) {
   const luettelo = await data(env, origin, "/data/lait.json");
   const lista = luettelo.lait.map((l) => `${l.id} | ${l.nimi} (${l.lyh}) | ${l.aihe}`).join("\n");
@@ -93,7 +103,7 @@ async function haePykalat(env, origin, kysymys) {
       const luku = (p.luku.match(/^\d+\s*[a-z]?\s*luku/i) || [""])[0].replace(/\s+/g, " ");
       if (vihjeet.has(`${id}|${luku}|${p.num}`) || (!luku && [...vihjeet].some((x) => x.startsWith(id + "|") && x.endsWith("|" + p.num)))) pist += 25;
       pist *= 1 - li * 0.12;   // ensisijainen laki painavampi
-      if (pist > 0) osumat.push({ pist, laki: laki.nimi, lyh: `${laki.nro}/${laki.vuosi}`, url: laki.url, ...p });
+      if (pist > 0) osumat.push({ pist, laki: laki.nimi, lyh: `${laki.nro}/${laki.vuosi}`, url: laki.url, lid: id, muuttuu: muuttuu(laki, p), ...p });
     }
   }
   osumat.sort((a, b) => b.pist - a.pist);
@@ -106,7 +116,7 @@ async function haePykalat(env, origin, kysymys) {
     }
     const vast = jsonista(await claude(env, MALLI_HAKU, "Valitset lakien sisällysluettelosta pykälät, joista kysymykseen löytyy vastaus. Vastaa vain JSON-muodossa.",
       `Kysymys:\n"""${kysymys}"""\n\nSisällysluettelo (tunniste | laki | luku | pykälä):\n${toc.slice(0, 1500).join("\n")}\n\nPalauta {"valitut": ["tunniste", ...]}: 4–12 olennaisinta pykälää tärkein ensin (myös määritelmät, määräajat ja oikeussuojakeinot, jos ne vaikuttavat vastaukseen).`, 500));
-    const ensin = ((vast && vast.valitut) || []).filter((k) => kaikki[k]).slice(0, 12).map((k) => ({ pist: 1000, laki: kaikki[k].laki.nimi, lyh: `${kaikki[k].laki.nro}/${kaikki[k].laki.vuosi}`, url: kaikki[k].laki.url, ...kaikki[k].p }));
+    const ensin = ((vast && vast.valitut) || []).filter((k) => kaikki[k]).slice(0, 12).map((k) => ({ pist: 1000, laki: kaikki[k].laki.nimi, lyh: `${kaikki[k].laki.nro}/${kaikki[k].laki.vuosi}`, url: kaikki[k].laki.url, lid: k.split("#")[0], muuttuu: muuttuu(kaikki[k].laki, kaikki[k].p), ...kaikki[k].p }));
     const nahty = new Set(ensin.map((o) => o.laki + o.id));
     osumat.splice(0, 0, ...ensin);
     for (let i = osumat.length - 1; i >= ensin.length; i--) if (nahty.has(osumat[i].laki + osumat[i].id)) osumat.splice(i, 1);
@@ -119,13 +129,14 @@ async function haePykalat(env, origin, kysymys) {
     if (merkit + t.length > 22000 && valitut.length >= 4) continue;
     valitut.push({ ...o, t }); merkit += t.length;
   }
-  return { lait, osumat: valitut, aihe: (v && v.aihe) || "" };
+  let muut = []; try { muut = await muutokset(env, origin, lait); } catch {}
+  return { lait, osumat: valitut, aihe: (v && v.aihe) || "", muutokset: muut };
 }
 
 function lahteet(osumat) {
-  return osumat.map((o, i) => `[${i + 1}] ${o.laki} (${o.lyh}) ${o.luku ? o.luku + ", " : ""}${o.num} ${o.ots}\n${o.t}`).join("\n\n");
+  return osumat.map((o, i) => `[${i + 1}] ${o.laki} (${o.lyh}) ${o.luku ? o.luku + ", " : ""}${o.num} ${o.ots}${o.muuttuu ? ` (HUOM: tämä pykälä muuttuu ${o.muuttuu}; kerro se vastauksessa)` : ""}\n${o.t}`).join("\n\n");
 }
-const julki = (osumat) => osumat.map((o, i) => ({ n: i + 1, laki: o.laki, lyh: o.lyh, luku: o.luku, num: o.num, ots: o.ots, url: o.url, ote: o.t.slice(0, 600) }));
+const julki = (osumat) => osumat.map((o, i) => ({ n: i + 1, laki: o.laki, lyh: o.lyh, luku: o.luku, num: o.num, ots: o.ots, url: o.url, muuttuu: o.muuttuu || null, ote: o.t.slice(0, 600) }));
 
 const YHTEISET = `Kirjoita selkeää yleiskieltä, jota tavallinen ihminen ymmärtää. Perusta jokainen oikeudellinen väite VAIN annettuihin pykäliin ja merkitse lähde hakasulkeisiin, esim. [2]. Älä keksi pykäliä, numeroita, määräaikoja tai ennakkopäätöksiä, joita aineistossa ei ole. Jos annetut pykälät eivät riitä vastaamaan, sano se suoraan ja kerro, millaista lisätietoa tai asiantuntijaa tarvitaan. Huomaa, että sopimukset, työehtosopimukset, taloyhtiön yhtiöjärjestys ja oikeuskäytäntö voivat muuttaa lopputulosta. Muotoilu: väliotsikot rivin alussa "## ", luettelot "- ", lihavointi **näin**. Ei taulukoita.`;
 
@@ -136,7 +147,7 @@ async function vastaa(env, origin, kysymys) {
   const u = `Ajantasaiset pykälät (Finlex):\n\n${lahteet(h.osumat)}\n\n---\nKäyttäjän kysymys:\n"""${kysymys}"""\n\nVastaa rakenteella:\n## Lyhyesti\n(1–3 virkettä)\n## Mitä laki sanoo\n(selitys lähdeviittein)\n## Mitä voit tehdä\n(käytännön askeleet, määräajat jos laissa)\n## Milloin kannattaa kysyä juristilta\n(1–3 kohtaa)`;
   const t = await claude(env, MALLI_VASTAUS, sys, u, 1800);
   await tilastoi(env, "kysymys", h.lait);
-  return { vastaus: t, lahteet: julki(h.osumat), aihe: h.aihe };
+  return { vastaus: t, lahteet: julki(h.osumat), aihe: h.aihe, lait: h.lait, muutokset: h.muutokset };
 }
 
 async function esitys(env, origin, b) {
@@ -146,7 +157,31 @@ async function esitys(env, origin, b) {
   const u = `Ajantasaiset pykälät (Finlex):\n\n${h.osumat.length ? lahteet(h.osumat) : "(ei osumia aineistosta)"}\n\n---\nAsiakkaan kuvaus tilanteesta:\n"""${kuvaus}"""\nMitä asiakas haluaa saavuttaa:\n"""${tavoite || "ei kerrottu"}"""\nMääräajat ja päivämäärät:\n"""${ajat || "ei kerrottu"}"""\n\nLaadi muistio rakenteella:\n## Tiivistelmä\n## Tosiseikat asiakkaan kertomana\n(luettelona; merkitse epäselvät kohdat)\n## Oikeudelliset kysymykset\n## Sovellettavat säännökset\n(lähdeviittein)\n## Alustava arvio\n(vahvuudet ja heikkoudet, varovaisesti)\n## Mahdolliset toimintavaihtoehdot\n## Määräajat ja kiireellisyys\n## Avoimet kysymykset juristille\n## Asiakirjat, jotka kannattaa ottaa mukaan`;
   const t = await claude(env, MALLI_VASTAUS, sys, u, 2600);
   await tilastoi(env, "esitys", h.lait);
-  return { vastaus: t, lahteet: julki(h.osumat), aihe: h.aihe };
+  return { vastaus: t, lahteet: julki(h.osumat), aihe: h.aihe, lait: h.lait, muutokset: h.muutokset };
+}
+
+// ---------- kirjeet: valmis asiakirja lähetettäväksi ----------
+const KIRJEET = {
+  reklamaatio: ["Reklamaatio kauppaan tai palveluntarjoajalle", "kuluttajankaupan virhe reklamaatio virheilmoitus korjaus vaihto hinnanalennus kaupan purku"],
+  vakuus: ["Vuokravakuuden palautusvaatimus", "vuokravakuus vakuuden palauttaminen pidättäminen huoneiston kuluminen vuokralaisen vastuu"],
+  perinta: ["Vastine perintäkirjeeseen tai vanhentumisväite", "perintä saatavan kiistäminen perintäkulut velan vanhentuminen"],
+  oikaisu: ["Oikaisuvaatimus viranomaisen päätökseen", "oikaisuvaatimus hallintopäätös määräaika perustelut muutoksenhaku"],
+  kril: ["Valitus kuluttajariitalautakuntaan (tekstipohja)", "kuluttajan oikeudet virhe hyvitys vahingonkorvaus"],
+  irtisanoutuminen: ["Irtisanoutumisilmoitus työnantajalle", "työntekijän irtisanoutuminen irtisanomisaika työtodistus"],
+  vuokrairtisanominen: ["Vuokrasopimuksen irtisanominen (vuokralainen)", "vuokrasopimuksen irtisanominen vuokralaisen irtisanomisaika"],
+  muu: ["Muu kirje tai vaatimus", ""],
+};
+async function kirje(env, origin, b) {
+  const tyyppi = KIRJEET[b.tyyppi] ? b.tyyppi : "muu";
+  const [nimi, haku] = KIRJEET[tyyppi];
+  const tilanne = siivoa(b.tilanne), vaatimus = siivoa(b.vaatimus), ajat = siivoa(b.ajat), tausta = siivoa(b.tausta).slice(0, 3000);
+  const h = await haePykalat(env, origin, `${nimi}. ${haku}\n${tilanne}\nVaatimus: ${vaatimus}`);
+  const sys = `Olet Pykälävahti. Kirjoitat käyttäjän puolesta valmiin, asiallisen ja kohteliaan suomenkielisen kirjeen, jonka hän voi lähettää sellaisenaan. ${YHTEISET} Kirjeessä EI käytetä hakasulkuviitteitä [1], vaan säännökset mainitaan kirjeen tekstissä lakikielellä, esim. "kuluttajansuojalain 5 luvun 16 §:n mukaan". Mainitse vain annetuista pykälistä löytyviä säännöksiä. Käytä paikkamerkkejä täsmälleen näin: [OMA NIMI], [OMA OSOITE], [VASTAANOTTAJA], [PÄIVÄYS]. Älä keksi nimiä, osoitteita, summia tai päivämääriä, joita käyttäjä ei antanut: käytä niiden kohdalla paikkamerkkiä kuten [SUMMA] tai [PÄIVÄMÄÄRÄ].`;
+  const u = `Ajantasaiset pykälät (Finlex):\n\n${h.osumat.length ? lahteet(h.osumat) : "(ei osumia)"}\n\n---\nKirjeen tyyppi: ${nimi}\nTilanne käyttäjän kertomana:\n"""${tilanne}"""\nMitä käyttäjä vaatii:\n"""${vaatimus || "ei kerrottu"}"""\nPäivämäärät ja summat:\n"""${ajat || "ei kerrottu"}"""\n${tausta ? `Aiempi Pykälävahdin vastaus samasta asiasta (taustaksi):\n"""${tausta}"""\n` : ""}\nKirjoita ensin kirje näin:\n[OMA NIMI]\n[OMA OSOITE]\n\n[VASTAANOTTAJA]\n\n[PÄIVÄYS]\n\nAihe: (lyhyt aihe)\n\n(kirjeen teksti: tosiseikat lyhyesti, oikeudellinen perusta, selkeä vaatimus, kohtuullinen vastausaika esim. 14 päivää, mitä tapahtuu jos asia ei ratkea)\n\nYstävällisin terveisin\n[OMA NIMI]\n\nKirjoita sitten rivi ---OHJEET--- ja sen jälkeen 3–6 lyhyttä ohjetta luettelona: miten ja milloin kirje kannattaa lähettää, määräajat lähdeviittein [n], mitä liitteitä lisätä ja mitä tehdä, jos vastausta ei tule.`;
+  const t = await claude(env, MALLI_VASTAUS, sys, u, 2200);
+  const [k, o] = t.split(/-{3}\s*OHJEET\s*-{3}/);
+  await tilastoi(env, "kirje", h.lait);
+  return { kirje: (k || "").trim(), ohjeet: (o || "").trim(), lahteet: julki(h.osumat), lait: h.lait, muutokset: h.muutokset };
 }
 
 // ---------- käyttötilasto (vain lukumäärät, ei kysymyksiä) ----------
@@ -227,6 +262,11 @@ export default {
           if (!maksullinen(env)) return json({ virhe: "Maksu ei ole käytössä." }, 400);
           if (b.ehdot !== true) return json({ virhe: "Hyväksy ehdot ennen maksamista." }, 400);
           return json({ url: await aloitaMaksu(env, url.origin) });
+        }
+        if (url.pathname === "/api/kirje") {
+          if (siivoa(b.tilanne).length < 30) return json({ virhe: "Kerro tilanteesta vähintään pari virkettä." }, 400);
+          const raja = await rajoita(req, env); if (raja) return json({ virhe: raja }, 429);
+          return json(await kirje(env, url.origin, b));
         }
         if (url.pathname === "/api/esitys") {
           if (siivoa(b.kuvaus).length < 40) return json({ virhe: "Kuvaa tilanne vähintään parilla virkkeellä." }, 400);

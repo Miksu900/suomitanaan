@@ -129,11 +129,11 @@ def versiot(v, n, nimi):
 
 
 def hae(v, n, nimi):
-    """Uusin voimassa oleva versio: versioista suurin, jonka voimassaolopäivä (ELI-alias) ei ole tulevaisuudessa."""
+    """Uusin voimassa oleva versio sekä mahdollinen tuleva (jo vahvistettu, ei vielä voimassa) versio."""
     tanaan = time.strftime("%Y-%m-%d")
     ehdokkaat = versiot(v, n, nimi) or [API.format(v=v, n=n).rsplit("/main.akn", 1)[0]]
-    viimeisin_virhe = None
-    for u in ehdokkaat[:4]:
+    viimeisin_virhe, tuleva = None, None
+    for u in ehdokkaat[:6]:
         try:
             z = zipfile.ZipFile(io.BytesIO(_get(u + "/main.akn", "application/zip")))
             root = ET.fromstring(z.read("main.xml"))
@@ -142,9 +142,22 @@ def hae(v, n, nimi):
         alias = next((a.get("value", "") for a in root.iter(NS + "FRBRalias") if "/ajantasa/" in a.get("value", "") and a.get("value", "").endswith("/fin")), "")
         m = re.search(r"/ajantasa/(\d{4}-\d{2}-\d{2})/", alias)
         if m and m.group(1) > tanaan:
-            continue   # muutos ei ole vielä voimassa
-        return root, (m.group(1) if m else "")
+            vid = u.rsplit("@", 1)[1]
+            tuleva = (root, m.group(1), f"{int(vid[4:])}/{vid[:4]}" if len(vid) == 8 else vid)   # aikaisin tuleva jää viimeiseksi
+            continue
+        return root, (m.group(1) if m else ""), tuleva
     raise RuntimeError(f"ei saatu ({viimeisin_virhe})")
+
+
+def lain_hakuavain(nimi):
+    """Lain nimi muodossa, jossa se esiintyy eduskunnan äänestysten otsikoissa (esim. 'työsopimuslain')."""
+    n = nimi.lower()
+    if n.startswith("laki "):
+        return n[5:]
+    for a, b in (("laki", "lain"), ("kaari", "kaaren")):
+        if n.endswith(a):
+            return n[: -len(a)] + b
+    return n
 
 
 def main():
@@ -157,23 +170,40 @@ def main():
         v, n, nimi, aihe = rivi
         t0 = time.time()
         try:
-            root, pv = hae(v, n, nimi)
+            root, pv, tuleva = hae(v, n, nimi)
         except Exception as e:
             return rivi, None, str(e), time.time() - t0
-        return rivi, (pykalat(root), pv), None, time.time() - t0
+        tul = None
+        if tuleva:
+            nyk = {x["id"]: x["t"] for x in pykalat(root)}
+            uus = {x["id"]: x["t"] for x in pykalat(tuleva[0])}
+            muuttuvat = sorted([k for k in uus if nyk.get(k) != uus[k]] + [k for k in nyk if k not in uus])
+            tul = {"pv": tuleva[1], "laki": tuleva[2], "muuttuvat": muuttuvat}
+        return rivi, (pykalat(root), pv, tul), None, time.time() - t0
+
+    # Eduskuntaseurannan äänestykset (lakimuutosvahti)
+    try:
+        aanet = json.loads(_get("https://eduskuntaseuranta.fi/data/aanestykset.json", aika=120))
+    except Exception as e:
+        aanet = []; print("::warning::Eduskuntaseurannan äänestyksiä ei saatu:", e)
 
     with ThreadPoolExecutor(max_workers=2) as ex:
         for (v, n, nimi, aihe), tulos, err, kesto in ex.map(yksi, LAIT):
             if err:
                 virheet.append(f"{nimi} {n}/{v}: {err}"); print(f"VIRHE {nimi}: {err}", flush=True); continue
-            p, pv = tulos
+            p, pv, tul = tulos
+            avain = lain_hakuavain(nimi)
+            omat = [a for a in aanet if avain in ((a.get("otsikko") or "") + " " + (a.get("lisaotsikko") or "")).lower()]
+            omat.sort(key=lambda a: a.get("alkoi") or "", reverse=True)
+            aan = [{"id": a["id"], "pv": (a.get("alkoi") or "")[:10], "ots": (a.get("otsikko") or "")[:180], "jaa": a.get("jaa"), "ei": a.get("ei")} for a in omat[:3]]
             voimassa = [x for x in p if not re.match(r"^(\d+ ?§ ?)?(on )?kumottu", x["t"], re.I)]
             lid = f"{v}-{n}"
             json.dump({"id": lid, "nimi": nimi, "vuosi": v, "nro": n, "url": f"https://www.finlex.fi/fi/lainsaadanto/{v}/{n}", "versio": pv,
-                       "p": voimassa}, open(os.path.join(OUT, "laki", lid + ".json"), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
-            luettelo.append({"id": lid, "nimi": nimi, "aihe": aihe, "kpl": len(voimassa), "lyh": f"{n}/{v}", "versio": pv})
-            print(f"{nimi} {n}/{v}: {len(voimassa)} pykälää, versio {pv} ({kesto:.0f} s)", flush=True)
+                       "tuleva": tul, "aanestykset": aan, "p": voimassa}, open(os.path.join(OUT, "laki", lid + ".json"), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+            luettelo.append({"id": lid, "nimi": nimi, "aihe": aihe, "kpl": len(voimassa), "lyh": f"{n}/{v}", "versio": pv, "tuleva": tul["pv"] if tul else None})
+            print(f"{nimi} {n}/{v}: {len(voimassa)} pykälää, versio {pv}" + (f", TULOSSA {tul['pv']} ({len(tul['muuttuvat'])} pykälää)" if tul else "") + f", äänestyksiä {len(aan)} ({kesto:.0f} s)", flush=True)
     json.dump({"haettu": time.strftime("%Y-%m-%d"), "lait": luettelo}, open(os.path.join(OUT, "lait.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=0)
+    print(f"::notice title=Lakimuutokset::" + "; ".join(f"{l['nimi']} {l['tuleva']}" for l in luettelo if l.get("tuleva")))
     print(f"::notice title=Lait::{len(luettelo)}/{len(LAIT)} lakia, {sum(l['kpl'] for l in luettelo)} pykälää, {time.time()-alku:.0f} s" + (" | puuttuu: " + "; ".join(virheet) if virheet else ""))
     if len(luettelo) < len(LAIT) * 0.8:
         sys.exit("Liian moni laki jäi hakematta")

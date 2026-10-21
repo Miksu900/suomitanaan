@@ -74,3 +74,13 @@ textarea:focus,input:focus{outline:none;border-color:var(--gold)}
 .osio>summary::after{content:"+";font:600 1.3rem var(--f-b);color:var(--gold)}
 .osio[open]>summary::after{content:"–"}
 .osio>*:not(summary){margin-top:8px}
+.pienprantti{font-size:.76rem;color:var(--mute);margin:2px 0 0}
+.reitti,.muutos{border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:6px}
+.reitti ul{margin:0;padding-left:1.2em}.reitti li{margin:4px 0;font-size:.94rem}
+.muutos{background:var(--gold-soft);border:1px solid var(--gold);border-radius:12px;padding:12px 14px}
+.muutos p{margin:0}
+.muuttuu{display:inline-block;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#fff;background:#b8860b;border-radius:6px;padding:1px 6px;margin-left:4px}
+.kirjeteksti{font:15px/1.6 Georgia,serif;min-height:420px}
+.omat{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}
+.omat input{width:100%}
+select{font:16px var(--f-b);color:var(--ink);background:var(--paper);border:2px solid var(--line);border-radius:12px;padding:11px 12px;width:100%}

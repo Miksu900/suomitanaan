@@ -23,7 +23,7 @@ LOGO = ('<svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><rect x="2" y=
 
 def sivu(polku, otsikko, kuvaus, runko, skripti="", aktiivinen=""):
     nav = "".join(f'<a href="{u}"{" aria-current=page" if aktiivinen == k else ""}>{n}</a>' for k, u, n in
-                  (("kysy", "/", "Kysy laista"), ("esitys", "/pohjaesitys/", "Pohjaesitys juristille"), ("toimistot", "/toimistot/", "Lakitoimistot")))
+                  (("kysy", "/", "Kysy laista"), ("kirje", "/kirje/", "Valmis kirje"), ("esitys", "/pohjaesitys/", "Pohjaesitys"), ("toimistot", "/toimistot/", "Lakitoimistot")))
     return f"""<!doctype html>
 <html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>{esc(otsikko)}</title><meta name="description" content="{esc(kuvaus)}">
@@ -33,16 +33,16 @@ def sivu(polku, otsikko, kuvaus, runko, skripti="", aktiivinen=""):
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,600;7..72,700&family=Inter:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="/tyyli.css?v=4"></head>
+<link rel="stylesheet" href="/tyyli.css?v=5"></head>
 <body><a class="skip" href="#sisalto">Siirry sisältöön</a>
 <header class="hd"><div class="hd-in"><a class="brand" href="/">{LOGO}<span>{esc(NIMI)}</span></a><nav aria-label="Päävalikko">{nav}</nav></div></header>
 <main id="sisalto" class="wrap">{runko}</main>
 <footer class="ft"><div class="ft-in">
-<p><b>{esc(NIMI)}</b> selittää Suomen lakia ajantasaisen lainsäädännön (Finlex) pohjalta. Vastaukset ovat yleistä tietoa, eivät oikeudellista neuvontaa, eikä palvelu ole asianajotoimisto. Tarkista tärkeät asiat aina juristilta.</p>
+<p><b>{esc(NIMI)}</b> selittää Suomen lakia ajantasaisen lainsäädännön (Finlex) pohjalta. Vastaukset ovat yleistä tietoa, eivät oikeudellista neuvontaa, eikä palvelu ole asianajotoimisto. Tekoäly ei vastaa tietojen oikeellisuudesta.</p>
 <p><a href="/tietoa/">Tietoa palvelusta</a> · <a href="/ehdot/">Käyttöehdot</a> · <a href="/tietosuoja/">Tietosuoja</a> · <a href="/juristeille/">Juristeille</a> · Yhteys: <span class="mono">{YHTEYS}</span></p>
 <p class="mute">Saman ylläpitäjän palveluja: <a href="https://keraysvahti.fi">Keräysvahti</a> · <a href="https://eduskuntaseuranta.fi">Eduskuntaseuranta</a> · <a href="https://nytpuhutaan.fi">Nytpuhutaan</a></p>
 </div></footer>
-<script src="/sovellus.js?v=4"></script>{skripti}
+<script src="/sovellus.js?v=5"></script>{skripti}
 </body></html>"""
 
 
@@ -68,8 +68,8 @@ def main():
     esim = "".join(f'<button type="button" class="esim" data-q="{esc(x)}">{esc(x)}</button>' for x in ESIMERKIT)
     runko = f"""<section class="hero">
 <p class="eyebrow">Suomen laki selkokielellä</p>
-<h1>Kysy laista. Saat vastauksen pykälineen.</h1>
-<p class="lead">{esc(NIMI)} etsii vastauksen ajantasaisesta lainsäädännöstä ja kertoo, mitä laki sanoo ja mitä voit tehdä. Jokainen väite on merkitty pykälään, jonka voit tarkistaa itse.</p>
+<h1>Kysy laista. Hoida asia itse.</h1>
+<p class="lead">{esc(NIMI)} etsii vastauksen ajantasaisesta lainsäädännöstä ja kertoo, mitä laki sanoo ja mitä voit tehdä. Jokainen väite on merkitty pykälään. Tarvittaessa saat valmiin kirjeen ja tiedon, mistä apua saa maksutta.</p>
 <form id="kysyLomake" class="kysy" onsubmit="return false">
 <label for="kysymys" class="sr">Kysymyksesi</label>
 <textarea id="kysymys" rows="4" maxlength="1500" placeholder="Kirjoita kysymyksesi omin sanoin…"></textarea>
@@ -81,6 +81,7 @@ def main():
 </section>
 <section id="tulos" class="tulos" aria-live="polite" hidden></section>
 <section class="kolme">
+<a class="kortti" href="/kirje/"><b>Valmis kirje</b><span>Reklamaatio, vakuuden palautus, vastine perintäkirjeeseen… Kirjoitettuna oikeine pykälineen.</span></a>
 <a class="kortti" href="/pohjaesitys/"><b>Pohjaesitys juristille</b><span>Kuvaa tilanteesi, niin saat valmiin muistion. Juristi pääsee heti asiaan, ja säästät kuluissa.</span></a>
 <a class="kortti" href="/toimistot/"><b>Löydä lakitoimisto</b><span>Kaikki asianajo- ja lakiasiaintoimistot paikkakunnittain. Näe lähimmät.</span></a>
 <a class="kortti" href="/tietoa/"><b>Miten tämä toimii?</b><span>{lait_lkm} keskeistä lakia Finlexistä, päivitetään viikoittain.</span></a>
@@ -88,6 +89,36 @@ def main():
     kirjoita("/", sivu("/", f"{NIMI} – kysy Suomen laista, vastaus pykälineen",
                        "Kysy Suomen laista omin sanoin ja saat selkokielisen vastauksen, jossa on viittaukset ajantasaisiin pykäliin. Ilmainen.",
                        runko, '<script>Pv.kysy()</script>', "kysy"))
+
+
+    # ---- valmis kirje ----
+    tyypit = [("reklamaatio", "Reklamaatio kauppaan tai palveluntarjoajalle"), ("vakuus", "Vuokravakuuden palautusvaatimus"),
+              ("perinta", "Vastine perintäkirjeeseen tai vanhentumisväite"), ("oikaisu", "Oikaisuvaatimus viranomaisen päätökseen"),
+              ("kril", "Valitus kuluttajariitalautakuntaan (tekstipohja)"), ("irtisanoutuminen", "Irtisanoutumisilmoitus työnantajalle"),
+              ("vuokrairtisanominen", "Vuokrasopimuksen irtisanominen (vuokralainen)"), ("muu", "Muu kirje tai vaatimus")]
+    runko = f"""<h1>Valmis kirje</h1>
+<p class="lead">Kerro tilanne omin sanoin, niin {esc(NIMI)} kirjoittaa valmiin kirjeen oikeine pykälineen ja määräaikoineen. Lakia ei tarvitse osata itse: palvelu etsii säännökset puolestasi.</p>
+<p class="huom" id="taustaInfo" hidden>Kirje pohjautuu äskeiseen vastaukseesi. Tarkista tilanne ja täydennä tiedot.</p>
+<form id="kirjeLomake" class="kysy" onsubmit="return false">
+<label for="tyyppi">Millainen kirje?</label>
+<select id="tyyppi">{"".join(f'<option value="{k}">{esc(n)}</option>' for k, n in tyypit)}</select>
+<label for="tilanne">Mitä on tapahtunut?</label>
+<textarea id="tilanne" rows="6" maxlength="4000" placeholder="Esim. Ostin pesukoneen 3.4.2026, ja se hajosi 10.10. Kauppa sanoo, että takuu on päättynyt…"></textarea>
+<label for="vaatimus">Mitä vaadit?</label>
+<input id="vaatimus" type="text" maxlength="400" placeholder="Esim. koneen korjaamista maksutta tai rahat takaisin">
+<label for="ajat">Päivämäärät ja summat <span class="mute">(vapaaehtoinen)</span></label>
+<input id="ajat" type="text" maxlength="400" placeholder="Esim. ostettu 3.4.2026, hinta 649 €">
+<details class="omat-d"><summary><b>Omat tiedot kirjeeseen</b> <span class="mute small">(pysyvät vain omassa selaimessasi)</span></summary>
+<div class="omat"><input id="oNimi" type="text" placeholder="Oma nimi" autocomplete="name"><input id="oOsoite" type="text" placeholder="Oma osoite" autocomplete="street-address">
+<input id="vast" type="text" placeholder="Vastaanottaja, esim. yrityksen nimi"><input id="paikka" type="text" placeholder="Paikkakunta, esim. Ylivieska"></div></details>
+<input type="text" id="hp" class="sr" tabindex="-1" autocomplete="off" aria-hidden="true">
+<button type="submit" class="btn" id="kirjeNappi">Kirjoita kirje</button>
+<p class="huom"><b>Yksityisyys:</b> nimesi ja osoitteesi lisätään kirjeeseen vasta omassa selaimessasi, eikä niitä lähetetä minnekään. Älä kirjoita tilannekuvaukseen henkilötunnuksia tai muita tunnistettavia tietoja.</p>
+</form>
+<section id="tulos" class="tulos" aria-live="polite" hidden></section>"""
+    kirjoita("/kirje/", sivu("/kirje/", f"Valmis kirje oikeine pykälineen | {NIMI}",
+             "Reklamaatio, vuokravakuuden palautusvaatimus, vastine perintäkirjeeseen tai oikaisuvaatimus valmiiksi kirjoitettuna oikeine pykälineen.", runko,
+             '<script>Pv.kirje()</script>', "kirje"))
 
     # ---- pohjaesitys ----
     runko = f"""<h1>Pohjaesitys juristille</h1>
@@ -198,7 +229,7 @@ var t=Object.entries(L).sort((a,b)=>b[1]-a[1]).slice(0,15),mm=Math.max(1,...t.ma
     if SITE:
         open(os.path.join(PUB, "robots.txt"), "w").write(f"User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /seuranta/\nSitemap: {SITE}/sitemap.xml\n")
         open(os.path.join(PUB, "sitemap.xml"), "w").write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
-            + "".join(f"<url><loc>{SITE}{u}</loc></url>" for u in ("/", "/pohjaesitys/", "/toimistot/", "/tietoa/", "/juristeille/", "/ehdot/", "/tietosuoja/")) + "</urlset>\n")
+            + "".join(f"<url><loc>{SITE}{u}</loc></url>" for u in ("/", "/kirje/", "/pohjaesitys/", "/toimistot/", "/tietoa/", "/juristeille/", "/ehdot/", "/tietosuoja/")) + "</urlset>\n")
     print("sivut valmiit")
 
 
