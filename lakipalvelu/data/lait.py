@@ -30,7 +30,7 @@ LAIT = [
  (2011, 26, "Laki avopuolisoiden yhteistalouden purkamisesta", "avoero, avopuolisoiden omaisuus"),
  (1983, 361, "Laki lapsen huollosta ja tapaamisoikeudesta", "huoltajuus, tapaamisoikeus, lapsen asuminen"),
  (1975, 704, "Laki lapsen elatuksesta", "elatusapu, elatusvelvollisuus"),
- (1999, 442, "Holhoustoimilaki", "edunvalvonta, edunvalvontavaltuutus, alaikäisen omaisuus"),
+ (1999, 442, "Laki holhoustoimesta", "edunvalvonta, edunvalvontavaltuutus, alaikäisen omaisuus"),
  (1974, 412, "Vahingonkorvauslaki", "vahingonkorvaus, kipu ja särky, työnantajan vastuu"),
  (2003, 728, "Laki velan vanhentumisesta", "velan vanhentuminen, vanhentumisen katkaisu"),
  (1982, 633, "Korkolaki", "viivästyskorko, korko"),
@@ -118,7 +118,7 @@ def versiot(v, n, nimi):
                 break
             for x in d:
                 u = x.get("akn_uri", "")
-                if f"/statute-consolidated/{v}/{n}/fin@" in u:
+                if re.search(rf"/statute-consolidated/{v}/{n}(-\d+)?/fin@", u):
                     loydetyt.add(u)
             if len(d) < 10:
                 break
