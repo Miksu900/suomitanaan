@@ -1,0 +1,22 @@
+name: Kävijäseuranta (Web Analytics)
+on: workflow_dispatch
+jobs:
+  lisaa:
+    runs-on: ubuntu-latest
+    env:
+      CF: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      API: https://api.cloudflare.com/client/v4
+    steps:
+      - run: |
+          h=(-sS -H "Authorization: Bearer $CF" -H "Content-Type: application/json")
+          A=$(curl "${h[@]}" "$API/accounts" | jq -r '.result[0].id')
+          L=$(curl "${h[@]}" "$API/accounts/$A/rum/site_info/list?per_page=50")
+          echo "::notice title=lista::$(echo "$L" | jq -c '[.result[]? | {host: .ruleset.zone_name // .host, tag: .site_tag, token: .site_token, auto: .auto_install}] , .errors')"
+          for d in faktapiste.fi pykalavahti.fi; do
+            T=$(echo "$L" | jq -r --arg d "$d" '.result[]? | select((.host // .ruleset.zone_name)==$d) | .site_token' | head -1)
+            if [ -z "$T" ]; then
+              R=$(curl "${h[@]}" -X POST "$API/accounts/$A/rum/site_info" -d "{\"host\":\"$d\",\"auto_install\":false}")
+              T=$(echo "$R" | jq -r '.result.site_token // empty'); [ -n "$T" ] || echo "::warning title=$d::$(echo "$R" | jq -c .errors)"
+            fi
+            echo "::notice title=$d::token=$T"
+          done
