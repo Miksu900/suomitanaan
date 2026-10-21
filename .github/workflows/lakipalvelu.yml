@@ -38,9 +38,12 @@ jobs:
           [ -n "$KV" ] || KV=$(curl "${h[@]}" -X POST "$API/accounts/$A/storage/kv/namespaces" -d '{"title":"lakipalvelu-db"}' | jq -r '.result.id')
           echo "kv=$KV" >> $GITHUB_OUTPUT
           SUB=$(curl "${h[@]}" "$API/accounts/$A/workers/subdomain" | jq -r '.result.subdomain // empty'); echo "sub=$SUB" >> $GITHUB_OUTPUT
+          T=$(curl "${h[@]}" "$API/zones?name=pykalavahti.fi" | jq -r '.result[0].status // "puuttuu"'); echo "tila=$T" >> $GITHUB_OUTPUT
+          if [ "$T" = "active" ]; then echo "url=https://pykalavahti.fi" >> $GITHUB_OUTPUT; else echo "url=https://pykalavahti.$SUB.workers.dev" >> $GITHUB_OUTPUT; fi
+          echo "::notice title=pykalavahti.fi Cloudflaressa::$T"
       - name: Sivut
         env:
-          PALVELU_URL: ${{ vars.LAKIPALVELU_URL || format('https://pykalavahti.{0}.workers.dev', steps.cf.outputs.sub) }}
+          PALVELU_URL: ${{ vars.LAKIPALVELU_URL || steps.cf.outputs.url }}
         run: python3 lakipalvelu/sivut.py
       - name: Julkaise
         working-directory: lakipalvelu
@@ -54,6 +57,7 @@ jobs:
           main = "src/index.js"
           compatibility_date = "2026-09-01"
           workers_dev = true
+          ${{ steps.cf.outputs.tila == 'active' && 'routes = [ { pattern = "pykalavahti.fi", custom_domain = true }, { pattern = "www.pykalavahti.fi", custom_domain = true } ]' || '' }}
           [assets]
           directory = "./public"
           binding = "ASSETS"
@@ -75,7 +79,7 @@ jobs:
           git add lakipalvelu/data/kunnat.json && (git commit -m "Pykälävahti: kuntien koordinaatit" && git pull --rebase && git push) || true
       - name: Savutesti
         run: |
-          U=https://pykalavahti.${{ steps.cf.outputs.sub }}.workers.dev
+          U=${{ steps.cf.outputs.url }}
           sleep 8
           echo "::notice title=Osoite::$U  etusivu $(curl -s -o /dev/null -w '%{http_code}' $U/)  toimistot $(curl -s -o /dev/null -w '%{http_code}' $U/data/toimistot.json)  finlex-linkki $(curl -s -o /dev/null -w '%{http_code}' https://www.finlex.fi/fi/lainsaadanto/1978/38)"
           Q="${{ inputs.testikysymys }}"; [ -n "$Q" ] || Q="Ostin pesukoneen kaupasta ja se hajosi 8 kuukauden kuluttua. Onko kauppa velvollinen korjaamaan sen ilmaiseksi?"
