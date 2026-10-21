@@ -33,7 +33,7 @@ def sivu(polku, otsikko, kuvaus, runko, skripti="", aktiivinen=""):
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,600;7..72,700&family=Inter:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="/tyyli.css?v=5"></head>
+<link rel="stylesheet" href="/tyyli.css?v=6"></head>
 <body><a class="skip" href="#sisalto">Siirry sisältöön</a>
 <header class="hd"><div class="hd-in"><a class="brand" href="/">{LOGO}<span>{esc(NIMI)}</span></a><nav aria-label="Päävalikko">{nav}</nav></div></header>
 <main id="sisalto" class="wrap">{runko}</main>
@@ -42,7 +42,7 @@ def sivu(polku, otsikko, kuvaus, runko, skripti="", aktiivinen=""):
 <p><a href="/tietoa/">Tietoa palvelusta</a> · <a href="/ehdot/">Käyttöehdot</a> · <a href="/tietosuoja/">Tietosuoja</a> · <a href="/juristeille/">Juristeille</a> · Yhteys: <span class="mono">{YHTEYS}</span></p>
 <p class="mute">Saman ylläpitäjän palveluja: <a href="https://keraysvahti.fi">Keräysvahti</a> · <a href="https://eduskuntaseuranta.fi">Eduskuntaseuranta</a> · <a href="https://nytpuhutaan.fi">Nytpuhutaan</a></p>
 </div></footer>
-<script src="/sovellus.js?v=5"></script>{skripti}
+<script src="/sovellus.js?v=6"></script>{skripti}
 </body></html>"""
 
 
@@ -70,6 +70,7 @@ def main():
 <p class="eyebrow">Suomen laki selkokielellä</p>
 <h1>Kysy laista. Hoida asia itse.</h1>
 <p class="lead">{esc(NIMI)} etsii vastauksen ajantasaisesta lainsäädännöstä ja kertoo, mitä laki sanoo ja mitä voit tehdä. Jokainen väite on merkitty pykälään. Tarvittaessa saat valmiin kirjeen ja tiedon, mistä apua saa maksutta.</p>
+<p class="tiedote"><b>Avajaisvaihe: kaikki on nyt maksutonta.</b> Osa palveluista, kuten valmiit kirjeet ja pohjaesitykset, muuttuu myöhemmin maksulliseksi. Muutoksesta kerrotaan sivulla etukäteen.</p>
 <form id="kysyLomake" class="kysy" onsubmit="return false">
 <label for="kysymys" class="sr">Kysymyksesi</label>
 <textarea id="kysymys" rows="4" maxlength="1500" placeholder="Kirjoita kysymyksesi omin sanoin…"></textarea>
@@ -98,6 +99,7 @@ def main():
               ("vuokrairtisanominen", "Vuokrasopimuksen irtisanominen (vuokralainen)"), ("muu", "Muu kirje tai vaatimus")]
     runko = f"""<h1>Valmis kirje</h1>
 <p class="lead">Kerro tilanne omin sanoin, niin {esc(NIMI)} kirjoittaa valmiin kirjeen oikeine pykälineen ja määräaikoineen. Lakia ei tarvitse osata itse: palvelu etsii säännökset puolestasi.</p>
+<p class="tiedote"><b>Avajaisvaihe: kaikki on nyt maksutonta.</b> Osa palveluista, kuten valmiit kirjeet ja pohjaesitykset, muuttuu myöhemmin maksulliseksi. Muutoksesta kerrotaan sivulla etukäteen.</p>
 <p class="huom" id="taustaInfo" hidden>Kirje pohjautuu äskeiseen vastaukseesi. Tarkista tilanne ja täydennä tiedot.</p>
 <form id="kirjeLomake" class="kysy" onsubmit="return false">
 <label for="tyyppi">Millainen kirje?</label>
@@ -123,6 +125,7 @@ def main():
     # ---- pohjaesitys ----
     runko = f"""<h1>Pohjaesitys juristille</h1>
 <p class="lead">Kuvaa tilanteesi, niin {esc(NIMI)} kokoaa siitä muistion: tosiseikat, sovellettavat pykälät, alustavan arvion ja avoimet kysymykset. Kun viet muistion juristille, hän pääsee heti asiaan, eikä sinun tarvitse maksaa selvitystyöstä.</p>
+<p class="tiedote"><b>Avajaisvaihe: kaikki on nyt maksutonta.</b> Osa palveluista, kuten valmiit kirjeet ja pohjaesitykset, muuttuu myöhemmin maksulliseksi. Muutoksesta kerrotaan sivulla etukäteen.</p>
 <form id="esitysLomake" class="kysy" onsubmit="return false">
 <label for="kuvaus">Mitä on tapahtunut?</label>
 <textarea id="kuvaus" rows="8" maxlength="4000" placeholder="Kerro tapahtumat aikajärjestyksessä: mitä sovittiin, mitä tapahtui, mitä toinen osapuoli on sanonut…"></textarea>
@@ -176,7 +179,7 @@ def main():
     runko = f"""<h1>Käyttöehdot</h1><div class="proosa"><p class="mute">Voimassa {VOIMASSA} alkaen.</p>
 <h2>1. Palvelu</h2><p>{esc(NIMI)} ({esc(SITE or "")}) on verkkopalvelu, joka selittää Suomen lainsäädäntöä tekoälyn avulla ajantasaisen lainsäädännön (Finlex) pohjalta, laatii käyttäjän kuvauksen perusteella pohjaesityksiä juristille ja näyttää lakitoimistojen yhteystietoja. Palvelun tarjoaa {esc(MYYJA)}.</p>
 <h2>2. Ei oikeudellista neuvontaa</h2><p>Palvelun vastaukset ja pohjaesitykset ovat yleistä tietoa laista ja juristin tarkistettavaksi tarkoitettuja luonnoksia. Ne eivät ole oikeudellista neuvontaa eivätkä korvaa juristia. Palvelu ei ole asianajotoimisto, eikä palveluntarjoaja ole asianajaja. Tekoäly voi erehtyä, ja lopputulokseen voivat vaikuttaa seikat, joita palvelu ei tunne, kuten sopimukset, työehtosopimukset ja oikeuskäytäntö. Käyttäjä vastaa itse siitä, miten hän käyttää palvelun antamaa tietoa.</p>
-<h2>3. Maksut</h2><p>Kysymykset laista ovat maksuttomia. Pohjaesitys juristille maksaa {HINTA} euroa (sis. arvonlisäveron), ellei sitä tarjota maksutta esimerkiksi avajaiskaudella. Hinta näkyy ennen maksamista. Maksu suoritetaan Stripe-maksupalvelun kautta, eikä palveluntarjoaja näe kortin tietoja.</p>
+<h2>3. Maksut</h2><p><b>Palvelu on avajaisvaiheessa kokonaan maksuton.</b> Osa palveluista muuttuu myöhemmin maksulliseksi, ja muutoksesta kerrotaan palvelussa etukäteen. Kysymykset laista ovat maksuttomia. Pohjaesitys juristille maksaa {HINTA} euroa (sis. arvonlisäveron), ellei sitä tarjota maksutta esimerkiksi avajaiskaudella. Hinta näkyy ennen maksamista. Maksu suoritetaan Stripe-maksupalvelun kautta, eikä palveluntarjoaja näe kortin tietoja.</p>
 <h2>4. Toimitus ja peruuttamisoikeus</h2><p>Pohjaesitys on digitaalista sisältöä, joka toimitetaan heti maksun jälkeen näytölle. Käyttäjä pyytää toimitusta ennen peruuttamisajan päättymistä ja hyväksyy, että peruuttamisoikeus päättyy, kun esitys on toimitettu (kuluttajansuojalaki 6 luku 16 §). Jos pohjaesitystä ei teknisen vian vuoksi saada laadittua, käyttäjä voi yrittää uudelleen samalla maksulla tai pyytää maksun palautusta osoitteesta <span class="mono">{YHTEYS}</span>.</p>
 <h2>5. Vastuunrajoitus</h2><p>Palveluntarjoaja ei vastaa vahingoista, jotka aiheutuvat palvelun antaman tiedon käyttämisestä, palvelun keskeytyksistä tai tekoälyn virheistä, ellei pakottavasta lainsäädännöstä muuta johdu. Vastuu rajoittuu enintään käyttäjän palvelusta maksamaan hintaan.</p>
 <h2>6. Lakitoimistojen tiedot</h2><p>Toimistotiedot perustuvat kaupparekisterin avoimeen dataan. Palvelu ei suosittele mitään toimistoa eikä vastaa toimistojen palveluista tai hinnoista.</p>

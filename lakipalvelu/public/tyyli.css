@@ -84,3 +84,4 @@ textarea:focus,input:focus{outline:none;border-color:var(--gold)}
 .omat{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}
 .omat input{width:100%}
 select{font:16px var(--f-b);color:var(--ink);background:var(--paper);border:2px solid var(--line);border-radius:12px;padding:11px 12px;width:100%}
+.tiedote{margin:6px 0 0;font-size:.9rem;background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:10px;padding:10px 12px}
