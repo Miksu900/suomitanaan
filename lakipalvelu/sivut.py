@@ -33,7 +33,7 @@ def sivu(polku, otsikko, kuvaus, runko, skripti="", aktiivinen=""):
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,600;7..72,700&family=Inter:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="/tyyli.css?v=6"></head>
+<link rel="stylesheet" href="/tyyli.css?v=7"></head>
 <body><a class="skip" href="#sisalto">Siirry sisältöön</a>
 <header class="hd"><div class="hd-in"><a class="brand" href="/">{LOGO}<span>{esc(NIMI)}</span></a><nav aria-label="Päävalikko">{nav}</nav></div></header>
 <main id="sisalto" class="wrap">{runko}</main>
@@ -42,7 +42,7 @@ def sivu(polku, otsikko, kuvaus, runko, skripti="", aktiivinen=""):
 <p><a href="/tietoa/">Tietoa palvelusta</a> · <a href="/ehdot/">Käyttöehdot</a> · <a href="/tietosuoja/">Tietosuoja</a> · <a href="/juristeille/">Juristeille</a> · Yhteys: <span class="mono">{YHTEYS}</span></p>
 <p class="mute">Saman ylläpitäjän palveluja: <a href="https://keraysvahti.fi">Keräysvahti</a> · <a href="https://eduskuntaseuranta.fi">Eduskuntaseuranta</a> · <a href="https://nytpuhutaan.fi">Nytpuhutaan</a></p>
 </div></footer>
-<script src="/sovellus.js?v=6"></script>{skripti}
+<script src="/sovellus.js?v=7"></script>{skripti}
 </body></html>"""
 
 

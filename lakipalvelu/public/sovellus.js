@@ -70,14 +70,16 @@
     velka: ["Talous- ja velkaneuvonta", "Maksutonta apua velkojen järjestelyyn oikeusaputoimistoista.", "https://oikeus.fi"],
     riku: ["Rikosuhripäivystys", "Maksutonta tukea ja neuvontaa rikoksen uhrille, puhelin 116 006.", "https://www.riku.fi"],
     lv: ["Lastenvalvoja", "Kunnan lastenvalvoja auttaa maksutta huolto-, tapaamis- ja elatusasioiden sopimuksissa.", ""],
+    kv: ["Keräysvahti", "Tarkista, onko rahankeräyksellä poliisin lupa ja kuuluuko tilinumero oikeasti järjestölle.", "https://keraysvahti.fi"],
+    kvh: ["Keräysvahti: jos jouduit huijatuksi", "Ohjeet vaihe vaiheelta: pankki, rikosilmoitus ja tuki. Tunnista myös yleisimmät huijaukset.", "https://keraysvahti.fi/huijaukset/apua/"],
     oik: ["Tee itse oikaisuvaatimus", "Oikaisuvaatimus viranomaiselle on maksuton, eikä siihen tarvita juristia. Määräaika on päätöksen valitusosoituksessa.", ""]
   };
   var APU_LAKI = { "1978-38": ["kkv", "kril"], "1994-843": ["kril"], "1995-481": ["kril"], "1994-543": ["fine"], "2016-460": ["fine"],
     "2001-55": ["liitto", "tsuo"], "2019-872": ["liitto", "tsuo"], "2005-162": ["liitto", "tsuo"], "2014-1325": ["liitto"], "1986-609": ["liitto"],
     "2003-728": ["velka"], "1982-633": ["velka"], "1999-513": ["velka"], "2007-705": ["velka"], "1993-57": ["velka"], "1889-39": ["riku"],
-    "1983-361": ["lv"], "1975-704": ["lv"], "2003-434": ["oik"], "1999-621": ["oik"] };
-  function halvin(lait) {
-    var k = []; (lait || []).forEach(function (l) { (APU_LAKI[l] || []).forEach(function (x) { if (k.indexOf(x) < 0) k.push(x); }); });
+    "2019-863": ["kv"], "1983-361": ["lv"], "1975-704": ["lv"], "2003-434": ["oik"], "1999-621": ["oik"] };
+  function halvin(lait, kysymys) {
+    var k = /huija|petos|valepoliis|kalastel|turvatili/i.test(kysymys || "") ? ["kvh"] : []; (lait || []).forEach(function (l) { (APU_LAKI[l] || []).forEach(function (x) { if (k.indexOf(x) < 0) k.push(x); }); });
     k = k.concat(["ot", "oa"]);
     return '<div class="reitti"><h2>Ennen kuin maksat juristille</h2><p class="mute small">Nämä voivat ratkaista asian maksutta tai pienentää kuluja:</p><ul>' + k.map(function (x) {
       var a = APU[x]; return "<li><b>" + (a[2] ? '<a href="' + a[2] + '" target="_blank" rel="noopener">' + a[0] + "</a>" : a[0]) + "</b> – " + a[1] + "</li>"; }).join("") + "</ul></div>";
@@ -105,7 +107,7 @@
         nappi.disabled = false;
         if (d.virhe) { T.innerHTML = '<p class="virhe">' + esc(d.virhe) + "</p>"; return; }
         var n = (d.lahteet || []).length;
-        T.innerHTML = muotoile(d.vastaus, n) + VASTUU + (jalkeen || "") + muutosvahti(d.muutokset, d.lahteet) + halvin(d.lait) + '<div id="lahinLaatikko"></div>' + lahteet(d.lahteet);
+        T.innerHTML = muotoile(d.vastaus, n) + VASTUU + (jalkeen || "") + muutosvahti(d.muutokset, d.lahteet) + halvin(d.lait, data.kysymys || data.kuvaus || "") + '<div id="lahinLaatikko"></div>' + lahteet(d.lahteet);
         try { sessionStorage.setItem("pv_tausta", JSON.stringify({ q: data.kysymys || data.kuvaus || "", v: String(d.vastaus).slice(0, 3000), lait: d.lait || [] })); } catch (x) {}
         lahimmat($("lahinLaatikko"));
         T.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -121,6 +123,8 @@
   window.Pv = {
     kysy: function () {
       var q = $("kysymys"), b = $("kysyNappi"), m = $("merkit");
+      var esi = new URLSearchParams(location.search).get("q");
+      if (esi) { q.value = esi.slice(0, 1500); m.textContent = q.value.length + " / 1500"; setTimeout(function () { q.focus(); }, 50); }
       q.addEventListener("input", function () { m.textContent = q.value.length + " / 1500"; });
       document.querySelectorAll(".esim").forEach(function (e) { e.onclick = function () { q.value = e.dataset.q; q.dispatchEvent(new Event("input")); laheta1(); }; });
       function laheta1() {
