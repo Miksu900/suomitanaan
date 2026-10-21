@@ -135,6 +135,7 @@ async function vastaa(env, origin, kysymys) {
   const sys = `Olet Pykälävahti, palvelu joka selittää Suomen lakia tavallisille ihmisille ajantasaisen lainsäädännön pohjalta. Et ole asianajaja etkä anna sitovaa oikeudellista neuvontaa, vaan yleistä tietoa laista. ${YHTEISET}`;
   const u = `Ajantasaiset pykälät (Finlex):\n\n${lahteet(h.osumat)}\n\n---\nKäyttäjän kysymys:\n"""${kysymys}"""\n\nVastaa rakenteella:\n## Lyhyesti\n(1–3 virkettä)\n## Mitä laki sanoo\n(selitys lähdeviittein)\n## Mitä voit tehdä\n(käytännön askeleet, määräajat jos laissa)\n## Milloin kannattaa kysyä juristilta\n(1–3 kohtaa)`;
   const t = await claude(env, MALLI_VASTAUS, sys, u, 1800);
+  await tilastoi(env, "kysymys", h.lait);
   return { vastaus: t, lahteet: julki(h.osumat), aihe: h.aihe };
 }
 
@@ -144,7 +145,26 @@ async function esitys(env, origin, b) {
   const sys = `Olet Pykälävahti. Laadit juristille pohjaesityksen (muistion) asiakkaan tilanteesta, jotta juristi pääsee nopeasti asiaan ja asiakas säästää kuluissa. Muistio ei ole oikeudellinen neuvo, vaan juristin tarkistettava luonnos. Kirjoita asiallisesti ja tiiviisti. ${YHTEISET}`;
   const u = `Ajantasaiset pykälät (Finlex):\n\n${h.osumat.length ? lahteet(h.osumat) : "(ei osumia aineistosta)"}\n\n---\nAsiakkaan kuvaus tilanteesta:\n"""${kuvaus}"""\nMitä asiakas haluaa saavuttaa:\n"""${tavoite || "ei kerrottu"}"""\nMääräajat ja päivämäärät:\n"""${ajat || "ei kerrottu"}"""\n\nLaadi muistio rakenteella:\n## Tiivistelmä\n## Tosiseikat asiakkaan kertomana\n(luettelona; merkitse epäselvät kohdat)\n## Oikeudelliset kysymykset\n## Sovellettavat säännökset\n(lähdeviittein)\n## Alustava arvio\n(vahvuudet ja heikkoudet, varovaisesti)\n## Mahdolliset toimintavaihtoehdot\n## Määräajat ja kiireellisyys\n## Avoimet kysymykset juristille\n## Asiakirjat, jotka kannattaa ottaa mukaan`;
   const t = await claude(env, MALLI_VASTAUS, sys, u, 2600);
+  await tilastoi(env, "esitys", h.lait);
   return { vastaus: t, lahteet: julki(h.osumat), aihe: h.aihe };
+}
+
+// ---------- käyttötilasto (vain lukumäärät, ei kysymyksiä) ----------
+async function tilastoi(env, laji, lait) {
+  try {
+    const k = "stat:" + new Date().toISOString().slice(0, 10);
+    const d = JSON.parse((await env.DB.get(k)) || "{}");
+    d[laji] = (d[laji] || 0) + 1;
+    d.lait = d.lait || {};
+    for (const l of lait || []) d.lait[l] = (d.lait[l] || 0) + 1;
+    await env.DB.put(k, JSON.stringify(d), { expirationTtl: 400 * 86400 });
+  } catch {}
+}
+async function tilasto(env) {
+  const pv = [];
+  for (let i = 0; i < 30; i++) { const d = new Date(Date.now() - i * 864e5).toISOString().slice(0, 10); pv.push(d); }
+  const arvot = await Promise.all(pv.map((d) => env.DB.get("stat:" + d)));
+  return pv.map((d, i) => ({ pv: d, ...(JSON.parse(arvot[i] || "{}")) }));
 }
 
 // ---------- maksut (Stripe Checkout) ----------
@@ -188,7 +208,7 @@ export default {
   async fetch(req, env) {
     const url = new URL(req.url);
     if (url.pathname.startsWith("/api/")) {
-      if (req.method !== "POST" && url.pathname !== "/api/tila") return json({ virhe: "Vain POST" }, 405);
+      if (req.method !== "POST" && url.pathname !== "/api/tila" && url.pathname !== "/api/seuranta") return json({ virhe: "Vain POST" }, 405);
       const o = req.headers.get("Origin");
       if (o && new URL(o).host !== url.host) return json({ virhe: "Kielletty" }, 403);
       let b = {}; if (req.method === "POST") { try { b = await req.json(); } catch { return json({ virhe: "Virheellinen pyyntö" }, 400); } }
@@ -201,6 +221,7 @@ export default {
           const raja = await rajoita(req, env); if (raja) return json({ virhe: raja }, 429);
           return json(await vastaa(env, url.origin, k));
         }
+        if (url.pathname === "/api/seuranta") return json(await tilasto(env));
         if (url.pathname === "/api/tila") return json({ maksullinen: maksullinen(env), hinta: HINTA_SNT / 100 });
         if (url.pathname === "/api/maksu") {
           if (!maksullinen(env)) return json({ virhe: "Maksu ei ole käytössä." }, 400);

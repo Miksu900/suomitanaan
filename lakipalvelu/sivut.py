@@ -181,10 +181,22 @@ def main():
 <h2>Onko toimistonne tiedoissa virhe?</h2><p>Toimistotiedot tulevat kaupparekisteristä. Ilmoita korjaus tai lisätieto (esim. verkkosivu tai erikoisalat) yllä olevaan osoitteeseen.</p></div>"""
     kirjoita("/juristeille/", sivu("/juristeille/", f"Juristeille ja lakitoimistoille | {NIMI}", "Asiakkaita valmiiksi jäsennellyn pohjaesityksen kanssa. Tule kumppaniksi.", runko))
 
+
+    # ---- seuranta (ylläpitäjälle, ei hakukoneisiin) ----
+    lnimet = json.dumps({l["id"]: l["nimi"] for l in LAIT["lait"]}, ensure_ascii=False)
+    runko = """<h1>Seuranta</h1><p class="lead">Kysymysten ja pohjaesitysten määrät päivittäin sekä suosituimmat lait (30 päivää). Kysymysten sisältöä ei tallenneta.</p>
+<div class="kolme" id="yht"></div><h2>Päivittäin</h2><div id="pv" class="lista"></div><h2>Suosituimmat lait</h2><div id="lait" class="lista"></div>
+<style>.pal{display:flex;align-items:center;gap:8px;font-size:.9rem}.pal i{display:block;height:12px;background:var(--gold);border-radius:3px}.pal span{min-width:92px;color:var(--mute)}</style>"""
+    js = "<script>var N=" + lnimet + r""";fetch('/api/seuranta').then(r=>r.json()).then(d=>{var k=0,e=0,L={};d.forEach(x=>{k+=x.kysymys||0;e+=x.esitys||0;for(var l in (x.lait||{}))L[l]=(L[l]||0)+x.lait[l]});
+document.getElementById('yht').innerHTML='<div class="kortti"><b>'+k+'</b><span>kysymystä 30 pv</span></div><div class="kortti"><b>'+e+'</b><span>pohjaesitystä 30 pv</span></div><div class="kortti"><b>'+(d[0].kysymys||0)+'</b><span>kysymystä tänään</span></div>';
+var m=Math.max(1,...d.map(x=>x.kysymys||0));document.getElementById('pv').innerHTML=d.map(x=>'<div class="pal"><span>'+x.pv.slice(8,10)+'.'+x.pv.slice(5,7)+'.</span><i style="width:'+Math.round(200*(x.kysymys||0)/m)+'px"></i>'+(x.kysymys||0)+' / '+(x.esitys||0)+'</div>').join('');
+var t=Object.entries(L).sort((a,b)=>b[1]-a[1]).slice(0,15),mm=Math.max(1,...t.map(x=>x[1]));document.getElementById('lait').innerHTML=t.map(x=>'<div class="pal"><span>'+x[1]+'</span><i style="width:'+Math.round(200*x[1]/mm)+'px"></i>'+(N[x[0]]||x[0])+'</div>').join('')||'<p class="mute">Ei vielä kysymyksiä.</p>'})</script>"""
+    kirjoita("/seuranta/", sivu("/seuranta/", f"Seuranta | {NIMI}", "", runko, js).replace("<head>", '<head><meta name="robots" content="noindex,nofollow">', 1))
+
     # ---- 404, robots, sivukartta ----
     open(os.path.join(PUB, "404.html"), "w", encoding="utf-8").write(sivu("/404", f"Sivua ei löytynyt | {NIMI}", "", '<h1>Sivua ei löytynyt</h1><p><a class="btn" href="/">Etusivulle</a></p>'))
     if SITE:
-        open(os.path.join(PUB, "robots.txt"), "w").write(f"User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: {SITE}/sitemap.xml\n")
+        open(os.path.join(PUB, "robots.txt"), "w").write(f"User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /seuranta/\nSitemap: {SITE}/sitemap.xml\n")
         open(os.path.join(PUB, "sitemap.xml"), "w").write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
             + "".join(f"<url><loc>{SITE}{u}</loc></url>" for u in ("/", "/pohjaesitys/", "/toimistot/", "/tietoa/", "/juristeille/", "/ehdot/", "/tietosuoja/")) + "</urlset>\n")
     print("sivut valmiit")
