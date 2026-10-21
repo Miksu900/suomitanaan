@@ -1,0 +1,52 @@
+name: Faktapiste.fi
+# Rakentaa faktapiste.fi-kattosivun ja julkaisee sen Cloudflare Workeriin (pelkät staattiset sivut).
+# Domain kytketään automaattisesti, kun faktapiste.fi on aktiivinen Cloudflaressa.
+on:
+  push:
+    branches: [main]
+    paths: ["faktapiste/**", ".github/workflows/faktapiste.yml"]
+  workflow_dispatch:
+jobs:
+  julkaise:
+    runs-on: ubuntu-latest
+    env:
+      CF: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      API: https://api.cloudflare.com/client/v4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Tili ja domainin tila
+        id: cf
+        run: |
+          h=(-sS -H "Authorization: Bearer $CF")
+          echo "account=$(curl "${h[@]}" "$API/accounts" | jq -r '.result[0].id')" >> $GITHUB_OUTPUT
+          echo "sub=$(curl "${h[@]}" "$API/accounts/$(curl "${h[@]}" "$API/accounts" | jq -r '.result[0].id')/workers/subdomain" | jq -r '.result.subdomain // empty')" >> $GITHUB_OUTPUT
+          T=$(curl "${h[@]}" "$API/zones?name=faktapiste.fi" | jq -r '.result[0].status // "puuttuu"'); echo "tila=$T" >> $GITHUB_OUTPUT
+          echo "::notice title=faktapiste.fi Cloudflaressa::$T"
+      - name: Sivut
+        run: python3 faktapiste/rakenna.py
+      - name: Julkaise
+        working-directory: faktapiste
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ steps.cf.outputs.account }}
+        run: |
+          set -e
+          {
+            echo 'name = "faktapiste"'
+            echo 'compatibility_date = "2026-09-01"'
+            echo 'workers_dev = true'
+            if [ "${{ steps.cf.outputs.tila }}" = "active" ]; then
+              echo 'routes = [ { pattern = "faktapiste.fi", custom_domain = true }, { pattern = "www.faktapiste.fi", custom_domain = true } ]'
+            fi
+            echo '[assets]'
+            echo 'directory = "./public"'
+            echo 'not_found_handling = "404-page"'
+          } > wrangler.toml
+          npx --yes wrangler@3.99.0 deploy
+      - name: Savutesti
+        run: |
+          sleep 8
+          U=https://faktapiste.${{ steps.cf.outputs.sub }}.workers.dev
+          echo "::notice title=Testi::workers.dev $(curl -s -o /dev/null -w '%{http_code}' $U/)  palvelut $(curl -s -o /dev/null -w '%{http_code}' $U/palvelut/)  faktapiste.fi $(curl -s -o /dev/null -w '%{http_code}' https://faktapiste.fi/ || true)"
