@@ -18,7 +18,7 @@ jobs:
             Z=$(curl "${h[@]}" "$API/zones?name=$d" | jq -c '.result[0] // empty')
             if [ -z "$Z" ]; then
               R=$(curl "${h[@]}" -X POST "$API/zones" -d "{\"name\":\"$d\",\"account\":{\"id\":\"$A\"},\"type\":\"full\"}")
-              echo "$R" | jq -c '.errors' ; Z=$(echo "$R" | jq -c '.result // empty')
+              echo "::warning title=virhe $d::$(echo "$R" | jq -c '.errors')"; Z=$(echo "$R" | jq -c '.result // empty')
             fi
             [ -n "$Z" ] && echo "::notice title=$d::tila $(echo "$Z" | jq -r .status) | nimipalvelimet: $(echo "$Z" | jq -r '.name_servers|join(" ja ")')" || echo "::warning title=$d::ei onnistunut"
           done
