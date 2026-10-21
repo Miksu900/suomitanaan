@@ -69,6 +69,7 @@ def sivu(polku, otsikko, kuvaus, runko, noindex=False):
 <meta property="og:image" content="{SITE}/og.png"><meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#0d1b3e">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<script type="application/ld+json">{{"@context":"https://schema.org","@type":"Organization","name":"Faktapiste","url":"{SITE}/","logo":"{SITE}/og.png","email":"{YHTEYS}","description":"Ilmaisia palveluita julkisista lähteistä: Keräysvahti, Pykälävahti, Korjausvahti, Nytpuhutaan ja Eduskuntaseuranta."}}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/tyyli.css?v={VER}">

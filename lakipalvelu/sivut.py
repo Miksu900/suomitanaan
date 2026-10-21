@@ -40,7 +40,7 @@ def sivu(polku, otsikko, kuvaus, runko, skripti="", aktiivinen=""):
 <footer class="ft"><div class="ft-in">
 <p><b>{esc(NIMI)}</b> selittää Suomen lakia ajantasaisen lainsäädännön (Finlex) pohjalta. Vastaukset ovat yleistä tietoa, eivät oikeudellista neuvontaa, eikä palvelu ole asianajotoimisto. Tekoäly ei vastaa tietojen oikeellisuudesta.</p>
 <p><a href="/tietoa/">Tietoa palvelusta</a> · <a href="/ehdot/">Käyttöehdot</a> · <a href="/tietosuoja/">Tietosuoja</a> · <a href="/juristeille/">Juristeille</a> · Yhteys: <span class="mono">{YHTEYS}</span></p>
-<p class="mute">Saman ylläpitäjän palveluja: <a href="https://keraysvahti.fi">Keräysvahti</a> · <a href="https://eduskuntaseuranta.fi">Eduskuntaseuranta</a> · <a href="https://nytpuhutaan.fi">Nytpuhutaan</a></p>
+<p class="mute">Pykälävahti on osa <a href="https://faktapiste.fi">Faktapistettä</a>. Muita palveluja: <a href="https://keraysvahti.fi">Keräysvahti</a> · <a href="https://keraysvahti.fi/huijaukset/">Huijausapu</a> · <a href="https://eduskuntaseuranta.fi">Eduskuntaseuranta</a> · <a href="https://nytpuhutaan.fi">Nytpuhutaan</a></p>
 </div></footer>
 <script src="/sovellus.js?v=7"></script>{skripti}
 </body></html>"""
@@ -89,7 +89,12 @@ def main():
 </section>"""
     kirjoita("/", sivu("/", f"{NIMI} – kysy Suomen laista, vastaus pykälineen",
                        "Kysy Suomen laista omin sanoin ja saat selkokielisen vastauksen, jossa on viittaukset ajantasaisiin pykäliin. Ilmainen.",
-                       runko, '<script>Pv.kysy()</script>', "kysy"))
+                       runko, '<script>Pv.kysy()</script>' + ('<script type="application/ld+json">' + json.dumps({
+                           "@context": "https://schema.org", "@type": "WebApplication", "name": NIMI, "url": (SITE or "") + "/",
+                           "applicationCategory": "LegalService", "operatingSystem": "Web", "inLanguage": "fi",
+                           "description": "Kysy Suomen laista omin sanoin ja saat vastauksen ajantasaisista pykälistä lähteineen. Kirjoittaa myös reklamaation ja muita vaatimuskirjeitä.",
+                           "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"},
+                           "publisher": {"@type": "Organization", "name": "Faktapiste", "url": "https://faktapiste.fi"}}, ensure_ascii=False).replace("<", "\\u003c") + '</script>'), "kysy"))
 
 
     # ---- valmis kirje ----
