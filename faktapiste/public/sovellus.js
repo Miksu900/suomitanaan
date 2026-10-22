@@ -95,7 +95,7 @@
     }
     if (!tila.mina.nimi) return '<form class="kirjoita" id="nimilomake"><b>Valitse nimimerkki</b><span>Näkyy postaustesi yhteydessä. Sähköpostiosoitetta ei näytetä kenellekään.</span><div class="rivi"><input name="nimi" maxlength="24" placeholder="esim. Pohjanmaan Pekka" required><button class="nappi">Tallenna</button></div></form>';
     return '<form class="kirjoita" data-lomake="' + id + '"' + (vanhempi ? ' data-vanhempi="' + vanhempi + '"' : "") + '>' +
-      '<textarea name="teksti" maxlength="500" rows="' + (vanhempi ? 2 : 3) + '" placeholder="' + (vanhempi ? "Kirjoita vastaus" : "Mitä mieltä olet? Kysy faktaa eduskunnan päätöksistä ja liitä se postaukseen.") + '"></textarea>' +
+      '<textarea name="teksti" maxlength="500" rows="' + (vanhempi ? 2 : 3) + '" placeholder="' + (vanhempi ? "Kirjoita vastaus" : "Mitä mielessä? Jokainen postaus näytetään vähintään 30 ihmiselle.") + '"></textarea>' +
       '<div class="faktapaneeli" hidden><div class="rivi"><input name="kysymys" maxlength="300" placeholder="Kysy vapaasti, esim. miten perussuomalaiset äänesti kotihoidontuesta?"><button type="button" class="nappi toissijainen" data-hae>Hae</button></div><div class="faktatulos"></div></div>' +
       '<div class="toiminnot"><button type="button" class="fakta-nappi" data-fakta>🔎 Kysy fakta</button>' + (tila.kunta && !vanhempi ? '<label class="paikkavalinta"><input type="checkbox" name="kunta" checked> 📍 ' + esc(tila.kunta) + "</label>" : "") + '<span class="laskuri">500</span><button class="nappi">' + (vanhempi ? "Vastaa" : "Julkaise") + "</button></div></form>";
   }
@@ -105,7 +105,7 @@
   function piirraTabit() {
     TABIT.innerHTML = [["sinulle", "Sinulle"], ["uusimmat", "Uusimmat"], ["lahella", tila.kunta ? "📍 " + tila.kunta : "📍 Lähellä"]].map(function (t) {
       return '<button type="button" role="tab" aria-selected="' + (tila.tab === t[0]) + '" data-tab="' + t[0] + '">' + esc(t[1]) + "</button>"; }).join("") +
-      '<button type="button" class="saato-nappi" data-avaasaato aria-label="Säädä syötettä">⚙ Säädä</button>';
+      '<button type="button" class="saato-nappi" data-avaasaato aria-label="Säädä syötettä" title="Säädä syötettä">⚙</button>';
   }
   function lataaSyote(lisaa) {
     if (tila.ladataan) return; tila.ladataan = true;
@@ -146,7 +146,7 @@
       // Testivaihe: kirjautumisnappi näkyy vain osoitteella /?testi=1 avattuna (muistetaan selaimessa).
       if (j.testi) { var t = /[?&]testi=1/.test(location.search); try { if (t) localStorage.setItem("fp_testi", "1"); t = t || localStorage.getItem("fp_testi") === "1"; } catch (x) {} if (t) tila.kirjautuminen = true; }
       var a = $("#fp-tili");
-      if (a) a.innerHTML = tila.mina ? '<button type="button" class="tili" data-ulos>' + esc(tila.mina.nimi || "Oma tili") + " · Kirjaudu ulos</button>" : tila.kirjautuminen ? '<button type="button" class="tili" data-kirjaudu>Kirjaudu</button>' : "";
+      if (a) a.innerHTML = tila.mina ? '<button type="button" class="tili" data-ulos title="Kirjaudu ulos">' + esc(tila.mina.nimi || "Oma tili") + "</button>" : tila.kirjautuminen ? '<button type="button" class="tili" data-kirjaudu>Kirjaudu</button>' : "";
       piirraKirjoitus();
     });
   }
@@ -206,7 +206,7 @@
     else if (d.lisaasivu !== undefined) { tila.sivu++; lataaSyote(true); }
     else if (d.kirjaudu !== undefined) avaaKirjautuminen();
     else if (d.sulje !== undefined) DLG.close();
-    else if (d.ulos !== undefined) api("ulos", {}).then(function () { location.href = "/"; });
+    else if (d.ulos !== undefined && confirmOk("Kirjaudutaanko ulos?")) api("ulos", {}).then(function () { location.href = "/"; });
     else if (d.vastaa) avaaKetju(d.vastaa, true);
     else if (d.tykkaa) {
       if (!tila.mina || !tila.mina.nimi) { tila.kirjautuminen ? avaaKirjautuminen() : ilmoitus("Tykkääminen avautuu pian."); return; }
