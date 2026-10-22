@@ -212,10 +212,6 @@ async function main() {
   }
   if (valmiit.length || valmiit.hylatyt) {
     const r = await fetch(WORKER + "/api/luonnokset", { method: "POST", headers: { authorization: "Bearer " + PW, "content-type": "application/json" }, body: JSON.stringify([...valmiit, ...(valmiit.hylatyt || [])]) });
-    if (nPol) {
-      const tark = valmiit.filter(v => !v.automaattinen).map(v => "• " + v.otsikko + ((v.tarkistettavat || []).some(t => String(t).startsWith("Faktantarkistus")) ? " ⚠️ tarkista faktat" : "")).slice(0, 8).join("\n");
-      await telegram(`📰 Suomi Tänään: ${nPol} luonnosta odottaa hyväksyntääsi\n\n${tark}\n\nToimitus: ${WORKER}/toimitus/\n(${nAuto} muuta juttua julkaistiin automaattisesti)`);
-    }
     huomio("Luonnokset", `${nPol} politiikan luonnosta toimitukseen, ${nAuto} juttua julkaistu automaattisesti (${r.status}). Ehdokkaat: ${aanestykset.length} äänestystä, ${viranomaiset.length} viranomaista, ${urheilu.length} urheilua, ${kulttuuri.length} kulttuuria, ${elama.length} elämää.`);
   } else huomio("Luonnokset", `Ei uusia juttuja. Ehdokkaat: ${aanestykset.length} äänestystä, ${viranomaiset.length} viranomaista, ${urheilu.length} urheilua, ${kulttuuri.length} kulttuuria, ${elama.length} elämää.`);
 }

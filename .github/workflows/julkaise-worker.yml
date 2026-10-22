@@ -81,4 +81,13 @@ jobs:
           npx --yes wrangler@3.99.0 deploy
           printf '%s' "${{ secrets.TOIMITUS_SALASANA }}" | npx --yes wrangler@3.99.0 secret put TOIMITUS_SALASANA
           if [ -n "${{ secrets.BREVO_API_KEY }}" ]; then printf '%s' "${{ secrets.BREVO_API_KEY }}" | npx --yes wrangler@3.99.0 secret put BREVO_API_KEY; echo "::notice title=Kooste::Brevo-avain asetettu"; else echo "::notice title=Kooste::BREVO_API_KEY puuttuu, sähköpostikooste ei vielä lähde"; fi
+          if [ -n "${{ secrets.TELEGRAM_BOT_TOKEN }}" ]; then
+            printf '%s' "${{ secrets.TELEGRAM_BOT_TOKEN }}" | npx --yes wrangler@3.99.0 secret put TELEGRAM_BOT_TOKEN
+            printf '%s' "1893930799" | npx --yes wrangler@3.99.0 secret put TG_CHAT
+            TS=$(printf '%s' "${{ secrets.TELEGRAM_BOT_TOKEN }}suomitanaan-webhook" | sha256sum | cut -c1-48)
+            printf '%s' "$TS" | npx --yes wrangler@3.99.0 secret put TG_SALAISUUS
+            sleep 5
+            R=$(curl -sS -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/setWebhook" -H "content-type: application/json" -d "{\"url\":\"$SIVU_URL/telegram\",\"secret_token\":\"$TS\",\"allowed_updates\":[\"message\",\"callback_query\"]}")
+            echo "::notice title=Telegram::$(echo "$R" | jq -c '{ok,description}')"
+          fi
           echo "::notice title=Osoite::https://suomitanaan.${{ steps.cf.outputs.sub }}.workers.dev"

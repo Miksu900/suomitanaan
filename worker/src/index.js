@@ -227,6 +227,63 @@ ${auto.map(j => `<div style="margin:0 0 8px"><a href="${url}/uutiset/${e(j.slug)
   return { ok: true, luonnokset: luonn.length, tiktok: tt.length, auto: auto.length };
 }
 
+
+// ---------- Telegram-botti (@faktapiste_ilmoitus_bot) ----------
+// Luonnokset tulevat Telegramiin napeilla (Julkaise / Hylkää / Näytä). Vain Hein keskustelu (TG_CHAT) hyväksytään.
+async function tgApi(env, metodi, data) {
+  if (!env.TELEGRAM_BOT_TOKEN) return null;
+  const r = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/${metodi}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(data) });
+  return r.json().catch(() => null);
+}
+const tgLyh = (t, n) => { t = String(t || ""); return t.length > n ? t.slice(0, n - 1) + "…" : t; };
+const tgNapit = id => ({ inline_keyboard: [[{ text: "✅ Julkaise", callback_data: "j:" + id }, { text: "❌ Hylkää", callback_data: "h:" + id }], [{ text: "📄 Näytä koko juttu", callback_data: "n:" + id }]] });
+async function tgLuonnos(env, l) {
+  const varoitus = (l.tarkistettavat || []).some(t => String(t).startsWith("Faktantarkistus")) ? "\n⚠️ Faktantarkistus löysi tarkistettavaa" : "";
+  return tgApi(env, "sendMessage", { chat_id: env.TG_CHAT, text: `📰 ${l.kategoria || ""}\n${tgLyh(l.otsikko, 200)}\n\n${tgLyh(l.ingressi, 400)}${varoitus}`, reply_markup: tgNapit(l.id), disable_web_page_preview: true });
+}
+async function tgKaikki(env) {
+  const ids = await lue(env, "luonnokset", []);
+  const ls = (await Promise.all(ids.map(id => lue(env, "luonnos:" + id, null)))).filter(Boolean).sort((a, b) => String(b.luotu).localeCompare(String(a.luotu)));
+  if (!ls.length) return tgApi(env, "sendMessage", { chat_id: env.TG_CHAT, text: "Ei odottavia luonnoksia. 👍" });
+  await tgApi(env, "sendMessage", { chat_id: env.TG_CHAT, text: `${ls.length} luonnosta odottaa:` });
+  for (const l of ls.slice(0, 10)) await tgLuonnos(env, l);
+}
+const TG_APUA = "Komennot:\n• luonnokset – näytä odottavat luonnokset napeilla\n• tila – montako juttua ja luonnosta\n• apua – tämä ohje\n\nUudet luonnokset tulevat tänne automaattisesti klo 11 ja 21.20.";
+async function telegramPaivitys(req, env) {
+  if (req.headers.get("x-telegram-bot-api-secret-token") !== env.TG_SALAISUUS) return new Response("ei", { status: 403 });
+  const u = await req.json().catch(() => ({}));
+  const chat = String(u.message?.chat?.id || u.callback_query?.message?.chat?.id || "");
+  if (chat !== String(env.TG_CHAT)) return new Response("ok");
+  if (u.callback_query) {
+    const [laji, id] = String(u.callback_query.data || "").split(":");
+    const viesti = u.callback_query.message;
+    const l = await lue(env, "luonnos:" + id, null);
+    let vastaus = "";
+    if (!l) vastaus = "Luonnos on jo käsitelty.";
+    else if (laji === "j") {
+      const slug = await julkaiseJuttu(env, l, false);
+      await env.DB.delete("luonnos:" + id); await tallenna(env, "luonnokset", (await lue(env, "luonnokset", [])).filter(x => x !== id));
+      vastaus = "✅ Julkaistu";
+      await tgApi(env, "editMessageText", { chat_id: env.TG_CHAT, message_id: viesti.message_id, text: `✅ JULKAISTU\n${l.otsikko}\nhttps://suomitanaan.fi/uutiset/${slug}/` });
+    } else if (laji === "h") {
+      await env.DB.delete("luonnos:" + id); await tallenna(env, "luonnokset", (await lue(env, "luonnokset", [])).filter(x => x !== id));
+      vastaus = "❌ Hylätty";
+      await tgApi(env, "editMessageText", { chat_id: env.TG_CHAT, message_id: viesti.message_id, text: `❌ Hylätty: ${tgLyh(l.otsikko, 200)}` });
+    } else if (laji === "n") {
+      const tark = (l.tarkistettavat || []).length ? "\n\nTarkista:\n" + l.tarkistettavat.map(t => "• " + t).join("\n") : "";
+      const lahde = (l.lahteet || [])[0]?.url || l.lahde_url || "";
+      await tgApi(env, "sendMessage", { chat_id: env.TG_CHAT, text: tgLyh(`${l.otsikko}\n\n${l.ingressi}\n\n${l.teksti}${tark}\n\nLähde: ${lahde}`, 4000), reply_markup: tgNapit(id), disable_web_page_preview: true });
+    }
+    await tgApi(env, "answerCallbackQuery", { callback_query_id: u.callback_query.id, text: vastaus });
+    return new Response("ok");
+  }
+  const t = String(u.message?.text || "").trim().toLowerCase().replace(/^\//, "");
+  if (t.startsWith("luonnok")) await tgKaikki(env);
+  else if (t === "tila") await tgApi(env, "sendMessage", { chat_id: env.TG_CHAT, text: `Suomi Tänään: ${(await lue(env, "jutut", [])).length} julkaistua juttua, ${(await lue(env, "luonnokset", [])).length} luonnosta odottaa.` });
+  else await tgApi(env, "sendMessage", { chat_id: env.TG_CHAT, text: TG_APUA });
+  return new Response("ok");
+}
+
 // ---------- Rajapinta ----------
 const AI_KIRJOITTAJA = "Suomi Tänään (tekoälyn laatima)";
 async function julkaiseJuttu(env, b, ai) {
@@ -254,7 +311,7 @@ async function rajapinta(req, env, polku) {
   const b = await req.json().catch(() => ({}));
   if (polku === "/api/luonnokset") {
     const uudet = Array.isArray(b) ? b : [b];
-    const ids = await lue(env, "luonnokset", []); const nahdyt = await lue(env, "nahdyt", []);
+    const ids = await lue(env, "luonnokset", []); const nahdyt = await lue(env, "nahdyt", []); const uudetTg = [];
     for (const l of uudet) {
       if (!l) continue;
       if (l.lahde_url && !nahdyt.includes(l.lahde_url)) nahdyt.push(l.lahde_url);
@@ -262,9 +319,13 @@ async function rajapinta(req, env, polku) {
       if (l.automaattinen) { await julkaiseJuttu(env, l, true); continue; }
       const id = l.id || crypto.randomUUID().slice(0, 8);
       await tallenna(env, "luonnos:" + id, { ...l, id, luotu: l.luotu || new Date().toISOString() });
-      if (!ids.includes(id)) ids.push(id);
+      if (!ids.includes(id)) { ids.push(id); uudetTg.push({ ...l, id }); }
     }
     await tallenna(env, "luonnokset", ids.slice(-200)); await tallenna(env, "nahdyt", nahdyt.slice(-5000));
+    if (uudetTg.length && env.TG_CHAT) {
+      await tgApi(env, "sendMessage", { chat_id: env.TG_CHAT, text: `🗞 Suomi Tänään: ${uudetTg.length} uutta luonnosta odottaa hyväksyntääsi` });
+      for (const l of uudetTg.slice(0, 10)) await tgLuonnos(env, l);
+    }
     return json({ ok: true, maara: uudet.length });
   }
   if (polku === "/api/hylkaa") {
@@ -320,6 +381,7 @@ export default {
     const url = new URL(req.url);
     if (url.hostname === "www.suomitanaan.fi") return Response.redirect("https://suomitanaan.fi" + url.pathname + url.search, 301);
     let p = url.pathname;
+    if (p === "/telegram" && req.method === "POST") return telegramPaivitys(req, env);
     if (p.startsWith("/api/")) return rajapinta(req, env, p.replace(/\/$/, ""));
     if (p === "/toimitus" || p === "/toimitus/") return html(toimitusSivu(KATEGORIAT), 200, "no-store");
     if (p === "/rss.xml") return rss(env);
