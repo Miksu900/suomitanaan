@@ -315,8 +315,8 @@ export class Faktapiste extends DurableObject {
           aan = { ...k, otsikko: lyhennaLaki(valittu.otsikko), lisaotsikko: valittu.lisaotsikko || "", pv: (valittu.alkoi || "").slice(0, 10) };
           const taulu = k.ryhmat.map(g => `${g.r}: jaa ${g.jaa}, ei ${g.ei}, tyhjää ${g.tyhja}, poissa ${g.poissa}`).join("\n");
           tiivis = (await claude(this.env,
-            "Vastaat suomeksi lyhyesti (enintään 3 virkettä) kysymykseen eduskunnan äänestyksestä annetun datan perusteella. Käytä vain annettuja lukuja ja tietoja, älä keksi mitään. Tunnista puhekieliset puoluenimet (persut = Perussuomalaiset, demarit = SDP, kepu = Keskusta, kokkarit = Kokoomus, vassarit = Vasemmistoliitto, kristityt = Kristillisdemokraatit). Kerro, mitä Jaa tarkoitti, jos se käy ilmi äänestyksen tarkenteesta. Palauta pelkkä vastausteksti.",
-            `Kysymys: ${q}\n\nÄänestys ${aan.pv}: ${valittu.otsikko}\nTarkenne: ${valittu.lisaotsikko || "-"}\nYhteensä: jaa ${k.jaa}, ei ${k.ei}, tyhjää ${k.tyhja}, poissa ${k.poissa}\nRyhmittäin:\n${taulu}\n\nEduskuntaseurannan haun vastaus (taustaksi): ${vastaus}`, 350)).trim() || vastaus;
+            "Vastaat suomeksi lyhyesti (enintään 3 virkettä) kysymykseen eduskunnan äänestyksestä annetun datan perusteella. Käytä vain annettuja lukuja ja tietoja, älä keksi mitään. Tunnista puhekieliset puoluenimet (persut = Perussuomalaiset, demarit = SDP, kepu = Keskusta, kokkarit = Kokoomus, vassarit = Vasemmistoliitto, kristityt = Kristillisdemokraatit). Jaa- ja Ei-vaihtoehtojen merkitys tulee VAIN tarkenteesta (esim. 'Lakiehdotuksen hyväksyminen JAA / hylkääminen EI' tarkoittaa, että Jaa = lain hyväksyminen). Jos kysymys koskee puoluetta, kerro sen ryhmän luvut. Palauta pelkkä vastausteksti.",
+            `Kysymys: ${q}\n\nÄänestys ${aan.pv}: ${valittu.otsikko}\nTarkenne: ${valittu.lisaotsikko || "-"}\nYhteensä: jaa ${k.jaa}, ei ${k.ei}, tyhjää ${k.tyhja}, poissa ${k.poissa}\nRyhmittäin:\n${taulu}`, 350)).trim() || vastaus;
           if (!lahteet.some(s => s.url === aan.url)) lahteet.unshift({ url: aan.url, otsikko: "Äänestys " + aan.pv + ": " + aan.otsikko });
         }
       }
