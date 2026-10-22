@@ -36,6 +36,8 @@ jobs:
           WORKER_URL: ${{ steps.osoite.outputs.url }}
           TOIMITUS_SALASANA: ${{ secrets.TOIMITUS_SALASANA }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: "1893930799"
           MAX_LUONNOKSET: ${{ inputs.maara || '8' }}
           MAX_AUTO: "10"
           MAX_ULKO: ${{ github.event.schedule == '20 18 * * *' && '5' || '10' }}

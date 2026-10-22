@@ -12,6 +12,13 @@ const KATEGORIAT = ["Politiikka", "Talous", "Kotimaa", "Kunnat", "Urheilu", "Kul
 const UA = "Mozilla/5.0 (compatible; SuomiTanaan/1.0; +https://suomitanaan.fi)";
 
 const huomio = (otsikko, viesti) => console.log(`::notice title=${otsikko}::${String(viesti).replace(/\n/g, " ").slice(0, 400)}`);
+// Telegram-ilmoitus Heille (botti @faktapiste_ilmoitus_bot)
+async function telegram(teksti) {
+  const tg = process.env.TELEGRAM_BOT_TOKEN, chat = process.env.TELEGRAM_CHAT_ID;
+  if (!tg || !chat) return;
+  try { await fetch(`https://api.telegram.org/bot${tg}/sendMessage`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ chat_id: chat, text: teksti, disable_web_page_preview: true }) }); }
+  catch (e) { console.log("Telegram epäonnistui", e.message); }
+}
 
 async function haeJson(url) { const r = await fetch(url, { headers: { "user-agent": UA } }); if (!r.ok) throw new Error(url + " " + r.status); return r.json(); }
 
@@ -205,6 +212,10 @@ async function main() {
   }
   if (valmiit.length || valmiit.hylatyt) {
     const r = await fetch(WORKER + "/api/luonnokset", { method: "POST", headers: { authorization: "Bearer " + PW, "content-type": "application/json" }, body: JSON.stringify([...valmiit, ...(valmiit.hylatyt || [])]) });
+    if (nPol) {
+      const tark = valmiit.filter(v => !v.automaattinen).map(v => "• " + v.otsikko + ((v.tarkistettavat || []).some(t => String(t).startsWith("Faktantarkistus")) ? " ⚠️ tarkista faktat" : "")).slice(0, 8).join("\n");
+      await telegram(`📰 Suomi Tänään: ${nPol} luonnosta odottaa hyväksyntääsi\n\n${tark}\n\nToimitus: ${WORKER}/toimitus/\n(${nAuto} muuta juttua julkaistiin automaattisesti)`);
+    }
     huomio("Luonnokset", `${nPol} politiikan luonnosta toimitukseen, ${nAuto} juttua julkaistu automaattisesti (${r.status}). Ehdokkaat: ${aanestykset.length} äänestystä, ${viranomaiset.length} viranomaista, ${urheilu.length} urheilua, ${kulttuuri.length} kulttuuria, ${elama.length} elämää.`);
   } else huomio("Luonnokset", `Ei uusia juttuja. Ehdokkaat: ${aanestykset.length} äänestystä, ${viranomaiset.length} viranomaista, ${urheilu.length} urheilua, ${kulttuuri.length} kulttuuria, ${elama.length} elämää.`);
 }
