@@ -201,7 +201,7 @@ export class Faktapiste extends DurableObject {
       const t = nyt();
       for (const r of ehd) {
         const h = (t - r.luotu) / 3600e3;
-        const paino = r.kayttaja ? 1.6 : r.lahde === "eduskunta" ? 1.25 : 1;
+        const paino = r.kayttaja ? 4 : ({ eduskunta: 3, suomitanaan: 1.2, korjausvahti: 1, keraysvahti: 0.8 })[r.lahde] || 1;
         r._p = paino * (1 + r.tykkaykset * 2 + r.vastaukset * 3) / Math.pow(h + 2, 1.4);
       }
       ehd.sort((a, b) => b._p - a._p);
