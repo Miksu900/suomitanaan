@@ -9,7 +9,7 @@ ROOT = pathlib.Path(__file__).parent / "public"
 SITE = os.environ.get("FAKTAPISTE_URL", "https://faktapiste.fi")
 PV = os.environ.get("PYKALAVAHTI_URL", "https://pykalavahti.fi")
 YHTEYS = "miika@eduskuntaseuranta.fi"
-VER = "3"
+VER = "4"
 esc = html.escape
 
 # avain, nimi, osoite, iskulause, kuvaus, merkki, poliittinen
@@ -90,6 +90,7 @@ def kirjoita(polku, sisalto):
     f.write_text(sisalto, encoding="utf-8")
 
 ROOT.mkdir(parents=True, exist_ok=True)
+import shutil; shutil.copy(pathlib.Path(__file__).parent / "kunnat.json", ROOT / "kunnat.json")
 
 # ---- etusivu: keskustelu + palvelut ----
 def minikortti(p):
@@ -97,28 +98,29 @@ def minikortti(p):
     return f'<a class="mini" href="{esc(url)}" rel="noopener"><span class="ik" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">{IKONIT[k]}</svg></span><span><b>{esc(nimi)}</b><small>{esc(isku)}</small></span></a>'
 runko = f"""<section class="fp-intro"><div class="w">
 <p class="beta">Beta</p>
-<h1>Keskustele <span class="hl">faktoilla.</span></h1>
-<p class="lead">Suomalainen keskustelu, jossa eduskunnan päätökset ja uutiset ovat mukana syötteessä. Kysy faktaa omin sanoin ja liitä se postaukseesi.</p>
+<h1>Täällä sinut <span class="hl">nähdään.</span></h1>
+<p class="lead">Suomalainen keskustelu, jossa jokainen postaus näytetään vähintään 30 ihmiselle, vaikka sinulla ei olisi yhtään seuraajaa. Sinä säädät syötteesi, ja se loppuu, kun olet nähnyt tärkeimmät.</p>
 </div></section>
 <div class="w fp-grid">
 <div class="fp-keski">
 <div id="fp-paa">
 <div id="fp-kirjoita"></div>
 <div class="tabit" id="fp-tabit" role="tablist" aria-label="Syöte"></div>
+<div class="saato" id="fp-saato" hidden></div>
 <div id="fp-syote" aria-live="polite"><noscript><p class="lataa">Keskustelu vaatii JavaScriptin.</p></noscript></div>
 </div>
 <div id="fp-ketju" hidden></div>
 </div>
 <aside class="fp-sivu">
 <div class="laatikko"><h2>Faktapisteen palvelut</h2>{''.join(minikortti(p) for p in PALVELUT)}</div>
-<div class="laatikko"><h2>Säännöt lyhyesti</h2><ul><li>Saa olla eri mieltä ja kärkevä.</li><li>Ei uhkailua, henkilötietojen levittämistä, kiihottamista kansanryhmää vastaan eikä roskapostia.</li><li>Kolme ilmoitusta piilottaa postauksen tarkistusta varten.</li></ul><a href="/tietoa/#keskustelu">Säännöt ja tietosuoja →</a></div>
+<div class="laatikko"><h2>Säännöt lyhyesti</h2><ul><li>Jokainen postaus näytetään vähintään 30 ihmiselle.</li><li>Saa olla eri mieltä ja kärkevä.</li><li>Ei uhkailua, henkilötietojen levittämistä, kiihottamista kansanryhmää vastaan eikä roskapostia.</li><li>Kolme ilmoitusta piilottaa postauksen tarkistusta varten.</li></ul><a href="/tietoa/#keskustelu">Säännöt ja tietosuoja →</a></div>
 </aside>
 </div>
 <dialog id="fp-kirjaudu" aria-label="Kirjaudu"></dialog>
 <div id="fp-toast" class="toast" role="status" aria-live="polite"></div>
 <script src="/sovellus.js?v={VER}" defer></script>"""
-kirjoita("/", sivu("/", "Faktapiste – keskustele faktoilla",
-                   "Suomalainen keskustelu, jossa eduskunnan päätökset, uutiset ja faktat ovat mukana. Kysy faktaa omin sanoin ja liitä se postaukseesi.", runko))
+kirjoita("/", sivu("/", "Faktapiste – täällä sinut nähdään",
+                   "Suomalainen keskustelu, jossa jokainen postaus näytetään vähintään 30 ihmiselle. Säädä syötettä itse, seuraa oman paikkakuntasi keskustelua ja liitä faktat postaukseesi.", runko))
 
 # ---- palvelut: mainoksiin sopiva versio ----
 ARKI = [p for p in PALVELUT if not p[6] and p[0] != "np"]
@@ -139,7 +141,7 @@ runko = f"""<section class="w teksti">
 <p>Miika Koskela, Ylivieska. Yhteys: <span class="mono">{YHTEYS}</span>.</p>
 <h2>Tietosuoja</h2>
 <p>Palveluiden sivut eivät käytä seurantaevästeitä eivätkä mainosseurantaa. Sivusto toimii Cloudflaren palvelussa, joka voi tallentaa teknisiä lokitietoja (kuten IP-osoitteen) palvelun toiminnan ja turvallisuuden vuoksi. Fontit ladataan Googlen Fonts-palvelusta. Kunkin palvelun omat tietosuojatiedot löytyvät palvelun sivuilta.</p>
-<p><b>Keskustelu.</b> Jos kirjaudut keskusteluun, tallennamme sähköpostiosoitteesi, nimimerkkisi, postauksesi, tykkäyksesi ja ilmoituksesi. Sähköpostiosoitetta käytetään vain kirjautumislinkkien lähettämiseen, eikä sitä näytetä muille. Kirjautuminen käyttää yhtä välttämätöntä evästettä (fp_s), joka pitää sinut kirjautuneena 60 päivää. Kirjautumisviestit lähetetään Brevo-palvelun kautta. Postaukset tarkistetaan julkaisuhetkellä automaattisesti tekoälyllä (Anthropic) selvästi lainvastaisen sisällön varalta, ja faktahaut käsitellään samalla tavalla. Tietoja ei myydä eikä käytetä mainontaan. Voit pyytää tilisi ja tietojesi poistamista osoitteesta <span class="mono">{YHTEYS}</span>.</p>
+<p><b>Keskustelu.</b> Jos kirjaudut keskusteluun, tallennamme sähköpostiosoitteesi, nimimerkkisi, postauksesi, tykkäyksesi ja ilmoituksesi. Sähköpostiosoitetta käytetään vain kirjautumislinkkien lähettämiseen, eikä sitä näytetä muille. Kirjautuminen käyttää yhtä välttämätöntä evästettä (fp_s), joka pitää sinut kirjautuneena 60 päivää. Lukukertojen laskemiseen (taattu yleisö ja syötteen loppuminen) selain tallentaa satunnaisen lukijatunnisteen, jonka avulla palvelin muistaa, mitkä postaukset olet jo nähnyt. Tunnistetta ei yhdistetä henkilöön eikä käytetä mainontaan, ja tieto poistuu muutamassa päivässä. Syötteen säädöt ja paikkakunta tallentuvat vain selaimeesi. Kirjautumisviestit lähetetään Brevo-palvelun kautta. Postaukset tarkistetaan julkaisuhetkellä automaattisesti tekoälyllä (Anthropic) selvästi lainvastaisen sisällön varalta, ja faktahaut käsitellään samalla tavalla. Tietoja ei myydä eikä käytetä mainontaan. Voit pyytää tilisi ja tietojesi poistamista osoitteesta <span class="mono">{YHTEYS}</span>.</p>
 <h2 id="keskustelu">Keskustelun säännöt</h2>
 <ul>
 <li>Saa olla eri mieltä, kritisoida kovasti ja kirjoittaa kärkevästi, myös päättäjistä ja puolueista.</li>
@@ -147,7 +149,7 @@ runko = f"""<section class="w teksti">
 <li>Kirjoittaja vastaa itse kirjoituksestaan. Postaukset julkaistaan heti, ja selvästi lainvastaiset estetään automaattisesti.</li>
 <li>Jokaisessa postauksessa on Ilmoita-toiminto. Kun kolme käyttäjää on ilmoittanut postauksesta, se piilotetaan tarkistusta varten. Ylläpitäjä poistaa lainvastaisen sisällön viipymättä ja voi sulkea sääntöjä rikkovan tilin.</li>
 <li>Ilmoituksen voi tehdä myös sähköpostilla osoitteeseen <span class="mono">{YHTEYS}</span>. Kerro postauksen linkki ja syy.</li>
-<li>Syötteen järjestys: Suositut-näkymä painottaa tykkäyksiä, vastauksia ja tuoreutta, ja käyttäjien omat postaukset nostetaan automaattisen sisällön edelle. Uusimmat-näkymä on aikajärjestyksessä. Automaattinen sisältö tulee Faktapisteen omista palveluista (Suomi Tänään, Korjausvahti, Eduskuntaseuranta, Keräysvahti) ja on merkitty.</li>
+<li>Syötteen järjestys: Sinulle-näkymä näyttää ensin uudet postaukset, joita ei ole vielä nähnyt 30 lukijaa (taattu yleisö), ja sen jälkeen tykkäysten, vastausten ja tuoreuden mukaan. Näkymä näyttää vain sellaista, mitä et ole vielä nähnyt, ja loppuu, kun tärkeimmät on katsottu. Voit säätää, paljonko näet keskusteluja, uutisia, otsikkomuutoksia, huijausvaroituksia ja päätöksiä, ja jokaisessa postauksessa kerrotaan, miksi näet sen. Uusimmat-näkymä on aikajärjestyksessä ja Lähellä-näkymä näyttää valitsemasi paikkakunnan postaukset ja uutiset. Automaattinen sisältö tulee Faktapisteen omista palveluista (Suomi Tänään, Korjausvahti, Eduskuntaseuranta, Keräysvahti) ja on merkitty.</li>
 <li>Faktahaun vastaukset kokoaa tekoäly eduskunnan avoimesta datasta. Ne voivat sisältää virheitä, joten tarkista tärkeät asiat lähteestä.</li>
 </ul>
 <h2>Käyttöehdot</h2>

@@ -1,6 +1,8 @@
 // Faktapiste-keskustelu: Cloudflare Worker + SQLite Durable Object.
 // Staattiset sivut tulevat public/-kansiosta, /api/* ohjataan Durable Objectille "main".
 import { DurableObject } from "cloudflare:workers";
+import KUNNAT from "../kunnat.json";
+const KUNTA = new Map(KUNNAT.map(k => [k.toLowerCase(), k]));
 
 const MALLI = "claude-haiku-5-5";
 const ES = "https://eduskuntaseuranta.fi";
@@ -10,6 +12,11 @@ const ADMIN = ["miika@eduskuntaseuranta.fi", "miika.koskela990@gmail.com"];
 // Testivaiheessa (KIRJAUTUMINEN = "testi") vain nämä osoitteet voivat kirjautua.
 const TESTAAJAT = ADMIN;
 const PITUUS = 500;
+const TAATTU = 30;        // jokainen postaus näytetään vähintään näin monelle lukijalle
+const SYOTE_MAX = 25;     // Sinulle-syöte loppuu tähän
+// syötteen säätimien luokat: k=keskustelut, u=uutiset, m=otsikkomuutokset, h=huijausvaroitukset, e=päätökset
+const LUOKKA = { kayttaja: "k", suomitanaan: "u", korjausvahti: "m", keraysvahti: "h", eduskunta: "e" };
+const KERROIN = [0, 1, 2.5];
 
 export default {
   async fetch(req, env, ctx) {
@@ -87,7 +94,10 @@ export class Faktapiste extends DurableObject {
       CREATE TABLE IF NOT EXISTS tykkaykset(posti INTEGER, kayttaja INTEGER, PRIMARY KEY(posti, kayttaja));
       CREATE TABLE IF NOT EXISTS ilmoitukset(posti INTEGER, kayttaja INTEGER, syy TEXT, luotu INTEGER, PRIMARY KEY(posti, kayttaja));
       CREATE TABLE IF NOT EXISTS rajat(avain TEXT PRIMARY KEY, n INTEGER, vanhenee INTEGER);
-      CREATE TABLE IF NOT EXISTS asetukset(k TEXT PRIMARY KEY, v TEXT);`);
+      CREATE TABLE IF NOT EXISTS asetukset(k TEXT PRIMARY KEY, v TEXT);
+      CREATE TABLE IF NOT EXISTS nahdyt(posti INTEGER, katsoja TEXT, luotu INTEGER, PRIMARY KEY(posti, katsoja));
+      CREATE INDEX IF NOT EXISTS nahdyt_katsoja ON nahdyt(katsoja, luotu);`);
+    for (const a of ["ALTER TABLE postit ADD COLUMN nakymat INTEGER DEFAULT 0", "ALTER TABLE postit ADD COLUMN kunta TEXT"]) { try { this.sql.exec(a); } catch {} }
   }
   yksi(q, ...p) { return this.sql.exec(q, ...p).toArray()[0] || null; }
   kaikki(q, ...p) { return this.sql.exec(q, ...p).toArray(); }
@@ -118,7 +128,9 @@ export class Faktapiste extends DurableObject {
         const d = await req.json(); return await this.fakta({ id: 0 }, d);
       }
       const minä = this.kayttaja(req);
-      if (p === "/api/syote" && m === "GET") return json(this.syote(u, minä));
+      const lukija = this.lukija(req, minä);
+      if (p === "/api/syote" && m === "GET") return json(this.syote(u, minä, lukija));
+      if (p === "/api/nahty" && m === "POST") return json(this.nahty(lukija, await req.json().catch(() => ({}))));
       if (p.startsWith("/api/posti/") && m === "GET") return json(this.ketju(+p.split("/")[3], minä));
       if (p === "/api/mina") return json({ kayttaja: minä ? { nimi: minä.nimi, admin: minä.admin } : null, kirjautuminen: this.env.KIRJAUTUMINEN === "auki", testi: this.env.KIRJAUTUMINEN === "testi" });
       if (p === "/api/kirjaudu" && m === "POST") return await this.kirjaudu(req);
@@ -130,7 +142,7 @@ export class Faktapiste extends DurableObject {
       const d = await req.json().catch(() => ({}));
       if (p === "/api/nimi") return this.asetaNimi(minä, d);
       if (!minä.nimi) return virhe("Valitse ensin nimimerkki.", 400);
-      if (p === "/api/posti") return await this.uusiPosti(minä, d);
+      if (p === "/api/posti") return await this.uusiPosti(minä, d, lukija);
       if (p === "/api/tykkaa") return this.tykkaa(minä, d);
       if (p === "/api/ilmoita") return await this.ilmoita(minä, d);
       if (p === "/api/poista") return this.poista(minä, d);
@@ -140,6 +152,23 @@ export class Faktapiste extends DurableObject {
     } catch (e) {
       return virhe("Jokin meni pieleen: " + e.message, 500);
     }
+  }
+
+  // Lukijatunniste: kirjautuneelle käyttäjätunnus, muille selaimen satunnainen tunniste (ei henkilötieto, ei mainontaan).
+  lukija(req, minä) {
+    if (minä) return "k" + minä.id;
+    const v = (req.headers.get("x-lukija") || "").replace(/[^a-f0-9]/g, "").slice(0, 32);
+    return v.length === 32 ? "v" + v : null;
+  }
+  nahty(lukija, d) {
+    if (!lukija) return { ok: false };
+    if (!this.raja("n:" + lukija, 400, 3600)) return { ok: false };
+    let n = 0;
+    for (const id of (Array.isArray(d.idt) ? d.idt : []).slice(0, 60).map(Number).filter(Boolean)) {
+      const c = this.sql.exec("INSERT OR IGNORE INTO nahdyt VALUES(?,?,?)", id, lukija, nyt());
+      if (c.rowsWritten > 0) { this.sql.exec("UPDATE postit SET nakymat=nakymat+1 WHERE id=?", id); n++; }
+    }
+    return { ok: true, uusia: n };
   }
 
   // ---- kirjautuminen sähköpostilinkillä ----
@@ -190,34 +219,62 @@ export class Faktapiste extends DurableObject {
     let k = null; try { k = r.kortti ? JSON.parse(r.kortti) : null; } catch {}
     return { id: r.id, nimi: r.nimi || null, lahde: r.lahde, teksti: r.piilotettu ? "" : r.teksti, kortti: r.piilotettu ? null : k, vanhempi: r.vanhempi, luotu: r.luotu,
       tykkaykset: r.tykkaykset, vastaukset: r.vastaukset, piilotettu: !!r.piilotettu, oma: !!(minä && r.kayttaja === minä.id),
+      nakymat: r.nakymat || 0, kunta: r.kunta || null, syy: r._syy || null, taattu: TAATTU,
       tykkasin: !!(minä && this.yksi("SELECT 1 AS x FROM tykkaykset WHERE posti=? AND kayttaja=?", r.id, minä.id)) };
   }
-  syote(u, minä) {
-    const tab = u.searchParams.get("tab") || "suositut", sivu = Math.max(0, +u.searchParams.get("sivu") || 0);
+  syote(u, minä, lukija) {
+    const tab = u.searchParams.get("tab") || "sinulle", sivu = Math.max(0, +u.searchParams.get("sivu") || 0);
     const pohja = "SELECT p.*, k.nimi FROM postit p LEFT JOIN kayttajat k ON k.id=p.kayttaja WHERE p.vanhempi IS NULL AND p.piilotettu=0";
-    let rivit;
-    if (tab === "uusimmat") rivit = this.kaikki(pohja + " ORDER BY p.luotu DESC LIMIT 30 OFFSET ?", sivu * 30);
-    else if (tab === "keskustelut") rivit = this.kaikki(pohja + " AND p.kayttaja IS NOT NULL ORDER BY p.luotu DESC LIMIT 30 OFFSET ?", sivu * 30);
-    else {
-      // Suositut: tykkäykset ja vastaukset painavat, ikä laskee. Käyttäjien postaukset saavat etusijan automaattisisältöön nähden.
-      const ehd = this.kaikki(pohja + " AND p.luotu>? ORDER BY p.luotu DESC LIMIT 400", nyt() - 4 * 86400e3);
-      const t = nyt();
-      for (const r of ehd) {
-        const h = (t - r.luotu) / 3600e3;
-        // lähdekohtainen paino ja puoliintumisaika tunteina: äänestykset pysyvät esillä pidempään kuin otsikkomuutokset
-        const [paino, puoli] = r.kayttaja ? [4, 12] : ({ eduskunta: [3, 30], suomitanaan: [1.2, 8], korjausvahti: [1, 8], keraysvahti: [0.8, 12] })[r.lahde] || [1, 8];
-        r._p = paino * (1 + r.tykkaykset * 2 + r.vastaukset * 3) * Math.pow(0.5, h / puoli);
-      }
-      ehd.sort((a, b) => b._p - a._p);
-      // monipuolisuus: sama lähde enintään kahdesti peräkkäin
-      const jarj = [], jono = [...ehd];
-      while (jono.length) {
-        const i = jono.findIndex(r => !(jarj.length >= 2 && jarj.at(-1).lahde === r.lahde && jarj.at(-2).lahde === r.lahde && r.lahde !== "kayttaja"));
-        jarj.push(jono.splice(i < 0 ? 0 : i, 1)[0]);
-      }
-      rivit = jarj.slice(sivu * 30, sivu * 30 + 30);
+    const ulos = (rivit, lisa = {}) => ({ postit: rivit.map(r => this.muoto(r, minä)), ...lisa });
+    if (tab === "uusimmat") { const r = this.kaikki(pohja + " ORDER BY p.luotu DESC LIMIT 30 OFFSET ?", sivu * 30); return ulos(r, { lisaa: r.length === 30 }); }
+    if (tab === "lahella") {
+      const kunta = KUNTA.get(String(u.searchParams.get("kunta") || "").toLowerCase());
+      if (!kunta) return ulos([], { kuntaPuuttuu: true });
+      // oman paikkakunnan postaukset + uutiset, joissa paikkakunta mainitaan (taivutusmuodot: vartalo ilman viimeistä vokaalia)
+      const vartalo = kunta.toLowerCase().replace(/[aeiouyäö]$/, "");
+      const r = this.kaikki(pohja + " AND (p.kunta=? OR (p.kayttaja IS NULL AND lower(p.kortti) LIKE ?)) ORDER BY p.luotu DESC LIMIT 30 OFFSET ?", kunta, "%" + vartalo + "%", sivu * 30);
+      for (const x of r) x._syy = x.kunta === kunta ? `Kirjoitettu paikkakunnalla ${kunta}.` : `Uutinen mainitsee paikkakunnan ${kunta}.`;
+      return ulos(r, { lisaa: r.length === 30, kunta });
     }
-    return { postit: rivit.map(r => this.muoto(r, minä)), lisaa: rivit.length === 30 };
+    // Sinulle: säädettävä algoritmi, taattu yleisö ja syöte, joka loppuu.
+    const saato = String(u.searchParams.get("s") || "").split(",");
+    const kerroin = luokka => { const i = "kumhe".indexOf(luokka); const v = Number(saato[i]); return KERROIN[Number.isInteger(v) && v >= 0 && v <= 2 ? v : 1]; };
+    const t = nyt();
+    const ehd = this.kaikki(pohja + " AND p.luotu>? ORDER BY p.luotu DESC LIMIT 400", t - 4 * 86400e3);
+    const nahdyt = new Set(lukija ? this.kaikki("SELECT posti FROM nahdyt WHERE katsoja=? AND luotu>?", lukija, t - 5 * 86400e3).map(x => x.posti) : []);
+    const tanaan = lukija ? this.yksi("SELECT COUNT(*) AS n FROM nahdyt WHERE katsoja=? AND luotu>?", lukija, t - 18 * 3600e3).n : 0;
+    const uudet = [], muut = [];
+    for (const r of ehd) {
+      if (nahdyt.has(r.id) || (minä && r.kayttaja === minä.id && r.nakymat >= TAATTU)) continue;
+      const luokka = LUOKKA[r.lahde] || "u", k = kerroin(luokka);
+      if (k === 0) continue;
+      const h = (t - r.luotu) / 3600e3;
+      // Taattu yleisö: alle TAATTU lukijan saaneet tuoreet käyttäjäpostaukset nostetaan kärkeen.
+      if (r.kayttaja && r.nakymat < TAATTU && h < 48) {
+        r._syy = `Uusi postaus, jonka on nähnyt vasta ${r.nakymat} ${r.nakymat === 1 ? "lukija" : "lukijaa"}. Faktapiste näyttää jokaisen postauksen vähintään ${TAATTU} ihmiselle, vaikka kirjoittajalla ei olisi seuraajia.`;
+        r._p = 1000 - r.nakymat; uudet.push(r); continue;
+      }
+      const [paino, puoli] = r.kayttaja ? [4, 12] : ({ eduskunta: [2, 30], suomitanaan: [1.2, 8], korjausvahti: [1, 8], keraysvahti: [0.8, 12] })[r.lahde] || [1, 8];
+      r._p = k * paino * (1 + r.tykkaykset * 2 + r.vastaukset * 3) * Math.pow(0.5, h / puoli);
+      const nimi = { suomitanaan: "uutisia", korjausvahti: "otsikkomuutoksia", keraysvahti: "huijausvaroituksia", eduskunta: "päätöksiä" }[r.lahde];
+      r._syy = r.kayttaja
+        ? (r.tykkaykset + r.vastaukset > 0 ? `Keskustelu, jossa ${r.tykkaykset} tykkäystä ja ${r.vastaukset} vastausta.` : "Tuore keskustelu.") + (k > 1 ? " Valitsit: enemmän keskusteluja." : "")
+        : `Tuore ${r.lahde === "eduskunta" ? "päätös" : r.lahde === "suomitanaan" ? "uutinen" : r.lahde === "korjausvahti" ? "otsikkomuutos" : "huijausvaroitus"}.` + (r.tykkaykset + r.vastaukset > 0 ? ` Herättänyt keskustelua (${r.vastaukset} vastausta).` : "") + (k > 1 ? ` Valitsit: enemmän ${nimi}.` : "");
+      muut.push(r);
+    }
+    uudet.sort((a, b) => b._p - a._p); muut.sort((a, b) => b._p - a._p);
+    // monipuolisuus: sama lähde enintään kahdesti peräkkäin
+    const jarj = [], jono = [...muut];
+    while (jono.length) {
+      const i = jono.findIndex(r => !(jarj.length >= 2 && jarj.at(-1).lahde === r.lahde && jarj.at(-2).lahde === r.lahde && r.lahde !== "kayttaja"));
+      jarj.push(jono.splice(i < 0 ? 0 : i, 1)[0]);
+    }
+    // uudet äänet joka toiseen paikkaan alussa
+    const tulos = [];
+    while ((uudet.length || jarj.length) && tulos.length < SYOTE_MAX) {
+      if (uudet.length && (tulos.length % 2 === 0 || !jarj.length)) tulos.push(uudet.shift()); else if (jarj.length) tulos.push(jarj.shift());
+    }
+    return ulos(tulos, { loppu: true, tanaan });
   }
   ketju(id, minä) {
     const r = this.yksi("SELECT p.*, k.nimi FROM postit p LEFT JOIN kayttajat k ON k.id=p.kayttaja WHERE p.id=?", id);
@@ -228,7 +285,7 @@ export class Faktapiste extends DurableObject {
   }
 
   // ---- kirjoittaminen ----
-  async uusiPosti(minä, d) {
+  async uusiPosti(minä, d, lukija) {
     const teksti = puhdas(d.teksti).replace(/\n{3,}/g, "\n\n");
     if (teksti.length < 2) return virhe("Kirjoita jotain.");
     if (teksti.length > PITUUS) return virhe(`Enintään ${PITUUS} merkkiä.`);
@@ -242,8 +299,10 @@ export class Faktapiste extends DurableObject {
     }
     const tark = await this.tarkista(teksti);
     if (!tark.ok) return virhe("Postausta ei julkaistu: " + tark.syy + " Kirjoittaa saa kärkevästi ja olla eri mieltä, mutta uhkaukset, henkilötietojen levittäminen, kiihottaminen kansanryhmää vastaan ja roskaposti eivät käy.", 422);
-    this.sql.exec("INSERT INTO postit(kayttaja, lahde, teksti, kortti, vanhempi, luotu) VALUES(?,?,?,?,?,?)", minä.id, "kayttaja", teksti, kortti, vanhempi, nyt());
+    const kunta = KUNTA.get(String(d.kunta || "").toLowerCase()) || null;
+    this.sql.exec("INSERT INTO postit(kayttaja, lahde, teksti, kortti, vanhempi, luotu, kunta) VALUES(?,?,?,?,?,?,?)", minä.id, "kayttaja", teksti, kortti, vanhempi, nyt(), kunta);
     const id = this.yksi("SELECT last_insert_rowid() AS id").id;
+    if (lukija) this.sql.exec("INSERT OR IGNORE INTO nahdyt VALUES(?,?,?)", id, lukija, nyt()); // oma postaus ei kasvata lukijamäärää
     if (vanhempi) this.sql.exec("UPDATE postit SET vastaukset=vastaukset+1 WHERE id=?", vanhempi);
     return json({ ok: true, id });
   }

@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Faktapiste – keskustele faktoilla</title><meta name="description" content="Suomalainen keskustelu, jossa eduskunnan päätökset, uutiset ja faktat ovat mukana. Kysy faktaa omin sanoin ja liitä se postaukseesi.">
+<title>Faktapiste – täällä sinut nähdään</title><meta name="description" content="Suomalainen keskustelu, jossa jokainen postaus näytetään vähintään 30 ihmiselle. Säädä syötettä itse, seuraa oman paikkakuntasi keskustelua ja liitä faktat postaukseesi.">
 <link rel="canonical" href="https://faktapiste.fi/">
-<meta property="og:title" content="Faktapiste – keskustele faktoilla"><meta property="og:description" content="Suomalainen keskustelu, jossa eduskunnan päätökset, uutiset ja faktat ovat mukana. Kysy faktaa omin sanoin ja liitä se postaukseesi.">
+<meta property="og:title" content="Faktapiste – täällä sinut nähdään"><meta property="og:description" content="Suomalainen keskustelu, jossa jokainen postaus näytetään vähintään 30 ihmiselle. Säädä syötettä itse, seuraa oman paikkakuntasi keskustelua ja liitä faktat postaukseesi.">
 <meta property="og:url" content="https://faktapiste.fi/"><meta property="og:type" content="website"><meta property="og:locale" content="fi_FI">
 <meta property="og:image" content="https://faktapiste.fi/og.png"><meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#0d1b3e">
@@ -10,32 +10,33 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"Faktapiste","url":"https://faktapiste.fi/","logo":"https://faktapiste.fi/og.png","email":"miika@eduskuntaseuranta.fi","description":"Ilmaisia palveluita julkisista lähteistä: Keräysvahti, Pykälävahti, Korjausvahti, Nytpuhutaan ja Eduskuntaseuranta."}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/tyyli.css?v=3">
+<link rel="stylesheet" href="/tyyli.css?v=4">
 </head><body>
 <a class="skip" href="#sisalto">Siirry sisältöön</a>
 <header class="hd"><div class="w hdw"><a class="brand" href="/" aria-label="Faktapiste – etusivu"><span class="logo" aria-hidden="true"><b>FAKTA</b><i>PISTE.</i></span></a><nav aria-label="Päävalikko"><a href="/" aria-current="page">Keskustelu</a><a href="/palvelut/">Palvelut</a><a href="/tietoa/">Tietoa</a><span id="fp-tili"></span></nav></div></header>
 <main id="sisalto"><section class="fp-intro"><div class="w">
 <p class="beta">Beta</p>
-<h1>Keskustele <span class="hl">faktoilla.</span></h1>
-<p class="lead">Suomalainen keskustelu, jossa eduskunnan päätökset ja uutiset ovat mukana syötteessä. Kysy faktaa omin sanoin ja liitä se postaukseesi.</p>
+<h1>Täällä sinut <span class="hl">nähdään.</span></h1>
+<p class="lead">Suomalainen keskustelu, jossa jokainen postaus näytetään vähintään 30 ihmiselle, vaikka sinulla ei olisi yhtään seuraajaa. Sinä säädät syötteesi, ja se loppuu, kun olet nähnyt tärkeimmät.</p>
 </div></section>
 <div class="w fp-grid">
 <div class="fp-keski">
 <div id="fp-paa">
 <div id="fp-kirjoita"></div>
 <div class="tabit" id="fp-tabit" role="tablist" aria-label="Syöte"></div>
+<div class="saato" id="fp-saato" hidden></div>
 <div id="fp-syote" aria-live="polite"><noscript><p class="lataa">Keskustelu vaatii JavaScriptin.</p></noscript></div>
 </div>
 <div id="fp-ketju" hidden></div>
 </div>
 <aside class="fp-sivu">
 <div class="laatikko"><h2>Faktapisteen palvelut</h2><a class="mini" href="https://keraysvahti.fi" rel="noopener"><span class="ik" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg></span><span><b>Keräysvahti</b><small>Onko keräyksellä lupa?</small></span></a><a class="mini" href="https://keraysvahti.fi/huijaukset/" rel="noopener"><span class="ik" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 16H3L12 3z"/><path d="M12 10v4M12 17h.01"/></svg></span><span><b>Huijausapu</b><small>Epäiletkö huijausta?</small></span></a><a class="mini" href="https://pykalavahti.fi" rel="noopener"><span class="ik" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><text x="12" y="18" text-anchor="middle" font-size="19" font-weight="700" fill="currentColor" stroke="none" font-family="Georgia,serif">§</text></svg></span><span><b>Pykälävahti</b><small>Mitä laki sanoo?</small></span></a><a class="mini" href="https://nytpuhutaan.fi/muutokset/" rel="noopener"><span class="ik" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10M4 12h16M4 17h7"/><path d="M15 15l4 4M19 15l-4 4"/></svg></span><span><b>Korjausvahti</b><small>Mitä otsikossa muutettiin?</small></span></a><a class="mini" href="https://nytpuhutaan.fi" rel="noopener"><span class="ik" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h13a3 3 0 013 3v11H7a3 3 0 01-3-3V5z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg></span><span><b>Nytpuhutaan</b><small>Mistä Suomessa puhutaan nyt?</small></span></a><a class="mini" href="https://eduskuntaseuranta.fi" rel="noopener"><span class="ik" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V10M19 21V10M9 21v-7M15 21v-7"/><path d="M2 10l10-6 10 6"/></svg></span><span><b>Eduskuntaseuranta</b><small>Miten edustajasi äänestää?</small></span></a></div>
-<div class="laatikko"><h2>Säännöt lyhyesti</h2><ul><li>Saa olla eri mieltä ja kärkevä.</li><li>Ei uhkailua, henkilötietojen levittämistä, kiihottamista kansanryhmää vastaan eikä roskapostia.</li><li>Kolme ilmoitusta piilottaa postauksen tarkistusta varten.</li></ul><a href="/tietoa/#keskustelu">Säännöt ja tietosuoja →</a></div>
+<div class="laatikko"><h2>Säännöt lyhyesti</h2><ul><li>Jokainen postaus näytetään vähintään 30 ihmiselle.</li><li>Saa olla eri mieltä ja kärkevä.</li><li>Ei uhkailua, henkilötietojen levittämistä, kiihottamista kansanryhmää vastaan eikä roskapostia.</li><li>Kolme ilmoitusta piilottaa postauksen tarkistusta varten.</li></ul><a href="/tietoa/#keskustelu">Säännöt ja tietosuoja →</a></div>
 </aside>
 </div>
 <dialog id="fp-kirjaudu" aria-label="Kirjaudu"></dialog>
 <div id="fp-toast" class="toast" role="status" aria-live="polite"></div>
-<script src="/sovellus.js?v=3" defer></script></main>
+<script src="/sovellus.js?v=4" defer></script></main>
 <footer class="ft"><div class="w"><span class="logo" aria-hidden="true"><b>FAKTA</b><i>PISTE.</i></span>
 <p>Faktapiste kokoaa yhteen ilmaisia palveluita, jotka perustuvat julkisiin lähteisiin: poliisin lupatietoihin, Finlexiin, eduskunnan avoimeen dataan ja uutismedian otsikoihin.</p>
 <p><a href="/">Keskustelu</a> · <a href="/palvelut/">Palvelut</a> · <a href="/tietoa/">Tietoa, säännöt ja tietosuoja</a> · <span class="mono">miika@eduskuntaseuranta.fi</span></p>

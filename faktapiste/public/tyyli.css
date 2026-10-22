@@ -151,3 +151,26 @@ dialog::backdrop{background:rgba(5,10,25,.55)}
 @media (max-width:900px){.fp-grid{grid-template-columns:1fr}.fp-sivu{position:static}}
 @media (max-width:520px){.posti{grid-template-columns:38px minmax(0,1fr);gap:10px}.av{width:38px;height:38px}.pm footer button{padding:6px 8px}}
 .beta{display:inline-block;margin:0 0 10px;background:var(--yel);color:var(--navy);font:700 .72rem var(--f-b);letter-spacing:.12em;text-transform:uppercase;padding:3px 10px;border-radius:99px}
+/* taattu yleisö, säätimet, loppu */
+.luettu{margin-left:auto;align-self:center;color:var(--mute);font-size:.84rem;padding-right:6px}
+.paikka{font-size:.78rem;color:var(--mute)}
+.taattu{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:.84rem;font-weight:600;color:var(--ink);background:var(--yel-soft);border-radius:10px;padding:8px 10px}
+.tpb{flex:none;width:70px;height:8px;border-radius:99px;background:var(--paper);overflow:hidden}.tpb i{display:block;height:100%;background:var(--yel)}
+.saato-nappi{margin-left:auto!important;color:var(--ink)!important}
+.saato{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:14px;margin:8px 0;display:grid;gap:10px}
+.saato-otsikko{display:flex;justify-content:space-between;align-items:center}
+.saato-rivi{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.saato-rivi small{display:block;color:var(--mute);font-size:.8rem}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:99px;overflow:hidden}
+.seg button{background:none;border:0;padding:7px 11px;font:600 .82rem var(--f-b);color:var(--mute);cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--navy);color:#fff}
+@media (prefers-color-scheme:dark){.seg button[aria-pressed=true]{background:var(--yel);color:var(--navy)}}
+.kuntavalinta{display:grid;gap:8px;background:var(--bg);border-radius:12px;padding:12px}
+.kuntavalinta input{font:16px var(--f-b);border:1px solid var(--line);border-radius:10px;padding:9px 11px;background:var(--paper);color:var(--ink)}
+.paikkavalinta{display:inline-flex;gap:6px;align-items:center;font-size:.86rem;font-weight:600;color:var(--mute)}
+.loppu{text-align:center;padding:34px 16px 20px;display:grid;justify-items:center;gap:6px}
+.loppu .ok{width:48px;height:48px;border-radius:50%;background:var(--yel);color:var(--navy);display:grid;place-items:center;font:700 1.4rem var(--f-b)}
+.loppu b{font:400 1.5rem var(--f-d);text-transform:uppercase;letter-spacing:.02em}
+.loppu p{margin:0 0 8px;color:var(--mute);max-width:42ch}
+.valikko.miksi{padding:14px;max-width:320px;gap:6px}.valikko.miksi p{margin:0;font-size:.9rem;color:var(--mute)}
+.valikko.miksi button{padding:8px 0;color:var(--navy2)}
