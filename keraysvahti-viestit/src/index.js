@@ -56,6 +56,10 @@ export default {
             subject: `Keräysvahti: uusi huijauskertomus (${tyyppi})${lupa ? " – saa käyttää" : ""}`, htmlContent: html }) });
       } catch {}
     }
+    if (env.TELEGRAM_BOT_TOKEN && env.TG_CHAT) {
+      const t = `🛡 Keräysvahti: uusi nimetön huijauskertomus\nTyyppi: ${tyyppi}${kunta ? " · " + kunta : ""}\n${lupa ? "✅ Saa käyttää nimettömänä" : "🔒 Vain tiedoksi"}\n\n${String(teksti).slice(0, 3000)}`;
+      try { await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ chat_id: env.TG_CHAT, text: t, disable_web_page_preview: true }) }); } catch {}
+    }
     return vastaus(o, { ok: true });
   },
 };

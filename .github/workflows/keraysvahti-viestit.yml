@@ -48,5 +48,6 @@ jobs:
           L=$(npx --yes wrangler@3.99.0 secret list 2>/dev/null || true)
           echo "$L" | grep -q SUOLA || node -e 'console.log(require("crypto").randomBytes(16).toString("hex"))' | tr -d '\n' | npx --yes wrangler@3.99.0 secret put SUOLA
           if [ -n "${{ secrets.BREVO_API_KEY }}" ]; then printf '%s' "${{ secrets.BREVO_API_KEY }}" | npx --yes wrangler@3.99.0 secret put BREVO_API_KEY; B="sähköposti käytössä"; else B="BREVO_API_KEY puuttuu: viestit tallentuvat, mutta sähköpostia ei lähde"; fi
+          if [ -n "${{ secrets.TELEGRAM_BOT_TOKEN }}" ]; then printf '%s' "${{ secrets.TELEGRAM_BOT_TOKEN }}" | npx --yes wrangler@3.99.0 secret put TELEGRAM_BOT_TOKEN; printf '%s' "1893930799" | npx --yes wrangler@3.99.0 secret put TG_CHAT; B="$B, Telegram käytössä"; fi
           sleep 6
           echo "::notice title=Osoite::https://keraysvahti-viestit.${{ steps.cf.outputs.sub }}.workers.dev ($B) $(curl -s https://keraysvahti-viestit.${{ steps.cf.outputs.sub }}.workers.dev/)"
