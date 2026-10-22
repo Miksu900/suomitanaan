@@ -51,10 +51,9 @@ jobs:
           T=$(jq -r '.kuvateksti + "\n\n" + ((.hashtagit // []) | map("#" + gsub(" "; "")) | join(" ")) + "\n\nLähde: " + .data.url' aihe.json)
           R=$(curl -sS -X POST "https://api.telegram.org/bot$TG/sendVideo" -F chat_id=1893930799 -F supports_streaming=true -F video=@video.mp4 -F "caption=$(printf '%s' "$T" | head -c 1000)")
           echo "::notice title=Telegram::$(echo "$R" | jq -c '.ok')"
+          V=$(printf '🎬 Päivän video yllä. Saateteksti kopioitavaksi:\n\n%s' "$T")
           curl -sS -X POST "https://api.telegram.org/bot$TG/sendMessage" -H "content-type: application/json" \
-            -d "$(jq -n --arg t "🎬 Päivän video yllä. Saateteksti kopioitavaksi:
-
-$T" '{chat_id: "1893930799", text: $t, disable_web_page_preview: true}')" > /dev/null
+            -d "$(jq -n --arg t "$V" '{chat_id: "1893930799", text: $t, disable_web_page_preview: true}')" > /dev/null
       - name: Tallenna käytetyt aiheet
         working-directory: tyo
         run: |
