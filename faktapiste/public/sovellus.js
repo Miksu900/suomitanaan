@@ -78,7 +78,7 @@
   function kirjoitus(vanhempi) {
     var id = vanhempi ? "v" : "u";
     if (!tila.mina) {
-      if (!tila.kirjautuminen) return '<div class="kirjoita lukko"><b>Keskustelu avautuu pian kirjoittamiselle.</b><span>Voit jo lukea syötettä ja kokeilla, miten se toimii.</span></div>';
+      if (!tila.kirjautuminen) return '<div class="kirjoita lukko"><b>Keskustelu on beta-testissä.</b><span>Kirjoittaminen avautuu kaikille pian. Voit jo lukea syötettä.</span></div>';
       return '<div class="kirjoita lukko"><b>' + (vanhempi ? "Kirjaudu vastataksesi." : "Mitä mieltä olet? Kirjaudu ja kirjoita.") + '</b><span>Kirjautuminen sähköpostilinkillä, ei salasanaa.</span><button type="button" class="nappi" data-kirjaudu>Kirjaudu</button></div>';
     }
     if (!tila.mina.nimi) return '<form class="kirjoita" id="nimilomake"><b>Valitse nimimerkki</b><span>Näkyy postaustesi yhteydessä. Sähköpostiosoitetta ei näytetä kenellekään.</span><div class="rivi"><input name="nimi" maxlength="24" placeholder="esim. Pohjanmaan Pekka" required><button class="nappi">Tallenna</button></div></form>';
@@ -125,7 +125,9 @@
   function piirraKirjoitus() { KIRJ.innerHTML = kirjoitus(null); }
   function mina() {
     return api("mina").then(function (j) {
-      tila.mina = j.kayttaja; tila.kirjautuminen = j.kirjautuminen !== false;
+      tila.mina = j.kayttaja; tila.kirjautuminen = j.kirjautuminen === true;
+      // Testivaihe: kirjautumisnappi näkyy vain osoitteella /?testi=1 avattuna (muistetaan selaimessa).
+      if (j.testi) { var t = /[?&]testi=1/.test(location.search); try { if (t) localStorage.setItem("fp_testi", "1"); t = t || localStorage.getItem("fp_testi") === "1"; } catch (x) {} if (t) tila.kirjautuminen = true; }
       var a = $("#fp-tili");
       if (a) a.innerHTML = tila.mina ? '<button type="button" class="tili" data-ulos>' + esc(tila.mina.nimi || "Oma tili") + " · Kirjaudu ulos</button>" : tila.kirjautuminen ? '<button type="button" class="tili" data-kirjaudu>Kirjaudu</button>' : "";
       piirraKirjoitus();

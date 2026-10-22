@@ -150,3 +150,4 @@ dialog::backdrop{background:rgba(5,10,25,.55)}
 .toast.nakyy{transform:translate(-50%,0)}.toast.virhe{background:#b23a48}
 @media (max-width:900px){.fp-grid{grid-template-columns:1fr}.fp-sivu{position:static}}
 @media (max-width:520px){.posti{grid-template-columns:38px minmax(0,1fr);gap:10px}.av{width:38px;height:38px}.pm footer button{padding:6px 8px}}
+.beta{display:inline-block;margin:0 0 10px;background:var(--yel);color:var(--navy);font:700 .72rem var(--f-b);letter-spacing:.12em;text-transform:uppercase;padding:3px 10px;border-radius:99px}

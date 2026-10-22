@@ -6,7 +6,9 @@ const MALLI = "claude-haiku-5-5";
 const ES = "https://eduskuntaseuranta.fi";
 const ES_HAKU = "https://arwenhbwzoavbonlwkdr.supabase.co/functions/v1/haku";
 const ES_AVAIN = "sb_publishable_7baeuteHYaarCEv4-j8C_g_OLxcKzJp";
-const ADMIN = ["miika@eduskuntaseuranta.fi"];
+const ADMIN = ["miika@eduskuntaseuranta.fi", "miika.koskela990@gmail.com"];
+// Testivaiheessa (KIRJAUTUMINEN = "testi") vain nämä osoitteet voivat kirjautua.
+const TESTAAJAT = ADMIN;
 const PITUUS = 500;
 
 export default {
@@ -118,7 +120,7 @@ export class Faktapiste extends DurableObject {
       const minä = this.kayttaja(req);
       if (p === "/api/syote" && m === "GET") return json(this.syote(u, minä));
       if (p.startsWith("/api/posti/") && m === "GET") return json(this.ketju(+p.split("/")[3], minä));
-      if (p === "/api/mina") return json({ kayttaja: minä ? { nimi: minä.nimi, admin: minä.admin } : null, kirjautuminen: this.env.KIRJAUTUMINEN !== "pois" });
+      if (p === "/api/mina") return json({ kayttaja: minä ? { nimi: minä.nimi, admin: minä.admin } : null, kirjautuminen: this.env.KIRJAUTUMINEN === "auki", testi: this.env.KIRJAUTUMINEN === "testi" });
       if (p === "/api/kirjaudu" && m === "POST") return await this.kirjaudu(req);
       if (p === "/api/vahvista" && m === "GET") return this.vahvista(u);
       if (p === "/api/ulos" && m === "POST") { const t = evaste(req, "fp_s"); if (t) this.sql.exec("DELETE FROM sessiot WHERE t=?", t); return json({ ok: true }, 200, { "set-cookie": "fp_s=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax" }); }
@@ -146,6 +148,7 @@ export class Faktapiste extends DurableObject {
     const d = await req.json().catch(() => ({}));
     const email = puhdas(d.email).toLowerCase();
     if (!/^[^\s@]{1,64}@[^\s@]+\.[a-z]{2,}$/.test(email) || email.length > 120) return virhe("Tarkista sähköpostiosoite.");
+    if (this.env.KIRJAUTUMINEN !== "auki" && !TESTAAJAT.includes(email)) return virhe("Keskustelu on beta-testissä. Kirjautuminen avataan kaikille pian.", 403);
     const ip = await tiiviste((req.headers.get("cf-connecting-ip") || "") + "fp");
     if (!this.raja("lk:" + email, 4, 3600) || !this.raja("li:" + ip, 15, 3600)) return virhe("Liian monta yritystä. Yritä hetken päästä uudelleen.", 429);
     const t = satunnainen();

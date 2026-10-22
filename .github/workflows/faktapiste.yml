@@ -44,7 +44,7 @@ jobs:
               echo 'routes = [ { pattern = "faktapiste.fi", custom_domain = true }, { pattern = "www.faktapiste.fi", custom_domain = true } ]'
             fi
             echo '[vars]'
-            echo 'KIRJAUTUMINEN = "${{ vars.FP_KIRJAUTUMINEN || 'pois' }}"'
+            echo 'KIRJAUTUMINEN = "${{ vars.FP_KIRJAUTUMINEN || 'testi' }}"'
             echo '[triggers]'
             echo 'crons = ["*/20 * * * *"]'
             echo '[assets]'

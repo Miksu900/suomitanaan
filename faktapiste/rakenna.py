@@ -9,7 +9,7 @@ ROOT = pathlib.Path(__file__).parent / "public"
 SITE = os.environ.get("FAKTAPISTE_URL", "https://faktapiste.fi")
 PV = os.environ.get("PYKALAVAHTI_URL", "https://pykalavahti.fi")
 YHTEYS = "miika@eduskuntaseuranta.fi"
-VER = "2"
+VER = "3"
 esc = html.escape
 
 # avain, nimi, osoite, iskulause, kuvaus, merkki, poliittinen
@@ -96,6 +96,7 @@ def minikortti(p):
     k, nimi, url, isku, _, _, _ = p
     return f'<a class="mini" href="{esc(url)}" rel="noopener"><span class="ik" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">{IKONIT[k]}</svg></span><span><b>{esc(nimi)}</b><small>{esc(isku)}</small></span></a>'
 runko = f"""<section class="fp-intro"><div class="w">
+<p class="beta">Beta</p>
 <h1>Keskustele <span class="hl">faktoilla.</span></h1>
 <p class="lead">Suomalainen keskustelu, jossa eduskunnan päätökset ja uutiset ovat mukana syötteessä. Kysy faktaa omin sanoin ja liitä se postaukseesi.</p>
 </div></section>
