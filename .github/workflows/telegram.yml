@@ -1,19 +1,12 @@
-name: Telegram-ilmoitukset (testi)
+name: Telegram-viesti (testi)
 on:
   workflow_dispatch:
     inputs:
-      viesti: { description: "Lähetettävä viesti", default: "Testi: Faktapiste-ilmoitukset toimivat ✅" }
+      viesti: { description: "Lähetettävä viesti", default: "Testi" }
 jobs:
-  testi:
+  laheta:
     runs-on: ubuntu-latest
-    env:
-      TG: ${{ secrets.TELEGRAM_BOT_TOKEN }}
     steps:
       - run: |
-          U=$(curl -sS "https://api.telegram.org/bot$TG/getUpdates")
-          echo "::notice title=ok::$(echo "$U" | jq -c '{ok, n: (.result|length), d: .description, w: [.result[]? | keys[1]]}')"
-          W=$(curl -sS "https://api.telegram.org/bot$TG/getWebhookInfo"); echo "::notice title=webhook::$(echo "$W" | jq -c '.result.url')"
-          M=$(curl -sS "https://api.telegram.org/bot$TG/getMe"); echo "::notice title=bot::$(echo "$M" | jq -c '.result.username')"
-          C=$(echo "$U" | jq -r '[.result[]?.message.chat.id] | last // empty')
-          echo "::notice title=chat_id::$C"
-          [ -n "$C" ] && curl -sS -X POST "https://api.telegram.org/bot$TG/sendMessage" --data-urlencode "chat_id=$C" --data-urlencode "text=${{ inputs.viesti }}" | jq -c '.ok' || true
+          R=$(curl -sS -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" --data-urlencode "chat_id=1893930799" --data-urlencode "text=${{ inputs.viesti }}")
+          echo "::notice title=Telegram::$(echo "$R" | jq -c '.ok')"
