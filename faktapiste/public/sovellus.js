@@ -294,11 +294,31 @@
     if (p) avaaKetju(p, false); else suljeKetju(false);
   });
 
+  // ---------- vapaaehtoinen opastus ----------
+  var OPAS = [
+    ["👀", "Täällä sinut nähdään", "Jokainen postaus näytetään vähintään 30 ihmiselle, vaikka sinulla ei olisi yhtään seuraajaa. Postauksen alla näet, kuinka moni sen on lukenut."],
+    ["✓", "Syöte loppuu", "Sinulle-syöte näyttää vain sellaista, mitä et ole vielä nähnyt. Kun tärkeimmät on katsottu, se loppuu. Ei loputonta selaamista."],
+    ["⚙", "Sinä päätät, mitä näet", "Säädä-napista valitset, paljonko näet keskusteluja, uutisia ja muuta. Jokaisen postauksen ⋯-valikosta näet, miksi se näkyy sinulle."],
+    ["📍", "Oma paikkakunta ja faktat", "Lähellä-välilehti näyttää paikkakuntasi keskustelut. Kysy fakta -napilla saat tarkistetun tiedon suoraan postaukseesi."]
+  ];
+  function opastus(vaihe) {
+    var O = $("#fp-opastus"); if (!O) return;
+    if (vaihe < 0 || vaihe >= OPAS.length) { O.innerHTML = ""; tallenna("fp_opastus", "1"); return; }
+    var o = OPAS[vaihe];
+    O.innerHTML = '<div class="opas" role="region" aria-label="Opastus"><span class="opas-ik">' + o[0] + '</span><div><span class="opas-n">' + (vaihe + 1) + " / " + OPAS.length + "</span><b>" + o[1] + "</b><p>" + o[2] + '</p><div class="rivi"><button type="button" class="nappi" data-opas="' + (vaihe + 1) + '">' + (vaihe + 1 < OPAS.length ? "Seuraava" : "Valmis") + '</button><button type="button" class="linkki" data-opas="-1">Ohita opastus</button></div></div></div>';
+  }
+  function tarjoaOpastus() {
+    var O = $("#fp-opastus"); if (!O || lue("fp_opastus") === "1") return;
+    O.innerHTML = '<div class="opas"><span class="opas-ik">👋</span><div><b>Tervetuloa Faktapisteeseen!</b><p>Haluatko nähdä lyhyesti, miten täällä toimitaan? Vie alle minuutin.</p><div class="rivi"><button type="button" class="nappi" data-opas="0">Näytä miten toimii</button><button type="button" class="linkki" data-opas="-1">Ei kiitos</button></div></div></div>';
+  }
+  document.addEventListener("click", function (e) { var b = e.target.closest("[data-opas]"); if (b) opastus(+b.getAttribute("data-opas")); });
+
   // ---------- käynnistys ----------
   var qs = new URLSearchParams(location.search);
   if (qs.get("kirjautuminen") === "vanhentunut") setTimeout(function () { ilmoitus("Kirjautumislinkki on vanhentunut tai jo käytetty. Pyydä uusi.", 1); }, 300);
   if (qs.get("tervetuloa")) { history.replaceState({}, "", "/"); setTimeout(function () { ilmoitus("Olet kirjautunut sisään."); }, 300); }
   piirraTabit();
+  tarjoaOpastus();
   mina().then(function () { if (qs.get("p")) avaaKetju(qs.get("p"), false); });
   lataaSyote();
 })();

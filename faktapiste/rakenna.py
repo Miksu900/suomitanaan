@@ -9,7 +9,7 @@ ROOT = pathlib.Path(__file__).parent / "public"
 SITE = os.environ.get("FAKTAPISTE_URL", "https://faktapiste.fi")
 PV = os.environ.get("PYKALAVAHTI_URL", "https://pykalavahti.fi")
 YHTEYS = "miika@eduskuntaseuranta.fi"
-VER = "5"
+VER = "6"
 esc = html.escape
 
 # avain, nimi, osoite, iskulause, kuvaus, merkki, poliittinen
@@ -104,6 +104,7 @@ runko = f"""<section class="fp-intro"><div class="w">
 <div class="w fp-grid">
 <div class="fp-keski">
 <div id="fp-paa">
+<div id="fp-opastus"></div>
 <div id="fp-kirjoita"></div>
 <div class="tabit" id="fp-tabit" role="tablist" aria-label="Syöte"></div>
 <div class="saato" id="fp-saato" hidden></div>
