@@ -1,0 +1,17 @@
+name: D1-testi
+on: workflow_dispatch
+jobs:
+  t:
+    runs-on: ubuntu-latest
+    env:
+      CF: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      API: https://api.cloudflare.com/client/v4
+    steps:
+      - run: |
+          h=(-sS -H "Authorization: Bearer $CF" -H "Content-Type: application/json")
+          A=$(curl "${h[@]}" "$API/accounts" | jq -r '.result[0].id')
+          L=$(curl "${h[@]}" "$API/accounts/$A/d1/database")
+          echo "::notice title=d1 list::$(echo "$L" | jq -c '{s:.success,e:.errors,n:[.result[]?.name]}')"
+          ID=$(echo "$L" | jq -r '.result[]? | select(.name=="faktapiste-db") | .uuid')
+          if [ -z "$ID" ]; then R=$(curl "${h[@]}" -X POST "$API/accounts/$A/d1/database" -d '{"name":"faktapiste-db"}'); echo "::notice title=d1 create::$(echo "$R" | jq -c '{s:.success,e:.errors,id:.result.uuid}')"; else echo "::notice title=d1 exists::$ID"; fi
+          D=$(curl "${h[@]}" "$API/accounts/$A/durable_objects/namespaces"); echo "::notice title=do::$(echo "$D" | jq -c '{s:.success,e:.errors}')"
