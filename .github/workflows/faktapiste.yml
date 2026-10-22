@@ -1,11 +1,13 @@
 name: Faktapiste.fi
-# Rakentaa faktapiste.fi-kattosivun ja julkaisee sen Cloudflare Workeriin (pelkät staattiset sivut).
+# Rakentaa faktapiste.fi:n sivut ja keskustelun (Worker + SQLite Durable Object) ja julkaisee ne Cloudflareen.
 # Domain kytketään automaattisesti, kun faktapiste.fi on aktiivinen Cloudflaressa.
 on:
   push:
     branches: [main]
     paths: ["faktapiste/**", ".github/workflows/faktapiste.yml"]
   workflow_dispatch:
+    inputs:
+      fakta: { description: "Testikysymys faktahaulle", required: false, default: "" }
 jobs:
   julkaise:
     runs-on: ubuntu-latest
@@ -35,18 +37,41 @@ jobs:
           set -e
           {
             echo 'name = "faktapiste"'
+            echo 'main = "src/index.js"'
             echo 'compatibility_date = "2026-09-01"'
             echo 'workers_dev = true'
             if [ "${{ steps.cf.outputs.tila }}" = "active" ]; then
               echo 'routes = [ { pattern = "faktapiste.fi", custom_domain = true }, { pattern = "www.faktapiste.fi", custom_domain = true } ]'
             fi
+            echo '[vars]'
+            echo 'KIRJAUTUMINEN = "${{ vars.FP_KIRJAUTUMINEN || 'pois' }}"'
+            echo '[triggers]'
+            echo 'crons = ["*/20 * * * *"]'
             echo '[assets]'
             echo 'directory = "./public"'
+            echo 'binding = "ASSETS"'
             echo 'not_found_handling = "404-page"'
+            echo '[[durable_objects.bindings]]'
+            echo 'name = "FP"'
+            echo 'class_name = "Faktapiste"'
+            echo '[[migrations]]'
+            echo 'tag = "v1"'
+            echo 'new_sqlite_classes = ["Faktapiste"]'
           } > wrangler.toml
           npx --yes wrangler@3.99.0 deploy
+          HALLINTA=$(printf '%s' "$CLOUDFLARE_API_TOKEN-faktapiste" | sha256sum | cut -c1-40)
+          jq -n --arg a "${{ secrets.ANTHROPIC_API_KEY }}" --arg b "${{ secrets.BREVO_API_KEY }}" --arg t "${{ secrets.TELEGRAM_BOT_TOKEN }}" --arg h "$HALLINTA" \
+            '{ANTHROPIC_API_KEY:$a, BREVO_API_KEY:$b, TELEGRAM_BOT_TOKEN:$t, TG_CHAT:"1893930799", HALLINTA:$h}' > /tmp/s.json
+          npx --yes wrangler@3.99.0 secret bulk /tmp/s.json; rm /tmp/s.json
       - name: Savutesti
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
-          sleep 8
+          sleep 10
           U=https://faktapiste.${{ steps.cf.outputs.sub }}.workers.dev
+          HALLINTA=$(printf '%s' "$CLOUDFLARE_API_TOKEN-faktapiste" | sha256sum | cut -c1-40)
           echo "::notice title=Testi::workers.dev $(curl -s -o /dev/null -w '%{http_code}' $U/)  palvelut $(curl -s -o /dev/null -w '%{http_code}' $U/palvelut/)  faktapiste.fi $(curl -s -o /dev/null -w '%{http_code}' https://faktapiste.fi/ || true)"
+          echo "::notice title=Sisäänluku::$(curl -sS -X POST -H "x-avain: $HALLINTA" $U/api/hallinta/sisaanluku | head -c 600)"
+          echo "::notice title=Tila::$(curl -sS -X POST -H "x-avain: $HALLINTA" $U/api/hallinta/tila | head -c 600)"
+          echo "::notice title=Syöte::$(curl -sS "$U/api/syote?tab=suositut" | jq -c '[.postit[:6][] | {lahde, k: (.kortti.otsikko // .kortti.nyt // "")[:60]}]' | head -c 900)"
+          if [ -n "${{ inputs.fakta }}" ]; then echo "::notice title=Fakta::$(curl -sS -X POST -H "x-avain: $HALLINTA" -H 'content-type: application/json' -d "$(jq -n --arg q '${{ inputs.fakta }}' '{kysymys:$q}')" $U/api/hallinta/fakta | head -c 1500)"; fi

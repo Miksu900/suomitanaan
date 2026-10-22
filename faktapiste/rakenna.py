@@ -9,7 +9,7 @@ ROOT = pathlib.Path(__file__).parent / "public"
 SITE = os.environ.get("FAKTAPISTE_URL", "https://faktapiste.fi")
 PV = os.environ.get("PYKALAVAHTI_URL", "https://pykalavahti.fi")
 YHTEYS = "miika@eduskuntaseuranta.fi"
-VER = "1"
+VER = "2"
 esc = html.escape
 
 # avain, nimi, osoite, iskulause, kuvaus, merkki, poliittinen
@@ -57,9 +57,10 @@ def kortti(p, iso=False):
 
 def sivu(polku, otsikko, kuvaus, runko, noindex=False):
     can = SITE + polku
-    nav = [("/", "Etusivu"), ("/palvelut/", "Palvelut"), ("/tietoa/", "Tietoa")]
+    nav = [("/", "Keskustelu"), ("/palvelut/", "Palvelut"), ("/tietoa/", "Tietoa")]
     navh = "".join(f'<a href="{h}"{" aria-current=\"page\"" if h == polku else ""}>{t}</a>' for h, t in nav)
     vuosi = datetime.date.today().year
+    tili = '<span id="fp-tili"></span>' if polku == "/" else ""
     return f"""<!doctype html>
 <html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{esc(otsikko)}</title><meta name="description" content="{esc(kuvaus)}">
@@ -75,11 +76,11 @@ def sivu(polku, otsikko, kuvaus, runko, noindex=False):
 <link rel="stylesheet" href="/tyyli.css?v={VER}">
 </head><body>
 <a class="skip" href="#sisalto">Siirry sisältöön</a>
-<header class="hd"><div class="w hdw"><a class="brand" href="/" aria-label="Faktapiste – etusivu">{LOGO}</a><nav aria-label="Päävalikko">{navh}</nav></div></header>
+<header class="hd"><div class="w hdw"><a class="brand" href="/" aria-label="Faktapiste – etusivu">{LOGO}</a><nav aria-label="Päävalikko">{navh}{tili}</nav></div></header>
 <main id="sisalto">{runko}</main>
 <footer class="ft"><div class="w">{LOGO}
 <p>Faktapiste kokoaa yhteen ilmaisia palveluita, jotka perustuvat julkisiin lähteisiin: poliisin lupatietoihin, Finlexiin, eduskunnan avoimeen dataan ja uutismedian otsikoihin.</p>
-<p><a href="/palvelut/">Palvelut</a> · <a href="/tietoa/">Tietoa ja tietosuoja</a> · <span class="mono">{YHTEYS}</span></p>
+<p><a href="/">Keskustelu</a> · <a href="/palvelut/">Palvelut</a> · <a href="/tietoa/">Tietoa, säännöt ja tietosuoja</a> · <span class="mono">{YHTEYS}</span></p>
 <p class="mute">© {vuosi} Faktapiste</p></div></footer>
 </body></html>"""
 
@@ -90,22 +91,33 @@ def kirjoita(polku, sisalto):
 
 ROOT.mkdir(parents=True, exist_ok=True)
 
-# ---- etusivu: kaikki palvelut ----
-runko = f"""<section class="hero"><div class="w">
-<p class="eyebrow">Ilmaiset palvelut · julkiset lähteet</p>
-<h1>Faktat <span class="hl">yhdestä</span> pisteestä.</h1>
-<p class="lead">Tarkista keräys ennen kuin lahjoitat, selvitä mitä laki sanoo ja katso, mitä päättäjät oikeasti tekevät. Kaikki tiedot tulevat avoimista, julkisista lähteistä, ja jokaisessa vastauksessa näkyy, mistä tieto on peräisin.</p>
+# ---- etusivu: keskustelu + palvelut ----
+def minikortti(p):
+    k, nimi, url, isku, _, _, _ = p
+    return f'<a class="mini" href="{esc(url)}" rel="noopener"><span class="ik" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">{IKONIT[k]}</svg></span><span><b>{esc(nimi)}</b><small>{esc(isku)}</small></span></a>'
+runko = f"""<section class="fp-intro"><div class="w">
+<h1>Keskustele <span class="hl">faktoilla.</span></h1>
+<p class="lead">Suomalainen keskustelu, jossa eduskunnan päätökset ja uutiset ovat mukana syötteessä. Kysy faktaa omin sanoin ja liitä se postaukseesi.</p>
 </div></section>
-<section class="w"><h2 class="osio">Arjen turvaksi</h2>
-<div class="ruudukko">{''.join(kortti(p) for p in PALVELUT[:3])}</div>
-<h2 class="osio">Uutiset ja päätöksenteko</h2>
-<div class="ruudukko">{''.join(kortti(p) for p in PALVELUT[3:])}</div></section>
-<section class="w periaate"><h2>Periaatteet</h2>
-<ul class="lista"><li><b>Lähde näkyy aina.</b> Luvut ja pykälät linkitetään alkuperäiseen lähteeseen.</li>
-<li><b>Ei kirjautumista eikä seurantaevästeitä.</b> Palvelut toimivat heti.</li>
-<li><b>Luvut ovat puolueettomia.</b> Mielipiteet merkitään aina erikseen mielipiteiksi.</li></ul></section>"""
-kirjoita("/", sivu("/", "Faktapiste – tarkista keräykset, lait ja päätökset",
-                   "Faktapiste kokoaa ilmaiset palvelut yhteen: Keräysvahti, huijausapu, Pykälävahti, Korjausvahti, Nytpuhutaan ja Eduskuntaseuranta.", runko))
+<div class="w fp-grid">
+<div class="fp-keski">
+<div id="fp-paa">
+<div id="fp-kirjoita"></div>
+<div class="tabit" id="fp-tabit" role="tablist" aria-label="Syöte"></div>
+<div id="fp-syote" aria-live="polite"><noscript><p class="lataa">Keskustelu vaatii JavaScriptin.</p></noscript></div>
+</div>
+<div id="fp-ketju" hidden></div>
+</div>
+<aside class="fp-sivu">
+<div class="laatikko"><h2>Faktapisteen palvelut</h2>{''.join(minikortti(p) for p in PALVELUT)}</div>
+<div class="laatikko"><h2>Säännöt lyhyesti</h2><ul><li>Saa olla eri mieltä ja kärkevä.</li><li>Ei uhkailua, henkilötietojen levittämistä, kiihottamista kansanryhmää vastaan eikä roskapostia.</li><li>Kolme ilmoitusta piilottaa postauksen tarkistusta varten.</li></ul><a href="/tietoa/#keskustelu">Säännöt ja tietosuoja →</a></div>
+</aside>
+</div>
+<dialog id="fp-kirjaudu" aria-label="Kirjaudu"></dialog>
+<div id="fp-toast" class="toast" role="status" aria-live="polite"></div>
+<script src="/sovellus.js?v={VER}" defer></script>"""
+kirjoita("/", sivu("/", "Faktapiste – keskustele faktoilla",
+                   "Suomalainen keskustelu, jossa eduskunnan päätökset, uutiset ja faktat ovat mukana. Kysy faktaa omin sanoin ja liitä se postaukseesi.", runko))
 
 # ---- palvelut: mainoksiin sopiva versio ----
 ARKI = [p for p in PALVELUT if not p[6] and p[0] != "np"]
@@ -125,11 +137,22 @@ runko = f"""<section class="w teksti">
 <h2>Ylläpitäjä</h2>
 <p>Miika Koskela, Ylivieska. Yhteys: <span class="mono">{YHTEYS}</span>.</p>
 <h2>Tietosuoja</h2>
-<p>Tämä sivu ei käytä evästeitä, ei vaadi kirjautumista eikä kerää henkilötietoja. Sivusto toimii Cloudflaren palvelussa, joka voi tallentaa teknisiä lokitietoja (kuten IP-osoitteen) palvelun toiminnan ja turvallisuuden vuoksi. Fontit ladataan Googlen Fonts-palvelusta. Kunkin palvelun omat tietosuojatiedot löytyvät palvelun sivuilta.</p>
+<p>Palveluiden sivut eivät käytä seurantaevästeitä eivätkä mainosseurantaa. Sivusto toimii Cloudflaren palvelussa, joka voi tallentaa teknisiä lokitietoja (kuten IP-osoitteen) palvelun toiminnan ja turvallisuuden vuoksi. Fontit ladataan Googlen Fonts-palvelusta. Kunkin palvelun omat tietosuojatiedot löytyvät palvelun sivuilta.</p>
+<p><b>Keskustelu.</b> Jos kirjaudut keskusteluun, tallennamme sähköpostiosoitteesi, nimimerkkisi, postauksesi, tykkäyksesi ja ilmoituksesi. Sähköpostiosoitetta käytetään vain kirjautumislinkkien lähettämiseen, eikä sitä näytetä muille. Kirjautuminen käyttää yhtä välttämätöntä evästettä (fp_s), joka pitää sinut kirjautuneena 60 päivää. Kirjautumisviestit lähetetään Brevo-palvelun kautta. Postaukset tarkistetaan julkaisuhetkellä automaattisesti tekoälyllä (Anthropic) selvästi lainvastaisen sisällön varalta, ja faktahaut käsitellään samalla tavalla. Tietoja ei myydä eikä käytetä mainontaan. Voit pyytää tilisi ja tietojesi poistamista osoitteesta <span class="mono">{YHTEYS}</span>.</p>
+<h2 id="keskustelu">Keskustelun säännöt</h2>
+<ul>
+<li>Saa olla eri mieltä, kritisoida kovasti ja kirjoittaa kärkevästi, myös päättäjistä ja puolueista.</li>
+<li>Kiellettyä on väkivallalla uhkaaminen, yksityishenkilöiden henkilötietojen levittäminen, kiihottaminen kansanryhmää vastaan, kunnianloukkaus, lapsia seksualisoiva sisältö sekä mainostus ja huijaukset.</li>
+<li>Kirjoittaja vastaa itse kirjoituksestaan. Postaukset julkaistaan heti, ja selvästi lainvastaiset estetään automaattisesti.</li>
+<li>Jokaisessa postauksessa on Ilmoita-toiminto. Kun kolme käyttäjää on ilmoittanut postauksesta, se piilotetaan tarkistusta varten. Ylläpitäjä poistaa lainvastaisen sisällön viipymättä ja voi sulkea sääntöjä rikkovan tilin.</li>
+<li>Ilmoituksen voi tehdä myös sähköpostilla osoitteeseen <span class="mono">{YHTEYS}</span>. Kerro postauksen linkki ja syy.</li>
+<li>Syötteen järjestys: Suositut-näkymä painottaa tykkäyksiä, vastauksia ja tuoreutta, ja käyttäjien omat postaukset nostetaan automaattisen sisällön edelle. Uusimmat-näkymä on aikajärjestyksessä. Automaattinen sisältö tulee Faktapisteen omista palveluista (Suomi Tänään, Korjausvahti, Eduskuntaseuranta, Keräysvahti) ja on merkitty.</li>
+<li>Faktahaun vastaukset kokoaa tekoäly eduskunnan avoimesta datasta. Ne voivat sisältää virheitä, joten tarkista tärkeät asiat lähteestä.</li>
+</ul>
 <h2>Käyttöehdot</h2>
 <p>Palvelut ovat tällä hetkellä maksuttomia. Ylläpitäjä pidättää oikeuden muuttaa palveluita ja niiden ehtoja sekä ottaa käyttöön maksullisia ominaisuuksia; muutoksista kerrotaan etukäteen. Tiedot ovat yleistä tietoa eivätkä oikeudellista tai taloudellista neuvontaa.</p>
 </section>"""
-kirjoita("/tietoa/", sivu("/tietoa/", "Tietoa ja tietosuoja | Faktapiste", "Kuka ylläpitää Faktapistettä, tietosuoja ja käyttöehdot.", runko))
+kirjoita("/tietoa/", sivu("/tietoa/", "Tietoa ja tietosuoja | Faktapiste", "Kuka ylläpitää Faktapistettä, tietosuoja, keskustelun säännöt ja käyttöehdot.", runko))
 
 (ROOT / "404.html").write_text(sivu("/404", "Sivua ei löytynyt | Faktapiste", "Sivua ei löytynyt.",
     '<section class="w teksti"><h1>Sivua ei löytynyt</h1><p><a href="/">Takaisin etusivulle</a></p></section>', noindex=True), encoding="utf-8")

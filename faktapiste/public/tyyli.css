@@ -52,3 +52,101 @@ h2{font:400 1.7rem/1.1 var(--f-d);text-transform:uppercase;letter-spacing:.02em;
 .ft .mute{color:#8592ad}
 @media (max-width:520px){.hero{padding:40px 0 48px}.palvelu{padding:16px}.hd nav a{padding:6px 8px;font-size:.88rem}}
 @media (prefers-reduced-motion:reduce){.palvelu{transition:none}.palvelu:hover{transform:none}}
+/* ---- keskustelu ---- */
+#fp-tili{display:inline-flex}
+.tili{background:var(--yel);color:var(--navy);border:0;border-radius:8px;font:700 .88rem var(--f-b);padding:7px 12px;margin-left:6px;cursor:pointer;max-width:60vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fp-intro{background:var(--navy);color:#fff;padding:28px 0 30px}
+.fp-intro h1{font-size:clamp(2rem,7vw,3.2rem)}.fp-intro .hl{color:var(--yel)}
+.fp-intro .lead{margin-top:10px;font-size:1rem}
+.fp-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;align-items:start;margin-top:20px}
+.fp-keski{min-width:0}
+.fp-sivu{position:sticky;top:76px;display:grid;gap:14px}
+.laatikko{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:16px}
+.laatikko h2{font-size:1.15rem;margin-bottom:10px}
+.laatikko ul{margin:0 0 10px;padding-left:18px;font-size:.92rem;color:var(--mute)}
+.laatikko>a{font-weight:700;font-size:.9rem}
+.mini{display:flex;gap:10px;align-items:center;padding:8px 6px;border-radius:10px;text-decoration:none}
+.mini:hover{background:var(--yel-soft)}
+.mini .ik{width:36px;height:36px;border-radius:10px}.mini .ik svg{width:19px;height:19px}
+.mini b{display:block;font-size:.95rem}.mini small{color:var(--mute);font-size:.82rem}
+.kirjoita{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:14px;display:grid;gap:10px}
+.kirjoita.lukko{text-align:center;justify-items:center;padding:20px}
+.kirjoita.lukko span{color:var(--mute);font-size:.92rem}
+.kirjoita textarea,.kirjoita input,.dlg input{width:100%;font:16px/1.5 var(--f-b);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px;resize:vertical}
+.kirjoita textarea:focus,.kirjoita input:focus,.dlg input:focus{outline:2px solid var(--yel);border-color:transparent}
+.rivi{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.rivi input{flex:1;min-width:180px}
+.toiminnot{display:flex;align-items:center;gap:10px}
+.laskuri{margin-left:auto;color:var(--mute);font-size:.85rem}.laskuri.vahan{color:#c0392b;font-weight:700}
+.nappi{background:var(--navy);color:#fff;border:0;border-radius:99px;font:700 .95rem var(--f-b);padding:10px 18px;cursor:pointer}
+.nappi:disabled{opacity:.55;cursor:wait}
+.nappi.toissijainen{background:transparent;color:var(--ink);border:1px solid var(--line)}
+@media (prefers-color-scheme:dark){.nappi{background:var(--yel);color:var(--navy)}}
+.fakta-nappi{background:var(--yel-soft);color:var(--ink);border:1px solid var(--yel);border-radius:99px;font:700 .88rem var(--f-b);padding:8px 14px;cursor:pointer}
+.faktapaneeli{display:grid;gap:10px}
+.liitetty{margin:0;font-size:.88rem;color:var(--mute)}
+.linkki{background:none;border:0;color:inherit;text-decoration:underline;cursor:pointer;font:inherit;padding:0}
+.tabit{display:flex;gap:4px;margin:18px 0 6px;border-bottom:1px solid var(--line);overflow-x:auto}
+.tabit button{background:none;border:0;border-bottom:3px solid transparent;font:700 .95rem var(--f-b);color:var(--mute);padding:10px 12px;cursor:pointer;white-space:nowrap}
+.tabit button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--yel)}
+.lataa{color:var(--mute);text-align:center;padding:28px 0}
+.posti{display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;padding:16px 4px;border-bottom:1px solid var(--line);cursor:pointer;position:relative}
+.posti:hover{background:color-mix(in srgb,var(--paper) 60%,transparent)}
+.posti.iso{cursor:default;background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:16px;margin-top:10px}
+.posti.piilo{display:block;cursor:default}
+.av{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:#fff;font:700 1rem var(--f-b);flex:none}
+.av.k{background:var(--navy2)}
+.pm header{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.pm header b{font-size:.98rem}
+.auto{font-size:.72rem;color:var(--mute);border:1px solid var(--line);border-radius:99px;padding:0 7px}
+.aika{color:var(--mute);font-size:.86rem;text-decoration:none;margin-left:auto}
+.pt{margin:4px 0 2px;overflow-wrap:anywhere;font-size:1rem}
+.pt a{color:var(--navy2)}@media (prefers-color-scheme:dark){.pt a{color:var(--yel)}}
+.pm footer{display:flex;gap:4px;margin-top:8px;position:relative}
+.pm footer button{background:none;border:0;color:var(--mute);font:600 .9rem var(--f-b);padding:6px 10px;border-radius:99px;cursor:pointer;min-width:44px}
+.pm footer button:hover{background:var(--yel-soft);color:var(--ink)}
+.pm footer button.on{color:#d33a4a}
+.valikko{position:absolute;right:0;top:38px;z-index:5;background:var(--paper);border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.15);display:grid;min-width:240px}
+.valikko button{background:none;border:0;text-align:left;padding:12px 14px;font:600 .92rem var(--f-b);color:var(--ink);cursor:pointer}
+.valikko button:hover{background:var(--yel-soft)}
+.kortti{display:grid;gap:4px;margin-top:8px;border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:var(--paper);text-decoration:none;color:var(--ink);cursor:auto}
+a.kortti:hover{border-color:var(--yel)}
+.kl{font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--mute)}
+.kortti strong{font-size:1rem;line-height:1.35}
+.kortti>span:not(.kl){color:var(--mute);font-size:.92rem}
+.muutos .ennen,.muutos .nyt{display:block;font-size:.95rem!important;color:var(--ink)!important}
+.muutos .ennen{text-decoration:line-through;text-decoration-color:#d33a4a;opacity:.75}
+.muutos em{font-style:normal;font-weight:700;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;margin-right:6px;color:var(--mute)}
+.varoitus{border-left:5px solid #c26a00}
+.aanestys{border-left:5px solid #1d5fd1}
+.aanestys .lisa{font-size:.84rem!important}
+.tulos{justify-self:start;font-size:.78rem!important;font-weight:700;border-radius:99px;padding:2px 10px;color:#fff!important}
+.tulos.ok{background:#1f8a4c}.tulos.no{background:#b23a48}
+.palkit{display:grid;gap:5px;margin:6px 0 2px}
+.pr{display:grid;grid-template-columns:64px 1fr 36px;gap:8px;align-items:center;font-size:.85rem}
+.pr b{text-align:right}
+.pb{height:10px;background:var(--bg);border-radius:99px;overflow:hidden}
+.pb i{display:block;height:100%;border-radius:99px}
+.pb .j{background:#1f8a4c}.pb .e{background:#c0392b}.pb .t{background:#9aa3b5}.pb .p{background:#d2d6de}
+.ryhmat summary{cursor:pointer;font-weight:700;font-size:.88rem;padding:4px 0}
+.ryhmat table{width:100%;border-collapse:collapse;font-size:.84rem}
+.ryhmat th,.ryhmat td{text-align:right;padding:3px 4px;border-bottom:1px solid var(--line)}
+.ryhmat th:first-child,.ryhmat td:first-child{text-align:left}
+.lue{font-weight:700;font-size:.86rem;color:var(--navy2)}@media (prefers-color-scheme:dark){.lue{color:var(--yel)}}
+.fakta{border:2px solid var(--yel);background:var(--yel-soft)}
+.fakta .kys{font-weight:700;color:var(--ink)!important}
+.fakta p{margin:2px 0}
+.fakta .fa{background:var(--paper);border-radius:10px;padding:10px}
+.fakta small{color:var(--mute);font-size:.78rem}
+.lahteet{display:grid;gap:2px}.lahteet a{font-size:.86rem;font-weight:600}
+.takaisin{background:none;border:0;font:700 .95rem var(--f-b);color:var(--ink);padding:10px 0;cursor:pointer}
+.vanhempi .posti{opacity:.8}
+.ketju-kirj{margin:12px 0}
+.vast{font-size:1.1rem;margin:20px 0 4px}
+dialog{border:0;border-radius:18px;padding:0;max-width:440px;width:calc(100% - 32px);background:var(--paper);color:var(--ink)}
+dialog::backdrop{background:rgba(5,10,25,.55)}
+.dlg{padding:22px;display:grid;gap:12px}.dlg h2{margin:0}.dlg p{margin:0;color:var(--mute)}.dlg label{display:grid;gap:6px;font-weight:700}
+.pieni{font-size:.85rem}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,120px);background:var(--navy);color:#fff;padding:12px 18px;border-radius:12px;font-weight:600;transition:transform .25s;z-index:50;max-width:calc(100% - 32px)}
+.toast.nakyy{transform:translate(-50%,0)}.toast.virhe{background:#b23a48}
+@media (max-width:900px){.fp-grid{grid-template-columns:1fr}.fp-sivu{position:static}}
+@media (max-width:520px){.posti{grid-template-columns:38px minmax(0,1fr);gap:10px}.av{width:38px;height:38px}.pm footer button{padding:6px 8px}}
