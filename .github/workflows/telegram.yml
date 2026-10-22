@@ -1,0 +1,17 @@
+name: Telegram-ilmoitukset (testi)
+on:
+  workflow_dispatch:
+    inputs:
+      viesti: { description: "Lähetettävä viesti", default: "Testi: Faktapiste-ilmoitukset toimivat ✅" }
+jobs:
+  testi:
+    runs-on: ubuntu-latest
+    env:
+      TG: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+    steps:
+      - run: |
+          U=$(curl -sS "https://api.telegram.org/bot$TG/getUpdates")
+          echo "::notice title=ok::$(echo "$U" | jq -c '.ok, .description')"
+          C=$(echo "$U" | jq -r '[.result[]?.message.chat.id] | last // empty')
+          echo "::notice title=chat_id::$C"
+          [ -n "$C" ] && curl -sS -X POST "https://api.telegram.org/bot$TG/sendMessage" --data-urlencode "chat_id=$C" --data-urlencode "text=${{ inputs.viesti }}" | jq -c '.ok' || true
