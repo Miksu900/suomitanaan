@@ -61,3 +61,7 @@ jobs:
           git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" videokone-tila
       - uses: actions/upload-artifact@v4
         with: { name: video, path: tyo/video.mp4, retention-days: 7 }
+      - name: Ilmoita virheestä
+        if: failure()
+        run: |
+          curl -sS -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" -d chat_id=1893930799 --data-urlencode "text=⚠️ Päivän video ei onnistunut tänään. Katso: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" > /dev/null
