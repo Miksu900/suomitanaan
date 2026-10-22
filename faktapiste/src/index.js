@@ -254,7 +254,7 @@ export class Faktapiste extends DurableObject {
         r._syy = `Uusi postaus, jonka on nähnyt vasta ${r.nakymat} ${r.nakymat === 1 ? "lukija" : "lukijaa"}. Faktapiste näyttää jokaisen postauksen vähintään ${TAATTU} ihmiselle, vaikka kirjoittajalla ei olisi seuraajia.`;
         r._p = 1000 - r.nakymat; uudet.push(r); continue;
       }
-      const [paino, puoli] = r.kayttaja ? [4, 12] : ({ eduskunta: [2, 30], suomitanaan: [1.2, 8], korjausvahti: [1, 8], keraysvahti: [0.8, 12] })[r.lahde] || [1, 8];
+      const [paino, puoli] = r.kayttaja ? [4, 12] : ({ eduskunta: [0.9, 20], suomitanaan: [1.2, 8], korjausvahti: [1, 8], keraysvahti: [0.8, 12] })[r.lahde] || [1, 8];
       r._p = k * paino * (1 + r.tykkaykset * 2 + r.vastaukset * 3) * Math.pow(0.5, h / puoli);
       const nimi = { suomitanaan: "uutisia", korjausvahti: "otsikkomuutoksia", keraysvahti: "huijausvaroituksia", eduskunta: "päätöksiä" }[r.lahde];
       r._syy = r.kayttaja
