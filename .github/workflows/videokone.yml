@@ -1,0 +1,64 @@
+name: Videokone (päivän video Telegramiin)
+# Joka aamu: valitsee aiheen (otsikkomuutos, huijausvaroitus tai eduskunnan päätös), kirjoittaa käsikirjoituksen,
+# tekee äänen ElevenLabsilla, renderöi pystyvideon ja lähettää sen saatetekstin kanssa Telegramiin julkaistavaksi.
+on:
+  schedule:
+    - cron: "20 4 * * *"
+  workflow_dispatch:
+    inputs:
+      tyyppi: { description: "korjaus, huijaus tai eduskunta (tyhjä = päivän vuoro)", required: false, default: "" }
+      aani: { description: "ElevenLabs voice_id (oletus Brian)", required: false, default: "nPczCjzI2devNBz1zQrb" }
+permissions:
+  contents: write
+concurrency: { group: videokone, cancel-in-progress: false }
+jobs:
+  video:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      VOICE: ${{ inputs.aani || 'nPczCjzI2devNBz1zQrb' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Työkalut
+        run: |
+          which ffmpeg || (sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg)
+          pip install -q pillow numpy
+      - name: Aihe ja käsikirjoitus
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          mkdir tyo && cd tyo
+          git fetch -q origin videokone-tila && git show origin/videokone-tila:kaytetyt.json > kaytetyt.json || echo "[]" > kaytetyt.json
+          python3 ../videokone/aiheet.py "${{ inputs.tyyppi }}"
+          echo "::notice title=Aihe::$(jq -r '.tyyppi + ": " + (.lauseet|join(" "))' aihe.json)"
+      - name: Ääni
+        env:
+          EL: ${{ secrets.ELEVENLABS_API_KEY }}
+        working-directory: tyo
+        run: |
+          set -e
+          jq '{text: (.lauseet|join(" ")), model_id: "eleven_multilingual_v2", voice_settings: {stability: 0.45, similarity_boost: 0.8, style: 0.35}}' aihe.json > body.json
+          curl -sS -f -X POST "https://api.elevenlabs.io/v1/text-to-speech/$VOICE/with-timestamps?output_format=mp3_44100_128" -H "xi-api-key: $EL" -H "content-type: application/json" -d @body.json -o vastaus.json
+          jq -r .audio_base64 vastaus.json | base64 -d > aani.mp3 && jq .alignment vastaus.json > ajoitus.json && rm vastaus.json
+      - name: Video
+        working-directory: tyo
+        run: python3 ../videokone/render.py && ls -la video.mp4
+      - name: Telegramiin
+        working-directory: tyo
+        env:
+          TG: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        run: |
+          T=$(jq -r '.kuvateksti + "\n\n" + ((.hashtagit // []) | map("#" + gsub(" "; "")) | join(" ")) + "\n\nLähde: " + .data.url' aihe.json)
+          R=$(curl -sS -X POST "https://api.telegram.org/bot$TG/sendVideo" -F chat_id=1893930799 -F supports_streaming=true -F video=@video.mp4 -F "caption=$(printf '%s' "$T" | head -c 1000)")
+          echo "::notice title=Telegram::$(echo "$R" | jq -c '.ok')"
+          curl -sS -X POST "https://api.telegram.org/bot$TG/sendMessage" -H "content-type: application/json" \
+            -d "$(jq -n --arg t "🎬 Päivän video yllä. Saateteksti kopioitavaksi:
+
+$T" '{chat_id: "1893930799", text: $t, disable_web_page_preview: true}')" > /dev/null
+      - name: Tallenna käytetyt aiheet
+        working-directory: tyo
+        run: |
+          mkdir tila && cp kaytetyt.json tila/ && cd tila && git init -q && git checkout -q -b videokone-tila && git add -A && git -c user.name=bot -c user.email=bot@x commit -qm tila
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" videokone-tila
+      - uses: actions/upload-artifact@v4
+        with: { name: video, path: tyo/video.mp4, retention-days: 7 }
