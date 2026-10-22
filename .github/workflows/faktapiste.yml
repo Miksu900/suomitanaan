@@ -74,4 +74,4 @@ jobs:
           echo "::notice title=Sisäänluku::$(curl -sS -X POST -H "x-avain: $HALLINTA" $U/api/hallinta/sisaanluku | head -c 600)"
           echo "::notice title=Tila::$(curl -sS -X POST -H "x-avain: $HALLINTA" $U/api/hallinta/tila | head -c 600)"
           echo "::notice title=Syöte::$(curl -sS "$U/api/syote?tab=suositut" | jq -c '[.postit[:6][] | {lahde, k: (.kortti.otsikko // .kortti.nyt // "")[:60]}]' | head -c 900)"
-          if [ -n "${{ inputs.fakta }}" ]; then echo "::notice title=Fakta::$(curl -sS -X POST -H "x-avain: $HALLINTA" -H 'content-type: application/json' -d "$(jq -n --arg q '${{ inputs.fakta }}' '{kysymys:$q}')" $U/api/hallinta/fakta | head -c 1500)"; fi
+          if [ -n "${{ inputs.fakta }}" ]; then echo "::notice title=Fakta::$(curl -sS -X POST -H "x-avain: $HALLINTA" -H 'content-type: application/json' -d "$(jq -n --arg q '${{ inputs.fakta }}' '{kysymys:$q}')" $U/api/hallinta/fakta | jq -c "{v: .kortti.vastaus, a: .kortti.aanestys.otsikko, l: .kortti.aanestys.lisaotsikko, r: .kortti.aanestys.ryhmat[:3], e: .virhe}" | head -c 2500)"; fi

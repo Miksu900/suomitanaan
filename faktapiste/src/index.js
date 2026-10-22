@@ -297,17 +297,45 @@ export class Faktapiste extends DurableObject {
       vastaus = String(j.vastaus || "").trim(); lahteet = (j.lahteet || []).filter(s => s && s.url).slice(0, 5);
     } catch { return virhe("Faktahaku ei vastannut juuri nyt. Yritä hetken päästä.", 502); }
     if (!vastaus) return virhe("Tähän ei löytynyt vastausta Eduskuntaseurannan tiedoista. Kokeile toisin sanoin.", 404);
-    let aan = null;
-    const a = lahteet.find(s => /\/aanestys\/\d+/.test(s.url));
-    if (a) { try { aan = await aanestysKortti(a.url.match(/\/aanestys\/(\d+)/)[1]); } catch {} }
-    let tiivis = vastaus;
-    if (vastaus.length > 420) {
+    // Täydennetään puolueittaisilla luvuilla: valitaan lähteistä asian lopullinen äänestys ja haetaan sen ryhmätaulukko.
+    let aan = null, tiivis = vastaus;
+    try {
+      const kaikki = await this.aanestykset();
+      const idt = lahteet.map(s => (s.url.match(/\/aanestys\/(\d+)/) || [])[1]).filter(Boolean).map(Number);
+      const ehd = [];
+      for (const id of idt.slice(0, 3)) {
+        const v = kaikki.get(id); if (!v) continue;
+        const sama = [...kaikki.values()].filter(y => y.otsikko === v.otsikko).sort((x, y) => (y.alkoi || "").localeCompare(x.alkoi || ""));
+        ehd.push(sama.find(y => /hyväksyminen JAA \/ hylkääminen/i.test(y.lisaotsikko || "")) || v);
+      }
+      const valittu = ehd[0];
+      if (valittu) {
+        const k = await aanestysKortti(valittu.id);
+        if (k) {
+          aan = { ...k, otsikko: lyhennaLaki(valittu.otsikko), lisaotsikko: valittu.lisaotsikko || "", pv: (valittu.alkoi || "").slice(0, 10) };
+          const taulu = k.ryhmat.map(g => `${g.r}: jaa ${g.jaa}, ei ${g.ei}, tyhjää ${g.tyhja}, poissa ${g.poissa}`).join("\n");
+          tiivis = (await claude(this.env,
+            "Vastaat suomeksi lyhyesti (enintään 3 virkettä) kysymykseen eduskunnan äänestyksestä annetun datan perusteella. Käytä vain annettuja lukuja ja tietoja, älä keksi mitään. Tunnista puhekieliset puoluenimet (persut = Perussuomalaiset, demarit = SDP, kepu = Keskusta, kokkarit = Kokoomus, vassarit = Vasemmistoliitto, kristityt = Kristillisdemokraatit). Kerro, mitä Jaa tarkoitti, jos se käy ilmi äänestyksen tarkenteesta. Palauta pelkkä vastausteksti.",
+            `Kysymys: ${q}\n\nÄänestys ${aan.pv}: ${valittu.otsikko}\nTarkenne: ${valittu.lisaotsikko || "-"}\nYhteensä: jaa ${k.jaa}, ei ${k.ei}, tyhjää ${k.tyhja}, poissa ${k.poissa}\nRyhmittäin:\n${taulu}\n\nEduskuntaseurannan haun vastaus (taustaksi): ${vastaus}`, 350)).trim() || vastaus;
+          if (!lahteet.some(s => s.url === aan.url)) lahteet.unshift({ url: aan.url, otsikko: "Äänestys " + aan.pv + ": " + aan.otsikko });
+        }
+      }
+    } catch {}
+    if (!aan && tiivis.length > 420) {
       try { tiivis = (await claude(this.env, "Tiivistä annettu vastaus enintään kolmeen lyhyeen virkkeeseen suomeksi. Säilytä luvut, nimet ja päivämäärät täsmälleen. Älä lisää mitään uutta. Palauta pelkkä teksti.", vastaus, 300)).trim() || vastaus.slice(0, 420); } catch { tiivis = vastaus.slice(0, 420) + "…"; }
     }
     const kortti = { tyyppi: "fakta", kysymys: q, vastaus: tiivis, lahteet: lahteet.map(s => ({ url: s.url, otsikko: String(s.otsikko || s.url).slice(0, 140) })), aanestys: aan };
     const avain = satunnainen(8);
     this.sql.exec("INSERT INTO asetukset VALUES(?,?)", "fakta:" + avain, JSON.stringify(kortti));
     return json({ ok: true, avain, kortti });
+  }
+
+  async aanestykset() {
+    if (this._aan && this._aanAika > nyt() - 3600e3) return this._aan;
+    const r = await fetch(`${ES}/data/aanestykset.json`, { headers: { "user-agent": "Faktapiste/1.0" } });
+    const a = await r.json();
+    this._aan = new Map(a.map(v => [v.id, v])); this._aanAika = nyt();
+    return this._aan;
   }
 
   // ---- automaattisisältö kaikilta palveluilta ----
