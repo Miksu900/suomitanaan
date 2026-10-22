@@ -201,8 +201,9 @@ export class Faktapiste extends DurableObject {
       const t = nyt();
       for (const r of ehd) {
         const h = (t - r.luotu) / 3600e3;
-        const paino = r.kayttaja ? 4 : ({ eduskunta: 3, suomitanaan: 1.2, korjausvahti: 1, keraysvahti: 0.8 })[r.lahde] || 1;
-        r._p = paino * (1 + r.tykkaykset * 2 + r.vastaukset * 3) / Math.pow(h + 2, 1.4);
+        // lähdekohtainen paino ja puoliintumisaika tunteina: äänestykset pysyvät esillä pidempään kuin otsikkomuutokset
+        const [paino, puoli] = r.kayttaja ? [4, 12] : ({ eduskunta: [3, 30], suomitanaan: [1.2, 8], korjausvahti: [1, 8], keraysvahti: [0.8, 12] })[r.lahde] || [1, 8];
+        r._p = paino * (1 + r.tykkaykset * 2 + r.vastaukset * 3) * Math.pow(0.5, h / puoli);
       }
       ehd.sort((a, b) => b._p - a._p);
       // monipuolisuus: sama lähde enintään kahdesti peräkkäin
