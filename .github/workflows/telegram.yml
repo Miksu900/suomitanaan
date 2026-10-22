@@ -11,7 +11,9 @@ jobs:
     steps:
       - run: |
           U=$(curl -sS "https://api.telegram.org/bot$TG/getUpdates")
-          echo "::notice title=ok::$(echo "$U" | jq -c '.ok, .description')"
+          echo "::notice title=ok::$(echo "$U" | jq -c '{ok, n: (.result|length), d: .description, w: [.result[]? | keys[1]]}')"
+          W=$(curl -sS "https://api.telegram.org/bot$TG/getWebhookInfo"); echo "::notice title=webhook::$(echo "$W" | jq -c '.result.url')"
+          M=$(curl -sS "https://api.telegram.org/bot$TG/getMe"); echo "::notice title=bot::$(echo "$M" | jq -c '.result.username')"
           C=$(echo "$U" | jq -r '[.result[]?.message.chat.id] | last // empty')
           echo "::notice title=chat_id::$C"
           [ -n "$C" ] && curl -sS -X POST "https://api.telegram.org/bot$TG/sendMessage" --data-urlencode "chat_id=$C" --data-urlencode "text=${{ inputs.viesti }}" | jq -c '.ok' || true
