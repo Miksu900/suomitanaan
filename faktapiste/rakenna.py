@@ -9,7 +9,7 @@ ROOT = pathlib.Path(__file__).parent / "public"
 SITE = os.environ.get("FAKTAPISTE_URL", "https://faktapiste.fi")
 PV = os.environ.get("PYKALAVAHTI_URL", "https://pykalavahti.fi")
 YHTEYS = "miika@eduskuntaseuranta.fi"
-VER = "13"
+VER = "14"
 esc = html.escape
 
 # avain, nimi, osoite, iskulause, kuvaus, merkki, poliittinen
@@ -141,7 +141,10 @@ kirjoita("/palvelut/", sivu("/palvelut/", "Palvelut | Faktapiste",
 runko = f"""<section class="w teksti">
 <p class="eyebrow">Tietoa</p><h1>Tietoa Faktapisteestä</h1>
 <p>Faktapiste on suomalainen keskustelupalvelu, jossa jokainen postaus näytetään vähintään 30 ihmiselle, vaikka kirjoittajalla ei olisi yhtään seuraajaa. Keskustelu käydään omalla nimellä, syötettä voi säätää itse ja se loppuu, kun tärkeimmät on nähty.</p>
-<p>Keskustelun tukena ovat Faktapisteen ilmaiset palvelut, jotka perustuvat julkisiin lähteisiin: Keräysvahti, Pykälävahti, Korjausvahti, Nytpuhutaan, Eduskuntaseuranta ja Suomi Tänään.</p>
+<p>Keskustelun tukena ovat Faktapisteen ilmaiset palvelut, jotka perustuvat julkisiin lähteisiin.</p>
+<h2 id="palvelut">Faktapisteen palvelut</h2>
+<ul class="palvelulista">{''.join(f'<li><a href="{esc(p[2])}" rel="noopener"><b>{esc(p[1])}</b></a> – {esc(p[4])}</li>' for p in PALVELUT)}
+<li><a href="https://suomitanaan.fi" rel="noopener"><b>Suomi Tänään</b></a> – Uutiset suoraan alkuperäislähteistä, kuten eduskunnasta, ministeriöistä ja viranomaisilta. Poliittisten juttujen lopussa on erikseen merkitty toimituksen näkökulma.</li></ul>
 <p>Faktapiste on yksityinen ja puolueeton hanke. Palvelut eivät ole viranomaisen palveluita, eivätkä ne liity poliisiin, Finlexiin, oikeusministeriöön tai eduskuntaan.</p>
 <h2>Ylläpitäjä</h2>
 <p>Miika Koskela, Ylivieska. Yhteys: <span class="mono">{YHTEYS}</span>.</p>
