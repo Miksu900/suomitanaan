@@ -1,0 +1,1 @@
+{"kayttaja":null,"kirjautuminen":true,"testi":false}
