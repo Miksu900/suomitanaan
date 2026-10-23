@@ -9,7 +9,7 @@ ROOT = pathlib.Path(__file__).parent / "public"
 SITE = os.environ.get("FAKTAPISTE_URL", "https://faktapiste.fi")
 PV = os.environ.get("PYKALAVAHTI_URL", "https://pykalavahti.fi")
 YHTEYS = "miika@eduskuntaseuranta.fi"
-VER = "10"
+VER = "11"
 esc = html.escape
 
 # avain, nimi, osoite, iskulause, kuvaus, merkki, poliittinen
@@ -145,9 +145,10 @@ runko = f"""<section class="w teksti">
 <p>Miika Koskela, Ylivieska. Yhteys: <span class="mono">{YHTEYS}</span>.</p>
 <h2>Tietosuoja</h2>
 <p>Palveluiden sivut eivät käytä seurantaevästeitä eivätkä mainosseurantaa. Sivusto toimii Cloudflaren palvelussa, joka voi tallentaa teknisiä lokitietoja (kuten IP-osoitteen) palvelun toiminnan ja turvallisuuden vuoksi. Fontit ladataan Googlen Fonts-palvelusta. Kunkin palvelun omat tietosuojatiedot löytyvät palvelun sivuilta.</p>
-<p><b>Keskustelu.</b> Jos kirjaudut keskusteluun, tallennamme sähköpostiosoitteesi, nimimerkkisi, postauksesi, tykkäyksesi ja ilmoituksesi. Sähköpostiosoitetta käytetään vain kirjautumislinkkien lähettämiseen, eikä sitä näytetä muille. Kirjautuminen käyttää yhtä välttämätöntä evästettä (fp_s), joka pitää sinut kirjautuneena 60 päivää. Lukukertojen laskemiseen (taattu yleisö ja syötteen loppuminen) selain tallentaa satunnaisen lukijatunnisteen, jonka avulla palvelin muistaa, mitkä postaukset olet jo nähnyt. Tunnistetta ei yhdistetä henkilöön eikä käytetä mainontaan, ja tieto poistuu muutamassa päivässä. Syötteen säädöt ja paikkakunta tallentuvat vain selaimeesi. Kirjautumisviestit lähetetään Brevo-palvelun kautta. Faktahaut käsitellään tekoälyllä (Anthropic). Tietoja ei myydä eikä käytetä mainontaan. Voit pyytää tilisi ja tietojesi poistamista osoitteesta <span class="mono">{YHTEYS}</span>.</p>
+<p><b>Keskustelu.</b> Jos kirjaudut keskusteluun, tallennamme sähköpostiosoitteesi, nimesi, postauksesi, tykkäyksesi ja ilmoituksesi. Sähköpostiosoitetta käytetään vain kirjautumislinkkien lähettämiseen, eikä sitä näytetä muille. Kirjautuminen käyttää yhtä välttämätöntä evästettä (fp_s), joka pitää sinut kirjautuneena 60 päivää. Lukukertojen laskemiseen (taattu yleisö ja syötteen loppuminen) selain tallentaa satunnaisen lukijatunnisteen, jonka avulla palvelin muistaa, mitkä postaukset olet jo nähnyt. Tunnistetta ei yhdistetä henkilöön eikä käytetä mainontaan, ja tieto poistuu muutamassa päivässä. Syötteen säädöt ja paikkakunta tallentuvat vain selaimeesi. Kirjautumisviestit lähetetään Brevo-palvelun kautta. Faktahaut käsitellään tekoälyllä (Anthropic). Tietoja ei myydä eikä käytetä mainontaan. Voit pyytää tilisi ja tietojesi poistamista osoitteesta <span class="mono">{YHTEYS}</span>.</p>
 <h2 id="keskustelu">Keskustelun säännöt</h2>
 <ul>
+<li>Keskustelu käydään omalla nimellä. Etu- ja sukunimesi näkyvät postaustesi yhteydessä. Toisena henkilönä tai keksityllä nimellä esiintyvä tili voidaan sulkea.</li>
 <li>Saa olla eri mieltä, kritisoida kovasti ja kirjoittaa kärkevästi, myös päättäjistä ja puolueista.</li>
 <li>Kiellettyä on väkivallalla uhkaaminen, yksityishenkilöiden henkilötietojen levittäminen, kiihottaminen kansanryhmää vastaan, kunnianloukkaus, lapsia seksualisoiva sisältö sekä mainostus ja huijaukset.</li>
 <li>Kirjoittaja vastaa itse kirjoituksestaan. Postauksia ei tarkisteta etukäteen, vaan ne julkaistaan heti.</li>

@@ -11,6 +11,11 @@ const ES_AVAIN = "sb_publishable_7baeuteHYaarCEv4-j8C_g_OLxcKzJp";
 const ADMIN = ["miika@eduskuntaseuranta.fi", "miika.koskela990@gmail.com"];
 // Testivaiheessa (KIRJAUTUMINEN = "testi") vain nämä osoitteet voivat kirjautua.
 const TESTAAJAT = ADMIN;
+// Keskustelu käydään omalla nimellä: etu- ja sukunimi, isot alkukirjaimet, väliviiva sallittu (Anna-Liisa).
+const OSA = "[A-ZÅÄÖÜÉ][a-zåäöüéè']+(?:-[A-ZÅÄÖÜÉ][a-zåäöüéè']+)*";
+const NIMI_RX = new RegExp("^" + OSA + "(?: " + OSA + ")+$");
+const oikeaNimi = n => !!n && n.length <= 60 && NIMI_RX.test(n);
+const isot = n => n.toLowerCase().replace(/(^|[\s-])([a-zåäöüé])/g, (m, a, b) => a + b.toUpperCase());
 const PITUUS = 100000; // käytännössä rajaton, suojaa vain tietokantaa
 const TAATTU = 30;        // jokainen postaus näytetään vähintään näin monelle lukijalle
 const SYOTE_MAX = 25;     // Sinulle-syöte loppuu tähän
@@ -98,6 +103,13 @@ export class Faktapiste extends DurableObject {
       CREATE TABLE IF NOT EXISTS kutsut(koodi TEXT PRIMARY KEY, kayttoja INTEGER DEFAULT 0, max INTEGER, luotu INTEGER);
       CREATE TABLE IF NOT EXISTS nahdyt(posti INTEGER, katsoja TEXT, luotu INTEGER, PRIMARY KEY(posti, katsoja));
       CREATE INDEX IF NOT EXISTS nahdyt_katsoja ON nahdyt(katsoja, luotu);`);
+    // nimet eivät ole enää yksilöllisiä (oikeat nimet voivat toistua): taulu rakennetaan kerran uudelleen
+    if ((this.sql.exec("SELECT v FROM asetukset WHERE k='skeema'").toArray()[0] || {}).v !== "2") {
+      this.sql.exec(`CREATE TABLE IF NOT EXISTS kayttajat2(id INTEGER PRIMARY KEY, email TEXT UNIQUE, nimi TEXT, luotu INTEGER, esto INTEGER DEFAULT 0);
+        INSERT OR IGNORE INTO kayttajat2(id, email, nimi, luotu, esto) SELECT id, email, nimi, luotu, esto FROM kayttajat;
+        DROP TABLE kayttajat; ALTER TABLE kayttajat2 RENAME TO kayttajat;
+        INSERT OR REPLACE INTO asetukset VALUES('skeema', '2');`);
+    }
     for (const a of ["ALTER TABLE postit ADD COLUMN nakymat INTEGER DEFAULT 0", "ALTER TABLE postit ADD COLUMN kunta TEXT", "ALTER TABLE postit ADD COLUMN muokattu INTEGER"]) { try { this.sql.exec(a); } catch {} }
   }
   yksi(q, ...p) { return this.sql.exec(q, ...p).toArray()[0] || null; }
@@ -114,7 +126,7 @@ export class Faktapiste extends DurableObject {
     const t = evaste(req, "fp_s");
     if (!t) return null;
     const k = this.yksi("SELECT k.id, k.email, k.nimi, k.esto FROM sessiot s JOIN kayttajat k ON k.id=s.kayttaja WHERE s.t=? AND s.vanhenee>?", t, nyt());
-    if (k) k.admin = ADMIN.includes(k.email);
+    if (k) { k.admin = ADMIN.includes(k.email); k.nimiOk = oikeaNimi(k.nimi); }
     return k;
   }
 
@@ -138,7 +150,7 @@ export class Faktapiste extends DurableObject {
       if (p === "/api/syote" && m === "GET") return json(this.syote(u, minä, lukija));
       if (p === "/api/nahty" && m === "POST") return json(this.nahty(lukija, await req.json().catch(() => ({}))));
       if (p.startsWith("/api/posti/") && m === "GET") return json(this.ketju(+p.split("/")[3], minä));
-      if (p === "/api/mina") return json({ kayttaja: minä ? { nimi: minä.nimi, admin: minä.admin } : null, kirjautuminen: this.env.KIRJAUTUMINEN === "auki", testi: this.env.KIRJAUTUMINEN === "testi" });
+      if (p === "/api/mina") return json({ kayttaja: minä ? { nimi: minä.nimi, nimiOk: minä.nimiOk, admin: minä.admin } : null, kirjautuminen: this.env.KIRJAUTUMINEN === "auki", testi: this.env.KIRJAUTUMINEN === "testi" });
       if (p === "/api/kirjaudu" && m === "POST") return await this.kirjaudu(req);
       if (p === "/api/vahvista" && m === "GET") return this.vahvista(u);
       if (p === "/api/ulos" && m === "POST") { const t = evaste(req, "fp_s"); if (t) this.sql.exec("DELETE FROM sessiot WHERE t=?", t); return json({ ok: true }, 200, { "set-cookie": "fp_s=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax" }); }
@@ -147,7 +159,7 @@ export class Faktapiste extends DurableObject {
       if (minä.esto) return virhe("Tilisi on suljettu.", 403);
       const d = await req.json().catch(() => ({}));
       if (p === "/api/nimi") return await this.asetaNimi(minä, d);
-      if (!minä.nimi) return virhe("Valitse ensin nimimerkki.", 400);
+      if (!minä.nimiOk) return virhe("Lisää ensin oma nimesi (etu- ja sukunimi).", 400);
       if (p === "/api/posti") return await this.uusiPosti(minä, d, lukija);
       if (p === "/api/tykkaa") return this.tykkaa(minä, d);
       if (p === "/api/ilmoita") return await this.ilmoita(minä, d);
@@ -227,12 +239,11 @@ export class Faktapiste extends DurableObject {
     return new Response(null, { status: 302, headers: { location: "/?tervetuloa=1", "set-cookie": `fp_s=${s}; Path=/; Max-Age=${60 * 86400}; HttpOnly; Secure; SameSite=Lax` } });
   }
   async asetaNimi(minä, d) {
-    const n = puhdas(d.nimi).replace(/\s+/g, " ");
-    if (!/^[A-Za-zÅÄÖåäöÜüÉé0-9_. -]{3,24}$/.test(n)) return virhe("Nimimerkissä 3–24 merkkiä: kirjaimia, numeroita, välilyönti, piste, viiva tai alaviiva.");
-    if (/faktapiste|admin|yllapito|ylläpito|moderaattori|eduskuntaseuranta|suomi tänään|keräysvahti|korjausvahti/i.test(n)) return virhe("Tämä nimimerkki on varattu.");
-    if (this.yksi("SELECT id FROM kayttajat WHERE nimi=? AND id<>?", n, minä.id)) return virhe("Nimimerkki on jo käytössä.");
+    const n = isot(puhdas(d.nimi).replace(/\s+/g, " "));
+    if (!oikeaNimi(n)) return virhe("Kirjoita oma etu- ja sukunimesi, esimerkiksi Matti Virtanen.");
+    if (/faktapiste|ylläpito|moderaattori/i.test(n)) return virhe("Tätä nimeä ei voi käyttää.");
     this.sql.exec("UPDATE kayttajat SET nimi=? WHERE id=?", n, minä.id);
-    if (!minä.nimi) {
+    if (!minä.nimiOk) {
       const yht = this.yksi("SELECT COUNT(*) AS n FROM kayttajat WHERE nimi IS NOT NULL").n;
       await telegram(this.env, `👤 Uusi käyttäjä liittyi Faktapisteeseen: ${n}\nKäyttäjiä yhteensä: ${yht}\nhttps://faktapiste.fi`);
     }

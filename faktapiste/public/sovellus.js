@@ -99,7 +99,7 @@
       if (!tila.kirjautuminen) return '<div class="kirjoita lukko"><b>Keskustelu on beta-testissä.</b><span>Kirjoittaminen avautuu kaikille pian. Voit jo lukea syötettä.</span></div>';
       return '<div class="kirjoita lukko"><b>' + (vanhempi ? "Kirjaudu vastataksesi." : "Mitä mieltä olet? Kirjaudu ja kirjoita.") + '</b><span>Kirjautuminen sähköpostilinkillä, ei salasanaa.</span><button type="button" class="nappi" data-kirjaudu>Kirjaudu</button></div>';
     }
-    if (!tila.mina.nimi) return '<form class="kirjoita" id="nimilomake"><b>Valitse nimimerkki</b><span>Näkyy postaustesi yhteydessä. Sähköpostiosoitetta ei näytetä kenellekään.</span><div class="rivi"><input name="nimi" maxlength="24" placeholder="esim. Pohjanmaan Pekka" required><button class="nappi">Tallenna</button></div></form>';
+    if (!tila.mina.nimiOk) return '<form class="kirjoita" id="nimilomake"><b>Kirjoita oma nimesi</b><span>Faktapisteessä keskustellaan omalla nimellä. Etu- ja sukunimesi näkyvät postaustesi yhteydessä. Sähköpostiosoitetta ei näytetä kenellekään.' + (tila.mina.nimi ? " Nimimerkit on vaihdettu oikeisiin nimiin." : "") + '</span><div class="rivi"><input name="nimi" maxlength="60" placeholder="Etunimi Sukunimi" autocomplete="name" required><button class="nappi">Tallenna</button></div></form>';
     return '<form class="kirjoita" data-lomake="' + id + '"' + (vanhempi ? ' data-vanhempi="' + vanhempi + '"' : "") + '>' +
       '<textarea name="teksti" rows="' + (vanhempi ? 2 : 3) + '" placeholder="' + (vanhempi ? "Kirjoita vastaus" : "Mitä mielessä? Jokainen postaus näytetään vähintään 30 ihmiselle.") + '"></textarea>' +
       '<div class="faktapaneeli" hidden><div class="rivi"><input name="kysymys" maxlength="300" placeholder="Kysy vapaasti, esim. miten perussuomalaiset äänesti kotihoidontuesta?"><button type="button" class="nappi toissijainen" data-hae>Hae</button></div><div class="faktatulos"></div></div>' +
@@ -217,7 +217,7 @@
     else if (d.ulos !== undefined && confirmOk("Kirjaudutaanko ulos?")) api("ulos", {}).then(function () { location.href = "/"; });
     else if (d.vastaa) avaaKetju(d.vastaa, true);
     else if (d.tykkaa) {
-      if (!tila.mina || !tila.mina.nimi) { tila.kirjautuminen ? avaaKirjautuminen() : ilmoitus("Tykkääminen avautuu pian."); return; }
+      if (!tila.mina || !tila.mina.nimiOk) { tila.kirjautuminen ? avaaKirjautuminen() : ilmoitus("Tykkääminen avautuu pian."); return; }
       api("tykkaa", { id: +d.tykkaa }).then(function (j) { if (j.virhe) return ilmoitus(j.virhe, 1); var on = !b.classList.contains("on"); b.classList.toggle("on", on); b.innerHTML = IK.tykkaa + "<span>" + (j.tykkaykset || "") + "</span>"; });
     }
     else if (d.jaa) {
@@ -249,7 +249,7 @@
       api("poista", { id: +d.poista }).then(function (j) { if (j.virhe) return ilmoitus(j.virhe, 1); ilmoitus("Poistettu."); var a = document.querySelector('.posti[data-id="' + d.poista + '"]'); if (a) a.outerHTML = '<article class="posti piilo"><p class="mute">Postaus poistettu.</p></article>'; });
     }
     else if (d.ilmoita) {
-      if (!tila.mina || !tila.mina.nimi) { ilmoitus("Ilmoita kirjautuneena tai sähköpostilla: miika@eduskuntaseuranta.fi"); return; }
+      if (!tila.mina || !tila.mina.nimiOk) { ilmoitus("Ilmoita kirjautuneena tai sähköpostilla: miika@eduskuntaseuranta.fi"); return; }
       var syy = prompt("Miksi sisältö on mielestäsi lainvastaista? (esim. uhkaus, henkilötiedot, kiihottaminen kansanryhmää vastaan)");
       if (syy === null) return;
       api("ilmoita", { id: +d.ilmoita, syy: syy }).then(function (j) { if (j.virhe) return ilmoitus(j.virhe, 1); ilmoitus("Kiitos, ilmoitus vastaanotettu."); var v = $(".valikko"); if (v) v.remove(); });
