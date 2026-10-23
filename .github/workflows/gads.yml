@@ -1,0 +1,24 @@
+name: Google Ads
+# Google Ads -rajapinnan työkalu. Avaimet ovat vain GitHubin salaisuuksissa.
+on:
+  workflow_dispatch:
+    inputs:
+      toiminto: { description: "testi", required: true, default: "testi" }
+jobs:
+  ajo:
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          CID: ${{ secrets.GADS_CLIENT_ID }}
+          CSEC: ${{ secrets.GADS_CLIENT_SECRET }}
+        run: |
+          python3 - <<'PY'
+          import os, json, urllib.request, urllib.parse
+          cid, sec = os.environ["CID"].strip(), os.environ["CSEC"].strip()
+          print("ID-muoto ok:", cid.endswith(".apps.googleusercontent.com"), "| secret-muoto ok:", sec.startswith("GOCSPX-"))
+          d = urllib.parse.urlencode({"client_id": cid, "client_secret": sec, "grant_type": "authorization_code", "code": "testi", "redirect_uri": "http://localhost"}).encode()
+          try: urllib.request.urlopen("https://oauth2.googleapis.com/token", d)
+          except urllib.error.HTTPError as e:
+              v = json.loads(e.read()).get("error")
+              print("::notice title=Google-testi::" + ("Avaimet toimivat (invalid_grant on odotettu)" if v == "invalid_grant" else "VIRHE: " + str(v)))
+          PY
