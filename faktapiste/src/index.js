@@ -146,7 +146,7 @@ export class Faktapiste extends DurableObject {
       if (!minä) return virhe("Kirjaudu ensin.", 401);
       if (minä.esto) return virhe("Tilisi on suljettu.", 403);
       const d = await req.json().catch(() => ({}));
-      if (p === "/api/nimi") return this.asetaNimi(minä, d);
+      if (p === "/api/nimi") return await this.asetaNimi(minä, d);
       if (!minä.nimi) return virhe("Valitse ensin nimimerkki.", 400);
       if (p === "/api/posti") return await this.uusiPosti(minä, d, lukija);
       if (p === "/api/tykkaa") return this.tykkaa(minä, d);
@@ -216,12 +216,16 @@ export class Faktapiste extends DurableObject {
     this.sql.exec("DELETE FROM sessiot WHERE vanhenee<?", nyt());
     return new Response(null, { status: 302, headers: { location: "/?tervetuloa=1", "set-cookie": `fp_s=${s}; Path=/; Max-Age=${60 * 86400}; HttpOnly; Secure; SameSite=Lax` } });
   }
-  asetaNimi(minä, d) {
+  async asetaNimi(minä, d) {
     const n = puhdas(d.nimi).replace(/\s+/g, " ");
     if (!/^[A-Za-zÅÄÖåäöÜüÉé0-9_. -]{3,24}$/.test(n)) return virhe("Nimimerkissä 3–24 merkkiä: kirjaimia, numeroita, välilyönti, piste, viiva tai alaviiva.");
     if (/faktapiste|admin|yllapito|ylläpito|moderaattori|eduskuntaseuranta|suomi tänään|keräysvahti|korjausvahti/i.test(n)) return virhe("Tämä nimimerkki on varattu.");
     if (this.yksi("SELECT id FROM kayttajat WHERE nimi=? AND id<>?", n, minä.id)) return virhe("Nimimerkki on jo käytössä.");
     this.sql.exec("UPDATE kayttajat SET nimi=? WHERE id=?", n, minä.id);
+    if (!minä.nimi) {
+      const yht = this.yksi("SELECT COUNT(*) AS n FROM kayttajat WHERE nimi IS NOT NULL").n;
+      await telegram(this.env, `👤 Uusi käyttäjä liittyi Faktapisteeseen: ${n}\nKäyttäjiä yhteensä: ${yht}\nhttps://faktapiste.fi`);
+    }
     return json({ ok: true, nimi: n });
   }
 
