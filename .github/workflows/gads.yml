@@ -3,7 +3,7 @@ name: Google Ads
 on:
   workflow_dispatch:
     inputs:
-      toiminto: { description: "testi, vaihda, tilit tai kysely", required: true, default: "tilit" }
+      toiminto: { description: "testi, vaihda, tilit, kysely tai muuta", required: true, default: "tilit" }
       koodi: { description: "Kertakäyttöinen kirjautumiskoodi (vaihda)", required: false, default: "" }
       asiakas: { description: "Asiakastunnus (kysely)", required: false, default: "456-672-2878" }
       kysely: { description: "GAQL-kysely", required: false, default: "" }

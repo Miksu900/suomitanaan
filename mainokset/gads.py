@@ -44,6 +44,11 @@ if __name__ == "__main__":
         else: ilmoita("Kirjautuminen", "VIRHE " + str(v.get("error")) + " " + str(v.get("error_description")))
     elif t == "tilit":
         ilmoita("Tilit", json.dumps(kutsu("/customers:listAccessibleCustomers")))
+    elif t == "muuta":
+        # KYSELY = JSON-lista [[polku, runko], ...], esim. ["campaigns:mutate", {...}]
+        asiakas = os.environ["ASIAKAS"].replace("-", "")
+        for i, (polku, runko) in enumerate(json.loads(os.environ["KYSELY"])):
+            ilmoita(f"Muutos {i+1}", json.dumps(kutsu(f"/customers/{asiakas}/{polku}", runko), ensure_ascii=False, separators=(",", ":")))
     elif t == "kysely":
         asiakas = os.environ["ASIAKAS"].replace("-", "")
         for i, q in enumerate(x for x in os.environ["KYSELY"].split(";;") if x.strip()):
