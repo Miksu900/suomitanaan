@@ -9,7 +9,7 @@ ROOT = pathlib.Path(__file__).parent / "public"
 SITE = os.environ.get("FAKTAPISTE_URL", "https://faktapiste.fi")
 PV = os.environ.get("PYKALAVAHTI_URL", "https://pykalavahti.fi")
 YHTEYS = "miika@eduskuntaseuranta.fi"
-VER = "17"
+VER = "18"
 esc = html.escape
 
 # avain, nimi, osoite, iskulause, kuvaus, merkki, poliittinen
@@ -20,6 +20,9 @@ PALVELUT = [
     ("hj", "Huijausapu", "https://keraysvahti.fi/huijaukset/", "Epäiletkö huijausta?",
      "Tunnista tavallisimmat huijaukset, tarkista epäilyttävä viesti ja katso, mitä tehdä heti, jos rahaa on jo mennyt.",
      "Viestintarkistin", False),
+    ("yv", "Yksityisyysvahti", "/yksityisyys/", "Onko sijaintisi myynnissä?",
+     "Sammuta puhelimesi sijainti- ja mainosseuranta muutamassa minuutissa ja pyydä yrityksiä poistamaan tietosi valmiilla viestipohjalla.",
+     "Uusi", False),
     ("pv", "Pykälävahti", PV, "Mitä laki sanoo?",
      "Kysy arkisesta lakiasiasta ja saat vastauksen suoraan voimassa olevista pykälistä lähteineen. Kirjoittaa myös reklamaation tai muun vaatimuksen puolestasi.",
      "Valmis kirje", False),
@@ -40,6 +43,7 @@ IKONIT = {
     "pv": '<text x="12" y="18" text-anchor="middle" font-size="19" font-weight="700" fill="currentColor" stroke="none" font-family="Georgia,serif">§</text>',
     "kr": '<path d="M4 7h10M4 12h16M4 17h7"/><path d="M15 15l4 4M19 15l-4 4"/>',
     "np": '<path d="M4 5h13a3 3 0 013 3v11H7a3 3 0 01-3-3V5z"/><path d="M8 9h8M8 13h8M8 17h5"/>',
+    "yv": '<path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/><path d="M4 4l16 16"/>',
     "es": '<path d="M3 21h18M5 21V10M19 21V10M9 21v-7M15 21v-7"/><path d="M2 10l10-6 10 6"/>',
 }
 
@@ -167,11 +171,92 @@ runko = f"""<section class="w teksti">
 </section>"""
 kirjoita("/tietoa/", sivu("/tietoa/", "Tietoa ja tietosuoja | Faktapiste", "Mikä Faktapiste on, kuka sitä ylläpitää, keskustelun säännöt, tietosuoja ja käyttöehdot.", runko))
 
+# ---- Yksityisyysvahti ----
+ANDROID = [
+    ("Rajaa sovellusten sijaintilupa", "Asetukset → Sijainti → Sovellusten sijaintiluvat. Käy läpi lista ja valitse jokaiselle <b>Ei sallittu</b> tai <b>Salli vain käytön aikana</b>. Sijaintia tarvitsevat yleensä vain kartat, navigointi ja taksi- tai kuljetussovellukset."),
+    ("Poista tarkka sijainti", "Avaa sovellus samasta listasta ja sammuta <b>Käytä tarkkaa sijaintia</b>. Esimerkiksi sääsovellukselle riittää likimääräinen sijainti."),
+    ("Poista mainostunniste", "Asetukset → Tietosuoja ja suojaus (joissain puhelimissa Google → Kaikki palvelut) → Mainokset → <b>Poista mainostunnus</b>. Tunnisteella eri sovellusten keräämät tiedot yhdistetään sinuun."),
+    ("Tarkista sijaintihistoria", "Asetukset → Sijainti → Sijaintipalvelut → <b>Aikajana</b> (aiemmin Googlen sijaintihistoria). Sammuta se tai poista tallennetut tiedot, jos et käytä sitä."),
+    ("Katso, mitkä sovellukset ovat käyttäneet sijaintia", "Asetukset → Tietosuoja ja suojaus → <b>Yksityisyyden hallintapaneeli</b> (Privacy dashboard). Näet, mikä sovellus on käyttänyt sijaintia viimeisen vuorokauden aikana."),
+    ("Poista sovellukset, joita et käytä", "Vanha peli tai sääsovellus voi kerätä sijaintia taustalla, vaikka et avaisi sitä. Poista turhat sovellukset kokonaan."),
+]
+IPHONE = [
+    ("Estä sovelluksia seuraamasta sinua", "Asetukset → Tietosuoja ja turvallisuus → Seuranta → sammuta <b>Salli appien pyytää seurantaa</b>. Jos olet aiemmin antanut lupia, valitse <b>Pyydä appeja lopettamaan seuranta</b>."),
+    ("Rajaa sovellusten sijaintilupa", "Asetukset → Tietosuoja ja turvallisuus → Sijaintipalvelut. Käy läpi lista ja valitse jokaiselle <b>Ei koskaan</b> tai <b>Käytettäessä appia</b>. Vältä vaihtoehtoa <b>Aina</b>."),
+    ("Poista tarkka sijainti", "Avaa sovellus samasta listasta ja sammuta <b>Tarkka sijainti</b>. Esimerkiksi sääsovellukselle riittää likimääräinen sijainti."),
+    ("Tarkista merkittävät sijainnit", "Sijaintipalvelut → Järjestelmäpalvelut → <b>Merkittävät sijainnit</b>. Sammuta, jos et tarvitse, ja tyhjennä historia."),
+    ("Katso, mitkä sovellukset ovat käyttäneet sijaintia", "Asetukset → Tietosuoja ja turvallisuus → <b>Appien tietosuojaraportti</b>. Näet, mitkä sovellukset ovat käyttäneet sijaintia ja milloin."),
+    ("Poista sovellukset, joita et käytä", "Vanha peli tai sääsovellus voi kerätä sijaintia, vaikka et avaisi sitä. Poista turhat sovellukset kokonaan."),
+]
+RISKI = [
+    ("Sää- ja taskulamppusovellukset", "Tarvitsevat harvoin tarkkaa sijaintia, mutta pyytävät sitä usein."),
+    ("Ilmaiset pelit", "Rahoitetaan usein mainoksilla, joihin liittyy sijainti- ja mainostunnistedataa."),
+    ("Liikunta- ja juoksusovellukset", "Tallentavat reitit; tarkista, ovatko reitit julkisia ja mihin tietoja jaetaan."),
+    ("Kauppojen ja tarjousten sovellukset", "Voivat seurata, missä liikkeissä käyt."),
+    ("Sovellukset, joilla on lupa <b>Aina</b>", "Keräävät sijaintia myös silloin, kun sovellus on kiinni."),
+]
+def askeleet(lista, tunnus):
+    return "".join(f'<li><label class="yv-ask"><input type="checkbox" data-yv="{tunnus}{i}"><span><b>{otsikko}</b><small>{teksti}</small></span></label></li>' for i, (otsikko, teksti) in enumerate(lista))
+runko = f"""<section class="hero pieni"><div class="w">
+<p class="eyebrow">Yksityisyysvahti</p>
+<h1>Onko sijaintisi <span class="hl">myynnissä?</span></h1>
+<p class="lead">Helsingin Sanomien selvityksen mukaan lähes 800 000 suomalaisen puhelimen paikannustietoja oli hankittavissa datamarkkinoilta. Tiedoista selviää, missä asut, missä käyt töissä ja missä vietät vapaa-aikaasi. Tieto kertyy tavallisista sovelluksista, ja lupa annetaan usein huomaamatta. Näin suljet hanat muutamassa minuutissa.</p>
+</div></section>
+<section class="w yv">
+<h2 class="osio">1. Sammuta seuranta puhelimestasi</h2>
+<div class="yv-valinta" role="tablist"><button type="button" class="nappi" data-yvtab="a" aria-pressed="true">Android</button><button type="button" class="nappi toissijainen" data-yvtab="i" aria-pressed="false">iPhone</button></div>
+<p class="yv-edistys"><span class="tpb"><i id="yv-palkki"></i></span> <span id="yv-luku">0 / 6 tehty</span></p>
+<ol class="yv-lista" id="yv-a">{askeleet(ANDROID, "a")}</ol>
+<ol class="yv-lista" id="yv-i" hidden>{askeleet(IPHONE, "i")}</ol>
+<p class="pieni mute">Valikoiden nimet voivat vaihdella puhelinmallin ja käyttöjärjestelmän version mukaan. Rastit tallentuvat vain tähän selaimeen.</p>
+
+<h2 class="osio">2. Tunnista riskisovellukset</h2>
+<p>Sijaintitietoa kertyy sovelluksista, joiden et ehkä edes muista olevan puhelimessasi. Tarkista erityisesti nämä:</p>
+<ul class="lista">{''.join(f"<li><b>{a}.</b> {b}</li>" for a, b in RISKI)}</ul>
+
+<h2 class="osio">3. Pyydä tietojesi poistoa</h2>
+<p>EU:n tietosuoja-asetuksen nojalla voit kysyä yritykseltä, mitä tietoja sillä on sinusta, ja vaatia niiden poistamista. Yrityksen on vastattava kuukauden kuluessa. Yrityksen yhteystiedon löydät sovelluksen tietosuojaselosteesta, yleensä sovelluskaupan sivulta.</p>
+<form id="yv-kirje" class="yv-kirje">
+<label>Yrityksen tai sovelluksen nimi<input name="yritys" required placeholder="esim. Sääsovellus Oy"></label>
+<label>Oma nimesi<input name="nimi" required autocomplete="name"></label>
+<label>Sähköpostisi, jolla olet käyttänyt palvelua<input name="email" type="email" autocomplete="email"></label>
+<label>Puhelimen mainostunniste (vapaaehtoinen)<input name="maid" placeholder="esim. 38400000-8cf0-11bd-b23e-10b96e40000d"></label>
+<fieldset><legend>Mitä pyydät</legend>
+<label class="rasti"><input type="checkbox" name="p15" checked> Kerro, mitä tietoja minusta on ja kenelle niitä on luovutettu</label>
+<label class="rasti"><input type="checkbox" name="p17" checked> Poista tietoni</label>
+<label class="rasti"><input type="checkbox" name="p7" checked> Peruutan suostumukseni sijaintitietojen käyttöön ja luovuttamiseen</label>
+<label class="rasti"><input type="checkbox" name="p21" checked> Vastustan tietojeni käyttöä markkinointiin ja profilointiin</label></fieldset>
+<button class="nappi">Luo viesti</button></form>
+<div id="yv-tulos" hidden><textarea id="yv-teksti" rows="16" readonly></textarea>
+<div class="rivi"><button type="button" class="nappi" id="yv-kopioi">Kopioi viesti</button><a class="nappi toissijainen" id="yv-posti" href="#">Avaa sähköpostissa</a></div>
+<p class="pieni mute">Viestipohja on yleistä tietoa, ei oikeudellista neuvontaa. Jos yritys ei vastaa kuukauden kuluessa, voit tehdä ilmoituksen tietosuojavaltuutetun toimistoon osoitteessa tietosuoja.fi.</p></div>
+</section>
+<script>(function(){{
+var tab="a";try{{tab=localStorage.getItem("yv_tab")||"a"}}catch(e){{}}
+function lue(k){{try{{return localStorage.getItem(k)}}catch(e){{return null}}}}function kirj(k,v){{try{{localStorage.setItem(k,v)}}catch(e){{}}}}
+function paivita(){{var l=document.querySelectorAll("#yv-"+tab+" input"),n=0;l.forEach(function(x){{if(x.checked)n++}});document.getElementById("yv-luku").textContent=n+" / "+l.length+" tehty"+(n===l.length?" – hienoa!":"");document.getElementById("yv-palkki").style.width=(100*n/l.length)+"%"}}
+function nayta(t){{tab=t;kirj("yv_tab",t);document.getElementById("yv-a").hidden=t!=="a";document.getElementById("yv-i").hidden=t!=="i";document.querySelectorAll("[data-yvtab]").forEach(function(b){{var on=b.dataset.yvtab===t;b.setAttribute("aria-pressed",on);b.className="nappi"+(on?"":" toissijainen")}});paivita()}}
+document.querySelectorAll("[data-yv]").forEach(function(x){{x.checked=lue("yv_"+x.dataset.yv)==="1";x.addEventListener("change",function(){{kirj("yv_"+x.dataset.yv,x.checked?"1":"0");paivita()}})}});
+document.querySelectorAll("[data-yvtab]").forEach(function(b){{b.onclick=function(){{nayta(b.dataset.yvtab)}}}});
+if(/iphone|ipad/i.test(navigator.userAgent)&&!lue("yv_tab"))tab="i";nayta(tab);
+document.getElementById("yv-kirje").addEventListener("submit",function(e){{e.preventDefault();var f=e.target,y=f.yritys.value.trim(),n=f.nimi.value.trim(),em=f.email.value.trim(),m=f.maid.value.trim(),p=[];
+if(f.p15.checked)p.push("Pyydän tietosuoja-asetuksen 15 artiklan nojalla tiedon siitä, mitä henkilötietoja minusta käsittelette, mihin tarkoitukseen, mistä tiedot on saatu ja kenelle niitä on luovutettu. Pyydän myös jäljennöksen tiedoista.");
+if(f.p17.checked)p.push("Pyydän tietosuoja-asetuksen 17 artiklan nojalla, että poistatte kaikki minua koskevat henkilötiedot, mukaan lukien sijaintitiedot, ja ilmoitatte poistosta myös niille, joille tietoja on luovutettu (19 artikla).");
+if(f.p7.checked)p.push("Peruutan tietosuoja-asetuksen 7 artiklan 3 kohdan nojalla kaikki antamani suostumukset sijaintitietojeni keräämiseen, käyttöön ja luovuttamiseen.");
+if(f.p21.checked)p.push("Vastustan tietosuoja-asetuksen 21 artiklan nojalla tietojeni käsittelyä suoramarkkinointiin ja profilointiin.");
+var t="Aihe: Tietosuojapyyntö – "+n+"\\n\\nHei,\\n\\nolen käyttänyt palveluanne "+y+"."+(em?" Käyttämäni sähköpostiosoite on "+em+".":"")+(m?" Puhelimeni mainostunniste on "+m+".":"")+"\\n\\n"+p.join("\\n\\n")+"\\n\\nPyydän vastaamaan tietosuoja-asetuksen 12 artiklan mukaisesti viimeistään kuukauden kuluessa tämän viestin vastaanottamisesta.\\n\\nYstävällisin terveisin\\n"+n+(em?"\\n"+em:"");
+document.getElementById("yv-teksti").value=t;var R=document.getElementById("yv-tulos");R.hidden=false;
+document.getElementById("yv-posti").href="mailto:?subject="+encodeURIComponent("Tietosuojapyyntö – "+n)+"&body="+encodeURIComponent(t.replace(/^Aihe:.*\\n\\n/,""));R.scrollIntoView({{behavior:"smooth"}})}});
+document.getElementById("yv-kopioi").onclick=function(){{var t=document.getElementById("yv-teksti");t.select();try{{navigator.clipboard.writeText(t.value)}}catch(e){{document.execCommand("copy")}}this.textContent="Kopioitu!"}};
+}})()</script>"""
+kirjoita("/yksityisyys/", sivu("/yksityisyys/", "Yksityisyysvahti – onko sijaintisi myynnissä? | Faktapiste",
+    "Sammuta puhelimesi sijainti- ja mainosseuranta Androidissa ja iPhonessa ja pyydä yrityksiä poistamaan tietosi valmiilla viestipohjalla.", runko))
+
 (ROOT / "404.html").write_text(sivu("/404", "Sivua ei löytynyt | Faktapiste", "Sivua ei löytynyt.",
     '<section class="w teksti"><h1>Sivua ei löytynyt</h1><p><a href="/">Takaisin etusivulle</a></p></section>', noindex=True), encoding="utf-8")
 
 (ROOT / "favicon.svg").write_text('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="32" cy="32" r="32" fill="#0d1b3e"/><text x="32" y="30" font-family="Anton,Impact,sans-serif" font-size="17" fill="#fff" text-anchor="middle">FAKTA</text><text x="32" y="48" font-family="Anton,Impact,sans-serif" font-size="17" fill="#f5c542" text-anchor="middle">PISTE.</text></svg>', encoding="utf-8")
 (ROOT / "robots.txt").write_text(f"User-agent: *\nAllow: /\nSitemap: {SITE}/sitemap.xml\n", encoding="utf-8")
 (ROOT / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
-    + "".join(f"<url><loc>{SITE}{p}</loc></url>" for p in ["/", "/palvelut/", "/tietoa/"]) + "</urlset>", encoding="utf-8")
+    + "".join(f"<url><loc>{SITE}{p}</loc></url>" for p in ["/", "/palvelut/", "/tietoa/", "/yksityisyys/"]) + "</urlset>", encoding="utf-8")
 print("Faktapiste rakennettu:", ROOT)

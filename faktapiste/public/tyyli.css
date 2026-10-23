@@ -202,3 +202,21 @@ a.av{text-decoration:none}
 .palvelulinkki{display:inline-block;margin-top:8px;font-weight:700;font-size:.9rem;color:var(--navy2)}
 @media (prefers-color-scheme:dark){.palvelulinkki{color:var(--yel)}}
 .palvelulista{padding-left:20px;display:grid;gap:10px}.palvelulista a{color:inherit}
+/* Yksityisyysvahti */
+.yv{max-width:760px}
+.yv-valinta{display:flex;gap:8px;margin:6px 0 12px}
+.yv-edistys{display:flex;align-items:center;gap:10px;font-weight:700;margin:0 0 10px}
+.yv-edistys .tpb{width:140px;height:10px;background:var(--line)}
+.yv-lista{list-style:none;padding:0;margin:0;display:grid;gap:10px;counter-reset:yv}
+.yv-ask{display:flex;gap:12px;align-items:flex-start;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:14px;cursor:pointer}
+.yv-ask input{width:24px;height:24px;flex:none;margin-top:2px;accent-color:#1f8a4c}
+.yv-ask b{display:block;font-size:1.02rem}.yv-ask small{display:block;color:var(--mute);font-size:.92rem;margin-top:4px;line-height:1.5}
+.yv-ask small b{display:inline;font-size:inherit;color:var(--ink)}
+.yv-ask:has(input:checked){border-color:#1f8a4c;background:color-mix(in srgb,#1f8a4c 8%,var(--paper))}
+.yv-kirje{display:grid;gap:12px;background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:18px}
+.yv-kirje label{display:grid;gap:6px;font-weight:700;font-size:.95rem}
+.yv-kirje input:not([type=checkbox]),#yv-teksti{width:100%;font:16px/1.5 var(--f-b);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.yv-kirje fieldset{border:0;padding:0;margin:0;display:grid;gap:8px}.yv-kirje legend{font-weight:700;margin-bottom:6px}
+.yv-kirje .rasti{display:flex;gap:10px;align-items:flex-start;font-weight:500}
+#yv-tulos{margin-top:14px;display:grid;gap:10px}
+a.nappi{text-decoration:none;display:inline-block}
