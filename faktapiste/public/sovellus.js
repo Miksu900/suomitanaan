@@ -38,7 +38,7 @@
     return new Date(ms).toLocaleDateString("fi-FI");
   }
   function linkit(t) {
-    return esc(t).replace(/https?:\/\/[^\s<]+/g, function (u) { return '<a href="' + u + '" rel="nofollow noopener ugc" target="_blank">' + u.replace(/^https?:\/\//, "").slice(0, 40) + (u.length > 48 ? "…" : "") + "</a>"; }).replace(/\n/g, "<br>");
+    return esc(t).replace(/https?:\/\/[^\s<]+/g, function (u) { return '<a href="' + u + '" rel="nofollow noopener ugc">' + u.replace(/^https?:\/\//, "").slice(0, 40) + (u.length > 48 ? "…" : "") + "</a>"; }).replace(/\n/g, "<br>");
   }
   function ilmoitus(t, virhe) {
     var el = $("#fp-toast"); el.textContent = t; el.className = "toast nakyy" + (virhe ? " virhe" : "");
