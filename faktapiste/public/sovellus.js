@@ -6,7 +6,7 @@
   var LAHTEET = {
     suomitanaan: { nimi: "Suomi Tänään", lyh: "ST", vari: "#b4232c", url: "https://suomitanaan.fi", palvelu: "Lue lisää uutisia Suomi Tänään -sivulta" },
     korjausvahti: { nimi: "Korjausvahti", lyh: "KV", vari: "#7a4cc2", url: "https://nytpuhutaan.fi/muutokset/", palvelu: "Katso kaikki otsikkomuutokset Korjausvahdista" },
-    eduskunta: { nimi: "Eduskunta", lyh: "§", vari: "#1d5fd1", url: "https://eduskuntaseuranta.fi", palvelu: "Katso, miten oma edustajasi äänestää: Eduskuntaseuranta" },
+    eduskunta: { nimi: "Eduskunta", lyh: "§", vari: "#1d5fd1", url: "https://eduskuntaseuranta.fi" },
     keraysvahti: { nimi: "Keräysvahti", lyh: "!", vari: "#c26a00", url: "https://keraysvahti.fi", palvelu: "Tarkista keräys tai epäilyttävä viesti Keräysvahdista" }
   };
   var IK = {
@@ -84,7 +84,7 @@
     if (p.piilotettu) return '<article class="posti piilo" data-id="' + p.id + '"><p class="mute">Tämä postaus on poistettu tai piilotettu.</p></article>';
     return '<article class="posti' + (iso ? " iso" : "") + '" data-id="' + p.id + '">' + av + '<div class="pm"><header>' + (l ? '<a class="lahdelinkki" href="' + l.url + '" target="_blank" rel="noopener">' + esc(nimi) + " ↗</a>" : "<b>" + esc(nimi) + "</b>") + (l ? '<span class="auto">automaattinen</span>' : "") + (p.kunta ? '<span class="paikka">📍 ' + esc(p.kunta) + "</span>" : "") +
       '<a class="aika" href="/?p=' + p.id + '" data-avaa="' + p.id + '">' + aika(p.luotu) + "</a>" + (p.muokattu ? '<span class="muokattu">muokattu</span>' : "") + "</header>" +
-      (p.teksti ? '<div class="pt">' + linkit(p.teksti) + "</div>" : "") + kortti(p.kortti) + (l ? '<a class="palvelulinkki" href="' + l.url + '" target="_blank" rel="noopener">' + esc(l.palvelu) + " →</a>" : "") + taattu +
+      (p.teksti ? '<div class="pt">' + linkit(p.teksti) + "</div>" : "") + kortti(p.kortti) + (l && l.palvelu ? '<a class="palvelulinkki" href="' + l.url + '" target="_blank" rel="noopener">' + esc(l.palvelu) + " →</a>" : "") + taattu +
       '<footer><button type="button" data-vastaa="' + p.id + '" aria-label="Vastaa">' + IK.vastaa + "<span>" + (p.vastaukset || "Vastaa") + '</span></button>' +
       '<button type="button" data-tykkaa="' + p.id + '" class="' + (p.tykkasin ? "on" : "") + '" aria-label="Tykkää">' + IK.tykkaa + "<span>" + (p.tykkaykset || "") + "</span></button>" +
       '<button type="button" data-jaa="' + p.id + '" aria-label="Jaa">' + IK.jaa + "<span>Jaa</span></button>" +
