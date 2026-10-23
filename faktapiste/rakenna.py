@@ -72,7 +72,7 @@ def sivu(polku, otsikko, kuvaus, runko, noindex=False):
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="manifest" href="/manifest.webmanifest"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Faktapiste"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script type="application/ld+json">{{"@context":"https://schema.org","@type":"Organization","name":"Faktapiste","url":"{SITE}/","logo":"{SITE}/og.png","email":"{YHTEYS}","description":"Ilmaisia palveluita julkisista lähteistä: Keräysvahti, Pykälävahti, Korjausvahti, Nytpuhutaan ja Eduskuntaseuranta."}}</script>
+<script type="application/ld+json">{{"@context":"https://schema.org","@type":"Organization","name":"Faktapiste","url":"{SITE}/","logo":"{SITE}/og.png","email":"{YHTEYS}","description":"Suomalainen keskustelupalvelu, jossa jokainen postaus näytetään vähintään 30 ihmiselle, sekä ilmaisia palveluita julkisista lähteistä."}}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/tyyli.css?v={VER}">
@@ -81,7 +81,7 @@ def sivu(polku, otsikko, kuvaus, runko, noindex=False):
 <header class="hd"><div class="w hdw"><a class="brand" href="/" aria-label="Faktapiste – etusivu">{LOGO}</a><nav aria-label="Päävalikko">{navh}{tili}</nav></div></header>
 <main id="sisalto">{runko}</main>
 <footer class="ft"><div class="w">{LOGO}
-<p>Faktapiste kokoaa yhteen ilmaisia palveluita, jotka perustuvat julkisiin lähteisiin: poliisin lupatietoihin, Finlexiin, eduskunnan avoimeen dataan ja uutismedian otsikoihin.</p>
+<p>Faktapiste on suomalainen keskustelupalvelu, jossa sinut nähdään. Keskustelun tukena ovat ilmaiset palvelut, jotka perustuvat julkisiin lähteisiin: poliisin lupatietoihin, Finlexiin, eduskunnan avoimeen dataan ja uutismedian otsikoihin.</p>
 <p><a href="/">Keskustelu</a> · <a href="/palvelut/">Palvelut</a> · <a href="/tietoa/">Tietoa, säännöt ja tietosuoja</a> · <span class="mono">{YHTEYS}</span></p>
 <p class="mute">© {vuosi} Faktapiste</p></div></footer>
 </body></html>"""
@@ -140,7 +140,9 @@ kirjoita("/palvelut/", sivu("/palvelut/", "Palvelut | Faktapiste",
 # ---- tietoa ----
 runko = f"""<section class="w teksti">
 <p class="eyebrow">Tietoa</p><h1>Tietoa Faktapisteestä</h1>
-<p>Faktapiste on yksityinen, puolueeton avoimuushanke, joka kokoaa yhteen julkisiin lähteisiin perustuvia palveluita. Palvelut eivät ole viranomaisen palveluita, eivätkä ne liity poliisiin, Finlexiin, oikeusministeriöön tai eduskuntaan.</p>
+<p>Faktapiste on suomalainen keskustelupalvelu, jossa jokainen postaus näytetään vähintään 30 ihmiselle, vaikka kirjoittajalla ei olisi yhtään seuraajaa. Keskustelu käydään omalla nimellä, syötettä voi säätää itse ja se loppuu, kun tärkeimmät on nähty.</p>
+<p>Keskustelun tukena ovat Faktapisteen ilmaiset palvelut, jotka perustuvat julkisiin lähteisiin: Keräysvahti, Pykälävahti, Korjausvahti, Nytpuhutaan, Eduskuntaseuranta ja Suomi Tänään.</p>
+<p>Faktapiste on yksityinen ja puolueeton hanke. Palvelut eivät ole viranomaisen palveluita, eivätkä ne liity poliisiin, Finlexiin, oikeusministeriöön tai eduskuntaan.</p>
 <h2>Ylläpitäjä</h2>
 <p>Miika Koskela, Ylivieska. Yhteys: <span class="mono">{YHTEYS}</span>.</p>
 <h2>Tietosuoja</h2>
@@ -160,7 +162,7 @@ runko = f"""<section class="w teksti">
 <h2>Käyttöehdot</h2>
 <p>Palvelut ovat tällä hetkellä maksuttomia. Ylläpitäjä pidättää oikeuden muuttaa palveluita ja niiden ehtoja sekä ottaa käyttöön maksullisia ominaisuuksia; muutoksista kerrotaan etukäteen. Tiedot ovat yleistä tietoa eivätkä oikeudellista tai taloudellista neuvontaa.</p>
 </section>"""
-kirjoita("/tietoa/", sivu("/tietoa/", "Tietoa ja tietosuoja | Faktapiste", "Kuka ylläpitää Faktapistettä, tietosuoja, keskustelun säännöt ja käyttöehdot.", runko))
+kirjoita("/tietoa/", sivu("/tietoa/", "Tietoa ja tietosuoja | Faktapiste", "Mikä Faktapiste on, kuka sitä ylläpitää, keskustelun säännöt, tietosuoja ja käyttöehdot.", runko))
 
 (ROOT / "404.html").write_text(sivu("/404", "Sivua ei löytynyt | Faktapiste", "Sivua ei löytynyt.",
     '<section class="w teksti"><h1>Sivua ei löytynyt</h1><p><a href="/">Takaisin etusivulle</a></p></section>', noindex=True), encoding="utf-8")
