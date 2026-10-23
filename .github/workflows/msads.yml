@@ -1,0 +1,20 @@
+name: Microsoft Ads
+# Bing-mainosten hallinta. Avaimet vain GitHubin salaisuuksissa ja Faktapisteen holvissa.
+on:
+  workflow_dispatch:
+    inputs:
+      toiminto: { description: "kampanjat tai kutsu", required: true, default: "kampanjat" }
+      kysely: { description: "JSON (kutsu)", required: false, default: "" }
+jobs:
+  ajo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - env:
+          MSSEC: ${{ secrets.MSADS_CLIENT_SECRET }}
+          MSDEV: ${{ secrets.MSADS_DEVELOPER_TOKEN }}
+          CF: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          KYSELY: ${{ inputs.kysely }}
+        run: |
+          export HALLINTA=$(printf '%s' "$CF-faktapiste" | sha256sum | cut -c1-40)
+          cd mainokset && python3 msads.py "${{ inputs.toiminto }}"

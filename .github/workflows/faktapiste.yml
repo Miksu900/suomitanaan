@@ -63,8 +63,8 @@ jobs:
           } > wrangler.toml
           npx --yes wrangler@3.99.0 deploy
           HALLINTA=$(printf '%s' "$CLOUDFLARE_API_TOKEN-faktapiste" | sha256sum | cut -c1-40)
-          jq -n --arg a "${{ secrets.ANTHROPIC_API_KEY }}" --arg b "${{ secrets.BREVO_API_KEY }}" --arg t "${{ secrets.TELEGRAM_BOT_TOKEN }}" --arg h "$HALLINTA" \
-            '{ANTHROPIC_API_KEY:$a, BREVO_API_KEY:$b, TELEGRAM_BOT_TOKEN:$t, TG_CHAT:"1893930799", HALLINTA:$h}' > /tmp/s.json
+          jq -n --arg a "${{ secrets.ANTHROPIC_API_KEY }}" --arg b "${{ secrets.BREVO_API_KEY }}" --arg t "${{ secrets.TELEGRAM_BOT_TOKEN }}" --arg h "$HALLINTA" --arg ms "${{ secrets.MSADS_CLIENT_SECRET }}" \
+            '{ANTHROPIC_API_KEY:$a, BREVO_API_KEY:$b, TELEGRAM_BOT_TOKEN:$t, TG_CHAT:"1893930799", HALLINTA:$h, MSADS_CLIENT_SECRET:$ms}' > /tmp/s.json
           npx --yes wrangler@3.99.0 secret bulk /tmp/s.json; rm /tmp/s.json
       - name: Savutesti
         env:

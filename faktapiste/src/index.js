@@ -28,6 +28,7 @@ const TIEDOTTEET = [
 ];
 const LUOKKA = { kayttaja: "k", suomitanaan: "u", korjausvahti: "m", keraysvahti: "h", eduskunta: "e" };
 const KERROIN = [0, 1, 2.5];
+const MS_CLIENT = "a5c26010-4549-400f-806a-4db7204ab906", MS_PALUU = "https://faktapiste.fi/api/oauth/microsoft";
 
 export default {
   async fetch(req, env, ctx) {
@@ -147,6 +148,26 @@ export class Faktapiste extends DurableObject {
         const d = await req.json().catch(() => ({})); const koodi = satunnainen(5);
         this.sql.exec("INSERT INTO kutsut(koodi, max, luotu) VALUES(?,?,?)", koodi, Math.min(500, +d.max || 20), nyt());
         return json({ koodi, linkki: "https://faktapiste.fi/?kutsu=" + koodi });
+      }
+      // Microsoft Advertising -kirjautuminen (ylläpitäjän kertaluonteinen lupa); avaimet vain holviin.
+      if (p === "/api/oauth/microsoft/alku" && m === "GET") {
+        const tila = satunnainen(16);
+        this.sql.exec("INSERT OR REPLACE INTO asetukset VALUES(?,?)", "ms_tila", tila + "|" + nyt());
+        const q = new URLSearchParams({ client_id: MS_CLIENT, response_type: "code", redirect_uri: MS_PALUU, scope: "https://ads.microsoft.com/msads.manage offline_access", state: tila, prompt: "select_account" });
+        return Response.redirect("https://login.microsoftonline.com/common/oauth2/v2.0/authorize?" + q, 302);
+      }
+      if (p === "/api/oauth/microsoft" && m === "GET") {
+        const sivu = (t, s = 200) => new Response(`<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><body style="font:18px system-ui;padding:40px;max-width:520px;margin:auto"><h2>Faktapiste</h2><p>${t}</p></body>`, { status: s, headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
+        const r = this.yksi("SELECT v FROM asetukset WHERE k='ms_tila'"); const [tila, aika] = (r ? r.v : "|0").split("|");
+        if (!tila || u.searchParams.get("state") !== tila || nyt() - Number(aika) > 15 * 60e3) return sivu("Kirjautumislinkki on vanhentunut. Aloita uudelleen.", 400);
+        this.sql.exec("DELETE FROM asetukset WHERE k='ms_tila'");
+        if (!u.searchParams.get("code")) return sivu("Lupaa ei annettu: " + puhdas(u.searchParams.get("error_description") || u.searchParams.get("error")).slice(0, 200), 400);
+        const v = await (await fetch("https://login.microsoftonline.com/common/oauth2/v2.0/token", { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ client_id: MS_CLIENT, client_secret: this.env.MSADS_CLIENT_SECRET || "", grant_type: "authorization_code", code: u.searchParams.get("code"), redirect_uri: MS_PALUU, scope: "https://ads.microsoft.com/msads.manage offline_access" }) })).json();
+        if (!v.refresh_token) return sivu("Avaimen vaihto epäonnistui: " + puhdas(v.error_description || v.error).slice(0, 300), 400);
+        this.sql.exec("INSERT OR REPLACE INTO asetukset VALUES(?,?)", "holvi:msads_refresh", v.refresh_token);
+        await telegram(this.env, "🔑 Microsoft Advertising -lupa tallennettu Faktapisteen holviin.");
+        return sivu("Valmis! Microsoft Advertising on nyt yhdistetty. Voit sulkea tämän sivun.");
       }
       if (p === "/api/hallinta/holvi" && this.env.HALLINTA && req.headers.get("x-avain") === this.env.HALLINTA) {
         // Ylläpidon salaisuusholvi (esim. mainostilien kirjautumisavaimet); ei koskaan julkisesti luettavissa.
