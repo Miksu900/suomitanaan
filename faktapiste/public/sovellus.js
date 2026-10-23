@@ -144,6 +144,8 @@
     return api("mina").then(function (j) {
       tila.mina = j.kayttaja; tila.kirjautuminen = j.kirjautuminen === true;
       // Testivaihe: kirjautumisnappi näkyy vain osoitteella /?testi=1 avattuna (muistetaan selaimessa).
+      var kq = (location.search.match(/[?&]kutsu=([a-f0-9]{6,20})/) || [])[1]; if (kq) tallenna("fp_kutsu", kq);
+      if (j.testi && lue("fp_kutsu")) tila.kirjautuminen = true;
       if (j.testi) { var t = /[?&]testi=1/.test(location.search); try { if (t) localStorage.setItem("fp_testi", "1"); t = t || localStorage.getItem("fp_testi") === "1"; } catch (x) {} if (t) tila.kirjautuminen = true; }
       var a = $("#fp-tili");
       if (a) a.innerHTML = tila.mina ? '<button type="button" class="tili" data-ulos title="Kirjaudu ulos">' + esc(tila.mina.nimi || "Oma tili") + "</button>" : tila.kirjautuminen ? '<button type="button" class="tili" data-kirjaudu>Kirjaudu</button>' : "";
@@ -267,7 +269,7 @@
     var f = e.target;
     if (f.id === "kirjform") {
       e.preventDefault(); var em = f.email.value.trim(); var nb = $("button[value=laheta]", f); nb.disabled = true;
-      api("kirjaudu", { email: em }).then(function (j) {
+      api("kirjaudu", { email: em, kutsu: lue("fp_kutsu") || "" }).then(function (j) {
         nb.disabled = false;
         if (j.virhe) return ilmoitus(j.virhe, 1);
         f.innerHTML = "<h2>Tarkista sähköpostisi</h2><p>Lähetimme kirjautumislinkin osoitteeseen <b>" + esc(em) + "</b>. Linkki on voimassa 30 minuuttia. Katso tarvittaessa myös roskapostikansio.</p><div class=\"rivi\"><button type=\"button\" class=\"nappi\" data-sulje>Selvä</button></div>";

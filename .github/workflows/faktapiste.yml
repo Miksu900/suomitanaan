@@ -8,6 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       fakta: { description: "Testikysymys faktahaulle", required: false, default: "" }
+      kutsu: { description: "Luo beta-kutsulinkki (montako käyttäjää), lähetetään Telegramiin", required: false, default: "" }
 jobs:
   julkaise:
     runs-on: ubuntu-latest
@@ -75,3 +76,13 @@ jobs:
           echo "::notice title=Tila::$(curl -sS -X POST -H "x-avain: $HALLINTA" $U/api/hallinta/tila | head -c 600)"
           echo "::notice title=Syöte::$(curl -sS "$U/api/syote?tab=suositut" | jq -c '[.postit[:6][] | {lahde, k: (.kortti.otsikko // .kortti.nyt // "")[:60]}]' | head -c 900)"
           if [ -n "${{ inputs.fakta }}" ]; then echo "::notice title=Fakta::$(curl -sS -X POST -H "x-avain: $HALLINTA" -H 'content-type: application/json' -d "$(jq -n --arg q '${{ inputs.fakta }}' '{kysymys:$q}')" $U/api/hallinta/fakta | jq -c "{v: .kortti.vastaus, a: .kortti.aanestys.otsikko, l: .kortti.aanestys.lisaotsikko, r: .kortti.aanestys.ryhmat[:3], e: .virhe}" | head -c 2500)"; fi
+      - name: Kutsulinkki Telegramiin
+        if: inputs.kutsu != ''
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TG: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        run: |
+          U=https://faktapiste.${{ steps.cf.outputs.sub }}.workers.dev
+          HALLINTA=$(printf '%s' "$CLOUDFLARE_API_TOKEN-faktapiste" | sha256sum | cut -c1-40)
+          L=$(curl -sS -X POST -H "x-avain: $HALLINTA" -H 'content-type: application/json' -d '{"max": ${{ inputs.kutsu }}}' $U/api/hallinta/kutsu | jq -r .linkki)
+          curl -sS -X POST "https://api.telegram.org/bot$TG/sendMessage" -d chat_id=1893930799 --data-urlencode "text=🔑 Faktapisteen beta-kutsulinkki (${{ inputs.kutsu }} käyttäjää): $L" | jq -c .ok

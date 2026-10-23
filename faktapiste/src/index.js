@@ -95,6 +95,7 @@ export class Faktapiste extends DurableObject {
       CREATE TABLE IF NOT EXISTS ilmoitukset(posti INTEGER, kayttaja INTEGER, syy TEXT, luotu INTEGER, PRIMARY KEY(posti, kayttaja));
       CREATE TABLE IF NOT EXISTS rajat(avain TEXT PRIMARY KEY, n INTEGER, vanhenee INTEGER);
       CREATE TABLE IF NOT EXISTS asetukset(k TEXT PRIMARY KEY, v TEXT);
+      CREATE TABLE IF NOT EXISTS kutsut(koodi TEXT PRIMARY KEY, kayttoja INTEGER DEFAULT 0, max INTEGER, luotu INTEGER);
       CREATE TABLE IF NOT EXISTS nahdyt(posti INTEGER, katsoja TEXT, luotu INTEGER, PRIMARY KEY(posti, katsoja));
       CREATE INDEX IF NOT EXISTS nahdyt_katsoja ON nahdyt(katsoja, luotu);`);
     for (const a of ["ALTER TABLE postit ADD COLUMN nakymat INTEGER DEFAULT 0", "ALTER TABLE postit ADD COLUMN kunta TEXT"]) { try { this.sql.exec(a); } catch {} }
@@ -124,6 +125,11 @@ export class Faktapiste extends DurableObject {
       if (p === "/api/hallinta/sisaanluku" && this.env.HALLINTA && req.headers.get("x-avain") === this.env.HALLINTA) return json(await this.sisaanluku());
       if (p === "/api/hallinta/tila" && this.env.HALLINTA && req.headers.get("x-avain") === this.env.HALLINTA)
         return json({ postit: this.kaikki("SELECT lahde, COUNT(*) AS n FROM postit GROUP BY lahde"), kayttajat: this.yksi("SELECT COUNT(*) AS n FROM kayttajat").n });
+      if (p === "/api/hallinta/kutsu" && this.env.HALLINTA && req.headers.get("x-avain") === this.env.HALLINTA) {
+        const d = await req.json().catch(() => ({})); const koodi = satunnainen(5);
+        this.sql.exec("INSERT INTO kutsut(koodi, max, luotu) VALUES(?,?,?)", koodi, Math.min(500, +d.max || 20), nyt());
+        return json({ koodi, linkki: "https://faktapiste.fi/?kutsu=" + koodi });
+      }
       if (p === "/api/hallinta/fakta" && this.env.HALLINTA && req.headers.get("x-avain") === this.env.HALLINTA) {
         const d = await req.json(); return await this.fakta({ id: 0 }, d);
       }
@@ -177,7 +183,12 @@ export class Faktapiste extends DurableObject {
     const d = await req.json().catch(() => ({}));
     const email = puhdas(d.email).toLowerCase();
     if (!/^[^\s@]{1,64}@[^\s@]+\.[a-z]{2,}$/.test(email) || email.length > 120) return virhe("Tarkista sähköpostiosoite.");
-    if (this.env.KIRJAUTUMINEN !== "auki" && !TESTAAJAT.includes(email)) return virhe("Keskustelu on beta-testissä. Kirjautuminen avataan kaikille pian.", 403);
+    if (this.env.KIRJAUTUMINEN !== "auki" && !TESTAAJAT.includes(email) && !this.yksi("SELECT id FROM kayttajat WHERE email=?", email)) {
+      // Beta: uusi käyttäjä tarvitsee voimassa olevan kutsukoodin
+      const k = this.yksi("SELECT koodi FROM kutsut WHERE koodi=? AND kayttoja<max", String(d.kutsu || ""));
+      if (!k) return virhe("Keskustelu on beta-testissä. Tarvitset kutsulinkin, jotta voit liittyä.", 403);
+      this.sql.exec("UPDATE kutsut SET kayttoja=kayttoja+1 WHERE koodi=?", k.koodi);
+    }
     const ip = await tiiviste((req.headers.get("cf-connecting-ip") || "") + "fp");
     if (!this.raja("lk:" + email, 4, 3600) || !this.raja("li:" + ip, 15, 3600)) return virhe("Liian monta yritystä. Yritä hetken päästä uudelleen.", 429);
     const t = satunnainen();
