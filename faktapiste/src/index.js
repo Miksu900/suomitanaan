@@ -11,7 +11,7 @@ const ES_AVAIN = "sb_publishable_7baeuteHYaarCEv4-j8C_g_OLxcKzJp";
 const ADMIN = ["miika@eduskuntaseuranta.fi", "miika.koskela990@gmail.com"];
 // Testivaiheessa (KIRJAUTUMINEN = "testi") vain nämä osoitteet voivat kirjautua.
 const TESTAAJAT = ADMIN;
-const PITUUS = 500;
+const PITUUS = 100000; // käytännössä rajaton, suojaa vain tietokantaa
 const TAATTU = 30;        // jokainen postaus näytetään vähintään näin monelle lukijalle
 const SYOTE_MAX = 25;     // Sinulle-syöte loppuu tähän
 // syötteen säätimien luokat: k=keskustelut, u=uutiset, m=otsikkomuutokset, h=huijausvaroitukset, e=päätökset
@@ -303,7 +303,7 @@ export class Faktapiste extends DurableObject {
   async uusiPosti(minä, d, lukija) {
     const teksti = puhdas(d.teksti).replace(/\n{3,}/g, "\n\n");
     if (teksti.length < 2) return virhe("Kirjoita jotain.");
-    if (teksti.length > PITUUS) return virhe(`Enintään ${PITUUS} merkkiä.`);
+    if (teksti.length > PITUUS) return virhe("Teksti on liian pitkä.");
     if (!this.raja("p:" + minä.id, 15, 3600)) return virhe("Olet kirjoittanut paljon tunnin sisällä. Pidä pieni tauko.", 429);
     const vanhempi = d.vanhempi ? +d.vanhempi : null;
     if (vanhempi && !this.yksi("SELECT id FROM postit WHERE id=? AND piilotettu=0", vanhempi)) return virhe("Postausta ei enää ole.");

@@ -95,9 +95,9 @@
     }
     if (!tila.mina.nimi) return '<form class="kirjoita" id="nimilomake"><b>Valitse nimimerkki</b><span>Näkyy postaustesi yhteydessä. Sähköpostiosoitetta ei näytetä kenellekään.</span><div class="rivi"><input name="nimi" maxlength="24" placeholder="esim. Pohjanmaan Pekka" required><button class="nappi">Tallenna</button></div></form>';
     return '<form class="kirjoita" data-lomake="' + id + '"' + (vanhempi ? ' data-vanhempi="' + vanhempi + '"' : "") + '>' +
-      '<textarea name="teksti" maxlength="500" rows="' + (vanhempi ? 2 : 3) + '" placeholder="' + (vanhempi ? "Kirjoita vastaus" : "Mitä mielessä? Jokainen postaus näytetään vähintään 30 ihmiselle.") + '"></textarea>' +
+      '<textarea name="teksti" rows="' + (vanhempi ? 2 : 3) + '" placeholder="' + (vanhempi ? "Kirjoita vastaus" : "Mitä mielessä? Jokainen postaus näytetään vähintään 30 ihmiselle.") + '"></textarea>' +
       '<div class="faktapaneeli" hidden><div class="rivi"><input name="kysymys" maxlength="300" placeholder="Kysy vapaasti, esim. miten perussuomalaiset äänesti kotihoidontuesta?"><button type="button" class="nappi toissijainen" data-hae>Hae</button></div><div class="faktatulos"></div></div>' +
-      '<div class="toiminnot"><button type="button" class="fakta-nappi" data-fakta>🔎 Kysy fakta</button>' + (tila.kunta && !vanhempi ? '<label class="paikkavalinta"><input type="checkbox" name="kunta" checked> 📍 ' + esc(tila.kunta) + "</label>" : "") + '<span class="laskuri">500</span><button class="nappi">' + (vanhempi ? "Vastaa" : "Julkaise") + "</button></div></form>";
+      '<div class="toiminnot"><button type="button" class="fakta-nappi" data-fakta>🔎 Kysy fakta</button>' + (tila.kunta && !vanhempi ? '<label class="paikkavalinta"><input type="checkbox" name="kunta" checked> 📍 ' + esc(tila.kunta) + "</label>" : "") + '<span class="laskuri"></span><button class="nappi">' + (vanhempi ? "Vastaa" : "Julkaise") + "</button></div></form>";
   }
 
   // ---------- näkymät ----------
@@ -260,7 +260,7 @@
     });
   }
   document.addEventListener("input", function (e) {
-    if (e.target.name === "teksti") { var l = $(".laskuri", e.target.form); if (l) { var n = 500 - e.target.value.length; l.textContent = n; l.classList.toggle("vahan", n < 40); } }
+    if (e.target.name === "teksti") { e.target.style.height = "auto"; e.target.style.height = Math.min(e.target.scrollHeight + 4, 600) + "px"; }
   });
   document.addEventListener("keydown", function (e) {
     if (e.target.name === "kysymys" && e.key === "Enter") { e.preventDefault(); haeFakta(e.target.form); }
