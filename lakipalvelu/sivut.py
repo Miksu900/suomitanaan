@@ -21,6 +21,13 @@ LOGO = ('<svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><rect x="2" y=
         '<text x="16" y="23" text-anchor="middle" font-family="Georgia,serif" font-size="20" font-weight="700" fill="var(--acc-ink)">§</text></svg>')
 
 
+VAROITA = ('<section class="varoita"><p><b>Tunnetko jonkun, jolla on riita kaupan, vuokranantajan tai perintäfirman kanssa?</b> '
+           'Lähetä hänelle vinkki – se vie viisi sekuntia.</p><button type="button" class="btn" id="varoita">📲 Lähetä vinkki</button></section>')
+VAROITAJS = ('<script>(function(){var b=document.getElementById("varoita");if(!b)return;b.onclick=function(){'
+             'var t="Tällä saa ilmaiseksi selville, mitä laki sanoo esimerkiksi reklamaatiosta, takuusta tai vuokrasopimuksesta – ja valmiin kirjeen oikeine pykälineen:",u="https://pykalavahti.fi/";'
+             'if(navigator.share)navigator.share({text:t,url:u}).catch(function(){});else location.href="https://wa.me/?text="+encodeURIComponent(t+" "+u)}})();</script>')
+
+
 def sivu(polku, otsikko, kuvaus, runko, skripti="", aktiivinen=""):
     nav = "".join(f'<a href="{u}"{" aria-current=page" if aktiivinen == k else ""}>{n}</a>' for k, u, n in
                   (("kysy", "/", "Kysy laista"), ("kirje", "/kirje/", "Valmis kirje"), ("esitys", "/pohjaesitys/", "Pohjaesitys"), ("toimistot", "/toimistot/", "Lakitoimistot")))
@@ -33,16 +40,16 @@ def sivu(polku, otsikko, kuvaus, runko, skripti="", aktiivinen=""):
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,600;7..72,700&family=Inter:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="/tyyli.css?v=7"></head>
+<link rel="stylesheet" href="/tyyli.css?v=8"></head>
 <body><a class="skip" href="#sisalto">Siirry sisältöön</a>
 <header class="hd"><div class="hd-in"><a class="brand" href="/">{LOGO}<span>{esc(NIMI)}</span></a><nav aria-label="Päävalikko">{nav}</nav></div></header>
-<main id="sisalto" class="wrap">{runko}</main>
+<main id="sisalto" class="wrap">{runko}{VAROITA}</main>
 <footer class="ft"><div class="ft-in">
 <p><b>{esc(NIMI)}</b> selittää Suomen lakia ajantasaisen lainsäädännön (Finlex) pohjalta. Vastaukset ovat yleistä tietoa, eivät oikeudellista neuvontaa, eikä palvelu ole asianajotoimisto. Tekoäly ei vastaa tietojen oikeellisuudesta.</p>
 <p><a href="/tietoa/">Tietoa palvelusta</a> · <a href="/ehdot/">Käyttöehdot</a> · <a href="/tietosuoja/">Tietosuoja</a> · <a href="/juristeille/">Juristeille</a> · Yhteys: <span class="mono">{YHTEYS}</span></p>
 <p class="mute">Pykälävahti on osa <a href="https://faktapiste.fi">Faktapistettä</a>. Muita palveluja: <a href="https://keraysvahti.fi">Keräysvahti</a> · <a href="https://keraysvahti.fi/huijaukset/">Huijausapu</a> · <a href="https://eduskuntaseuranta.fi">Eduskuntaseuranta</a> · <a href="https://nytpuhutaan.fi">Nytpuhutaan</a></p>
 </div></footer>
-<script src="/sovellus.js?v=7"></script>{skripti}
+<script src="/sovellus.js?v=7"></script>{skripti}{VAROITAJS}
 </body></html>"""
 
 
