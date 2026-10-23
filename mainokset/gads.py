@@ -3,7 +3,7 @@ Ei koskaan tulosta avaimia."""
 import os, sys, json, urllib.request, urllib.parse
 
 U = "https://faktapiste.fi/api/hallinta/holvi"
-API = "https://googleads.googleapis.com/v22"
+API = "https://googleads.googleapis.com/" + os.environ.get("GADS_VER", "v24") + ""
 
 def holvi(nimi, arvo=None):
     d = {"nimi": nimi}
