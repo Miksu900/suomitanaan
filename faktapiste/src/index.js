@@ -98,7 +98,7 @@ export class Faktapiste extends DurableObject {
       CREATE TABLE IF NOT EXISTS kutsut(koodi TEXT PRIMARY KEY, kayttoja INTEGER DEFAULT 0, max INTEGER, luotu INTEGER);
       CREATE TABLE IF NOT EXISTS nahdyt(posti INTEGER, katsoja TEXT, luotu INTEGER, PRIMARY KEY(posti, katsoja));
       CREATE INDEX IF NOT EXISTS nahdyt_katsoja ON nahdyt(katsoja, luotu);`);
-    for (const a of ["ALTER TABLE postit ADD COLUMN nakymat INTEGER DEFAULT 0", "ALTER TABLE postit ADD COLUMN kunta TEXT"]) { try { this.sql.exec(a); } catch {} }
+    for (const a of ["ALTER TABLE postit ADD COLUMN nakymat INTEGER DEFAULT 0", "ALTER TABLE postit ADD COLUMN kunta TEXT", "ALTER TABLE postit ADD COLUMN muokattu INTEGER"]) { try { this.sql.exec(a); } catch {} }
   }
   yksi(q, ...p) { return this.sql.exec(q, ...p).toArray()[0] || null; }
   kaikki(q, ...p) { return this.sql.exec(q, ...p).toArray(); }
@@ -152,6 +152,16 @@ export class Faktapiste extends DurableObject {
       if (p === "/api/tykkaa") return this.tykkaa(minä, d);
       if (p === "/api/ilmoita") return await this.ilmoita(minä, d);
       if (p === "/api/poista") return this.poista(minä, d);
+      if (p === "/api/muokkaa") {
+        const r = this.yksi("SELECT kayttaja, piilotettu FROM postit WHERE id=?", +d.id);
+        if (!r || r.piilotettu) return virhe("Postausta ei löytynyt.");
+        if (r.kayttaja !== minä.id) return virhe("Voit muokata vain omia postauksiasi.", 403);
+        const t = puhdas(d.teksti).replace(/\n{3,}/g, "\n\n");
+        if (t.length < 2) return virhe("Kirjoita jotain.");
+        if (t.length > PITUUS) return virhe("Teksti on liian pitkä.");
+        this.sql.exec("UPDATE postit SET teksti=?, muokattu=? WHERE id=?", t, nyt(), +d.id);
+        return json({ ok: true });
+      }
       if (p === "/api/fakta") return await this.fakta(minä, d);
       if (p === "/api/palauta" && minä.admin) { this.sql.exec("UPDATE postit SET piilotettu=0, ilmoitukset=0 WHERE id=?", +d.id); return json({ ok: true }); }
       return virhe("Tuntematon osoite", 404);
@@ -234,7 +244,7 @@ export class Faktapiste extends DurableObject {
     let k = null; try { k = r.kortti ? JSON.parse(r.kortti) : null; } catch {}
     return { id: r.id, nimi: r.nimi || null, lahde: r.lahde, teksti: r.piilotettu ? "" : r.teksti, kortti: r.piilotettu ? null : k, vanhempi: r.vanhempi, luotu: r.luotu,
       tykkaykset: r.tykkaykset, vastaukset: r.vastaukset, piilotettu: !!r.piilotettu, oma: !!(minä && r.kayttaja === minä.id),
-      nakymat: r.nakymat || 0, kunta: r.kunta || null, syy: r._syy || null, taattu: TAATTU,
+      nakymat: r.nakymat || 0, muokattu: r.muokattu || null, kunta: r.kunta || null, syy: r._syy || null, taattu: TAATTU,
       tykkasin: !!(minä && this.yksi("SELECT 1 AS x FROM tykkaykset WHERE posti=? AND kayttaja=?", r.id, minä.id)) };
   }
   syote(u, minä, lukija) {

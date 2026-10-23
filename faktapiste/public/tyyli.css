@@ -185,3 +185,14 @@ dialog::backdrop{background:rgba(5,10,25,.55)}
 .asenna{width:100%;margin-bottom:12px;background:var(--navy);color:#fff;border:2px solid var(--yel);border-radius:14px;padding:14px;font:700 1rem var(--f-b);cursor:pointer}
 @media (prefers-color-scheme:dark){.asenna{background:var(--yel);color:var(--navy)}}
 .ohje{margin:0;padding-left:20px;display:grid;gap:6px}
+/* selkeämmät toimintonapit */
+.pm footer{gap:2px;align-items:center}
+.pm footer button{display:inline-flex;align-items:center;gap:6px;font:700 .95rem var(--f-b);padding:8px 12px;color:var(--ink);opacity:.8}
+.pm footer button svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.pm footer button.on{color:#d33a4a;opacity:1}.pm footer button.on svg{fill:currentColor}
+.pm footer button[data-lisaa]{font-size:1.3rem;padding:4px 10px}
+.muokattu{font-size:.75rem;color:var(--mute);font-style:italic}
+.muokkaus{display:grid;gap:8px;margin:6px 0}
+.muokkaus textarea{width:100%;font:16px/1.5 var(--f-b);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px;resize:vertical}
+@media (max-width:520px){.pm footer button{padding:8px 8px}.pm footer button span{font-size:.9rem}}
+.luettu{white-space:nowrap}
