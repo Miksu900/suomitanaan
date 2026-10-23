@@ -159,7 +159,7 @@ export class Faktapiste extends DurableObject {
       if (p === "/api/oauth/microsoft" && m === "GET") {
         const sivu = (t, s = 200) => new Response(`<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><body style="font:18px system-ui;padding:40px;max-width:520px;margin:auto"><h2>Faktapiste</h2><p>${t}</p></body>`, { status: s, headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
         const r = this.yksi("SELECT v FROM asetukset WHERE k='ms_tila'"); const [tila, aika] = (r ? r.v : "|0").split("|");
-        if (!tila || u.searchParams.get("state") !== tila || nyt() - Number(aika) > 15 * 60e3) return sivu("Kirjautumislinkki on vanhentunut. Aloita uudelleen.", 400);
+        if (!tila || u.searchParams.get("state") !== tila || nyt() - Number(aika) > 60 * 60e3) return sivu("Kirjautumislinkki on vanhentunut. Aloita uudelleen.", 400);
         this.sql.exec("DELETE FROM asetukset WHERE k='ms_tila'");
         if (!u.searchParams.get("code")) return sivu("Lupaa ei annettu: " + puhdas(u.searchParams.get("error_description") || u.searchParams.get("error")).slice(0, 200), 400);
         const v = await (await fetch("https://login.microsoftonline.com/common/oauth2/v2.0/token", { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" },
