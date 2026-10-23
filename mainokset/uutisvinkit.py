@@ -43,6 +43,8 @@ if __name__ == "__main__":
     nahdyt = set(json.load(open(tila))) if os.path.exists(tila) else set()
     eka = not nahdyt
     uudet, lahetetty = [], 0
+    testi = os.environ.get("TESTI") == "1"
+    if testi: eka, nahdyt = False, set()
     for u in kohteet():
         if u["url"] in nahdyt: continue
         nahdyt.add(u["url"]); uudet.append(u)
@@ -50,12 +52,12 @@ if __name__ == "__main__":
         for u in uudet:
             teksti = (u["otsikko"] + " " + u["kuvaus"]).lower()
             osuma = next((k for k, (_, _, rx) in PALVELUT.items() if re.search(rx, teksti)), None)
-            if not osuma or lahetetty >= 4: continue
+            if not osuma or lahetetty >= (1 if testi else 4): continue
             nimi, url, _ = PALVELUT[osuma]
             try: luonnos = claude(u, nimi, url)
             except Exception: continue
             if luonnos.strip().upper().startswith("EI"): continue
             laheta(f"📰 <b>Uutisvinkki – {nimi}</b>\n{html.escape(u['otsikko'])} ({u['media']})\n{u['url']}\n\n✍️ <b>Postausluonnos:</b>\n{html.escape(luonnos)}")
             lahetetty += 1
-    json.dump(sorted(nahdyt)[-3000:], open(tila, "w"))
+    if not testi: json.dump(sorted(nahdyt)[-3000:], open(tila, "w"))
     print(f"::notice title=Uutisvinkit::uusia {len(uudet)}, lähetetty {lahetetty}{' (ensiajo, vain tallennus)' if eka else ''}")

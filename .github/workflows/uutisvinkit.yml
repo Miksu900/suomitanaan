@@ -4,6 +4,8 @@ on:
   schedule:
     - cron: "23 5-18/2 * * *"
   workflow_dispatch:
+    inputs:
+      testi: { description: "1 = lähetä yksi testivinkki", required: false, default: "" }
 concurrency: uutisvinkit
 jobs:
   aja:
@@ -16,8 +18,10 @@ jobs:
       - env:
           AK: ${{ secrets.ANTHROPIC_API_KEY }}
           TG: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TESTI: ${{ inputs.testi }}
         run: cd mainokset && python3 uutisvinkit.py
-      - run: |
+      - if: inputs.testi != '1'
+        run: |
           mkdir /tmp/t && cp mainokset/nahdyt.json /tmp/t/ && cd /tmp/t && git init -q && git checkout -q -b uutisvinkit-tila
           git add -A && git -c user.name=bot -c user.email=bot@x commit -qm tila
           git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" uutisvinkit-tila
