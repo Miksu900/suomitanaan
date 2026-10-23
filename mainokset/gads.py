@@ -45,5 +45,8 @@ if __name__ == "__main__":
     elif t == "tilit":
         ilmoita("Tilit", json.dumps(kutsu("/customers:listAccessibleCustomers")))
     elif t == "kysely":
-        asiakas, q = os.environ["ASIAKAS"].replace("-", ""), os.environ["KYSELY"]
-        ilmoita("Kysely", json.dumps(kutsu(f"/customers/{asiakas}/googleAds:search", {"query": q}), ensure_ascii=False))
+        asiakas = os.environ["ASIAKAS"].replace("-", "")
+        for i, q in enumerate(x for x in os.environ["KYSELY"].split(";;") if x.strip()):
+            v = kutsu(f"/customers/{asiakas}/googleAds:search", {"query": q.strip()})
+            v.pop("fieldMask", None)
+            ilmoita(f"Kysely {i+1}", json.dumps(v, ensure_ascii=False, separators=(",", ":")))
