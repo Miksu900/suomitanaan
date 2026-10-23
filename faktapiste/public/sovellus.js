@@ -59,15 +59,15 @@
   }
   function kortti(k) {
     if (!k) return "";
-    if (k.tyyppi === "uutinen") return '<a class="kortti uutinen" href="' + esc(k.url) + '" target="_blank" rel="noopener"><span class="kl">' + esc(k.lahde) + "</span><strong>" + esc(k.otsikko) + "</strong>" + (k.kuvaus ? "<span>" + esc(k.kuvaus) + "</span>" : "") + "</a>";
-    if (k.tyyppi === "muutos") return '<a class="kortti muutos" href="' + esc(k.url) + '" target="_blank" rel="noopener"><span class="kl">Otsikko muuttui · ' + esc(k.media) + '</span><span class="ennen"><em>Ennen</em>' + esc(k.ennen) + '</span><span class="nyt"><em>Nyt</em>' + esc(k.nyt) + "</span></a>";
-    if (k.tyyppi === "varoitus") return '<a class="kortti varoitus" href="' + esc(k.url) + '" target="_blank" rel="noopener"><span class="kl">Huijausvaroitus · ' + esc(k.media) + "</span><strong>" + esc(k.otsikko) + "</strong></a>";
+    if (k.tyyppi === "uutinen") return '<a class="kortti uutinen" href="' + esc(k.url) + '" rel="noopener"><span class="kl">' + esc(k.lahde) + "</span><strong>" + esc(k.otsikko) + "</strong>" + (k.kuvaus ? "<span>" + esc(k.kuvaus) + "</span>" : "") + "</a>";
+    if (k.tyyppi === "muutos") return '<a class="kortti muutos" href="' + esc(k.url) + '" rel="noopener"><span class="kl">Otsikko muuttui · ' + esc(k.media) + '</span><span class="ennen"><em>Ennen</em>' + esc(k.ennen) + '</span><span class="nyt"><em>Nyt</em>' + esc(k.nyt) + "</span></a>";
+    if (k.tyyppi === "varoitus") return '<a class="kortti varoitus" href="' + esc(k.url) + '" rel="noopener"><span class="kl">Huijausvaroitus · ' + esc(k.media) + "</span><strong>" + esc(k.otsikko) + "</strong></a>";
     if (k.tyyppi === "aanestys") return '<div class="kortti aanestys"><span class="kl">Eduskunnan äänestys' + (k.pv ? " · " + pvm(k.pv) : "") + "</span><strong>" + esc(k.otsikko) + "</strong>" +
       (k.lisaotsikko ? '<span class="lisa">' + esc(k.lisaotsikko) + "</span>" : "") + (k.tulos ? '<span class="tulos ' + (/Hyväks|Jaa/.test(k.tulos) ? "ok" : "no") + '">' + esc(k.tulos) + "</span>" : "") +
-      palkit(k) + ryhmat(k) + '<a class="lue" href="' + esc(k.url) + '" target="_blank" rel="noopener">Katso edustajien äänet Eduskuntaseurannasta →</a></div>';
+      palkit(k) + ryhmat(k) + '<a class="lue" href="' + esc(k.url) + '" rel="noopener">Katso edustajien äänet Eduskuntaseurannasta →</a></div>';
     if (k.tyyppi === "fakta") return '<div class="kortti fakta"><span class="kl">Fakta · Eduskuntaseuranta</span><span class="kys">' + esc(k.kysymys) + '</span><p>' + esc(k.vastaus) + "</p>" +
       (k.aanestys ? '<div class="fa"><strong>' + esc(k.aanestys.otsikko) + "</strong>" + palkit(k.aanestys) + ryhmat(k.aanestys) + "</div>" : "") +
-      (k.lahteet && k.lahteet.length ? '<div class="lahteet">' + k.lahteet.slice(0, 3).map(function (s) { return '<a href="' + esc(s.url) + '" target="_blank" rel="noopener">' + esc(s.otsikko) + "</a>"; }).join("") + "</div>" : "") +
+      (k.lahteet && k.lahteet.length ? '<div class="lahteet">' + k.lahteet.slice(0, 3).map(function (s) { return '<a href="' + esc(s.url) + '" rel="noopener">' + esc(s.otsikko) + "</a>"; }).join("") + "</div>" : "") +
       '<small>Tekoälyn kokoama vastaus avoimesta datasta. Tarkista tärkeät asiat lähteestä.</small></div>';
     return "";
   }
@@ -76,15 +76,15 @@
   function posti(p, iso) {
     var l = LAHTEET[p.lahde];
     var nimi = l ? l.nimi : p.nimi || "Käyttäjä";
-    var av = l ? '<a class="av" href="' + l.url + '" target="_blank" rel="noopener" title="Avaa ' + esc(l.nimi) + '" style="background:' + l.vari + '">' + l.lyh + "</a>" : '<span class="av k">' + esc((p.nimi || "?").charAt(0).toUpperCase()) + "</span>";
+    var av = l ? '<a class="av" href="' + l.url + '" rel="noopener" title="Avaa ' + esc(l.nimi) + '" style="background:' + l.vari + '">' + l.lyh + "</a>" : '<span class="av k">' + esc((p.nimi || "?").charAt(0).toUpperCase()) + "</span>";
     if (p.syy) tila.syyt[p.id] = p.syy;
     tila.tekstit = tila.tekstit || {}; tila.tekstit[p.id] = p.teksti;
     var nak = p.nakymat || 0;
     var taattu = p.oma && !p.vanhempi && nak < (p.taattu || 30) ? '<div class="taattu"><span class="tpb"><i style="width:' + Math.min(100, 100 * nak / (p.taattu || 30)).toFixed(0) + '%"></i></span>Nähty ' + nak + "/" + (p.taattu || 30) + " · näytämme postauksesi vielä " + ((p.taattu || 30) - nak) + " ihmiselle</div>" : "";
     if (p.piilotettu) return '<article class="posti piilo" data-id="' + p.id + '"><p class="mute">Tämä postaus on poistettu tai piilotettu.</p></article>';
-    return '<article class="posti' + (iso ? " iso" : "") + '" data-id="' + p.id + '">' + av + '<div class="pm"><header>' + (l ? '<a class="lahdelinkki" href="' + l.url + '" target="_blank" rel="noopener">' + esc(nimi) + " ↗</a>" : "<b>" + esc(nimi) + "</b>") + (l ? '<span class="auto">automaattinen</span>' : "") + (p.kunta ? '<span class="paikka">📍 ' + esc(p.kunta) + "</span>" : "") +
+    return '<article class="posti' + (iso ? " iso" : "") + '" data-id="' + p.id + '">' + av + '<div class="pm"><header>' + (l ? '<a class="lahdelinkki" href="' + l.url + '" rel="noopener">' + esc(nimi) + " ↗</a>" : "<b>" + esc(nimi) + "</b>") + (l ? '<span class="auto">automaattinen</span>' : "") + (p.kunta ? '<span class="paikka">📍 ' + esc(p.kunta) + "</span>" : "") +
       '<a class="aika" href="/?p=' + p.id + '" data-avaa="' + p.id + '">' + aika(p.luotu) + "</a>" + (p.muokattu ? '<span class="muokattu">muokattu</span>' : "") + "</header>" +
-      (p.teksti ? '<div class="pt">' + linkit(p.teksti) + "</div>" : "") + kortti(p.kortti) + (l && l.palvelu ? '<a class="palvelulinkki" href="' + l.url + '" target="_blank" rel="noopener">' + esc(l.palvelu) + " →</a>" : "") + taattu +
+      (p.teksti ? '<div class="pt">' + linkit(p.teksti) + "</div>" : "") + kortti(p.kortti) + (l && l.palvelu ? '<a class="palvelulinkki" href="' + l.url + '" rel="noopener">' + esc(l.palvelu) + " →</a>" : "") + taattu +
       '<footer><button type="button" data-vastaa="' + p.id + '" aria-label="Vastaa">' + IK.vastaa + "<span>" + (p.vastaukset || "Vastaa") + '</span></button>' +
       '<button type="button" data-tykkaa="' + p.id + '" class="' + (p.tykkasin ? "on" : "") + '" aria-label="Tykkää">' + IK.tykkaa + "<span>" + (p.tykkaykset || "") + "</span></button>" +
       '<button type="button" data-jaa="' + p.id + '" aria-label="Jaa">' + IK.jaa + "<span>Jaa</span></button>" +
