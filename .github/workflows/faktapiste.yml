@@ -9,6 +9,7 @@ on:
     inputs:
       fakta: { description: "Testikysymys faktahaulle", required: false, default: "" }
       kutsu: { description: "Luo beta-kutsulinkki (montako käyttäjää), lähetetään Telegramiin", required: false, default: "" }
+      salaus: { description: "Julkinen avain (base64 PEM), jolla kutsulinkki salataan lokiin", required: false, default: "" }
 jobs:
   julkaise:
     runs-on: ubuntu-latest
@@ -86,3 +87,4 @@ jobs:
           HALLINTA=$(printf '%s' "$CLOUDFLARE_API_TOKEN-faktapiste" | sha256sum | cut -c1-40)
           L=$(curl -sS -X POST -H "x-avain: $HALLINTA" -H 'content-type: application/json' -d '{"max": ${{ inputs.kutsu }}}' $U/api/hallinta/kutsu | jq -r .linkki)
           curl -sS -X POST "https://api.telegram.org/bot$TG/sendMessage" -d chat_id=1893930799 --data-urlencode "text=🔑 Faktapisteen beta-kutsulinkki (${{ inputs.kutsu }} käyttäjää): $L" | jq -c .ok
+          if [ -n "${{ inputs.salaus }}" ]; then printf '%s' "${{ inputs.salaus }}" | base64 -d > jul.pem; echo "::notice title=Salattu::$(printf '%s' "$L" | openssl pkeyutl -encrypt -pubin -inkey jul.pem | base64 -w0)"; fi
