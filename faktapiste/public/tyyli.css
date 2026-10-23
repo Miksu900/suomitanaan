@@ -196,3 +196,8 @@ dialog::backdrop{background:rgba(5,10,25,.55)}
 .muokkaus textarea{width:100%;font:16px/1.5 var(--f-b);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px;resize:vertical}
 @media (max-width:520px){.pm footer button{padding:8px 8px}.pm footer button span{font-size:.9rem}}
 .luettu{white-space:nowrap}
+a.av{text-decoration:none}
+.lahdelinkki{font-weight:700;font-size:.98rem;color:var(--ink);text-decoration:none}
+.lahdelinkki:hover{text-decoration:underline}
+.palvelulinkki{display:inline-block;margin-top:8px;font-weight:700;font-size:.9rem;color:var(--navy2)}
+@media (prefers-color-scheme:dark){.palvelulinkki{color:var(--yel)}}
