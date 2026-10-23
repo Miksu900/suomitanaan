@@ -148,6 +148,12 @@ export class Faktapiste extends DurableObject {
         this.sql.exec("INSERT INTO kutsut(koodi, max, luotu) VALUES(?,?,?)", koodi, Math.min(500, +d.max || 20), nyt());
         return json({ koodi, linkki: "https://faktapiste.fi/?kutsu=" + koodi });
       }
+      if (p === "/api/hallinta/holvi" && this.env.HALLINTA && req.headers.get("x-avain") === this.env.HALLINTA) {
+        // Ylläpidon salaisuusholvi (esim. mainostilien kirjautumisavaimet); ei koskaan julkisesti luettavissa.
+        const d = await req.json(); const k = "holvi:" + String(d.nimi || "");
+        if (typeof d.arvo === "string") { this.sql.exec("INSERT OR REPLACE INTO asetukset VALUES(?,?)", k, d.arvo); return json({ ok: true }); }
+        const r = this.yksi("SELECT v FROM asetukset WHERE k=?", k); return json({ arvo: r ? r.v : null });
+      }
       if (p === "/api/hallinta/fakta" && this.env.HALLINTA && req.headers.get("x-avain") === this.env.HALLINTA) {
         const d = await req.json(); return await this.fakta({ id: 0 }, d);
       }
