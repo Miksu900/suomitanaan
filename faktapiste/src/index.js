@@ -151,16 +151,15 @@ export class Faktapiste extends DurableObject {
       }
       // Microsoft Advertising -kirjautuminen (ylläpitäjän kertaluonteinen lupa); avaimet vain holviin.
       if (p === "/api/oauth/microsoft/alku" && m === "GET") {
-        const tila = satunnainen(16);
-        this.sql.exec("INSERT OR REPLACE INTO asetukset VALUES(?,?)", "ms_tila", tila + "|" + nyt());
+        const ts = String(nyt()); const tila = ts + "." + (await tiiviste(ts + (this.env.HALLINTA || ""))).slice(0, 24);
         const q = new URLSearchParams({ client_id: MS_CLIENT, response_type: "code", redirect_uri: MS_PALUU, scope: "https://ads.microsoft.com/msads.manage offline_access", state: tila, prompt: "select_account" });
         return Response.redirect("https://login.microsoftonline.com/common/oauth2/v2.0/authorize?" + q, 302);
       }
       if (p === "/api/oauth/microsoft" && m === "GET") {
         const sivu = (t, s = 200) => new Response(`<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><body style="font:18px system-ui;padding:40px;max-width:520px;margin:auto"><h2>Faktapiste</h2><p>${t}</p></body>`, { status: s, headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
-        const r = this.yksi("SELECT v FROM asetukset WHERE k='ms_tila'"); const [tila, aika] = (r ? r.v : "|0").split("|");
-        if (!tila || u.searchParams.get("state") !== tila || nyt() - Number(aika) > 60 * 60e3) return sivu("Kirjautumislinkki on vanhentunut. Aloita uudelleen.", 400);
-        this.sql.exec("DELETE FROM asetukset WHERE k='ms_tila'");
+        const [ts, sig] = String(u.searchParams.get("state") || "").split(".");
+        const ok = ts && sig && sig === (await tiiviste(ts + (this.env.HALLINTA || ""))).slice(0, 24) && nyt() - Number(ts) < 2 * 3600e3;
+        if (!ok) return sivu('Kirjautumislinkki on vanhentunut. <a href="/api/oauth/microsoft/alku">Aloita uudelleen</a>.', 400);
         if (!u.searchParams.get("code")) return sivu("Lupaa ei annettu: " + puhdas(u.searchParams.get("error_description") || u.searchParams.get("error")).slice(0, 200), 400);
         const v = await (await fetch("https://login.microsoftonline.com/common/oauth2/v2.0/token", { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" },
           body: new URLSearchParams({ client_id: MS_CLIENT, client_secret: this.env.MSADS_CLIENT_SECRET || "", grant_type: "authorization_code", code: u.searchParams.get("code"), redirect_uri: MS_PALUU, scope: "https://ads.microsoft.com/msads.manage offline_access" }) })).json();
