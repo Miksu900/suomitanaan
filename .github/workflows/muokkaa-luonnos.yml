@@ -1,0 +1,42 @@
+name: Muokkaa luonnosta
+# Lisää tekstiä odottavan Suomi Tänään -luonnoksen näkökulmakappaleen loppuun (tai korvaa tekstin osan).
+on:
+  workflow_dispatch:
+    inputs:
+      hae: { description: "Osa luonnoksen otsikosta", required: true }
+      lisays: { description: "Näkökulmakappaleen loppuun lisättävä teksti", required: false, default: "" }
+      vanha: { description: "Korvattava teksti (valinnainen)", required: false, default: "" }
+      uusi: { description: "Uusi teksti korvattavan tilalle", required: false, default: "" }
+jobs:
+  muokkaa:
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          PW: ${{ secrets.TOIMITUS_SALASANA }}
+          HAE: ${{ inputs.hae }}
+          LISAYS: ${{ inputs.lisays }}
+          VANHA: ${{ inputs.vanha }}
+          UUSI: ${{ inputs.uusi }}
+        run: |
+          python3 - <<'EOF'
+          import json, os, urllib.request
+          U = "https://suomitanaan.fi/api/luonnokset"
+          h = {"Authorization": "Bearer " + os.environ["PW"], "content-type": "application/json", "User-Agent": "muokkaus"}
+          lista = json.loads(urllib.request.urlopen(urllib.request.Request(U, headers=h)).read())
+          osumat = [l for l in lista if os.environ["HAE"].lower() in l.get("otsikko", "").lower()]
+          if len(osumat) != 1:
+              print("::error::Osumia", len(osumat), [l.get("otsikko") for l in osumat]); raise SystemExit(1)
+          l = osumat[0]; t = l["teksti"]
+          if os.environ["VANHA"]:
+              assert os.environ["VANHA"] in t, "korvattavaa tekstiä ei löytynyt"
+              t = t.replace(os.environ["VANHA"], os.environ["UUSI"])
+          if os.environ["LISAYS"]:
+              kpl = t.split("\n\n")
+              i = next(i for i, k in enumerate(kpl) if k.strip().startswith("Suomi Tänään -näkökulma"))
+              kpl[i] = kpl[i].rstrip() + " " + os.environ["LISAYS"].strip()
+              t = "\n\n".join(kpl)
+          l["teksti"] = t
+          r = urllib.request.urlopen(urllib.request.Request(U, data=json.dumps(l).encode(), method="POST", headers=h)).read()
+          nako = next((k for k in t.split("\n\n") if k.startswith("Suomi Tänään -näkökulma")), "")
+          print("::notice title=Muokattu::" + l["otsikko"] + " | " + nako.replace("\n", " "))
+          EOF
