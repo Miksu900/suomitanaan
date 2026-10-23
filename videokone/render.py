@@ -112,11 +112,11 @@ def glow(r, col, a):
     g = Image.new("RGBA", (r * 2, r * 2), col + (0,)); q = int(r * 0.45)
     ImageDraw.Draw(g).ellipse((q, q, r * 2 - q, r * 2 - q), fill=col + (a,))
     return g.filter(ImageFilter.GaussianBlur(r // 4))
-KOROSTE = {"korjaus": (150, 90, 230), "huijaus": (230, 70, 70), "eduskunta": (40, 110, 255)}[TYYPPI]
+KOROSTE = {"korjaus": (150, 90, 230), "huijaus": (230, 70, 70), "eduskunta": (40, 110, 255), "uutinen": (245, 197, 66)}[TYYPPI]
 G1, G2, G3 = glow(420, (40, 80, 180), 100), glow(360, KOROSTE, 45), glow(300, (100, 140, 220), 45)
 rng = np.random.default_rng(3); grain = [Image.fromarray(rng.integers(0, 22, (H // 2, W // 2), dtype=np.uint8)).resize((W, H)).convert("L") for _ in range(4)]
 
-BRAND = {"korjaus": ("KORJAUSVAHTI", "nytpuhutaan.fi/muutokset"), "huijaus": ("KERÄYSVAHTI", "keraysvahti.fi/huijaukset"), "eduskunta": ("EDUSKUNTASEURANTA", "eduskuntaseuranta.fi")}[TYYPPI]
+BRAND = {"korjaus": ("KORJAUSVAHTI", "nytpuhutaan.fi/muutokset"), "huijaus": ("KERÄYSVAHTI", "keraysvahti.fi/huijaukset"), "eduskunta": ("EDUSKUNTASEURANTA", "eduskuntaseuranta.fi"), "uutinen": ("SUOMI TÄNÄÄN", "suomitanaan.fi")}[TYYPPI]
 TAG = pill(BRAND[0], M9(34), NAVY, GOLD + (255,))
 LAHDE = pill("Faktapiste · " + BRAND[1], M6(26), (225, 232, 245), (0, 0, 0, 130), 22, 10)
 
@@ -157,6 +157,10 @@ elif TYYPPI == "huijaus":
     VAR = pill("HUIJAUSVAROITUS", M9(52), WHITE, RED + (255,), 36, 20)
     UUTINEN = kortti(("UUTINEN · " + D.get("media", "")).upper(), D["otsikko"], RED)
     VINKIT = [v for v in (A.get("vinkit") or []) if v][:2]
+elif TYYPPI == "uutinen":
+    UOTS = kortti("SUOMI TÄNÄÄN · UUTINEN", D["otsikko"], (180, 35, 44))
+    UING = kortti("FAKTAT", D.get("ingressi") or " ".join(D.get("kappaleet", [])[:1]), (40, 110, 255), fs=46)
+    NAKO = A.get("nakokulma_naytolle") or D.get("nakokulma", "")[:90]
 else:
     OTS = kortti("EDUSKUNTA · " + ".".join(str(int(x)) for x in reversed(D["pv"].split("-"))), D["otsikko"], (40, 110, 255), fs=46)
     TULOS = pill("HYVÄKSYTTIIN" if D["hyvaksyttiin"] else "HYLÄTTIIN", M9(60), WHITE, (GREEN if D["hyvaksyttiin"] else RED) + (255,), 40, 22)
@@ -187,7 +191,7 @@ def kohtaus(base, si, lt, gt):
     t = SC[si] + lt
     if si == 0:
         paste_c(base, KOUKKU, W / 2, 640, back(lt * 3) * (1 + 0.02 * math.sin(gt * 6)))
-        mer = MEDIA if TYYPPI == "korjaus" else VAR if TYYPPI == "huijaus" else pill("ÄÄNESTYS", M9(52), WHITE, (40, 110, 255, 255), 36, 20)
+        mer = MEDIA if TYYPPI == "korjaus" else VAR if TYYPPI == "huijaus" else pill("UUTINEN", M9(52), WHITE, (180, 35, 44, 255), 36, 20) if TYYPPI == "uutinen" else pill("ÄÄNESTYS", M9(52), WHITE, (40, 110, 255, 255), 36, 20)
         paste_c(base, mer, W / 2, 380, back(lt * 3 - 0.4))
         return
     if si == 4:
@@ -218,6 +222,16 @@ def kohtaus(base, si, lt, gt):
                 if t >= SC[2 + k] - 0.1:
                     q = t - SC[2 + k]
                     paste_c(base, pill(("✓ " if False else "") + v, M9(56), NAVY, (255, 255, 255, 255), 40, 26), W / 2, 620 + k * 190, back(q * 3))
+    elif TYYPPI == "uutinen":
+        if si == 1:
+            paste_c(base, UOTS, W / 2, 760, back(lt * 3))
+        elif si == 2:
+            paste_c(base, UOTS, W / 2, 470, 0.85, 0.5)
+            paste_c(base, UING, W / 2, 1000, back(lt * 3))
+        else:
+            paste_c(base, pill("SUOMI TÄNÄÄN -NÄKÖKULMA", M9(48), NAVY, GOLD + (255,), 34, 20), W / 2, 380, back(lt * 3))
+            paste_c(base, iso_teksti("”" + NAKO + "”", koko=96, vari=WHITE, vari2=WHITE), W / 2, 760, back(lt * 3 - 0.3))
+            paste_c(base, text_img("Mielipide", M8(40), GREY), W / 2, 1100, back(lt * 3 - 0.6))
     else:
         if si == 1:
             paste_c(base, OTS, W / 2, 760, back(lt * 3))

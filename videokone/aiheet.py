@@ -1,6 +1,6 @@
 """Videokone: valitsee päivän aiheen Faktapisteen palveluista ja kirjoittaa käsikirjoituksen.
 
-Vuorottelu päivän mukaan: otsikkomuutos (Korjausvahti), huijausvaroitus (Keräysvahti), eduskunnan päätös.
+Vuorottelu päivän mukaan: otsikkomuutos (Korjausvahti), huijausvaroitus (Keräysvahti), eduskunnan päätös, Suomi Tänään -uutinen näkökulmineen.
 Jos päivän tyypille ei ole tuoretta aihetta, kokeillaan seuraavaa. Käytetyt aiheet luetaan tiedostosta kaytetyt.json.
 Kirjoittaa aihe.json: {tyyppi, data, lauseet[5], koukku, kuvateksti, ...}.
 Aja: python3 videokone/aiheet.py [tyyppi]
@@ -9,7 +9,7 @@ import json, os, re, sys, html, datetime, urllib.request
 
 UA = {"User-Agent": "Faktapiste-videokone/1.0 (+https://faktapiste.fi)"}
 ES = "https://eduskuntaseuranta.fi"
-TYYPIT = ["korjaus", "huijaus", "eduskunta"]
+TYYPIT = ["korjaus", "huijaus", "eduskunta", "uutinen"]
 KAYTETYT = os.environ.get("KAYTETYT", "kaytetyt.json")
 
 
@@ -81,13 +81,41 @@ def ehdokas_eduskunta():
             "hyvaksyttiin": v["jaa"] > v["ei"], "ryhmat": ryhmat(v["id"]), "url": f"{ES}/aanestys/{v['id']}/"}
 
 
-EHDOKAS = {"korjaus": ehdokas_korjaus, "huijaus": ehdokas_huijaus, "eduskunta": ehdokas_eduskunta}
+def ehdokas_uutinen():
+    """Suomi Tänään -uutinen, jossa on toimituksen näkökulmakappale (poliittiset jutut)."""
+    x = hae("https://suomitanaan.fi/rss.xml", "text")
+    for it in re.findall(r"<item>([\s\S]*?)</item>", x)[:20]:
+        g = lambda t: html.unescape(re.sub(r"<!\[CDATA\[|\]\]>", "", (re.search(f"<{t}>([\\s\\S]*?)</{t}>", it) or [None, ""])[1])).strip()
+        url = g("link")
+        if not url or url in kaytetyt:
+            continue
+        p = aika(datetime.datetime.strptime(g("pubDate"), "%a, %d %b %Y %H:%M:%S GMT").replace(tzinfo=datetime.timezone.utc).isoformat()) if g("pubDate") else None
+        if p and (NYT - p).total_seconds() > 72 * 3600:
+            continue
+        try:
+            sivu = hae(url, "text")
+        except Exception:
+            continue
+        kpl = [html.unescape(re.sub(r"<[^>]+>", "", m)).strip() for m in re.findall(r"<p[^>]*>([\s\S]*?)</p>", sivu)]
+        kpl = [k for k in kpl if len(k) > 40]
+        nako = next((k for k in kpl if k.startswith("Suomi Tänään -näkökulma")), None)
+        if not nako:
+            continue
+        runko = [k for k in kpl if k != nako and "Suomi Tänään" not in k[:20]][:5]
+        return {"avain": url, "otsikko": g("title"), "ingressi": g("description"), "kappaleet": runko,
+                "nakokulma": nako.split(":", 1)[1].strip(), "url": url}
+    return None
+
+
+EHDOKAS = {"korjaus": ehdokas_korjaus, "huijaus": ehdokas_huijaus, "eduskunta": ehdokas_eduskunta, "uutinen": ehdokas_uutinen}
 
 OHJE = {
     "korjaus": """Aihe: suomalainen media muutti uutisensa otsikkoa julkaisun jälkeen (Korjausvahti havaitsi muutoksen).
 Lauseet: 1) koukku, joka saa pysähtymään (mainitse media), 2) alkuperäinen otsikko luettuna ("Ensin otsikko kuului: ..."), 3) uusi otsikko ("Nyt: ..."), 4) lyhyt toteava huomio siitä, mitä poistettiin tai muuttui (ei arvailua syistä, ei syytöksiä), 5) kehotus: "Seuraa otsikkomuutoksia Korjausvahdista, nytpuhutaan piste fi." Pitkän otsikon saa lyhentää luettaessa järkevästä kohdasta.""",
     "huijaus": """Aihe: tuore uutinen huijauksesta. Tavoite on varoittaa ja auttaa.
 Lauseet: 1) koukku, joka saa pysähtymään, 2) mitä tapahtui uutisen mukaan (vain otsikon tiedot), 3) ja 4) kaksi lyhyttä yleistä suojautumisvinkkiä, jotka sopivat juuri tähän huijaustyyppiin, 5) kehotus: "Tarkista epäilyttävä viesti tai keräys Keräysvahdista, keräysvahti piste fi." Anna lisäksi kentässä "vinkit" samat kaksi vinkkiä näytölle lyhyinä (enintään 32 merkkiä kumpikin).""",
+    "uutinen": """Aihe: Suomi Tänään -uutissivuston poliittinen uutinen ja toimituksen konservatiivinen näkökulma.
+Lauseet: 1) iskevä koukku uutisen ytimestä, 2) ja 3) tärkeimmät faktat jutusta (vain jutun tiedot, nimeä henkilöt ja luvut), 4) lause alkaa sanoilla "Suomi Tänään -näkökulma:" ja kertoo toimituksen näkökulman jutun näkökulmakappaleen pohjalta (mielipide saa olla suora, mutta ei uusia tosiasioita eikä ihmisryhmien leimaamista), 5) kehotus: "Lue koko juttu, suomi tänään piste fi." Anna lisäksi kenttä "nakokulma_naytolle": näkökulma näytölle enintään 90 merkkiä.""",
     "eduskunta": """Aihe: eduskunnan äänestys lakiehdotuksen hyväksymisestä.
 Lauseet: 1) koukku: mitä päätös tarkoittaa tavalliselle ihmiselle, jos se selviää otsikosta, muuten mistä äänestettiin, 2) tulos luvuin (jaa ja ei), 3) miten suurimmat ryhmät äänestivät (nimeä puolueet), 4) lyhyt toteava huomio (esim. hallitus vastaan oppositio, jos luvuista näkyy niin), 5) kehotus: "Katso, miten oma edustajasi äänesti, eduskuntaseuranta piste fi." Älä ota kantaa päätöksen puolesta tai vastaan.""",
 }
@@ -122,9 +150,9 @@ def kasikirjoitus(tyyppi, data):
 
 def main():
     pyydetty = sys.argv[1] if len(sys.argv) > 1 and sys.argv[1] in TYYPIT else None
-    alku = TYYPIT.index(pyydetty) if pyydetty else datetime.date.today().toordinal() % 3
-    for i in range(3):
-        tyyppi = TYYPIT[(alku + i) % 3]
+    alku = TYYPIT.index(pyydetty) if pyydetty else datetime.date.today().toordinal() % len(TYYPIT)
+    for i in range(len(TYYPIT)):
+        tyyppi = TYYPIT[(alku + i) % len(TYYPIT)]
         try:
             data = EHDOKAS[tyyppi]()
         except Exception as e:
