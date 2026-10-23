@@ -31,7 +31,7 @@ def kutsu(polku, data=None, tapa=None, login=None):
 
 def ilmoita(otsikko, teksti):
     for rivi in str(teksti).splitlines() or [""]:
-        print(f"::notice title={otsikko}::{rivi[:900]}")
+        [print(f"::notice title={otsikko}::{rivi[i:i+3500]}") for i in range(0, max(len(rivi),1), 3500)]
 
 if __name__ == "__main__":
     t = sys.argv[1]
