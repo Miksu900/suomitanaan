@@ -220,3 +220,4 @@ a.av{text-decoration:none}
 .yv-kirje .rasti{display:flex;gap:10px;align-items:flex-start;font-weight:500}
 #yv-tulos{margin-top:14px;display:grid;gap:10px}
 a.nappi{text-decoration:none;display:inline-block}
+.yv-varoita{border-left:4px solid var(--korostus,#f5c542);padding-left:16px!important}

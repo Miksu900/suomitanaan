@@ -9,7 +9,7 @@ ROOT = pathlib.Path(__file__).parent / "public"
 SITE = os.environ.get("FAKTAPISTE_URL", "https://faktapiste.fi")
 PV = os.environ.get("PYKALAVAHTI_URL", "https://pykalavahti.fi")
 YHTEYS = "miika@eduskuntaseuranta.fi"
-VER = "19"
+VER = "20"
 esc = html.escape
 
 # avain, nimi, osoite, iskulause, kuvaus, merkki, poliittinen
@@ -231,7 +231,11 @@ runko = f"""<section class="hero pieni"><div class="w">
 <div class="rivi"><button type="button" class="nappi" id="yv-kopioi">Kopioi viesti</button><a class="nappi toissijainen" id="yv-posti" href="#">Avaa sähköpostissa</a></div>
 <p class="pieni mute">Viestipohja on yleistä tietoa, ei oikeudellista neuvontaa. Jos yritys ei vastaa kuukauden kuluessa, voit tehdä ilmoituksen tietosuojavaltuutetun toimistoon osoitteessa tietosuoja.fi.</p></div>
 </section>
+<section class="w yv yv-varoita"><h2>Varoita läheistä</h2>
+<p>Moni ei tiedä, että sääsovellus tai ilmainen peli voi myydä sijainnin eteenpäin. Lähetä vinkki perheelle tai kaverille – se vie viisi sekuntia.</p>
+<button type="button" class="nappi" id="yv-jaa">📲 Lähetä vinkki</button></section>
 <script>(function(){{
+document.getElementById("yv-jaa").onclick=function(){{var t="Tiesitkö, että lähes 800 000 suomalaisen sijaintitietoja on päätynyt myyntiin sovellusten kautta? Tällä estät sen omasta puhelimesta muutamassa minuutissa:",u="https://faktapiste.fi/yksityisyys/";if(navigator.share)navigator.share({{text:t,url:u}}).catch(function(){{}});else location.href="https://wa.me/?text="+encodeURIComponent(t+" "+u)}};
 var tab="a";try{{tab=localStorage.getItem("yv_tab")||"a"}}catch(e){{}}
 function lue(k){{try{{return localStorage.getItem(k)}}catch(e){{return null}}}}function kirj(k,v){{try{{localStorage.setItem(k,v)}}catch(e){{}}}}
 function paivita(){{var l=document.querySelectorAll("#yv-"+tab+" input"),n=0;l.forEach(function(x){{if(x.checked)n++}});document.getElementById("yv-luku").textContent=n+" / "+l.length+" tehty"+(n===l.length?" – hienoa!":"");document.getElementById("yv-palkki").style.width=(100*n/l.length)+"%"}}
