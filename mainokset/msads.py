@@ -30,8 +30,8 @@ def kutsu(url, runko, tili=True):
 if __name__ == "__main__":
     t = sys.argv[1]
     if t == "kampanjat":
-        v = kutsu(CM + "/Campaigns/QueryByAccountId", {"AccountId": AID, "CampaignType": "Search Audience", "ReturnAdditionalFields": None})
-        ilmoita("Kampanjat", json.dumps([{k: c.get(k) for k in ("Id", "Name", "Status", "DailyBudget", "BudgetType")} for c in v.get("Campaigns", [])] if "Campaigns" in v else v, ensure_ascii=False))
+        v = kutsu(CM + "/Campaigns/QueryByAccountId", {"AccountId": AID, "CampaignType": "Search,Audience"})
+        ilmoita("Kampanjat", json.dumps([{k: c.get(k) for k in ("Id", "Name", "Status", "DailyBudget", "BudgetType", "CampaignType")} for c in v.get("Campaigns", [])] if "Campaigns" in v else v, ensure_ascii=False))
     elif t == "kutsu":
         # KYSELY = JSON-lista [[polku CM:n alla, runko], ...]
         for i, (polku, runko) in enumerate(json.loads(os.environ["KYSELY"])):
