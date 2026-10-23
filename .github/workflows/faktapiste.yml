@@ -41,6 +41,7 @@ jobs:
             echo 'name = "faktapiste"'
             echo 'main = "src/index.js"'
             echo 'compatibility_date = "2026-09-01"'
+            echo 'compatibility_flags = ["assets_navigation_has_no_effect"]'
             echo 'workers_dev = true'
             if [ "${{ steps.cf.outputs.tila }}" = "active" ]; then
               echo 'routes = [ { pattern = "faktapiste.fi", custom_domain = true }, { pattern = "www.faktapiste.fi", custom_domain = true } ]'
