@@ -1,0 +1,23 @@
+name: Uutisvinkit
+# Markkinoinnin uutisvahti: aiheet, joihin Faktapisteen palvelut vastaavat -> Telegram
+on:
+  schedule:
+    - cron: "23 5-18/2 * * *"
+  workflow_dispatch:
+concurrency: uutisvinkit
+jobs:
+  aja:
+    runs-on: ubuntu-latest
+    permissions: { contents: write }
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          git fetch origin uutisvinkit-tila && git show origin/uutisvinkit-tila:nahdyt.json > mainokset/nahdyt.json || true
+      - env:
+          AK: ${{ secrets.ANTHROPIC_API_KEY }}
+          TG: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        run: cd mainokset && python3 uutisvinkit.py
+      - run: |
+          mkdir /tmp/t && cp mainokset/nahdyt.json /tmp/t/ && cd /tmp/t && git init -q && git checkout -q -b uutisvinkit-tila
+          git add -A && git -c user.name=bot -c user.email=bot@x commit -qm tila
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" uutisvinkit-tila
