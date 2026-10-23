@@ -312,8 +312,6 @@ export class Faktapiste extends DurableObject {
       const k = this.yksi("SELECT v FROM asetukset WHERE k=?", "fakta:" + String(d.kortti.avain || ""));
       if (k) kortti = k.v;
     }
-    const tark = await this.tarkista(teksti);
-    if (!tark.ok) return virhe("Postausta ei julkaistu: " + tark.syy + " Kirjoittaa saa kärkevästi ja olla eri mieltä, mutta uhkaukset, henkilötietojen levittäminen, kiihottaminen kansanryhmää vastaan ja roskaposti eivät käy.", 422);
     const kunta = KUNTA.get(String(d.kunta || "").toLowerCase()) || null;
     this.sql.exec("INSERT INTO postit(kayttaja, lahde, teksti, kortti, vanhempi, luotu, kunta) VALUES(?,?,?,?,?,?,?)", minä.id, "kayttaja", teksti, kortti, vanhempi, nyt(), kunta);
     const id = this.yksi("SELECT last_insert_rowid() AS id").id;
