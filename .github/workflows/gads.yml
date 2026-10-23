@@ -21,6 +21,6 @@ jobs:
           ASIAKAS: ${{ inputs.asiakas }}
           KYSELY: ${{ inputs.kysely }}
         run: |
-          echo "::add-mask::$KOODI"
+          for k in $KOODI; do echo "::add-mask::$k"; done
           export HALLINTA=$(printf '%s' "$CF-faktapiste" | sha256sum | cut -c1-40)
           python3 mainokset/gads.py "${{ inputs.toiminto }}"

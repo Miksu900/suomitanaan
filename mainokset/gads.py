@@ -36,7 +36,9 @@ def ilmoita(otsikko, teksti):
 if __name__ == "__main__":
     t = sys.argv[1]
     if t == "vaihda":
-        v = oauth({"grant_type": "authorization_code", "code": os.environ["KOODI"].strip(), "redirect_uri": "http://localhost"})
+        for koodi in os.environ["KOODI"].split():
+            v = oauth({"grant_type": "authorization_code", "code": koodi, "redirect_uri": "http://localhost"})
+            if "refresh_token" in v: break
         if "refresh_token" in v:
             holvi("gads_refresh", v["refresh_token"]); ilmoita("Kirjautuminen", "OK – avain tallennettu holviin")
         else: ilmoita("Kirjautuminen", "VIRHE " + str(v.get("error")) + " " + str(v.get("error_description")))
