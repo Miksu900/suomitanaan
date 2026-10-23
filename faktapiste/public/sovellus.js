@@ -315,6 +315,25 @@
   }
   document.addEventListener("click", function (e) { var b = e.target.closest("[data-opas]"); if (b) opastus(+b.getAttribute("data-opas")); });
 
+  // ---------- asennus puhelimeen (PWA) ----------
+  var asennus = null;
+  var sovelluksena = (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone;
+  var ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(function () {});
+  function asennusNappi() {
+    var A = $("#fp-asenna"); if (!A) return;
+    A.innerHTML = sovelluksena || (!asennus && !ios) ? "" : '<button type="button" class="asenna" data-asenna>📲 Lataa sovellus</button>';
+  }
+  window.addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); asennus = e; asennusNappi(); });
+  window.addEventListener("appinstalled", function () { asennus = null; asennusNappi(); ilmoitus("Faktapiste lisätty puhelimeesi!"); });
+  document.addEventListener("click", function (e) {
+    if (!e.target.closest("[data-asenna]")) return;
+    if (asennus) { asennus.prompt(); asennus.userChoice.finally(function () { asennus = null; asennusNappi(); }); return; }
+    DLG.innerHTML = '<div class="dlg"><h2>Lataa Faktapiste puhelimeesi</h2><p>iPhonessa (Safari):</p><ol class="ohje"><li>Paina alareunan <b>Jaa</b>-painiketta (neliö ja nuoli ylös).</li><li>Valitse <b>Lisää Koti-valikkoon</b>.</li><li>Paina <b>Lisää</b>. Faktapiste ilmestyy kotinäytölle omana sovelluksenaan.</li></ol><div class="rivi"><button type="button" class="nappi" data-sulje>Selvä</button></div></div>';
+    DLG.showModal();
+  });
+  asennusNappi();
+
   // ---------- käynnistys ----------
   var qs = new URLSearchParams(location.search);
   if (qs.get("kirjautuminen") === "vanhentunut") setTimeout(function () { ilmoitus("Kirjautumislinkki on vanhentunut tai jo käytetty. Pyydä uusi.", 1); }, 300);

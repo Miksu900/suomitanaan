@@ -182,3 +182,6 @@ dialog::backdrop{background:rgba(5,10,25,.55)}
 .opas-ik{flex:none;width:44px;height:44px;border-radius:50%;background:var(--yel);display:grid;place-items:center;font-size:1.3rem;color:var(--navy);font-weight:700}
 .opas b{display:block;font-size:1.05rem}.opas p{margin:4px 0 10px;color:var(--ink)}
 .opas-n{font-size:.75rem;font-weight:700;color:var(--mute);letter-spacing:.06em}
+.asenna{width:100%;margin-bottom:12px;background:var(--navy);color:#fff;border:2px solid var(--yel);border-radius:14px;padding:14px;font:700 1rem var(--f-b);cursor:pointer}
+@media (prefers-color-scheme:dark){.asenna{background:var(--yel);color:var(--navy)}}
+.ohje{margin:0;padding-left:20px;display:grid;gap:6px}

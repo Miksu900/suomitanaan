@@ -1,0 +1,16 @@
+{
+  "name": "Faktapiste – täällä sinut nähdään",
+  "short_name": "Faktapiste",
+  "description": "Suomalainen keskustelu, jossa jokainen postaus näytetään vähintään 30 ihmiselle.",
+  "lang": "fi",
+  "start_url": "/?lahde=sovellus",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0d1b3e",
+  "theme_color": "#0d1b3e",
+  "icons": [
+    { "src": "/ikoni-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/ikoni-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/ikoni-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

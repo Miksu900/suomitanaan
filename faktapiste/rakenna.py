@@ -9,7 +9,7 @@ ROOT = pathlib.Path(__file__).parent / "public"
 SITE = os.environ.get("FAKTAPISTE_URL", "https://faktapiste.fi")
 PV = os.environ.get("PYKALAVAHTI_URL", "https://pykalavahti.fi")
 YHTEYS = "miika@eduskuntaseuranta.fi"
-VER = "7"
+VER = "8"
 esc = html.escape
 
 # avain, nimi, osoite, iskulause, kuvaus, merkki, poliittinen
@@ -70,6 +70,8 @@ def sivu(polku, otsikko, kuvaus, runko, noindex=False):
 <meta property="og:image" content="{SITE}/og.png"><meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#0d1b3e">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="/manifest.webmanifest"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Faktapiste"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <script type="application/ld+json">{{"@context":"https://schema.org","@type":"Organization","name":"Faktapiste","url":"{SITE}/","logo":"{SITE}/og.png","email":"{YHTEYS}","description":"Ilmaisia palveluita julkisista lähteistä: Keräysvahti, Pykälävahti, Korjausvahti, Nytpuhutaan ja Eduskuntaseuranta."}}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -104,6 +106,7 @@ runko = f"""<section class="fp-intro"><div class="w">
 <div class="w fp-grid">
 <div class="fp-keski">
 <div id="fp-paa">
+<div id="fp-asenna"></div>
 <div id="fp-opastus"></div>
 <div id="fp-kirjoita"></div>
 <div class="tabit" id="fp-tabit" role="tablist" aria-label="Syöte"></div>
