@@ -20,6 +20,12 @@ const PITUUS = 100000; // käytännössä rajaton, suojaa vain tietokantaa
 const TAATTU = 30;        // jokainen postaus näytetään vähintään näin monelle lukijalle
 const SYOTE_MAX = 25;     // Sinulle-syöte loppuu tähän
 // syötteen säätimien luokat: k=keskustelut, u=uutiset, m=otsikkomuutokset, h=huijausvaroitukset, e=päätökset
+const TIEDOTTEET = [
+  { id: "yksityisyysvahti", aika: "2026-10-23T15:30:00Z", url: "/yksityisyys/",
+    teksti: "HS:n selvityksen mukaan lähes 800 000 suomalaisen sijaintitietoja on päätynyt myyntiin sovellusten kautta. Tein työkalun, jolla sen voi estää omasta puhelimesta muutamassa minuutissa.",
+    otsikko: "Yksityisyysvahti: onko sijaintisi myynnissä?",
+    kuvaus: "Tarkistuslista Androidille ja iPhonelle sekä valmis tietosuojapyyntö, jolla vaadit yritystä kertomaan tai poistamaan tietosi. Maksuton." },
+];
 const LUOKKA = { kayttaja: "k", suomitanaan: "u", korjausvahti: "m", keraysvahti: "h", eduskunta: "e" };
 const KERROIN = [0, 1, 2.5];
 
@@ -290,12 +296,12 @@ export class Faktapiste extends DurableObject {
         r._syy = `Uusi postaus, jonka on nähnyt vasta ${r.nakymat} ${r.nakymat === 1 ? "lukija" : "lukijaa"}. Faktapiste näyttää jokaisen postauksen vähintään ${TAATTU} ihmiselle, vaikka kirjoittajalla ei olisi seuraajia.`;
         r._p = 1000 - r.nakymat; uudet.push(r); continue;
       }
-      const [paino, puoli] = r.kayttaja ? [4, 12] : ({ eduskunta: [0.9, 20], suomitanaan: [1.2, 8], korjausvahti: [1, 8], keraysvahti: [0.8, 12] })[r.lahde] || [1, 8];
+      const [paino, puoli] = r.kayttaja ? [4, 12] : ({ eduskunta: [0.9, 20], suomitanaan: [1.2, 8], korjausvahti: [1, 8], keraysvahti: [0.8, 12], faktapiste: [2, 36] })[r.lahde] || [1, 8];
       r._p = k * paino * (1 + r.tykkaykset * 2 + r.vastaukset * 3) * Math.pow(0.5, h / puoli);
       const nimi = { suomitanaan: "uutisia", korjausvahti: "otsikkomuutoksia", keraysvahti: "huijausvaroituksia", eduskunta: "päätöksiä" }[r.lahde];
       r._syy = r.kayttaja
         ? (r.tykkaykset + r.vastaukset > 0 ? `Keskustelu, jossa ${r.tykkaykset} tykkäystä ja ${r.vastaukset} vastausta.` : "Tuore keskustelu.") + (k > 1 ? " Valitsit: enemmän keskusteluja." : "")
-        : `Tuore ${r.lahde === "eduskunta" ? "päätös" : r.lahde === "suomitanaan" ? "uutinen" : r.lahde === "korjausvahti" ? "otsikkomuutos" : "huijausvaroitus"}.` + (r.tykkaykset + r.vastaukset > 0 ? ` Herättänyt keskustelua (${r.vastaukset} vastausta).` : "") + (k > 1 ? ` Valitsit: enemmän ${nimi}.` : "");
+        : r.lahde === "faktapiste" ? "Uusi palvelu Faktapisteeltä." : `Tuore ${r.lahde === "eduskunta" ? "päätös" : r.lahde === "suomitanaan" ? "uutinen" : r.lahde === "korjausvahti" ? "otsikkomuutos" : "huijausvaroitus"}.` + (r.tykkaykset + r.vastaukset > 0 ? ` Herättänyt keskustelua (${r.vastaukset} vastausta).` : "") + (k > 1 ? ` Valitsit: enemmän ${nimi}.` : "");
       muut.push(r);
     }
     uudet.sort((a, b) => b._p - a._p); muut.sort((a, b) => b._p - a._p);
@@ -496,6 +502,10 @@ export class Faktapiste extends DurableObject {
       }
       tulos.keraysvahti = n;
     } catch (e) { tulos.keraysvahti = "virhe " + e.message; }
+    // Faktapisteen omat palvelutiedotteet (lisätään kerran)
+    let tn = 0;
+    for (const x of TIEDOTTEET) tn += this.lisaaAuto("faktapiste", "tiedote:" + x.id, x.teksti, { tyyppi: "uutinen", lahde: "Uusi palvelu", otsikko: x.otsikko, kuvaus: x.kuvaus, url: x.url }, Date.parse(x.aika));
+    tulos.faktapiste = tn;
     // siivous
     this.sql.exec("DELETE FROM rajat WHERE vanhenee<?", nyt());
     this.sql.exec("DELETE FROM linkit WHERE vanhenee<?", nyt());

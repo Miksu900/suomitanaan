@@ -7,6 +7,7 @@
     suomitanaan: { nimi: "Suomi Tänään", lyh: "ST", vari: "#b4232c", url: "https://suomitanaan.fi", palvelu: "Lue lisää uutisia Suomi Tänään -sivulta" },
     korjausvahti: { nimi: "Korjausvahti", lyh: "KV", vari: "#7a4cc2", url: "https://nytpuhutaan.fi/muutokset/", palvelu: "Katso kaikki otsikkomuutokset Korjausvahdista" },
     eduskunta: { nimi: "Eduskunta", lyh: "§", vari: "#1d5fd1", url: "https://eduskuntaseuranta.fi" },
+    faktapiste: { nimi: "Faktapiste", lyh: "F", vari: "#0f2a4a", url: "/palvelut/", palvelu: "Avaa Yksityisyysvahti" },
     keraysvahti: { nimi: "Keräysvahti", lyh: "!", vari: "#c26a00", url: "https://keraysvahti.fi", palvelu: "Tarkista keräys tai epäilyttävä viesti Keräysvahdista" }
   };
   var IK = {
