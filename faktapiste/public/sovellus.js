@@ -125,6 +125,57 @@
   }
   function kuvatValmiit(f) { return !(f._kuvat || []).some(function (k) { return k.lataa; }); }
   function kuvaIdt(f) { return (f._kuvat || []).filter(function (k) { return k.id; }).map(function (k) { return k.id; }); }
+  // ---------- videot ----------
+  var VIDEONAPPI = '<label class="kuva-nappi" title="Lisää video"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3z"/></svg><span>Video</span><input type="file" name="videotiedosto" accept="video/mp4,video/quicktime,video/webm,video/*" hidden></label>';
+  function videoSoitin(v) {
+    if (!v) return "";
+    return '<div class="video"><video controls playsinline preload="' + (v.kansi ? "none" : "metadata") + '" src="/api/video/' + v.id + '"' + (v.kansi ? ' poster="/api/video/' + v.id + '/kansi"' : "") +
+      (v.w && v.h ? ' width="' + v.w + '" height="' + v.h + '"' : "") + "></video></div>";
+  }
+  // Lukee videon mitat ja keston sekä ottaa kansikuvan (JPEG) selaimessa.
+  function videoTiedot(t) {
+    return new Promise(function (ok, ei) {
+      var url = URL.createObjectURL(t), v = document.createElement("video"), valmis = false;
+      v.muted = true; v.playsInline = true; v.preload = "metadata"; v.src = url;
+      v.onerror = function () { ei(new Error("Tätä videota ei voi avata selaimessa. Kokeile MP4-muotoa.")); };
+      v.onloadedmetadata = function () { try { v.currentTime = Math.min(1, (v.duration || 2) / 3); } catch (x) { v.onseeked(); } };
+      v.onseeked = function () {
+        if (valmis) return; valmis = true;
+        var w = v.videoWidth, h = v.videoHeight, s = Math.min(1, 1280 / Math.max(w, h, 1)), c = document.createElement("canvas");
+        c.width = Math.round(w * s); c.height = Math.round(h * s);
+        try { c.getContext("2d").drawImage(v, 0, 0, c.width, c.height); } catch (x) {}
+        c.toBlob(function (kansi) { ok({ w: w, h: h, kesto: v.duration || 0, kansi: kansi, url: url }); }, "image/jpeg", 0.82);
+      };
+    });
+  }
+  function lisaaVideo(f, t) {
+    if (!tila.video) return ilmoitus("Videoiden lataus avautuu pian.", 1);
+    if (f._video) return ilmoitus("Voit liittää yhden videon postausta kohden.", 1);
+    if (t.size > 100 * 1024 * 1024) return ilmoitus("Video on liian suuri (enintään 100 Mt).", 1);
+    var tyyppi = t.type || (/\.mov$/i.test(t.name) ? "video/quicktime" : /\.webm$/i.test(t.name) ? "video/webm" : "video/mp4");
+    var vid = { lataa: true }; f._video = vid;
+    var paikka = $(".kuvaesikatselu", f);
+    paikka.insertAdjacentHTML("beforeend", '<span class="ek video-ek lataa" data-ek="video"><span class="edistys">Ladataan video… 0 %</span><button type="button" data-poistavideo aria-label="Poista video">×</button></span>');
+    var el = $('[data-ek="video"]', f), pros = $(".edistys", el);
+    var poista = function (viesti) { f._video = null; if (el) el.remove(); if (viesti) ilmoitus(viesti, 1); };
+    videoTiedot(t).then(function (m) {
+      if (f._video !== vid) return;
+      if (m.kesto > 181) return poista("Video on liian pitkä (enintään 3 minuuttia).");
+      if (m.kansi) el.insertAdjacentHTML("afterbegin", '<img src="' + URL.createObjectURL(m.kansi) + '" alt="">');
+      var x = new XMLHttpRequest(); vid.xhr = x;
+      x.open("POST", "/api/video"); x.withCredentials = true;
+      x.setRequestHeader("content-type", tyyppi); x.setRequestHeader("x-leveys", m.w); x.setRequestHeader("x-korkeus", m.h); x.setRequestHeader("x-kesto", m.kesto.toFixed(1));
+      x.upload.onprogress = function (e) { if (e.lengthComputable && pros) pros.textContent = "Ladataan video… " + Math.round(100 * e.loaded / e.total) + " %"; };
+      x.onerror = function () { poista("Videon lataus epäonnistui. Tarkista verkkoyhteys."); };
+      x.onload = function () {
+        var j = {}; try { j = JSON.parse(x.responseText); } catch (er) {}
+        if (j.virhe || !j.id) return poista(j.virhe || "Videon lataus epäonnistui.");
+        vid.id = j.id; vid.lataa = false; el.classList.remove("lataa"); if (pros) pros.textContent = "Video valmis";
+        if (m.kansi) fetch("/api/video/kansi?id=" + j.id, { method: "POST", credentials: "same-origin", headers: { "content-type": "image/jpeg" }, body: m.kansi });
+      };
+      x.send(t);
+    }, function (e) { poista(e.message); });
+  }
   var KUVANAPPI = '<label class="kuva-nappi" title="Lisää kuva"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="M21 16l-5-5-8 8"/></svg><span>Kuva</span><input type="file" name="kuvatiedosto" accept="image/*" multiple hidden></label>';
 
   // ---------- postaus ----------
@@ -142,7 +193,7 @@
     return '<article class="posti' + (iso ? " iso" : "") + '" data-id="' + p.id + '">' + av + '<div class="pm"><header>' + (l ? '<a class="lahdelinkki" href="' + l.url + '" rel="noopener">' + esc(nimi) + " ↗</a>" : "<b>" + esc(nimi) + "</b>") + (l ? '<span class="auto">automaattinen</span>' : "") +
       (!l && p.kirjoittaja && !p.oma ? '<button type="button" class="seuraa' + (p.seuraan ? " on" : "") + '" data-seuraa="' + p.kirjoittaja + '" aria-pressed="' + !!p.seuraan + '">' + (p.seuraan ? "Seuraat" : "Seuraa") + "</button>" : "") + (p.kunta ? '<span class="paikka">📍 ' + esc(p.kunta) + "</span>" : "") +
       '<a class="aika" href="/?p=' + p.id + '" data-avaa="' + p.id + '">' + aika(p.luotu) + "</a>" + (p.muokattu ? '<span class="muokattu">muokattu</span>' : "") + "</header>" +
-      (p.teksti ? '<div class="pt' + (!iso && pitka(p.teksti) ? " tiivis" : "") + '">' + linkit(p.teksti) + "</div>" + (!iso && pitka(p.teksti) ? '<button type="button" class="avaa-teksti" data-avaateksti>Näytä kokonaan</button>' : "") : "") + kuvaGalleria(p.kuvat) + kortti(p.kortti) + (l && l.palvelu ? '<a class="palvelulinkki" href="' + l.url + '" rel="noopener">' + esc(l.palvelu) + " →</a>" : "") + taattu +
+      (p.teksti ? '<div class="pt' + (!iso && pitka(p.teksti) ? " tiivis" : "") + '">' + linkit(p.teksti) + "</div>" + (!iso && pitka(p.teksti) ? '<button type="button" class="avaa-teksti" data-avaateksti>Näytä kokonaan</button>' : "") : "") + kuvaGalleria(p.kuvat) + videoSoitin(p.video) + kortti(p.kortti) + (l && l.palvelu ? '<a class="palvelulinkki" href="' + l.url + '" rel="noopener">' + esc(l.palvelu) + " →</a>" : "") + taattu +
       '<footer><button type="button" data-vastaa="' + p.id + '" aria-label="Vastaa">' + IK.vastaa + "<span>" + (p.vastaukset || "Vastaa") + '</span></button>' +
       '<button type="button" data-tykkaa="' + p.id + '" class="' + (p.tykkasin ? "on" : "") + '" aria-label="Tykkää">' + IK.tykkaa + "<span>" + (p.tykkaykset || "") + "</span></button>" +
       '<button type="button" data-jaa="' + p.id + '" aria-label="Jaa">' + IK.jaa + "<span>Jaa</span></button>" +
@@ -162,7 +213,7 @@
       '<textarea name="teksti" rows="' + (vanhempi ? 2 : 3) + '" placeholder="' + (vanhempi ? "Kirjoita vastaus" : "Mitä mielessä? Jokainen postaus näytetään vähintään 30 ihmiselle.") + '"></textarea>' +
       kuvaValitsin() +
       '<div class="faktapaneeli" hidden><div class="rivi"><input name="kysymys" maxlength="300" placeholder="Kysy vapaasti, esim. miten perussuomalaiset äänesti kotihoidontuesta?"><button type="button" class="nappi toissijainen" data-hae>Hae</button></div><div class="faktatulos"></div></div>' +
-      '<div class="toiminnot">' + KUVANAPPI + '<button type="button" class="fakta-nappi" data-fakta>🔎 Kysy fakta</button>' + (tila.kunta && !vanhempi ? '<label class="paikkavalinta"><input type="checkbox" name="kunta" checked> 📍 ' + esc(tila.kunta) + "</label>" : "") + '<span class="laskuri"></span><button class="nappi">' + (vanhempi ? "Vastaa" : "Julkaise") + "</button></div></form>";
+      '<div class="toiminnot">' + KUVANAPPI + (tila.video && !vanhempi ? VIDEONAPPI : "") + '<button type="button" class="fakta-nappi" data-fakta>🔎 Kysy fakta</button>' + (tila.kunta && !vanhempi ? '<label class="paikkavalinta"><input type="checkbox" name="kunta" checked> 📍 ' + esc(tila.kunta) + "</label>" : "") + '<span class="laskuri"></span><button class="nappi">' + (vanhempi ? "Vastaa" : "Julkaise") + "</button></div></form>";
   }
 
   // ---------- näkymät ----------
@@ -207,7 +258,7 @@
   function piirraKirjoitus() { KIRJ.innerHTML = kirjoitus(null); }
   function mina() {
     return api("mina").then(function (j) {
-      tila.mina = j.kayttaja; tila.tilasto = j.tilasto || null; tila.kirjautuminen = j.kirjautuminen === true;
+      tila.mina = j.kayttaja; tila.video = j.video === true; tila.tilasto = j.tilasto || null; tila.kirjautuminen = j.kirjautuminen === true;
       // Testivaihe: kirjautumisnappi näkyy vain osoitteella /?testi=1 avattuna (muistetaan selaimessa).
       var kq = (location.search.match(/[?&]kutsu=([a-f0-9]{6,20})/) || [])[1]; if (kq) tallenna("fp_kutsu", kq);
       if (j.testi && lue("fp_kutsu")) tila.kirjautuminen = true;
@@ -338,6 +389,7 @@
       var ta = $("textarea", fm0); ta.value = tila.tekstit[d.muokkaa] || ""; ta.style.height = Math.min(ta.scrollHeight + 4, 600) + "px"; ta.focus();
     }
     else if (d.peru !== undefined) { var fm = b.closest("form"); var id0 = fm.getAttribute("data-muokkaus"); fm.outerHTML = (tila.tekstit[id0] ? '<div class="pt">' + linkit(tila.tekstit[id0]) + "</div>" : "") + kuvaGalleria(tila.postiKuvat[id0]); }
+    else if (d.poistavideo !== undefined) { var fvv = b.closest("form"); if (fvv && fvv._video && fvv._video.xhr && fvv._video.lataa) fvv._video.xhr.abort(); if (fvv) fvv._video = null; var ve = b.closest(".ek"); if (ve) ve.remove(); }
     else if (d.poistakuva) { var fk = b.closest("form"); fk._kuvat = (fk._kuvat || []).filter(function (k) { return k.avain !== d.poistakuva; }); var ek = b.closest(".ek"); if (ek) ek.remove(); }
     else if (d.kuva) { DLG.innerHTML = '<div class="dlg kuvaikkuna"><img src="/api/kuva/' + (+d.kuva) + '" alt=""><div class="rivi"><a class="nappi toissijainen" href="/api/kuva/' + (+d.kuva) + '" target="_blank" rel="noopener">Avaa koko koossa</a><button type="button" class="nappi" data-sulje>Sulje</button></div></div>'; DLG.showModal(); }
     else if (d.poista) {
@@ -370,6 +422,7 @@
     });
   }
   document.addEventListener("change", function (e) {
+    if (e.target.name === "videotiedosto") { var fv = e.target.closest("form"); if (fv && e.target.files && e.target.files[0]) lisaaVideo(fv, e.target.files[0]); e.target.value = ""; return; }
     if (e.target.name !== "kuvatiedosto") return;
     var f = e.target.closest("form"); if (f && e.target.files && e.target.files.length) lisaaKuvat(f, e.target.files); e.target.value = "";
   });
@@ -411,13 +464,15 @@
       e.preventDefault();
       var teksti = f.teksti.value.trim();
       if (!kuvatValmiit(f)) return ilmoitus("Odota hetki, kuvaa ladataan.", 1);
-      if (teksti.length < 2 && !kuvaIdt(f).length) return ilmoitus("Kirjoita jotain tai lisää kuva.", 1);
+      if (f._video && f._video.lataa) return ilmoitus("Odota hetki, videota ladataan.", 1);
+      var videoId = f._video && f._video.id ? f._video.id : null;
+      if (teksti.length < 2 && !kuvaIdt(f).length && !videoId) return ilmoitus("Kirjoita jotain tai lisää kuva tai video.", 1);
       var nappi = $(".toiminnot .nappi", f); nappi.disabled = true;
-      api("posti", { teksti: teksti, vanhempi: f.dataset.vanhempi ? +f.dataset.vanhempi : null, kortti: f._fakta || null, kuvat: kuvaIdt(f), kunta: f.kunta && f.kunta.checked ? tila.kunta : null }).then(function (j) {
+      api("posti", { teksti: teksti, vanhempi: f.dataset.vanhempi ? +f.dataset.vanhempi : null, kortti: f._fakta || null, kuvat: kuvaIdt(f), video: videoId, kunta: f.kunta && f.kunta.checked ? tila.kunta : null }).then(function (j) {
         nappi.disabled = false;
         if (j.virhe) return ilmoitus(j.virhe, 1);
         if (f.dataset.vanhempi) { avaaKetju(f.dataset.vanhempi, false); ilmoitus("Vastaus julkaistu."); }
-        else { f.reset(); f._fakta = null; f._kuvat = []; tila.tab = "uusimmat"; piirraTabit(); lataaSyote(); piirraKirjoitus(); ilmoitus("Julkaistu. Näytämme postauksesi vähintään 30 ihmiselle."); }
+        else { f.reset(); f._fakta = null; f._kuvat = []; f._video = null; tila.tab = "uusimmat"; piirraTabit(); lataaSyote(); piirraKirjoitus(); ilmoitus("Julkaistu. Näytämme postauksesi vähintään 30 ihmiselle."); }
       });
     }
   });

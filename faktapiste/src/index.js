@@ -17,6 +17,7 @@ const NIMI_RX = new RegExp("^" + OSA + "(?: " + OSA + ")+$");
 const oikeaNimi = n => !!n && n.length <= 60 && NIMI_RX.test(n);
 const isot = n => n.toLowerCase().replace(/(^|[\s-])([a-zåäöüé])/g, (m, a, b) => a + b.toUpperCase());
 const PITUUS = 100000; // käytännössä rajaton, suojaa vain tietokantaa
+const VIDEO_MAX = 100 * 1024 * 1024, VIDEO_KESTO = 180, VIDEO_TYYPIT = ["video/mp4", "video/webm", "video/quicktime"];
 const KUVAT_MAX = 4, KUVA_MAX = 1800000; // kuvia per postaus, tavua per kuva (SQLite-rivin raja 2 Mt)
 const TAATTU = 30;        // jokainen postaus näytetään vähintään näin monelle lukijalle
 const SYOTE_MAX = 25;     // Sinulle-syöte loppuu tähän
@@ -54,9 +55,9 @@ async function jakosivu(env, u, id) {
   try { const r = await env.FP.get(env.FP.idFromName("main")).fetch(new Request(u.origin + "/api/posti/" + id)); p = (await r.json()).posti || null; } catch {}
   if (!p || p.piilotettu) return sivu;
   const teksti = String(p.teksti || (p.kortti && (p.kortti.otsikko || p.kortti.kysymys)) || "").replace(/\s+/g, " ").trim();
-  const kuvaus = teksti.length > 200 ? teksti.slice(0, 197).replace(/\s+\S*$/, "") + "…" : teksti || "Keskustelu Faktapisteessä.";
+  const kuvaus = teksti.length > 200 ? teksti.slice(0, 197).replace(/\s+\S*$/, "") + "…" : teksti || (p.video ? "Katso video Faktapisteessä." : "Keskustelu Faktapisteessä.");
   const otsikko = (p.nimi ? p.nimi + " Faktapisteessä" : "Faktapiste");
-  const kuva = p.kuvat && p.kuvat[0] ? `https://faktapiste.fi/api/kuva/${p.kuvat[0].id}` : "https://faktapiste.fi/og.png";
+  const kuva = p.video && p.video.kansi ? `https://faktapiste.fi/api/video/${p.video.id}/kansi` : p.kuvat && p.kuvat[0] ? `https://faktapiste.fi/api/kuva/${p.kuvat[0].id}` : "https://faktapiste.fi/og.png";
   const url = `https://faktapiste.fi/p/${id}`;
   const aseta = (sel, arvo) => ({ element(e) { e.setAttribute("content", arvo); } });
   return new HTMLRewriter()
@@ -138,6 +139,8 @@ export class Faktapiste extends DurableObject {
       CREATE INDEX IF NOT EXISTS nahdyt_katsoja ON nahdyt(katsoja, luotu);
       CREATE TABLE IF NOT EXISTS kuvat(id INTEGER PRIMARY KEY, kayttaja INTEGER, posti INTEGER, data BLOB, tyyppi TEXT, w INTEGER, h INTEGER, luotu INTEGER);
       CREATE INDEX IF NOT EXISTS kuvat_posti ON kuvat(posti);
+      CREATE TABLE IF NOT EXISTS videot(id INTEGER PRIMARY KEY, kayttaja INTEGER, posti INTEGER, avain TEXT, tyyppi TEXT, koko INTEGER, w INTEGER, h INTEGER, kesto REAL, kansi BLOB, luotu INTEGER);
+      CREATE INDEX IF NOT EXISTS videot_posti ON videot(posti);
       CREATE TABLE IF NOT EXISTS seuraukset(seuraaja INTEGER, seurattava INTEGER, luotu INTEGER, PRIMARY KEY(seuraaja, seurattava));
       CREATE INDEX IF NOT EXISTS seuraukset_kohde ON seuraukset(seurattava);`);
     // nimet eivät ole enää yksilöllisiä (oikeat nimet voivat toistua): taulu rakennetaan kerran uudelleen
@@ -213,10 +216,14 @@ export class Faktapiste extends DurableObject {
       if (p === "/api/nahty" && m === "POST") return json(this.nahty(lukija, await req.json().catch(() => ({}))));
       if (p.startsWith("/api/kuva/") && m === "GET") return this.naytaKuva(+p.split("/")[3]);
       if (p === "/api/kuva" && m === "POST") return await this.lataaKuva(req, minä);
+      if (p === "/api/video" && m === "POST") return await this.lataaVideo(req, minä);
+      if (p === "/api/video/kansi" && m === "POST") return await this.lataaKansi(req, minä, +u.searchParams.get("id"));
+      const vm = p.match(/^\/api\/video\/(\d+)(\/kansi)?$/);
+      if (vm && m === "GET") return vm[2] ? this.naytaKansi(+vm[1]) : await this.naytaVideo(+vm[1], req);
       if (p.startsWith("/api/posti/") && m === "GET") return json(this.ketju(+p.split("/")[3], minä));
       if (p === "/api/mina") return json({ kayttaja: minä ? { nimi: minä.nimi, nimiOk: minä.nimiOk, admin: minä.admin } : null,
         tilasto: minä && minä.admin ? { kayttajat: this.yksi("SELECT COUNT(*) AS n FROM kayttajat").n, nimelliset: this.yksi("SELECT COUNT(*) AS n FROM kayttajat WHERE nimi IS NOT NULL").n,
-          kirjoittajat: this.yksi("SELECT COUNT(DISTINCT kayttaja) AS n FROM postit WHERE kayttaja IS NOT NULL").n, lukijat7: this.yksi("SELECT COUNT(DISTINCT katsoja) AS n FROM nahdyt WHERE luotu>?", nyt() - 7 * 86400e3).n } : null, kirjautuminen: this.env.KIRJAUTUMINEN === "auki", testi: this.env.KIRJAUTUMINEN === "testi" });
+          kirjoittajat: this.yksi("SELECT COUNT(DISTINCT kayttaja) AS n FROM postit WHERE kayttaja IS NOT NULL").n, lukijat7: this.yksi("SELECT COUNT(DISTINCT katsoja) AS n FROM nahdyt WHERE luotu>?", nyt() - 7 * 86400e3).n } : null, kirjautuminen: this.env.KIRJAUTUMINEN === "auki", video: !!this.env.VIDEOT, testi: this.env.KIRJAUTUMINEN === "testi" });
       if (p === "/api/kirjaudu" && m === "POST") return await this.kirjaudu(req);
       if (p === "/api/vahvista" && m === "GET") return this.vahvista(u);
       if (p === "/api/ulos" && m === "POST") { const t = evaste(req, "fp_s"); if (t) this.sql.exec("DELETE FROM sessiot WHERE t=?", t); return json({ ok: true }, 200, { "set-cookie": "fp_s=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax" }); }
@@ -326,6 +333,7 @@ export class Faktapiste extends DurableObject {
       kuvat: r.piilotettu ? [] : this.kuvaIdt(r.id), nakymat: r.nakymat || 0, muokattu: r.muokattu || null, kunta: r.kunta || null, syy: r._syy || null, taattu: TAATTU,
       tykkasin: !!(minä && this.yksi("SELECT 1 AS x FROM tykkaykset WHERE posti=? AND kayttaja=?", r.id, minä.id)),
       kirjoittaja: r.kayttaja || null,
+      video: r.piilotettu ? null : this.videoTieto(r.id),
       seuraan: !!(minä && r.kayttaja && r.kayttaja !== minä.id && this.yksi("SELECT 1 AS x FROM seuraukset WHERE seuraaja=? AND seurattava=?", minä.id, r.kayttaja)) };
   }
   syote(u, minä, lukija) {
@@ -423,6 +431,65 @@ export class Faktapiste extends DurableObject {
     for (const id of halutut) this.sql.exec("UPDATE kuvat SET posti=? WHERE id=? AND kayttaja=? AND posti IS NULL", posti, id, minä.id);
     return this.kuvaIdt(posti);
   }
+  // ---- videot (Cloudflare R2) ----
+  // Video tallennetaan R2:een sellaisenaan. Selain ottaa videosta kansikuvan, joka näkyy myös linkin esikatselussa.
+  videoTieto(posti) {
+    const v = this.yksi("SELECT id, w, h, kesto, kansi IS NOT NULL AS kansi FROM videot WHERE posti=? ORDER BY id LIMIT 1", posti);
+    return v ? { id: v.id, w: v.w, h: v.h, kesto: v.kesto, kansi: !!v.kansi } : null;
+  }
+  poistaVideot(rivit) {
+    for (const v of rivit) { try { this.env.VIDEOT && this.ctx.waitUntil(this.env.VIDEOT.delete(v.avain)); } catch {} this.sql.exec("DELETE FROM videot WHERE id=?", v.id); }
+  }
+  async lataaVideo(req, minä) {
+    if (!this.env.VIDEOT) return virhe("Videoiden lataus ei ole vielä käytössä.", 503);
+    if (!minä) return virhe("Kirjaudu ensin.", 401);
+    if (minä.esto) return virhe("Tilisi on suljettu.", 403);
+    if (!minä.nimiOk) return virhe("Lisää ensin oma nimesi (etu- ja sukunimi).", 400);
+    const tyyppi = (req.headers.get("content-type") || "").split(";")[0].trim();
+    if (!VIDEO_TYYPIT.includes(tyyppi)) return virhe("Videon muoto ei kelpaa. Käytä MP4-, MOV- tai WebM-videota.");
+    const koko = +req.headers.get("content-length") || 0;
+    if (koko < 1000) return virhe("Video on tyhjä.");
+    if (koko > VIDEO_MAX) return virhe("Video on liian suuri (enintään 100 Mt).");
+    const kesto = Math.max(0, +req.headers.get("x-kesto") || 0);
+    if (kesto > VIDEO_KESTO + 1) return virhe("Video on liian pitkä (enintään 3 minuuttia).");
+    if (!this.raja("video:" + minä.id, 10, 86400)) return virhe("Olet ladannut tänään jo 10 videota. Jatka huomenna.", 429);
+    // liittämättömät videot siivotaan vuorokauden kuluttua
+    this.poistaVideot(this.kaikki("SELECT id, avain FROM videot WHERE posti IS NULL AND luotu<?", nyt() - 86400e3));
+    const avain = "v/" + minä.id + "/" + satunnainen();
+    const { readable, writable } = new FixedLengthStream(koko);
+    const putki = req.body.pipeTo(writable);
+    await Promise.all([this.env.VIDEOT.put(avain, readable, { httpMetadata: { contentType: tyyppi } }), putki]);
+    const w = Math.min(10000, +req.headers.get("x-leveys") || 0), h = Math.min(10000, +req.headers.get("x-korkeus") || 0);
+    this.sql.exec("INSERT INTO videot(kayttaja, posti, avain, tyyppi, koko, w, h, kesto, luotu) VALUES(?,?,?,?,?,?,?,?,?)", minä.id, null, avain, tyyppi, koko, w, h, kesto, nyt());
+    return json({ ok: true, id: this.yksi("SELECT last_insert_rowid() AS id").id });
+  }
+  async lataaKansi(req, minä, id) {
+    if (!minä) return virhe("Kirjaudu ensin.", 401);
+    if ((req.headers.get("content-type") || "").split(";")[0].trim() !== "image/jpeg") return virhe("Kansikuvan muoto ei kelpaa.");
+    const data = new Uint8Array(await req.arrayBuffer());
+    if (data.length < 100 || data.length > 600000) return virhe("Kansikuva ei kelpaa.");
+    this.sql.exec("UPDATE videot SET kansi=? WHERE id=? AND kayttaja=?", data, id, minä.id);
+    return json({ ok: true });
+  }
+  async naytaVideo(id, req) {
+    const v = this.yksi("SELECT v.avain, v.tyyppi FROM videot v JOIN postit p ON p.id=v.posti WHERE v.id=? AND p.piilotettu=0", id);
+    if (!v || !this.env.VIDEOT) return new Response("Videota ei löytynyt", { status: 404, headers: { "cache-control": "no-store" } });
+    const o = await this.env.VIDEOT.get(v.avain, { range: req.headers });
+    if (!o) return new Response("Videota ei löytynyt", { status: 404 });
+    const h = new Headers({ "content-type": v.tyyppi, "accept-ranges": "bytes", "cache-control": "public, max-age=86400", "x-content-type-options": "nosniff", etag: o.httpEtag });
+    if (o.range && req.headers.get("range")) {
+      const alku = o.range.offset || 0, pit = o.range.length ?? (o.size - alku);
+      h.set("content-range", `bytes ${alku}-${alku + pit - 1}/${o.size}`); h.set("content-length", String(pit));
+      return new Response(o.body, { status: 206, headers: h });
+    }
+    h.set("content-length", String(o.size));
+    return new Response(o.body, { headers: h });
+  }
+  naytaKansi(id) {
+    const v = this.yksi("SELECT v.kansi FROM videot v JOIN postit p ON p.id=v.posti WHERE v.id=? AND p.piilotettu=0 AND v.kansi IS NOT NULL", id);
+    if (!v) return new Response("Ei kansikuvaa", { status: 404, headers: { "cache-control": "no-store" } });
+    return new Response(v.kansi, { headers: { "content-type": "image/jpeg", "cache-control": "public, max-age=86400", "x-content-type-options": "nosniff" } });
+  }
   naytaKuva(id) {
     const k = this.yksi("SELECT k.data, k.tyyppi FROM kuvat k JOIN postit p ON p.id=k.posti WHERE k.id=? AND p.piilotettu=0", id);
     if (!k) return new Response("Kuvaa ei löytynyt", { status: 404, headers: { "cache-control": "no-store" } });
@@ -433,7 +500,8 @@ export class Faktapiste extends DurableObject {
   async uusiPosti(minä, d, lukija) {
     const teksti = puhdas(d.teksti).replace(/\n{3,}/g, "\n\n");
     const kuvaPyynto = Array.isArray(d.kuvat) ? d.kuvat.map(Number).filter(Boolean).slice(0, KUVAT_MAX) : [];
-    if (teksti.length < 2 && !kuvaPyynto.length) return virhe("Kirjoita jotain tai lisää kuva.");
+    const videoPyynto = +d.video || 0;
+    if (teksti.length < 2 && !kuvaPyynto.length && !videoPyynto) return virhe("Kirjoita jotain tai lisää kuva tai video.");
     if (teksti.length > PITUUS) return virhe("Teksti on liian pitkä.");
     if (!this.raja("p:" + minä.id, 15, 3600)) return virhe("Olet kirjoittanut paljon tunnin sisällä. Pidä pieni tauko.", 429);
     const vanhempi = d.vanhempi ? +d.vanhempi : null;
@@ -447,6 +515,7 @@ export class Faktapiste extends DurableObject {
     this.sql.exec("INSERT INTO postit(kayttaja, lahde, teksti, kortti, vanhempi, luotu, kunta) VALUES(?,?,?,?,?,?,?)", minä.id, "kayttaja", teksti, kortti, vanhempi, nyt(), kunta);
     const id = this.yksi("SELECT last_insert_rowid() AS id").id;
     if (kuvaPyynto.length) this.liitaKuvat(id, minä, kuvaPyynto);
+    if (videoPyynto) this.sql.exec("UPDATE videot SET posti=? WHERE id=? AND kayttaja=? AND posti IS NULL", id, videoPyynto, minä.id);
     if (lukija) this.sql.exec("INSERT OR IGNORE INTO nahdyt VALUES(?,?,?)", id, lukija, nyt()); // oma postaus ei kasvata lukijamäärää
     if (vanhempi) this.sql.exec("UPDATE postit SET vastaukset=vastaukset+1 WHERE id=?", vanhempi);
     return json({ ok: true, id });
@@ -502,6 +571,7 @@ export class Faktapiste extends DurableObject {
     if (r.kayttaja !== minä.id && !minä.admin) return virhe("Voit poistaa vain omia postauksiasi.", 403);
     this.sql.exec("UPDATE postit SET piilotettu=1, teksti='', kortti=NULL WHERE id=?", +d.id);
     this.sql.exec("DELETE FROM kuvat WHERE posti=?", +d.id);
+    this.poistaVideot(this.kaikki("SELECT id, avain FROM videot WHERE posti=?", +d.id));
     return json({ ok: true });
   }
 

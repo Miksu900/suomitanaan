@@ -255,3 +255,8 @@ a.nappi{text-decoration:none;display:inline-block}
 @media (prefers-color-scheme:dark){.seuraa{border-color:var(--yel);color:var(--yel)}.seuraa.on{background:var(--yel);color:var(--navy)}}
 .valikko a{display:block;padding:12px 14px;font:600 .92rem var(--f-b);color:var(--ink);text-decoration:none}
 .valikko a:hover{background:var(--yel-soft)}
+.video{margin-top:10px;border-radius:14px;overflow:hidden;background:#000;max-height:70vh;display:flex;justify-content:center}
+.video video{width:100%;height:auto;max-height:70vh;display:block;background:#000}
+.video-ek{position:relative;display:inline-flex;align-items:center;gap:8px;min-width:150px;padding:6px 34px 6px 6px;border:1px solid var(--line);border-radius:10px;background:var(--bg);font-size:.85rem;font-weight:600}
+.video-ek img{width:56px;height:56px;object-fit:cover;border-radius:8px}
+.video-ek button{position:absolute;top:4px;right:4px}

@@ -37,6 +37,9 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ steps.cf.outputs.account }}
         run: |
           set -e
+          # Videoiden tallennus (R2). Jos R2 ei ole käytössä tilillä, videot pysyvät pois päältä ja sivusto toimii muuten normaalisti.
+          R=$(curl -sS -X POST "$API/accounts/$CLOUDFLARE_ACCOUNT_ID/r2/buckets" -H "Authorization: Bearer $CF" -H "content-type: application/json" -d '{"name":"faktapiste-videot"}' || true)
+          if echo "$R" | jq -e '.success == true or ([.errors[]?.code] | index(10004))' >/dev/null 2>&1; then R2=1; echo "::notice title=Videot::R2-säiliö käytössä"; else R2=0; echo "::warning title=Videot::R2 ei käytössä: $(echo "$R" | jq -c '.errors' 2>/dev/null | head -c 300)"; fi
           {
             echo 'name = "faktapiste"'
             echo 'main = "src/index.js"'
@@ -60,6 +63,7 @@ jobs:
             echo '[[migrations]]'
             echo 'tag = "v1"'
             echo 'new_sqlite_classes = ["Faktapiste"]'
+            if [ "$R2" = 1 ]; then echo '[[r2_buckets]]'; echo 'binding = "VIDEOT"'; echo 'bucket_name = "faktapiste-videot"'; fi
           } > wrangler.toml
           npx --yes wrangler@3.99.0 deploy
           HALLINTA=$(printf '%s' "$CLOUDFLARE_API_TOKEN-faktapiste" | sha256sum | cut -c1-40)
