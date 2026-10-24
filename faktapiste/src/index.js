@@ -19,7 +19,7 @@ const isot = n => n.toLowerCase().replace(/(^|[\s-])([a-zåäöüé])/g, (m, a, 
 const PITUUS = 100000; // käytännössä rajaton, suojaa vain tietokantaa
 // Kuukauden arvonta aktiivisten kirjoittajien kesken (säännöt: /arvonta/).
 const ARVONTA = { kausi: "2026-11", alku: Date.parse("2026-10-25T00:00:00+03:00"), loppu: Date.parse("2026-11-30T23:59:59+02:00"),
-  palkinto: "100 euron lahjakortti", arvontaPv: "1.12.2026", maxPv: 5, minPituus: 20 };
+  palkinto: "100 euron lahjakortin S- tai K-ryhmään", arvontaPv: "1.12.2026", maxPv: 5, minPituus: 20 };
 const VIDEO_MAX = 100 * 1024 * 1024, VIDEO_KESTO = 180, VIDEO_TYYPIT = ["video/mp4", "video/webm", "video/quicktime"];
 const KUVAT_MAX = 4, KUVA_MAX = 1800000; // kuvia per postaus, tavua per kuva (SQLite-rivin raja 2 Mt)
 const TAATTU = 30;        // jokainen postaus näytetään vähintään näin monelle lukijalle
@@ -515,7 +515,7 @@ export class Faktapiste extends DurableObject {
     for (const o of l) { if (x < o.arvat) { voittaja = o; break; } x -= o.arvat; }
     const tulos = { kausi: a.kausi, voittaja: voittaja.nimi, arvat: voittaja.arvat, osallistujia: l.length, arvoja: yht, aika: new Date().toISOString() };
     this.sql.exec("INSERT INTO asetukset VALUES(?,?)", avain, JSON.stringify(tulos));
-    await telegram(this.env, `🎁 Faktapisteen arvonta ${a.kausi}: voittaja ${voittaja.nimi} (${voittaja.email}), ${voittaja.arvat}/${yht} arpaa, ${l.length} osallistujaa.\nLähetä ${a.palkinto} ja ilmoita voittajasta Faktapisteessä etunimellä.`);
+    await telegram(this.env, `🎁 Faktapisteen arvonta ${a.kausi}: voittaja ${voittaja.nimi} (${voittaja.email}), ${voittaja.arvat}/${yht} arpaa, ${l.length} osallistujaa.\nKysy voittajalta, kumpi lahjakortti (S- vai K-ryhmä), lähetä se ja ilmoita voittajasta Faktapisteessä etunimellä.`);
     return tulos;
   }
 
