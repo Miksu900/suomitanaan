@@ -133,6 +133,16 @@ if __name__ == "__main__":
             ilmoita("Kampanjat", json.dumps(k, ensure_ascii=False))
             if isinstance(k, list):
                 ilmoita("Eilen", json.dumps(eilen(a["id"], [c["id"] for c in k if c["tila"] == "ACTIVE"]), ensure_ascii=False))
+    elif toiminto == "tutki":
+        # Tulostaa olemassa olevan kampanjan rakenteen (vain luku), jotta uusi voidaan tehdä samalla mallilla.
+        tili = tilit()[0]["id"]
+        for nimi, polku, p in [("Rahoitus", f"/accounts/{tili}/funding_instruments", {}),
+                               ("Kampanjat", f"/accounts/{tili}/campaigns", {}),
+                               ("Mainosryhmät", f"/accounts/{tili}/line_items", {}),
+                               ("Kohdennus", f"/accounts/{tili}/targeting_criteria", {"line_item_ids": ",".join(l["id"] for l in kutsu(f"/accounts/{tili}/line_items").get("data", [])[:20])}),
+                               ("Mainostetut", f"/accounts/{tili}/promoted_tweets", {}),
+                               ("Mainostettavat käyttäjät", f"/accounts/{tili}/promotable_users", {})]:
+            ilmoita(nimi, json.dumps(kutsu(polku, p), ensure_ascii=False)[:6000])
     elif toiminto == "pysayta":
         tili, kid = sys.argv[2], sys.argv[3]
         v = kutsu(f"/accounts/{tili}/campaigns/{kid}", {"entity_status": "PAUSED"}, "PUT")
