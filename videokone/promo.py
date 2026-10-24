@@ -247,7 +247,7 @@ def kohtaus(base, si, lt, gt):
         dl.rectangle((108, 64, 132, 228), fill=RED); dl.ellipse((62, 22, 118, 70), outline=RED, width=14); dl.ellipse((122, 22, 178, 70), outline=RED, width=14)
         paste_c(base, lahja, W / 2, 420, back(lt * 3) * (1 + 0.03 * math.sin(gt * 6)))
         paste_c(base, iso_teksti("Voita 100 €", koko=170, vari=GOLD, vari2=GOLD), W / 2, 700, back(lt * 3 - 0.2))
-        paste_c(base, text_img("lahjakortti S- tai K-ryhmään", M8(58), WHITE), W / 2, 860, back(lt * 3 - 0.4))
+        paste_c(base, text_img("lahjakortti K-ryhmään", M8(58), WHITE), W / 2, 860, back(lt * 3 - 0.4))
         paste_c(base, pill("Jokainen kirjoitus = arpa", M9(56), NAVY, (255, 255, 255, 255), 40, 24), W / 2, 1040, back(lt * 3 - 0.7))
         paste_c(base, text_img("Arvonta 1.12. · säännöt faktapiste.fi/arvonta", M6(38), GREY), W / 2, 1180, back(lt * 3 - 0.95))
         return

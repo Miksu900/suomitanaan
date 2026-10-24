@@ -9,7 +9,7 @@ ROOT = pathlib.Path(__file__).parent / "public"
 SITE = os.environ.get("FAKTAPISTE_URL", "https://faktapiste.fi")
 PV = os.environ.get("PYKALAVAHTI_URL", "https://pykalavahti.fi")
 YHTEYS = "miika@eduskuntaseuranta.fi"
-VER = "33"
+VER = "34"
 esc = html.escape
 
 # avain, nimi, osoite, iskulause, kuvaus, merkki, poliittinen
@@ -171,8 +171,8 @@ runko = f"""<section class="w teksti">
 <p>Palvelut ovat tällä hetkellä maksuttomia. Ylläpitäjä pidättää oikeuden muuttaa palveluita ja niiden ehtoja sekä ottaa käyttöön maksullisia ominaisuuksia; muutoksista kerrotaan etukäteen. Tiedot ovat yleistä tietoa eivätkä oikeudellista tai taloudellista neuvontaa.</p>
 </section>"""
 ARVONTA_RUNKO = f"""<section class="teksti w">
-<h1>Arvonta: 100 euron lahjakortti S- tai K-ryhmään</h1>
-<p>Faktapiste arpoo aktiivisten kirjoittajien kesken <b>100 euron lahjakortin S- tai K-ryhmään</b>. Osallistuminen on maksutonta, eikä se edellytä ostoa.</p>
+<h1>Arvonta: 100 euron lahjakortti K-ryhmään</h1>
+<p>Faktapiste arpoo aktiivisten kirjoittajien kesken <b>100 euron lahjakortin K-ryhmään</b>. Osallistuminen on maksutonta, eikä se edellytä ostoa.</p>
 <h2>Säännöt</h2>
 <ul class="lista">
 <li><b>Järjestäjä:</b> Faktapiste, ylläpitäjä Miika Koskela, Ylivieska. Yhteys: <span class="mono">{YHTEYS}</span></li>
@@ -182,13 +182,13 @@ ARVONTA_RUNKO = f"""<section class="teksti w">
 <li><b>Ei roskapostia:</b> poistetut tai sääntöjen vastaiset kirjoitukset eivät ole arpoja. Ylläpitäjä voi hylätä arvat, jos kirjoitukset ovat selvästi vain arpojen keräämistä varten tehtyä roskaa, ja sulkea tilin, joka rikkoo keskustelun sääntöjä.</li>
 <li><b>Arvonta:</b> voittaja arvotaan sattumanvaraisesti tietokoneella. Jokaisen osallistujan voittomahdollisuus on suhteessa hänen arpojensa määrään.</li>
 <li><b>Voittajalle ilmoittaminen:</b> voittajalle ilmoitetaan sähköpostilla siihen osoitteeseen, jolla hän kirjautuu Faktapisteeseen. Voittajan etunimi julkaistaan Faktapisteessä. Jos voittaja ei vastaa 14 päivässä, voittaja arvotaan uudelleen.</li>
-<li><b>Palkinto:</b> 100 euron lahjakortti S-ryhmään tai K-ryhmään, voittajan valinnan mukaan. Palkintoa ei voi vaihtaa rahaksi. Arpajaisveron maksaa järjestäjä, joten palkinto on voittajalle verovapaa.</li>
+<li><b>Palkinto:</b> 100 euron K-ryhmän lahjakortti. Palkintoa ei voi vaihtaa rahaksi. Arpajaisveron maksaa järjestäjä, joten palkinto on voittajalle verovapaa.</li>
 <li><b>Tietosuoja:</b> arvonnassa käytetään vain Faktapisteeseen jo tallennettuja tietoja (nimi, sähköposti ja kirjoitusten määrä). Tietoja ei luovuteta eteenpäin.</li>
-<li>Arvonta ei ole S-ryhmän, K-ryhmän, Metan, X:n tai minkään muun yrityksen järjestämä tai sponsoroima, eikä se liity niihin.</li>
+<li>Arvonta ei ole K-ryhmän (Kesko), Metan, X:n tai minkään muun yrityksen järjestämä tai sponsoroima, eikä se liity niihin.</li>
 </ul>
 <p><a class="nappi" href="/">Kirjoita keskusteluun →</a></p>
 </section>"""
-kirjoita("/arvonta/", sivu("/arvonta/", "Arvonta: 100 € lahjakortti S- tai K-ryhmään | Faktapiste", "Faktapiste arpoo aktiivisten kirjoittajien kesken 100 euron lahjakortin S- tai K-ryhmään. Säännöt ja ehdot.", ARVONTA_RUNKO))
+kirjoita("/arvonta/", sivu("/arvonta/", "Arvonta: 100 € lahjakortti K-ryhmään | Faktapiste", "Faktapiste arpoo aktiivisten kirjoittajien kesken 100 euron lahjakortin K-ryhmään. Säännöt ja ehdot.", ARVONTA_RUNKO))
 kirjoita("/tietoa/", sivu("/tietoa/", "Tietoa ja tietosuoja | Faktapiste", "Mikä Faktapiste on, kuka sitä ylläpitää, keskustelun säännöt, tietosuoja ja käyttöehdot.", runko))
 
 # ---- Yksityisyysvahti ----
