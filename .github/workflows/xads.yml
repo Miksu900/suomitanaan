@@ -7,9 +7,10 @@ on:
     paths: ["mainokset/xads.py", ".github/workflows/xads.yml"]
   workflow_dispatch:
     inputs:
-      toiminto: { description: "tila tai pysayta", required: true, default: "tila" }
+      toiminto: { description: "tila, tutki, luo tai pysayta", required: true, default: "tila" }
       tili: { description: "Mainostilin id (pysayta)", required: false, default: "" }
       kampanja: { description: "Kampanjan id (pysayta)", required: false, default: "" }
+      asetukset: { description: "JSON (luo)", required: false, default: "" }
 jobs:
   ajo:
     runs-on: ubuntu-latest
@@ -20,7 +21,9 @@ jobs:
           X_API_SECRET: ${{ secrets.X_API_SECRET }}
           X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
           X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
+          ASETUKSET: ${{ inputs.asetukset }}
         run: |
+          if [ "${{ inputs.toiminto }}" = "luo" ]; then git fetch -q origin xmedia && git show origin/xmedia:video.mp4 > mainokset/video.mp4 && ls -la mainokset/video.mp4; fi
           cd mainokset
           for k in X_API_KEY X_API_SECRET X_ACCESS_TOKEN X_ACCESS_SECRET; do [ -n "${!k}" ] || echo "::error::Salaisuus $k puuttuu"; done
           python3 xads.py "${{ inputs.toiminto || 'tila' }}" ${{ inputs.tili }} ${{ inputs.kampanja }}

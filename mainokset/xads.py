@@ -27,6 +27,18 @@ def _allekirjoitus(tapa, url, param):
     return "OAuth " + ", ".join(f'{_e(k)}="{_e(v)}"' for k, v in sorted(o.items()))
 
 
+def _pyynto(tapa, url, param=None, runko=None, ctype=None):
+    """Allekirjoitettu pyyntö mihin tahansa X:n osoitteeseen. param = URL-parametrit (allekirjoitetaan)."""
+    param = {k: str(v) for k, v in (param or {}).items()}
+    h = {"Authorization": _allekirjoitus(tapa, url, param)}
+    if ctype: h["content-type"] = ctype
+    req = urllib.request.Request(url + ("?" + urllib.parse.urlencode(param) if param else ""), runko, h, method=tapa)
+    try:
+        return json.loads(urllib.request.urlopen(req, timeout=120).read() or b"{}")
+    except urllib.error.HTTPError as e:
+        return {"virhe": e.code, "vastaus": e.read().decode()[:1500]}
+
+
 def kutsu(polku, param=None, tapa="GET"):
     """polku ilman versiota, esim. '/accounts'. Palauttaa JSONin tai {'virhe': koodi, 'vastaus': teksti}."""
     global _ver
@@ -92,6 +104,73 @@ def eilen(tili, ids):
     return out
 
 
+UP = "https://upload.twitter.com/1.1/media/upload.json"
+
+
+def lataa_video(polku):
+    koko = os.path.getsize(polku)
+    v = _pyynto("POST", UP, {"command": "INIT", "total_bytes": koko, "media_type": "video/mp4", "media_category": "amplify_video"})
+    if "media_id_string" not in v:
+        return v
+    mid = v["media_id_string"]
+    with open(polku, "rb") as f:
+        i = 0
+        while True:
+            pala = f.read(4 * 1024 * 1024)
+            if not pala:
+                break
+            raja = secrets.token_hex(12)
+            runko = (f"--{raja}\r\nContent-Disposition: form-data; name=\"media\"; filename=\"v.mp4\"\r\n"
+                     f"Content-Type: application/octet-stream\r\n\r\n").encode() + pala + f"\r\n--{raja}--\r\n".encode()
+            r = _pyynto("POST", UP, {"command": "APPEND", "media_id": mid, "segment_index": i}, runko, f"multipart/form-data; boundary={raja}")
+            if "virhe" in r:
+                return r
+            i += 1
+    v = _pyynto("POST", UP, {"command": "FINALIZE", "media_id": mid})
+    if "virhe" in v:
+        return v
+    for _ in range(60):
+        tila = (v.get("processing_info") or {}).get("state")
+        if tila in (None, "succeeded"):
+            break
+        if tila == "failed":
+            return {"virhe": "käsittely", "vastaus": json.dumps(v)}
+        time.sleep((v["processing_info"].get("check_after_secs") or 5))
+        v = _pyynto("GET", UP, {"command": "STATUS", "media_id": mid})
+    return {"media_key": v.get("media_key") or f"13_{mid}", "media_id": mid}
+
+
+def luo(a):
+    """Luo kampanjan PYSÄYTETTYNÄ: video, kortti, twiitti, kampanja, mainosryhmä, kohdennus, mainostus."""
+    tili = tilit()[0]["id"]
+    rah = kutsu(f"/accounts/{tili}/funding_instruments")["data"][0]["id"]
+    kayttaja = kutsu(f"/accounts/{tili}/promotable_users")["data"][0]["user_id"]
+    def vaihe(nimi, v, avain="id"):
+        ilmoita(nimi, json.dumps(v.get("data", v) if isinstance(v, dict) else v, ensure_ascii=False)[:1500])
+        if not isinstance(v, dict) or "virhe" in v: sys.exit(1)
+        return (v.get("data") or v).get(avain) if avain else v
+    m = lataa_video(a["video"])
+    mk = vaihe("Video", m, "media_key")
+    vaihe("Mediakirjasto", kutsu(f"/accounts/{tili}/media_library", {"media_key": mk, "file_name": os.path.basename(a["video"]), "name": a["nimi"]}, "POST"), None)
+    kortti = {"name": a["nimi"], "components": [{"type": "MEDIA", "media_key": mk},
+              {"type": "DETAILS", "title": a["otsikko"], "destination": {"type": "WEBSITE", "url": a["url"]}}]}
+    global _ver
+    url = f"{API}/{_ver}/accounts/{tili}/cards"
+    k = _pyynto("POST", url, None, json.dumps(kortti).encode(), "application/json")
+    uri = vaihe("Kortti", k, "card_uri")
+    tw = vaihe("Twiitti", kutsu(f"/accounts/{tili}/tweet", {"text": a["teksti"], "card_uri": uri, "as_user_id": kayttaja, "nullcast": "true", "name": a["nimi"]}, "POST"), "id_str")
+    kid = vaihe("Kampanja", kutsu(f"/accounts/{tili}/campaigns", {"name": a["nimi"], "funding_instrument_id": rah, "budget_optimization": "LINE_ITEM", "entity_status": "PAUSED"}, "POST"))
+    lid = vaihe("Mainosryhmä", kutsu(f"/accounts/{tili}/line_items", {
+        "campaign_id": kid, "name": "Ad group 1", "objective": "WEBSITE_CLICKS", "goal": "LINK_CLICKS", "placements": "ALL_ON_TWITTER",
+        "product_type": "PROMOTED_TWEETS", "bid_strategy": "AUTO", "daily_budget_amount_local_micro": int(a["paiva"] * 1e6),
+        "total_budget_amount_local_micro": int(a["yhteensa"] * 1e6), "start_time": a["alku"], "end_time": a["loppu"],
+        "entity_status": "PAUSED"}, "POST"))
+    for tyyppi, arvo in (("LOCATION", "e7c97cdfef3a741a"), ("LANGUAGE", "fi"), ("AGE", "AGE_OVER_25")):
+        vaihe("Kohdennus " + tyyppi, kutsu(f"/accounts/{tili}/targeting_criteria", {"line_item_id": lid, "targeting_type": tyyppi, "targeting_value": arvo}, "POST"))
+    vaihe("Mainostus", kutsu(f"/accounts/{tili}/promoted_tweets", {"line_item_id": lid, "tweet_ids": tw}, "POST"), None)
+    ilmoita("Valmis", f"kampanja {kid}, mainosryhmä {lid}, twiitti {tw} – PYSÄYTETTY")
+
+
 def ilmoita(otsikko, teksti):
     for rivi in str(teksti).splitlines() or [""]:
         [print(f"::notice title={otsikko}::{rivi[i:i+3500]}") for i in range(0, max(len(rivi), 1), 3500)]
@@ -146,6 +225,8 @@ if __name__ == "__main__":
                                ("Kortit", f"/accounts/{tili}/cards", {}),
                                ("Mediakirjasto", f"/accounts/{tili}/media_library", {})]:
             ilmoita(nimi, json.dumps(kutsu(polku, p), ensure_ascii=False)[:6000])
+    elif toiminto == "luo":
+        luo(json.loads(os.environ.get("ASETUKSET") or "{}"))
     elif toiminto == "pysayta":
         tili, kid = sys.argv[2], sys.argv[3]
         v = kutsu(f"/accounts/{tili}/campaigns/{kid}", {"entity_status": "PAUSED"}, "PUT")
