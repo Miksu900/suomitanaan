@@ -3,7 +3,7 @@ name: Microsoft Ads
 on:
   workflow_dispatch:
     inputs:
-      toiminto: { description: "kampanjat tai kutsu", required: true, default: "kampanjat" }
+      toiminto: { description: "kampanjat, kutsu tai pysayta", required: true, default: "kampanjat" }
       kysely: { description: "JSON (kutsu)", required: false, default: "" }
 jobs:
   ajo:

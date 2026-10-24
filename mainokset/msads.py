@@ -18,12 +18,12 @@ def token():
     return v["access_token"]
 
 _t = None
-def kutsu(url, runko, tili=True):
+def kutsu(url, runko, tili=True, tapa="POST"):
     global _t
     _t = _t or token()
     h = {"Authorization": "Bearer " + _t, "DeveloperToken": os.environ["MSDEV"].strip(), "content-type": "application/json"}
     if tili: h.update(CustomerId=CID, CustomerAccountId=AID)
-    r = urllib.request.Request(url, json.dumps(runko).encode(), h, method="POST")
+    r = urllib.request.Request(url, json.dumps(runko).encode(), h, method=tapa)
     try: return json.loads(urllib.request.urlopen(r).read() or b"{}")
     except urllib.error.HTTPError as e: return {"virhe": e.code, "vastaus": e.read().decode()[:2000]}
 
@@ -32,6 +32,15 @@ if __name__ == "__main__":
     if t == "kampanjat":
         v = kutsu(CM + "/Campaigns/QueryByAccountId", {"AccountId": AID, "CampaignType": "Search,Audience"})
         ilmoita("Kampanjat", json.dumps([{k: c.get(k) for k in ("Id", "Name", "Status", "DailyBudget", "BudgetType", "CampaignType")} for c in v.get("Campaigns", [])] if "Campaigns" in v else v, ensure_ascii=False))
+    elif t == "pysayta":
+        # Pysäyttää kaikki aktiiviset kampanjat (Paused, ei poistoa).
+        v = kutsu(CM + "/Campaigns/QueryByAccountId", {"AccountId": AID, "CampaignType": "Search,Audience"})
+        kamp = [c for c in v.get("Campaigns", []) if c.get("Status") not in ("Paused", "Deleted")]
+        ilmoita("Käynnissä ennen", json.dumps([(c["Name"], c.get("Status")) for c in kamp], ensure_ascii=False) if "Campaigns" in v else json.dumps(v))
+        if kamp:
+            ilmoita("Pysäytys", json.dumps(kutsu(CM + "/Campaigns", {"AccountId": AID, "Campaigns": [{"Id": c["Id"], "Status": "Paused"} for c in kamp]}, tapa="PATCH"), ensure_ascii=False)[:2000])
+        v = kutsu(CM + "/Campaigns/QueryByAccountId", {"AccountId": AID, "CampaignType": "Search,Audience"})
+        ilmoita("Tila nyt", json.dumps([(c["Name"], c.get("Status")) for c in v.get("Campaigns", [])], ensure_ascii=False))
     elif t == "kutsu":
         # KYSELY = JSON-lista [[polku CM:n alla, runko], ...]
         for i, (polku, runko) in enumerate(json.loads(os.environ["KYSELY"])):
