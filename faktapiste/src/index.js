@@ -226,8 +226,11 @@ export class Faktapiste extends DurableObject {
         for (const url of (u.searchParams.get("u") || "").split(" ").filter(Boolean).slice(0, 6)) {
           try {
             const r = await fetch(url, { headers: { "user-agent": "Mozilla/5.0 (compatible; Faktapiste/1.0; +https://faktapiste.fi)" }, signal: AbortSignal.timeout(8000) });
-            const h = await r.text(); const i = h.search(/isAccessibleForFree|content_tier|paywall|maksumuuri|tilaajille/i);
-            out.push({ url, status: r.status, pituus: h.length, osuma: i < 0 ? null : h.slice(Math.max(0, i - 80), i + 120) });
+            const h = await r.text(); const os = {};
+            for (const sana of ["isAccessibleForFree", "isPaid", "paid\"", "\"premium", "accessLevel", "subscriber", "\"locked", "contentTier", "\"plus\"", "paywallType", "\"free\""]) {
+              const i = h.indexOf(sana); if (i >= 0) os[sana] = h.slice(Math.max(0, i - 60), i + 90);
+            }
+            out.push({ url, status: r.status, osumat: os });
           } catch (e) { out.push({ url, virhe: String(e.message || e) }); }
         }
         return json(out);
