@@ -76,7 +76,10 @@ async function maksumuuri(url) {
   try {
     const r = await fetch(url, { headers: { "user-agent": "Mozilla/5.0 (compatible; Faktapiste/1.0; +https://faktapiste.fi)" }, signal: AbortSignal.timeout(6000), redirect: "follow" });
     if (!r.ok) return null;
-    const h = (await r.text()).slice(0, 400000);
+    const h = await r.text();
+    // Sanoma (HS, IS ym.): sivun oma tila, tai jutun paidType (ensimmäinen esiintymä on itse juttu)
+    const sanoma = (h.match(/"page_paywall_status"\s*:\s*"(\w+)"/) || h.match(/"paidType"\s*:\s*"(\w+)"/) || [])[1];
+    if (sanoma) return sanoma.toLowerCase() !== "free";
     if (/"isAccessibleForFree"\s*:\s*(false|"false")/i.test(h) || /<meta[^>]+(content_tier|article:content_tier)[^>]+(locked|metered)/i.test(h)) return true;
     if (/"isAccessibleForFree"\s*:\s*(true|"true")/i.test(h)) return false;
     return null;
@@ -684,7 +687,7 @@ export class Faktapiste extends DurableObject {
         if (!x.url) continue;
         if (this.yksi("SELECT id FROM postit WHERE ext=?", x.url)) continue;
         const mm = await maksumuuri(x.juttu);
-        n += this.lisaaAuto("korjausvahti", x.url, "", { tyyppi: "muutos", lahde: "Korjausvahti", media: x.media, ennen: x.ennen, nyt: x.nyt, url: x.url, juttu: x.juttu || null, maksumuuri: mm, mmv: 2 }, Date.parse(x.havaittu) || nyt());
+        n += this.lisaaAuto("korjausvahti", x.url, "", { tyyppi: "muutos", lahde: "Korjausvahti", media: x.media, ennen: x.ennen, nyt: x.nyt, url: x.url, juttu: x.juttu || null, maksumuuri: mm, mmv: 3 }, Date.parse(x.havaittu) || nyt());
       }
       tulos.korjausvahti = n;
     } catch (e) { tulos.korjausvahti = "virhe " + e.message; }
@@ -718,7 +721,7 @@ export class Faktapiste extends DurableObject {
         if (!x.l) continue;
         if (this.yksi("SELECT id FROM postit WHERE ext=?", x.l)) continue;
         const mm = await maksumuuri(x.l);
-        n += this.lisaaAuto("keraysvahti", x.l, "", { tyyppi: "varoitus", lahde: "Keräysvahti", otsikko: x.o, media: x.s, url: x.l, maksumuuri: mm, mmv: 2 }, Date.parse(x.a) || nyt());
+        n += this.lisaaAuto("keraysvahti", x.l, "", { tyyppi: "varoitus", lahde: "Keräysvahti", otsikko: x.o, media: x.s, url: x.l, maksumuuri: mm, mmv: 3 }, Date.parse(x.a) || nyt());
       }
       tulos.keraysvahti = n;
     } catch (e) { tulos.keraysvahti = "virhe " + e.message; }
@@ -728,14 +731,14 @@ export class Faktapiste extends DurableObject {
     tulos.faktapiste = tn;
     // Maksumuurimerkintä myös aiemmin tuoduille uutisille (enintään 8 kerralla). Korjausvahdissa tarkistetaan alkuperäinen juttu.
     let tm = 0, jutut = null;
-    for (const r of this.kaikki("SELECT id, lahde, kortti FROM postit WHERE lahde IN ('korjausvahti','keraysvahti') AND luotu>? AND kortti NOT LIKE '%\"mmv\":2%' ORDER BY luotu DESC LIMIT 8", nyt() - 5 * 86400e3)) {
+    for (const r of this.kaikki("SELECT id, lahde, kortti FROM postit WHERE lahde IN ('korjausvahti','keraysvahti') AND luotu>? AND kortti NOT LIKE '%\"mmv\":3%' ORDER BY luotu DESC LIMIT 8", nyt() - 5 * 86400e3)) {
       try {
         const k = JSON.parse(r.kortti);
         if (r.lahde === "korjausvahti" && !k.juttu) {
           if (!jutut) { jutut = {}; try { for (const x of (await hae("https://nytpuhutaan.fi/muutokset/nostot.json")).nostot || []) jutut[x.url] = x.juttu; } catch {} }
           k.juttu = jutut[k.url] || null;
         }
-        k.maksumuuri = await maksumuuri(r.lahde === "korjausvahti" ? k.juttu : k.url); k.mmv = 2;
+        k.maksumuuri = await maksumuuri(r.lahde === "korjausvahti" ? k.juttu : k.url); k.mmv = 3;
         this.sql.exec("UPDATE postit SET kortti=? WHERE id=?", JSON.stringify(k), r.id); tm++;
       } catch {}
     }

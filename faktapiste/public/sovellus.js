@@ -74,7 +74,7 @@
     return "";
   }
 
-  function mm(k) { return k.maksumuuri === true ? ' <span class="mmuuri" title="Uutinen on maksumuurin takana">🔒 Maksullinen</span>' : ""; }
+  function mm(k) { return k.maksumuuri === true ? ' <span class="mmuuri" title="Uutinen on maksumuurin takana">🔒 Tilaajille</span>' : ""; }
   // ---------- kuvat ----------
   function kuvaGalleria(kuvat) {
     if (!kuvat || !kuvat.length) return "";
