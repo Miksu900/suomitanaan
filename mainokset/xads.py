@@ -166,7 +166,7 @@ def luo(a):
         "total_budget_amount_local_micro": int(a["yhteensa"] * 1e6), "start_time": a["alku"], "end_time": a["loppu"],
         "entity_status": "PAUSED"}, "POST"))
     for tyyppi, arvo in (("LOCATION", "e7c97cdfef3a741a"), ("LANGUAGE", "fi"), ("AGE", "AGE_OVER_25")):
-        vaihe("Kohdennus " + tyyppi, kutsu(f"/accounts/{tili}/targeting_criteria", {"line_item_id": lid, "targeting_type": tyyppi, "targeting_value": arvo}, "POST"))
+        vaihe("Kohdennus " + tyyppi, kutsu(f"/accounts/{tili}/targeting_criteria", {"line_item_id": lid, "targeting_type": tyyppi, "targeting_value": arvo, "operator_type": "EQ"}, "POST"))
     vaihe("Mainostus", kutsu(f"/accounts/{tili}/promoted_tweets", {"line_item_id": lid, "tweet_ids": tw}, "POST"), None)
     ilmoita("Valmis", f"kampanja {kid}, mainosryhmä {lid}, twiitti {tw} – PYSÄYTETTY")
 
@@ -227,6 +227,13 @@ if __name__ == "__main__":
             ilmoita(nimi, json.dumps(kutsu(polku, p), ensure_ascii=False)[:6000])
     elif toiminto == "luo":
         luo(json.loads(os.environ.get("ASETUKSET") or "{}"))
+    elif toiminto == "viimeistele":
+        # Jatkaa keskeytynyttä luontia: kohdennus ja mainostus olemassa olevalle mainosryhmälle (ASETUKSET: lid, tw).
+        a = json.loads(os.environ.get("ASETUKSET") or "{}"); tili = tilit()[0]["id"]
+        for tyyppi, arvo in (("LOCATION", "e7c97cdfef3a741a"), ("LANGUAGE", "fi"), ("AGE", "AGE_OVER_25")):
+            ilmoita("Kohdennus " + tyyppi, json.dumps(kutsu(f"/accounts/{tili}/targeting_criteria", {"line_item_id": a["lid"], "targeting_type": tyyppi, "targeting_value": arvo, "operator_type": "EQ"}, "POST"), ensure_ascii=False)[:600])
+        ilmoita("Mainostus", json.dumps(kutsu(f"/accounts/{tili}/promoted_tweets", {"line_item_id": a["lid"], "tweet_ids": a["tw"]}, "POST"), ensure_ascii=False)[:800])
+        ilmoita("Kampanja", json.dumps(kutsu(f"/accounts/{tili}/campaigns/{a['kid']}"), ensure_ascii=False)[:800])
     elif toiminto == "pysayta":
         tili, kid = sys.argv[2], sys.argv[3]
         v = kutsu(f"/accounts/{tili}/campaigns/{kid}", {"entity_status": "PAUSED"}, "PUT")
