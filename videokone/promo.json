@@ -1,12 +1,14 @@
 {
-  "koukku": "Kirjoitatko somessa, eikä kukaan näe sitä?",
+  "koukku": "Kirjoitit hyvän postauksen.",
   "lauseet": [
-    "Kirjoitatko somessa, eikä kukaan näe sitä?",
+    "Kirjoitit hyvän postauksen, eikä kukaan nähnyt sitä.",
+    "Algoritmi päätti, ettet ole tarpeeksi kiinnostava.",
     "Faktapisteessä jokainen postaus näytetään vähintään kolmellekymmenelle ihmiselle, vaikka sinulla ei olisi yhtään seuraajaa.",
-    "Sinä päätät, mitä syötteessäsi näkyy, ja se loppuu, kun olet nähnyt tärkeimmät.",
-    "Väitteen voit tarkistaa yhdellä napilla suoraan eduskunnan äänestyksistä.",
-    "Liity ilmaiseksi: faktapiste piste fi."
+    "Täällä keskustellaan oikeilla nimillä.",
+    "Näet oman paikkakuntasi keskustelut, ja sinä säädät, mitä syötteessä näkyy.",
+    "Kun olet nähnyt tärkeimmät, syöte loppuu.",
+    "Suomalainen somepalvelu. Liity ilmaiseksi: faktapiste piste fi."
   ],
-  "kuvateksti": "Kirjoitatko somessa, eikä kukaan näe? Faktapisteessä jokainen postaus näytetään vähintään 30 ihmiselle, vaikka sinulla ei olisi yhtään seuraajaa. Sinä säädät syötteesi, ja se loppuu, kun olet nähnyt tärkeimmät. Liity ilmaiseksi: faktapiste.fi",
-  "hashtagit": ["faktapiste", "suomi", "keskustelu", "somevapaus", "eduskunta", "fyp"]
+  "kuvateksti": "Kirjoitit hyvän postauksen, eikä kukaan nähnyt sitä? Faktapisteessä jokainen postaus näytetään vähintään 30 ihmiselle, vaikka sinulla ei olisi yhtään seuraajaa. Oikeat nimet, oman paikkakunnan keskustelut ja syöte, joka loppuu. Suomalainen somepalvelu, liity ilmaiseksi: faktapiste.fi",
+  "hashtagit": ["faktapiste", "suomi", "some", "somepalvelu", "suomalainen", "keskustelu", "fyp"]
 }

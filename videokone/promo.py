@@ -93,14 +93,19 @@ def sydanpiirto(d, x, y, s, col, tayte):
         d.arc((x, y + s * 0.08, x + 2 * r, y + s * 0.08 + 2 * r), 140, 360, fill=col, width=4); d.arc((x + s - 2 * r, y + s * 0.08, x + s, y + s * 0.08 + 2 * r), 180, 40, fill=col, width=4)
         d.line([pts[1], pts[0], pts[2]], fill=col, width=4)
 
+def nasta(d, x, y, s, col):
+    d.ellipse((x, y, x + s * 0.8, y + s * 0.8), fill=col); d.polygon([(x + s * 0.08, y + s * 0.55), (x + s * 0.72, y + s * 0.55), (x + s * 0.4, y + s * 1.1)], fill=col)
+    d.ellipse((x + s * 0.25, y + s * 0.25, x + s * 0.55, y + s * 0.55), fill=PAPER)
+
 # ---------- postauskortti (näyttää Faktapisteen syötteeltä) ----------
-def postaus(nimi, teksti, nakymat, w=940, taattu=None, sydan=0):
+def postaus(nimi, teksti, nakymat, w=940, taattu=None, sydan=0, aika="nyt", paikka=None):
     fs = 46; f = M8(fs); rivit = wrap(teksti, f, w - 190)
     lh = int(fs * 1.32); h = 150 + len(rivit) * lh + (90 if taattu is not None else 0) + 70
     c = Image.new("RGBA", (w, h), (0, 0, 0, 0)); d = ImageDraw.Draw(c)
     d.rounded_rectangle((0, 0, w - 1, h - 1), radius=30, fill=PAPER + (255,))
     d.ellipse((34, 34, 124, 124), fill=NAVY2); paste_c(c, text_img(nimi[0], M9(44), WHITE, False), 79, 79)
-    d.text((150, 44), nimi, font=M9(42), fill=INK); d.text((w - 120, 50), "nyt", font=M6(34), fill=MUTE)
+    d.text((150, 44), nimi, font=M9(42), fill=INK); d.text((w - 40 - M6(34).getlength(aika), 50), aika, font=M6(34), fill=MUTE)
+    if paikka: nasta(d, 150 + M9(42).getlength(nimi) + 22, 48, 30, (40, 110, 255)); d.text((150 + M9(42).getlength(nimi) + 52, 50), paikka, font=M8(32), fill=(40, 110, 255))
     y = 112
     for r in rivit: d.text((150, y), r, font=f, fill=INK); y += lh
     if taattu is not None:
@@ -152,6 +157,9 @@ def subtitle(base, t):
     c = next((c for c in CHUNKS if i in c), None)
     if c is None: return
     toks = [(tok(words[j][0]), j == i) for j in c if tok(words[j][0])]
+    for k in range(len(toks) - 2, 0, -1):  # "FAKTAPISTE PISTE FI" -> "FAKTAPISTE.FI"
+        if toks[k][0] == "PISTE" and toks[k + 1][0] == "FI" and toks[k - 1][0] == "FAKTAPISTE":
+            toks[k - 1:k + 2] = [("FAKTAPISTE.FI", toks[k - 1][1] or toks[k][1] or toks[k + 1][1])]
     line = " ".join(x for x, _ in toks); f = SUBF
     while f.getlength(line) > W - 100: f = M9(f.size - 4)
     x = (W - f.getlength(line)) / 2; d = ImageDraw.Draw(base)
@@ -159,70 +167,92 @@ def subtitle(base, t):
         d.text((x, 1560), s_, font=f, fill=YEL if on else WHITE, stroke_width=8, stroke_fill=(0, 0, 0)); x += f.getlength(s_ + " ")
 
 # ---------- kohtaukset ----------
-KOUKKU = iso_teksti(A.get("koukku") or LAUSEET[0], koko=140)
-TYHJA = postaus("Sinä", "Tämä on minusta tärkeä asia, ja haluaisin kuulla muidenkin mielipiteen.", 0)
-LUOKAT = ["Keskustelut", "Uutiset", "Otsikkomuutokset", "Huijausvaroitukset", "Päätökset"]
-TASOT = [2, 1, 2, 0, 1]
+TEKSTI = "Tämä on minusta tärkeä asia, ja haluaisin kuulla muidenkin mielipiteen."
+LUOKAT = ["Keskustelut", "Uutiset", "Paikalliset", "Huijausvaroitukset", "Päätökset"]
+TASOT = [2, 0, 2, 1, 1]
+def iso(s, koko=130, **k): return iso_teksti(s, koko=koko, **k)
+OTS = [iso("Kirjoitit hyvän postauksen.", 140), iso("Algoritmi päätti puolestasi.", 130), None, iso("Oikeat ihmiset, omat nimet", 120), iso("Oma paikkakunta", 120), None, None]
+IHMISET = [("Liisa Korhonen", "Ylivieskaan tarvitaan lisää iltavuoroja bussiliikenteeseen. Kuka muu on samaa mieltä?", "12 min", 41, 7),
+           ("Jari Mäkinen", "Kokeilin eilen uutta kirjastoa. Ihan mahtava paikka lapsiperheille!", "35 min", 58, 12),
+           ("Aino Lahtinen", "Miksi sähkön siirtohinta nousee taas? Onko jollain tietoa?", "1 t", 77, 9)]
 
-def saato(base, lt):
+def saato(base, lt, y0=560):
     d = ImageDraw.Draw(base); x0, w = 70, 940
     for k, l in enumerate(LUOKAT):
         q = ease(lt * 3 - k * 0.2)
         if q <= 0: continue
-        y = 520 + k * 130; a = int(255 * q)
-        d.rounded_rectangle((x0, y, x0 + w, y + 104), radius=22, fill=(255, 255, 255, int(28 * q)))
-        d.text((x0 + 30, y + 30), l, font=M8(40), fill=(255, 255, 255, a))
-        # kolmiportainen valitsin: Pois / Normaali / Enemmän
+        y = y0 + k * 122; a = int(255 * q)
+        d.rounded_rectangle((x0, y, x0 + w, y + 100), radius=22, fill=(255, 255, 255, int(28 * q)))
+        d.text((x0 + 30, y + 28), l, font=M8(40), fill=(255, 255, 255, a))
         sx = x0 + 560
         for t_ in range(3):
             on = TASOT[k] == t_ if lt > 0.6 + k * 0.15 else t_ == 1
-            d.rounded_rectangle((sx + t_ * 118, y + 26, sx + t_ * 118 + 108, y + 78), radius=26, fill=(GOLD if on else (60, 74, 110)) + (a,))
-            d.text((sx + t_ * 118 + 54 - M8(26).getlength(["Pois", "Norm.", "Lisää"][t_]) / 2, y + 38), ["Pois", "Norm.", "Lisää"][t_], font=M8(26), fill=(NAVY if on else WHITE) + (a,))
+            d.rounded_rectangle((sx + t_ * 118, y + 24, sx + t_ * 118 + 108, y + 76), radius=26, fill=(GOLD if on else (60, 74, 110)) + (a,))
+            lab = ["Pois", "Norm.", "Lisää"][t_]
+            d.text((sx + t_ * 118 + 54 - M8(26).getlength(lab) / 2, y + 36), lab, font=M8(26), fill=(NAVY if on else WHITE) + (a,))
+
+def tabit(lt):
+    c = Image.new("RGBA", (940, 110), (0, 0, 0, 0)); d = ImageDraw.Draw(c)
+    d.rounded_rectangle((0, 0, 939, 109), radius=26, fill=(255, 255, 255, 30))
+    x = 30
+    for k, l in enumerate(["Sinulle", "Uusimmat", "Ylivieska"]):
+        on = k == 2 and lt > 0.5
+        f = M9(40); w_ = f.getlength(l) + (44 if k == 2 else 0)
+        if on: d.rounded_rectangle((x - 18, 18, x + w_ + 18, 92), radius=37, fill=GOLD)
+        if k == 2: nasta(d, x, 34, 36, NAVY if on else WHITE); x += 44
+        d.text((x, 30), l, font=f, fill=NAVY if on else WHITE); x += f.getlength(l) + 70
+    return c
 
 def kohtaus(base, si, lt, gt):
+    dur = SC[si + 1] - SC[si]
     if si == 0:
-        paste_c(base, KOUKKU, W / 2, 470, back(lt * 3) * (1 + 0.02 * math.sin(gt * 6)))
-        paste_c(base, TYHJA, W / 2, 1050, back(lt * 3 - 0.5))
-        if lt > 1.0: paste_c(base, pill("0 NÄKYMÄÄ", M9(48), WHITE, RED + (255,), 34, 18), W / 2 + 230, 860, back((lt - 1.0) * 4))
+        paste_c(base, OTS[0], W / 2, 430, back(lt * 3) * (1 + 0.015 * math.sin(gt * 6)))
+        paste_c(base, postaus("Sinä", TEKSTI, 0), W / 2, 980, back(lt * 3 - 0.4))
+        if lt > dur * 0.55: paste_c(base, pill("0 NÄKYMÄÄ", M9(48), WHITE, RED + (255,), 34, 18), W / 2 + 240, 800, back((lt - dur * 0.55) * 4))
         return
     if si == 1:
-        n = 30 * ease((lt - 0.4) / 3.2) + max(0, lt - 3.6) * 4
-        paste_c(base, pill("0 SEURAAJAA", M9(46), NAVY, (255, 255, 255, 255), 34, 18), W / 2, 330, back(lt * 3))
-        paste_c(base, postaus("Sinä", "Tämä on minusta tärkeä asia, ja haluaisin kuulla muidenkin mielipiteen.", n, taattu=n, sydan=int(n // 9)), W / 2, 780, back(lt * 3 - 0.2))
-        paste_c(base, iso_teksti("VÄHINTÄÄN 30 LUKIJAA", koko=110, vari=GOLD, vari2=GOLD), W / 2, 1230, back(lt * 3 - 1.2))
+        q = ease(lt / max(0.5, dur * 0.8))
+        paste_c(base, OTS[1], W / 2, 400, back(lt * 3))
+        kortti = postaus("Sinä", TEKSTI, 0)
+        paste_c(base, kortti, W / 2, 900 + 260 * q, 1 - 0.35 * q, 1 - 0.75 * q)
+        paste_c(base, pill("NÄKYVYYS 2 %", M9(52), WHITE, RED + (255,), 38, 22), W / 2, 1300, back(lt * 3 - 0.8))
         return
     if si == 2:
-        paste_c(base, text_img("SINÄ PÄÄTÄT", ANTON(120), GOLD), W / 2, 360, back(lt * 3))
-        dur = SC[3] - SC[2]
-        if lt < dur * 0.62: saato(base, lt)
-        else:
-            q = lt - dur * 0.62
-            ok = Image.new("RGBA", (180, 180), (0, 0, 0, 0)); ImageDraw.Draw(ok).ellipse((0, 0, 179, 179), fill=GOLD)
-            paste_c(ok, text_img("✓", M9(110), NAVY, False), 90, 92)
-            paste_c(base, ok, W / 2, 720, back(q * 3))
-            paste_c(base, iso_teksti("SYÖTE LOPPUU", koko=120, vari=WHITE, vari2=WHITE), W / 2, 960, back(q * 3 - 0.2))
-            paste_c(base, text_img("Ei loputonta selaamista", M8(50), GREY), W / 2, 1110, back(q * 3 - 0.4))
+        n = 30 * ease((lt - 0.6) / max(1, dur * 0.6)) + max(0, lt - 0.6 - dur * 0.6) * 5
+        paste_c(base, logo(110), W / 2, 300, back(lt * 3))
+        paste_c(base, pill("0 SEURAAJAA", M9(44), NAVY, (255, 255, 255, 255), 32, 16), W / 2, 470, back(lt * 3 - 0.2))
+        paste_c(base, postaus("Sinä", TEKSTI, n, taattu=n, sydan=int(n // 8)), W / 2, 860, back(lt * 3 - 0.3))
+        paste_c(base, iso_teksti("Vähintään 30 lukijaa", koko=110, vari=GOLD, vari2=GOLD), W / 2, 1270, back(lt * 3 - 1.0))
         return
     if si == 3:
-        paste_c(base, pill("KYSY FAKTA", M9(56), NAVY, GOLD + (255,), 44, 24), W / 2, 380, back(lt * 3) * (1 - 0.06 * max(0, math.sin(min(lt, 0.9) * 7)) * (lt < 0.9)))
-        c = Image.new("RGBA", (940, 560), (0, 0, 0, 0)); d = ImageDraw.Draw(c)
-        d.rounded_rectangle((0, 0, 939, 559), radius=30, fill=PAPER + (255,)); d.rounded_rectangle((0, 0, 18, 559), radius=9, fill=(40, 110, 255))
-        d.text((50, 34), "EDUSKUNNAN ÄÄNESTYS", font=M9(34), fill=(40, 110, 255))
-        d.text((50, 90), "Miten edustajat äänestivät?", font=M8(46), fill=INK)
-        q = ease(lt * 1.4 - 0.7)
-        for k, (lab, v, col) in enumerate([("JAA", 0.58, GREEN), ("EI", 0.42, RED)]):
-            y = 200 + k * 150
-            d.text((50, y), lab, font=ANTON(80), fill=INK)
-            d.rounded_rectangle((220, y + 18, 220 + 560 * v * q, y + 86), radius=18, fill=col)
-            d.text((240 + 560 * v * q, y + 14), f"{int(v * 100 * q)} %", font=ANTON(64), fill=INK)
-        d.text((50, 490), "Lähde: eduskunnan avoin data", font=M6(30), fill=MUTE)
-        paste_c(base, c, W / 2, 860, back(lt * 3 - 0.3))
+        paste_c(base, OTS[3], W / 2, 350, back(lt * 3))
+        for k, (nimi, t_, aika, nak, syd) in enumerate(IHMISET):
+            paste_c(base, postaus(nimi, t_, nak, aika=aika, sydan=syd), W / 2 + (1 - back(lt * 2.5 - 0.3 - k * 0.35)) * 1100, 680 + k * 325, 0.84)
+        return
+    if si == 4:
+        paste_c(base, OTS[4], W / 2, 330, back(lt * 3))
+        if lt < dur * 0.5:
+            paste_c(base, tabit(lt), W / 2, 560, back(lt * 3 - 0.2))
+            nimi, t_, aika, nak, syd = IHMISET[0]
+            paste_c(base, postaus(nimi, t_, nak, aika=aika, sydan=syd, paikka="Ylivieska"), W / 2, 940, back(lt * 3 - 0.6))
+        else:
+            q = lt - dur * 0.5
+            paste_c(base, text_img("Sinä säädät syötteesi", M9(60), WHITE), W / 2, 480, back(q * 3))
+            saato(base, q)
+        return
+    if si == 5:
+        ok = Image.new("RGBA", (200, 200), (0, 0, 0, 0)); dk = ImageDraw.Draw(ok); dk.ellipse((0, 0, 199, 199), fill=GOLD)
+        dk.line([(52, 104), (86, 138), (150, 66)], fill=NAVY, width=20, joint="curve")
+        paste_c(base, ok, W / 2, 560, back(lt * 3))
+        paste_c(base, iso_teksti("Syöte loppuu", koko=140, vari=WHITE, vari2=WHITE), W / 2, 830, back(lt * 3 - 0.2))
+        paste_c(base, text_img("Ei loputonta selaamista.", M8(54), GREY), W / 2, 1000, back(lt * 3 - 0.45))
         return
     # loppu: kehotus liittyä
-    paste_c(base, logo(170), W / 2, 560, back(lt * 3))
-    paste_c(base, pill("faktapiste.fi", M9(78), NAVY, GOLD + (255,), 54, 30), W / 2, 820, back(lt * 3 - 0.3) * (1 + 0.035 * math.sin(gt * 5)))
-    paste_c(base, text_img("Liity ilmaiseksi", M8(60), WHITE), W / 2, 1010, back(lt * 3 - 0.6))
-    paste_c(base, text_img("Ei salasanaa. Kirjaudut sähköpostilinkillä.", M6(40), GREY), W / 2, 1110, back(lt * 3 - 0.9))
+    paste_c(base, logo(170), W / 2, 470, back(lt * 3))
+    paste_c(base, text_img("SUOMALAINEN SOMEPALVELU", M9(56), WHITE), W / 2, 640, back(lt * 3 - 0.25))
+    paste_c(base, pill("faktapiste.fi", M9(84), NAVY, GOLD + (255,), 58, 32), W / 2, 850, back(lt * 3 - 0.45) * (1 + 0.035 * math.sin(gt * 5)))
+    paste_c(base, text_img("Liity ilmaiseksi", M8(62), WHITE), W / 2, 1050, back(lt * 3 - 0.7))
+    paste_c(base, text_img("Ei salasanaa. Kirjaudut sähköpostilinkillä.", M6(40), GREY), W / 2, 1150, back(lt * 3 - 0.95))
 
 # ---------- renderöinti ----------
 PV = os.environ.get("PV")
@@ -244,7 +274,7 @@ for f in ([int(float(x) * FPS) for x in PV.split(",")] if PV else range(N)):
     if out < 1:
         a = layer.getchannel("A").point(lambda v: int(v * out)); layer.putalpha(a)
     fr.alpha_composite(layer)
-    if si < NS - 1: fr.alpha_composite(TAG, (50, 90))
+    if si not in (2, NS - 1): fr.alpha_composite(TAG, (50, 90))
     fr.alpha_composite(LAHDE, (60, 1790))
     subtitle(fr, t)
     g = grain[f % 4]; fr = Image.composite(Image.new("RGBA", (W, H), (255, 255, 255, 255)), fr, g.point(lambda v: v // 3))
