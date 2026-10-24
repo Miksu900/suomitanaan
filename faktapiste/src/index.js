@@ -261,13 +261,13 @@ export class Faktapiste extends DurableObject {
         }
         return json(out);
       }
-      if (p === "/api/arvonta" && m === "GET") return json(this.arvontaTila(minä));
       if (p === "/api/hallinta/arvonta" && this.env.HALLINTA && req.headers.get("x-avain") === this.env.HALLINTA) return json(await this.arvo(u.searchParams.get("pakota") === "1"));
       if (p === "/api/hallinta/fakta" && this.env.HALLINTA && req.headers.get("x-avain") === this.env.HALLINTA) {
         const d = await req.json(); return await this.fakta({ id: 0 }, d);
       }
       const minä = this.kayttaja(req);
       const lukija = this.lukija(req, minä);
+      if (p === "/api/arvonta" && m === "GET") return json(this.arvontaTila(minä));
       if (p === "/api/syote" && m === "GET") return json(this.syote(u, minä, lukija));
       if (p === "/api/nahty" && m === "POST") return json(this.nahty(lukija, await req.json().catch(() => ({}))));
       if (p.startsWith("/api/kuva/") && m === "GET") return this.naytaKuva(+p.split("/")[3]);
