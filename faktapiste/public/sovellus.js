@@ -18,7 +18,7 @@
   var tila = { mina: null, kirjautuminen: true, tab: "sinulle", sivu: 0, fakta: null, ladataan: false, saato: [1, 1, 1, 1, 1], kunta: "", lukija: "", syyt: {} };
   function lue(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
   function tallenna(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
-  tila.tab = ["sinulle", "uusimmat", "lahella"].indexOf(lue("fp_tab")) >= 0 ? lue("fp_tab") : "sinulle";
+  tila.tab = ["sinulle", "seuratut", "uusimmat", "lahella"].indexOf(lue("fp_tab")) >= 0 ? lue("fp_tab") : "sinulle";
   tila.kunta = lue("fp_kunta") || "";
   (function () { var v = (lue("fp_saato") || "").split(",").map(Number); if (v.length === 5 && v.every(function (x) { return x >= 0 && x <= 2; })) tila.saato = v; })();
   // Lukijatunniste: satunnainen, vain lukukertojen laskemiseen (taattu yleisö ja syötteen loppuminen).
@@ -139,7 +139,8 @@
     var nak = p.nakymat || 0;
     var taattu = p.oma && !p.vanhempi && nak < (p.taattu || 30) ? '<div class="taattu"><span class="tpb"><i style="width:' + Math.min(100, 100 * nak / (p.taattu || 30)).toFixed(0) + '%"></i></span>Nähty ' + nak + "/" + (p.taattu || 30) + " · näytämme postauksesi vielä " + ((p.taattu || 30) - nak) + " ihmiselle</div>" : "";
     if (p.piilotettu) return '<article class="posti piilo" data-id="' + p.id + '"><p class="mute">Tämä postaus on poistettu tai piilotettu.</p></article>';
-    return '<article class="posti' + (iso ? " iso" : "") + '" data-id="' + p.id + '">' + av + '<div class="pm"><header>' + (l ? '<a class="lahdelinkki" href="' + l.url + '" rel="noopener">' + esc(nimi) + " ↗</a>" : "<b>" + esc(nimi) + "</b>") + (l ? '<span class="auto">automaattinen</span>' : "") + (p.kunta ? '<span class="paikka">📍 ' + esc(p.kunta) + "</span>" : "") +
+    return '<article class="posti' + (iso ? " iso" : "") + '" data-id="' + p.id + '">' + av + '<div class="pm"><header>' + (l ? '<a class="lahdelinkki" href="' + l.url + '" rel="noopener">' + esc(nimi) + " ↗</a>" : "<b>" + esc(nimi) + "</b>") + (l ? '<span class="auto">automaattinen</span>' : "") +
+      (!l && p.kirjoittaja && !p.oma ? '<button type="button" class="seuraa' + (p.seuraan ? " on" : "") + '" data-seuraa="' + p.kirjoittaja + '" aria-pressed="' + !!p.seuraan + '">' + (p.seuraan ? "Seuraat" : "Seuraa") + "</button>" : "") + (p.kunta ? '<span class="paikka">📍 ' + esc(p.kunta) + "</span>" : "") +
       '<a class="aika" href="/?p=' + p.id + '" data-avaa="' + p.id + '">' + aika(p.luotu) + "</a>" + (p.muokattu ? '<span class="muokattu">muokattu</span>' : "") + "</header>" +
       (p.teksti ? '<div class="pt' + (!iso && pitka(p.teksti) ? " tiivis" : "") + '">' + linkit(p.teksti) + "</div>" + (!iso && pitka(p.teksti) ? '<button type="button" class="avaa-teksti" data-avaateksti>Näytä kokonaan</button>' : "") : "") + kuvaGalleria(p.kuvat) + kortti(p.kortti) + (l && l.palvelu ? '<a class="palvelulinkki" href="' + l.url + '" rel="noopener">' + esc(l.palvelu) + " →</a>" : "") + taattu +
       '<footer><button type="button" data-vastaa="' + p.id + '" aria-label="Vastaa">' + IK.vastaa + "<span>" + (p.vastaukset || "Vastaa") + '</span></button>' +
@@ -167,7 +168,7 @@
   // ---------- näkymät ----------
   var SYOTE = $("#fp-syote"), KIRJ = $("#fp-kirjoita"), TABIT = $("#fp-tabit");
   function piirraTabit() {
-    TABIT.innerHTML = [["sinulle", "Sinulle"], ["uusimmat", "Uusimmat"], ["lahella", tila.kunta ? "📍 " + tila.kunta : "📍 Lähellä"]].map(function (t) {
+    TABIT.innerHTML = [["sinulle", "Sinulle"], ["seuratut", "Seuratut"], ["uusimmat", "Uusimmat"], ["lahella", tila.kunta ? "📍 " + tila.kunta : "📍 Lähellä"]].map(function (t) {
       return '<button type="button" role="tab" aria-selected="' + (tila.tab === t[0]) + '" data-tab="' + t[0] + '">' + esc(t[1]) + "</button>"; }).join("") +
       '<button type="button" class="saato-nappi" data-avaasaato aria-label="Säädä syötettä" title="Säädä syötettä">⚙</button>';
   }
@@ -180,7 +181,7 @@
       if (!lisaa) SYOTE.innerHTML = "";
       if (j.virhe) { SYOTE.innerHTML = '<p class="lataa">' + esc(j.virhe) + "</p>"; return; }
       if (j.kuntaPuuttuu) { SYOTE.innerHTML = kuntaValitsin("Valitse paikkakuntasi, niin näet sen keskustelut ja uutiset."); return; }
-      if (!j.postit.length && !lisaa && !j.loppu) SYOTE.innerHTML = '<p class="lataa">' + (tila.tab === "lahella" ? "Paikkakunnaltasi ei ole vielä postauksia. Aloita sinä!" : "Syöte täyttyy pian.") + "</p>";
+      if (!j.postit.length && !lisaa && !j.loppu) SYOTE.innerHTML = '<p class="lataa">' + (tila.tab === "lahella" ? "Paikkakunnaltasi ei ole vielä postauksia. Aloita sinä!" : tila.tab === "seuratut" ? (j.kirjauduSeuraa ? "Kirjaudu, niin voit seurata muita kirjoittajia." : j.seurattuja ? "Seuraamasi kirjoittajat eivät ole vielä kirjoittaneet." : "Et seuraa vielä ketään. Paina Seuraa-nappia kirjoittajan nimen vieressä.") : "Syöte täyttyy pian.") + "</p>";
       SYOTE.insertAdjacentHTML("beforeend", j.postit.map(function (p) { return posti(p); }).join(""));
       if (j.loppu) SYOTE.insertAdjacentHTML("beforeend", '<div class="loppu"><span class="ok">✓</span><b>Olet nähnyt kaiken tärkeän.</b><p>' + (j.tanaan ? "Luit tänään " + j.tanaan + " postausta. " : "") + "Syöte ei jatku loputtomiin. Tule myöhemmin takaisin, niin täällä on taas uutta.</p><button type=\"button\" class=\"nappi toissijainen\" data-uusimmat>Selaa silti uusimpia</button></div>");
       havainnoi();
@@ -284,6 +285,14 @@
     else if (d.avaateksti !== undefined) { var ptx = b.previousElementSibling; if (ptx) ptx.classList.remove("tiivis"); b.remove(); }
     else if (d.ulos !== undefined && confirmOk("Kirjaudutaanko ulos?")) api("ulos", {}).then(function () { location.href = "/"; });
     else if (d.vastaa) avaaKetju(d.vastaa, true);
+    else if (d.seuraa) {
+      if (!tila.mina || !tila.mina.nimiOk) { tila.kirjautuminen ? avaaKirjautuminen() : ilmoitus("Seuraaminen avautuu pian."); return; }
+      api("seuraa", { kayttaja: +d.seuraa }).then(function (j) {
+        if (j.virhe) return ilmoitus(j.virhe, 1);
+        document.querySelectorAll('[data-seuraa="' + d.seuraa + '"]').forEach(function (x) { x.classList.toggle("on", j.seuraan); x.setAttribute("aria-pressed", j.seuraan); x.textContent = j.seuraan ? "Seuraat" : "Seuraa"; });
+        ilmoitus(j.seuraan ? "Seuraat nyt. Kirjoitukset näkyvät Seuratut-välilehdellä ja nousevat syötteessäsi." : "Seuraaminen lopetettu.");
+      });
+    }
     else if (d.tykkaa) {
       if (!tila.mina || !tila.mina.nimiOk) { tila.kirjautuminen ? avaaKirjautuminen() : ilmoitus("Tykkääminen avautuu pian."); return; }
       api("tykkaa", { id: +d.tykkaa }).then(function (j) { if (j.virhe) return ilmoitus(j.virhe, 1); var on = !b.classList.contains("on"); b.classList.toggle("on", on); b.innerHTML = IK.tykkaa + "<span>" + (j.tykkaykset || "") + "</span>"; });

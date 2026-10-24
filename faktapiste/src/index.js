@@ -114,7 +114,9 @@ export class Faktapiste extends DurableObject {
       CREATE TABLE IF NOT EXISTS nahdyt(posti INTEGER, katsoja TEXT, luotu INTEGER, PRIMARY KEY(posti, katsoja));
       CREATE INDEX IF NOT EXISTS nahdyt_katsoja ON nahdyt(katsoja, luotu);
       CREATE TABLE IF NOT EXISTS kuvat(id INTEGER PRIMARY KEY, kayttaja INTEGER, posti INTEGER, data BLOB, tyyppi TEXT, w INTEGER, h INTEGER, luotu INTEGER);
-      CREATE INDEX IF NOT EXISTS kuvat_posti ON kuvat(posti);`);
+      CREATE INDEX IF NOT EXISTS kuvat_posti ON kuvat(posti);
+      CREATE TABLE IF NOT EXISTS seuraukset(seuraaja INTEGER, seurattava INTEGER, luotu INTEGER, PRIMARY KEY(seuraaja, seurattava));
+      CREATE INDEX IF NOT EXISTS seuraukset_kohde ON seuraukset(seurattava);`);
     // nimet eivät ole enää yksilöllisiä (oikeat nimet voivat toistua): taulu rakennetaan kerran uudelleen
     if ((this.sql.exec("SELECT v FROM asetukset WHERE k='skeema'").toArray()[0] || {}).v !== "2") {
       this.sql.exec(`CREATE TABLE IF NOT EXISTS kayttajat2(id INTEGER PRIMARY KEY, email TEXT UNIQUE, nimi TEXT, luotu INTEGER, esto INTEGER DEFAULT 0);
@@ -203,6 +205,7 @@ export class Faktapiste extends DurableObject {
       if (!minä.nimiOk) return virhe("Lisää ensin oma nimesi (etu- ja sukunimi).", 400);
       if (p === "/api/posti") return await this.uusiPosti(minä, d, lukija);
       if (p === "/api/tykkaa") return this.tykkaa(minä, d);
+      if (p === "/api/seuraa") return this.seuraa(minä, d);
       if (p === "/api/ilmoita") return await this.ilmoita(minä, d);
       if (p === "/api/poista") return this.poista(minä, d);
       if (p === "/api/muokkaa") {
@@ -298,12 +301,19 @@ export class Faktapiste extends DurableObject {
     return { id: r.id, nimi: r.nimi || null, lahde: r.lahde, teksti: r.piilotettu ? "" : r.teksti, kortti: r.piilotettu ? null : k, vanhempi: r.vanhempi, luotu: r.luotu,
       tykkaykset: r.tykkaykset, vastaukset: r.vastaukset, piilotettu: !!r.piilotettu, oma: !!(minä && r.kayttaja === minä.id),
       kuvat: r.piilotettu ? [] : this.kuvaIdt(r.id), nakymat: r.nakymat || 0, muokattu: r.muokattu || null, kunta: r.kunta || null, syy: r._syy || null, taattu: TAATTU,
-      tykkasin: !!(minä && this.yksi("SELECT 1 AS x FROM tykkaykset WHERE posti=? AND kayttaja=?", r.id, minä.id)) };
+      tykkasin: !!(minä && this.yksi("SELECT 1 AS x FROM tykkaykset WHERE posti=? AND kayttaja=?", r.id, minä.id)),
+      kirjoittaja: r.kayttaja || null,
+      seuraan: !!(minä && r.kayttaja && r.kayttaja !== minä.id && this.yksi("SELECT 1 AS x FROM seuraukset WHERE seuraaja=? AND seurattava=?", minä.id, r.kayttaja)) };
   }
   syote(u, minä, lukija) {
     const tab = u.searchParams.get("tab") || "sinulle", sivu = Math.max(0, +u.searchParams.get("sivu") || 0);
     const pohja = "SELECT p.*, k.nimi FROM postit p LEFT JOIN kayttajat k ON k.id=p.kayttaja WHERE p.vanhempi IS NULL AND p.piilotettu=0" + (nyt() < ST_TAUKO_ASTI ? " AND p.lahde<>'suomitanaan'" : "");
     const ulos = (rivit, lisa = {}) => ({ postit: rivit.map(r => this.muoto(r, minä)), ...lisa });
+    if (tab === "seuratut") {
+      if (!minä) return ulos([], { kirjauduSeuraa: true });
+      const r = this.kaikki(pohja + " AND p.kayttaja IN (SELECT seurattava FROM seuraukset WHERE seuraaja=?) ORDER BY p.luotu DESC LIMIT 30 OFFSET ?", minä.id, sivu * 30);
+      return ulos(r, { lisaa: r.length === 30, seurattuja: this.yksi("SELECT COUNT(*) AS n FROM seuraukset WHERE seuraaja=?", minä.id).n });
+    }
     if (tab === "uusimmat") { const r = this.kaikki(pohja + " ORDER BY p.luotu DESC LIMIT 30 OFFSET ?", sivu * 30); return ulos(r, { lisaa: r.length === 30 }); }
     if (tab === "lahella") {
       const kunta = KUNTA.get(String(u.searchParams.get("kunta") || "").toLowerCase());
@@ -319,6 +329,7 @@ export class Faktapiste extends DurableObject {
     const kerroin = luokka => { const i = "kumhe".indexOf(luokka); const v = Number(saato[i]); return KERROIN[Number.isInteger(v) && v >= 0 && v <= 2 ? v : 1]; };
     const t = nyt();
     const ehd = this.kaikki(pohja + " AND p.luotu>? ORDER BY p.luotu DESC LIMIT 400", t - 4 * 86400e3);
+    const seuratut = new Set(minä ? this.kaikki("SELECT seurattava FROM seuraukset WHERE seuraaja=?", minä.id).map(x => x.seurattava) : []);
     const nahdyt = new Set(lukija ? this.kaikki("SELECT posti FROM nahdyt WHERE katsoja=? AND luotu>?", lukija, t - 5 * 86400e3).map(x => x.posti) : []);
     const tanaan = lukija ? this.yksi("SELECT COUNT(*) AS n FROM nahdyt WHERE katsoja=? AND luotu>?", lukija, t - 18 * 3600e3).n : 0;
     const uudet = [], muut = [];
@@ -333,11 +344,12 @@ export class Faktapiste extends DurableObject {
         r._p = 1000 - r.nakymat; uudet.push(r); continue;
       }
       const [paino, puoli] = r.kayttaja ? [4, 12] : ({ eduskunta: [0.9, 20], suomitanaan: [1.2, 8], korjausvahti: [1, 8], keraysvahti: [0.8, 12], faktapiste: [2, 36] })[r.lahde] || [1, 8];
-      r._p = k * paino * (1 + r.tykkaykset * 2 + r.vastaukset * 3) * Math.pow(0.5, h / puoli);
+      r._p = k * paino * (1 + r.tykkaykset * 2 + r.vastaukset * 3) * Math.pow(0.5, h / puoli) * (seuratut.has(r.kayttaja) ? 3 : 1);
       const nimi = { suomitanaan: "uutisia", korjausvahti: "otsikkomuutoksia", keraysvahti: "huijausvaroituksia", eduskunta: "päätöksiä" }[r.lahde];
       r._syy = r.kayttaja
         ? (r.tykkaykset + r.vastaukset > 0 ? `Keskustelu, jossa ${r.tykkaykset} tykkäystä ja ${r.vastaukset} vastausta.` : "Tuore keskustelu.") + (k > 1 ? " Valitsit: enemmän keskusteluja." : "")
         : r.lahde === "faktapiste" ? "Uusi palvelu Faktapisteeltä." : `Tuore ${r.lahde === "eduskunta" ? "päätös" : r.lahde === "suomitanaan" ? "uutinen" : r.lahde === "korjausvahti" ? "otsikkomuutos" : "huijausvaroitus"}.` + (r.tykkaykset + r.vastaukset > 0 ? ` Herättänyt keskustelua (${r.vastaukset} vastausta).` : "") + (k > 1 ? ` Valitsit: enemmän ${nimi}.` : "");
+      if (seuratut.has(r.kayttaja)) r._syy = "Seuraat kirjoittajaa. " + r._syy;
       muut.push(r);
     }
     uudet.sort((a, b) => b._p - a._p); muut.sort((a, b) => b._p - a._p);
@@ -425,6 +437,18 @@ export class Faktapiste extends DurableObject {
       if (v && v.ok === false) return { ok: false, syy: String(v.syy || "sisältö rikkoo sääntöjä.").slice(0, 160) };
     } catch {}
     return { ok: true };
+  }
+  seuraa(minä, d) {
+    const k = +d.kayttaja;
+    if (!k || k === minä.id) return virhe("Et voi seurata itseäsi.");
+    if (!this.yksi("SELECT id FROM kayttajat WHERE id=? AND nimi IS NOT NULL", k)) return virhe("Käyttäjää ei löytynyt.");
+    const on = this.yksi("SELECT 1 AS x FROM seuraukset WHERE seuraaja=? AND seurattava=?", minä.id, k);
+    if (on) this.sql.exec("DELETE FROM seuraukset WHERE seuraaja=? AND seurattava=?", minä.id, k);
+    else {
+      if (!this.raja("seuraa:" + minä.id, 200, 86400)) return virhe("Liikaa seurauksia tänään. Yritä huomenna.", 429);
+      this.sql.exec("INSERT INTO seuraukset VALUES(?,?,?)", minä.id, k, nyt());
+    }
+    return json({ ok: true, seuraan: !on, seuraajat: this.yksi("SELECT COUNT(*) AS n FROM seuraukset WHERE seurattava=?", k).n });
   }
   tykkaa(minä, d) {
     const id = +d.id;

@@ -250,3 +250,6 @@ a.nappi{text-decoration:none;display:inline-block}
 .kuva-nappi svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .muokkaus .rivi{align-items:center}.muokkaus .vali{flex:1}
 .kuvaikkuna{max-width:min(96vw,900px)}.kuvaikkuna img{display:block;max-width:100%;max-height:75vh;margin:0 auto 12px;border-radius:10px}
+.seuraa{font:700 .74rem var(--f-b);border:1px solid var(--navy);color:var(--navy);background:transparent;border-radius:99px;padding:1px 10px;cursor:pointer;line-height:1.6}
+.seuraa.on{background:var(--navy);color:#fff}
+@media (prefers-color-scheme:dark){.seuraa{border-color:var(--yel);color:var(--yel)}.seuraa.on{background:var(--yel);color:var(--navy)}}
