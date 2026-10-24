@@ -74,6 +74,59 @@
     return "";
   }
 
+  // ---------- kuvat ----------
+  function kuvaGalleria(kuvat) {
+    if (!kuvat || !kuvat.length) return "";
+    return '<div class="kuvat n' + kuvat.length + '">' + kuvat.map(function (k) {
+      return '<button type="button" class="kuva" data-kuva="' + k.id + '" aria-label="Avaa kuva"><img src="/api/kuva/' + k.id + '" alt="" loading="lazy"' + (k.w && k.h ? ' width="' + k.w + '" height="' + k.h + '"' : "") + "></button>"; }).join("") + "</div>";
+  }
+  function kuvaValitsin(kuvat) {
+    return '<div class="kuvaesikatselu">' + (kuvat || []).map(esikatselu).join("") + "</div>";
+  }
+  function esikatselu(k) {
+    return '<span class="ek' + (k.lataa ? " lataa" : "") + '" data-ek="' + k.avain + '"><img src="' + (k.url || "/api/kuva/" + k.id) + '" alt="">' + (k.lataa ? "<i></i>" : "") + '<button type="button" data-poistakuva="' + k.avain + '" aria-label="Poista kuva">×</button></span>';
+  }
+  // Pienentää kuvan selaimessa (pisin sivu 1600 px) ja tallentaa JPEG:ksi: sijaintitiedot ja muut metatiedot jäävät pois.
+  function pienenna(tiedosto) {
+    return new Promise(function (ok, ei) {
+      var url = URL.createObjectURL(tiedosto), im = new Image();
+      im.onload = function () {
+        var max = 1600, s = Math.min(1, max / Math.max(im.naturalWidth, im.naturalHeight));
+        var w = Math.max(1, Math.round(im.naturalWidth * s)), h = Math.max(1, Math.round(im.naturalHeight * s));
+        var c = document.createElement("canvas"); c.width = w; c.height = h;
+        var g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, w, h); g.drawImage(im, 0, 0, w, h);
+        URL.revokeObjectURL(url);
+        var laatu = 0.85;
+        (function tee() { c.toBlob(function (b) { if (!b) return ei(new Error("Kuvaa ei voitu käsitellä.")); if (b.size > 1700000 && laatu > 0.5) { laatu -= 0.15; return tee(); } ok({ blob: b, w: w, h: h }); }, "image/jpeg", laatu); })();
+      };
+      im.onerror = function () { URL.revokeObjectURL(url); ei(new Error("Tätä kuvatiedostoa ei voi avata.")); };
+      im.src = url;
+    });
+  }
+  var kuvaLaskuri = 0;
+  function lisaaKuvat(f, tiedostot) {
+    f._kuvat = f._kuvat || [];
+    var vapaa = 4 - f._kuvat.length;
+    if (vapaa <= 0) return ilmoitus("Voit liittää enintään 4 kuvaa.", 1);
+    Array.prototype.slice.call(tiedostot, 0, vapaa).forEach(function (t) {
+      if (!/^image\//.test(t.type) && !/\.(jpe?g|png|webp|heic|heif|gif)$/i.test(t.name)) return ilmoitus("Valitse kuvatiedosto.", 1);
+      var k = { avain: "k" + (++kuvaLaskuri), lataa: true, url: URL.createObjectURL(t) };
+      f._kuvat.push(k); $(".kuvaesikatselu", f).insertAdjacentHTML("beforeend", esikatselu(k));
+      pienenna(t).then(function (r) {
+        return fetch("/api/kuva", { method: "POST", credentials: "same-origin", headers: { "content-type": "image/jpeg", "x-leveys": r.w, "x-korkeus": r.h }, body: r.blob }).then(function (x) { return x.json(); });
+      }).then(function (j) {
+        if (j.virhe) throw new Error(j.virhe);
+        k.id = j.id; k.lataa = false; var el = $('[data-ek="' + k.avain + '"]', f); if (el) { el.classList.remove("lataa"); var i = $("i", el); if (i) i.remove(); }
+      }).catch(function (e) {
+        f._kuvat = f._kuvat.filter(function (x) { return x !== k; }); var el = $('[data-ek="' + k.avain + '"]', f); if (el) el.remove();
+        ilmoitus(e.message || "Kuvan lataus epäonnistui.", 1);
+      });
+    });
+  }
+  function kuvatValmiit(f) { return !(f._kuvat || []).some(function (k) { return k.lataa; }); }
+  function kuvaIdt(f) { return (f._kuvat || []).filter(function (k) { return k.id; }).map(function (k) { return k.id; }); }
+  var KUVANAPPI = '<label class="kuva-nappi" title="Lisää kuva"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="M21 16l-5-5-8 8"/></svg><span>Kuva</span><input type="file" name="kuvatiedosto" accept="image/*" multiple hidden></label>';
+
   // ---------- postaus ----------
   function pitka(t) { t = String(t || "").replace(/\n{3,}/g, "\n\n").trim(); return t.length > 420 || t.split("\n").length > 8; }
   function posti(p, iso) {
@@ -82,12 +135,13 @@
     var av = l ? '<a class="av" href="' + l.url + '" rel="noopener" title="Avaa ' + esc(l.nimi) + '" style="background:' + l.vari + '">' + l.lyh + "</a>" : '<span class="av k">' + esc((p.nimi || "?").charAt(0).toUpperCase()) + "</span>";
     if (p.syy) tila.syyt[p.id] = p.syy;
     tila.tekstit = tila.tekstit || {}; tila.tekstit[p.id] = p.teksti;
+    tila.postiKuvat = tila.postiKuvat || {}; tila.postiKuvat[p.id] = p.kuvat || [];
     var nak = p.nakymat || 0;
     var taattu = p.oma && !p.vanhempi && nak < (p.taattu || 30) ? '<div class="taattu"><span class="tpb"><i style="width:' + Math.min(100, 100 * nak / (p.taattu || 30)).toFixed(0) + '%"></i></span>Nähty ' + nak + "/" + (p.taattu || 30) + " · näytämme postauksesi vielä " + ((p.taattu || 30) - nak) + " ihmiselle</div>" : "";
     if (p.piilotettu) return '<article class="posti piilo" data-id="' + p.id + '"><p class="mute">Tämä postaus on poistettu tai piilotettu.</p></article>';
     return '<article class="posti' + (iso ? " iso" : "") + '" data-id="' + p.id + '">' + av + '<div class="pm"><header>' + (l ? '<a class="lahdelinkki" href="' + l.url + '" rel="noopener">' + esc(nimi) + " ↗</a>" : "<b>" + esc(nimi) + "</b>") + (l ? '<span class="auto">automaattinen</span>' : "") + (p.kunta ? '<span class="paikka">📍 ' + esc(p.kunta) + "</span>" : "") +
       '<a class="aika" href="/?p=' + p.id + '" data-avaa="' + p.id + '">' + aika(p.luotu) + "</a>" + (p.muokattu ? '<span class="muokattu">muokattu</span>' : "") + "</header>" +
-      (p.teksti ? '<div class="pt' + (!iso && pitka(p.teksti) ? " tiivis" : "") + '">' + linkit(p.teksti) + "</div>" + (!iso && pitka(p.teksti) ? '<button type="button" class="avaa-teksti" data-avaateksti>Näytä kokonaan</button>' : "") : "") + kortti(p.kortti) + (l && l.palvelu ? '<a class="palvelulinkki" href="' + l.url + '" rel="noopener">' + esc(l.palvelu) + " →</a>" : "") + taattu +
+      (p.teksti ? '<div class="pt' + (!iso && pitka(p.teksti) ? " tiivis" : "") + '">' + linkit(p.teksti) + "</div>" + (!iso && pitka(p.teksti) ? '<button type="button" class="avaa-teksti" data-avaateksti>Näytä kokonaan</button>' : "") : "") + kuvaGalleria(p.kuvat) + kortti(p.kortti) + (l && l.palvelu ? '<a class="palvelulinkki" href="' + l.url + '" rel="noopener">' + esc(l.palvelu) + " →</a>" : "") + taattu +
       '<footer><button type="button" data-vastaa="' + p.id + '" aria-label="Vastaa">' + IK.vastaa + "<span>" + (p.vastaukset || "Vastaa") + '</span></button>' +
       '<button type="button" data-tykkaa="' + p.id + '" class="' + (p.tykkasin ? "on" : "") + '" aria-label="Tykkää">' + IK.tykkaa + "<span>" + (p.tykkaykset || "") + "</span></button>" +
       '<button type="button" data-jaa="' + p.id + '" aria-label="Jaa">' + IK.jaa + "<span>Jaa</span></button>" +
@@ -105,8 +159,9 @@
     if (!tila.mina.nimiOk) return '<form class="kirjoita" id="nimilomake"><b>Kirjoita oma nimesi</b><span>Faktapisteessä keskustellaan omalla nimellä. Etu- ja sukunimesi näkyvät postaustesi yhteydessä. Sähköpostiosoitetta ei näytetä kenellekään.' + (tila.mina.nimi ? " Nimimerkit on vaihdettu oikeisiin nimiin." : "") + '</span><div class="rivi"><input name="nimi" maxlength="60" placeholder="Etunimi Sukunimi" autocomplete="name" required><button class="nappi">Tallenna</button></div></form>';
     return '<form class="kirjoita" data-lomake="' + id + '"' + (vanhempi ? ' data-vanhempi="' + vanhempi + '"' : "") + '>' +
       '<textarea name="teksti" rows="' + (vanhempi ? 2 : 3) + '" placeholder="' + (vanhempi ? "Kirjoita vastaus" : "Mitä mielessä? Jokainen postaus näytetään vähintään 30 ihmiselle.") + '"></textarea>' +
+      kuvaValitsin() +
       '<div class="faktapaneeli" hidden><div class="rivi"><input name="kysymys" maxlength="300" placeholder="Kysy vapaasti, esim. miten perussuomalaiset äänesti kotihoidontuesta?"><button type="button" class="nappi toissijainen" data-hae>Hae</button></div><div class="faktatulos"></div></div>' +
-      '<div class="toiminnot"><button type="button" class="fakta-nappi" data-fakta>🔎 Kysy fakta</button>' + (tila.kunta && !vanhempi ? '<label class="paikkavalinta"><input type="checkbox" name="kunta" checked> 📍 ' + esc(tila.kunta) + "</label>" : "") + '<span class="laskuri"></span><button class="nappi">' + (vanhempi ? "Vastaa" : "Julkaise") + "</button></div></form>";
+      '<div class="toiminnot">' + KUVANAPPI + '<button type="button" class="fakta-nappi" data-fakta>🔎 Kysy fakta</button>' + (tila.kunta && !vanhempi ? '<label class="paikkavalinta"><input type="checkbox" name="kunta" checked> 📍 ' + esc(tila.kunta) + "</label>" : "") + '<span class="laskuri"></span><button class="nappi">' + (vanhempi ? "Vastaa" : "Julkaise") + "</button></div></form>";
   }
 
   // ---------- näkymät ----------
@@ -207,7 +262,7 @@
   document.addEventListener("click", function (e) {
     var avoin = $(".tilivalikko"); if (avoin && !e.target.closest(".tilivalikko, [data-tilivalikko]")) { avoin.remove(); var tb = $("[data-tilivalikko]"); if (tb) tb.setAttribute("aria-expanded", "false"); }
     var b = e.target.closest("button, a[data-avaa]"); if (!b) {
-      var art = e.target.closest(".posti"); if (art && !e.target.closest("a, details, form, .kortti.aanestys, .kortti.fakta") && !art.classList.contains("iso") && !art.classList.contains("piilo")) avaaKetju(art.getAttribute("data-id"), true);
+      var art = e.target.closest(".posti"); if (art && !e.target.closest("a, details, form, label, .kuvat, .kortti.aanestys, .kortti.fakta") && !art.classList.contains("iso") && !art.classList.contains("piilo")) avaaKetju(art.getAttribute("data-id"), true);
       return;
     }
     var d = b.dataset;
@@ -250,16 +305,25 @@
     else if (d.kuntavalinta !== undefined) { var inp = $("#kunta-input"); asetaKunta(inp ? inp.value : ""); }
     else if (d.uusimmat !== undefined) { tila.tab = "uusimmat"; tallenna("fp_tab", "uusimmat"); piirraTabit(); lataaSyote(); window.scrollTo(0, 0); }
     else if (d.muokkaa) {
+      var art = b.closest(".posti");
       var v2 = $(".valikko"); if (v2) v2.remove();
-      var art = document.querySelector('.posti[data-id="' + d.muokkaa + '"]'); if (!art) return;
-      var pt = $(".pt", art); var lomake = '<form class="muokkaus" data-muokkaus="' + d.muokkaa + '"><textarea name="teksti" rows="4"></textarea><div class="rivi"><button type="button" class="nappi toissijainen" data-peru>Peruuta</button><button class="nappi">Tallenna</button></div></form>';
+      if (!art) return;
+      if ($(".muokkaus", art)) return;
+      var at = $(".avaa-teksti", art); if (at) at.remove();
+      var nyk = (tila.postiKuvat[d.muokkaa] || []).map(function (k) { return { avain: "k" + (++kuvaLaskuri), id: k.id }; });
+      var lomake = '<form class="muokkaus" data-muokkaus="' + d.muokkaa + '"><textarea name="teksti" rows="4"></textarea>' + kuvaValitsin(nyk) + '<div class="rivi">' + KUVANAPPI + '<span class="vali"></span><button type="button" class="nappi toissijainen" data-peru>Peruuta</button><button class="nappi">Tallenna</button></div></form>';
+      var pt = $(".pt", art), gal = $(".kuvat", art);
+      if (gal) gal.remove();
       if (pt) pt.outerHTML = lomake; else $("header", art).insertAdjacentHTML("afterend", lomake);
-      var ta = $(".muokkaus textarea", art); ta.value = tila.tekstit[d.muokkaa] || ""; ta.focus();
+      var fm0 = $(".muokkaus", art); fm0._kuvat = nyk;
+      var ta = $("textarea", fm0); ta.value = tila.tekstit[d.muokkaa] || ""; ta.style.height = Math.min(ta.scrollHeight + 4, 600) + "px"; ta.focus();
     }
-    else if (d.peru !== undefined) { var fm = b.closest("form"); var id0 = fm.getAttribute("data-muokkaus"); fm.outerHTML = '<div class="pt">' + linkit(tila.tekstit[id0] || "") + "</div>"; }
+    else if (d.peru !== undefined) { var fm = b.closest("form"); var id0 = fm.getAttribute("data-muokkaus"); fm.outerHTML = (tila.tekstit[id0] ? '<div class="pt">' + linkit(tila.tekstit[id0]) + "</div>" : "") + kuvaGalleria(tila.postiKuvat[id0]); }
+    else if (d.poistakuva) { var fk = b.closest("form"); fk._kuvat = (fk._kuvat || []).filter(function (k) { return k.avain !== d.poistakuva; }); var ek = b.closest(".ek"); if (ek) ek.remove(); }
+    else if (d.kuva) { DLG.innerHTML = '<div class="dlg kuvaikkuna"><img src="/api/kuva/' + (+d.kuva) + '" alt=""><div class="rivi"><a class="nappi toissijainen" href="/api/kuva/' + (+d.kuva) + '" target="_blank" rel="noopener">Avaa koko koossa</a><button type="button" class="nappi" data-sulje>Sulje</button></div></div>'; DLG.showModal(); }
     else if (d.poista) {
       if (!confirmOk("Poistetaanko postaus?")) return;
-      api("poista", { id: +d.poista }).then(function (j) { if (j.virhe) return ilmoitus(j.virhe, 1); ilmoitus("Poistettu."); var a = document.querySelector('.posti[data-id="' + d.poista + '"]'); if (a) a.outerHTML = '<article class="posti piilo"><p class="mute">Postaus poistettu.</p></article>'; });
+      api("poista", { id: +d.poista }).then(function (j) { if (j.virhe) return ilmoitus(j.virhe, 1); ilmoitus("Poistettu."); document.querySelectorAll('.posti[data-id="' + d.poista + '"]').forEach(function (a) { a.outerHTML = '<article class="posti piilo"><p class="mute">Postaus poistettu.</p></article>'; }); });
     }
     else if (d.ilmoita) {
       if (!tila.mina || !tila.mina.nimiOk) { ilmoitus("Ilmoita kirjautuneena tai sähköpostilla: miika@eduskuntaseuranta.fi"); return; }
@@ -286,6 +350,10 @@
       var ta = $("textarea", f); if (!ta.value.trim()) ta.placeholder = "Kirjoita oma näkemyksesi faktan rinnalle";
     });
   }
+  document.addEventListener("change", function (e) {
+    if (e.target.name !== "kuvatiedosto") return;
+    var f = e.target.closest("form"); if (f && e.target.files && e.target.files.length) lisaaKuvat(f, e.target.files); e.target.value = "";
+  });
   document.addEventListener("input", function (e) {
     if (e.target.name === "teksti") { e.target.style.height = "auto"; e.target.style.height = Math.min(e.target.scrollHeight + 4, 600) + "px"; }
   });
@@ -308,24 +376,29 @@
     }
     if (f.dataset.muokkaus) {
       e.preventDefault(); var mid = f.dataset.muokkaus, uusi = f.teksti.value.trim();
-      if (uusi.length < 2) return ilmoitus("Kirjoita jotain.", 1);
-      api("muokkaa", { id: +mid, teksti: uusi }).then(function (j) {
+      if (!kuvatValmiit(f)) return ilmoitus("Odota hetki, kuvaa ladataan.", 1);
+      if (uusi.length < 2 && !kuvaIdt(f).length) return ilmoitus("Kirjoita jotain tai lisää kuva.", 1);
+      var tb = $(".nappi:not(.toissijainen)", f); if (tb) tb.disabled = true;
+      api("muokkaa", { id: +mid, teksti: uusi, kuvat: kuvaIdt(f) }).then(function (j) {
+        if (tb) tb.disabled = false;
         if (j.virhe) return ilmoitus(j.virhe, 1);
-        tila.tekstit[mid] = uusi; var art = f.closest(".posti");
-        f.outerHTML = '<div class="pt">' + linkit(uusi) + "</div>";
+        tila.tekstit[mid] = uusi; tila.postiKuvat[mid] = j.kuvat || []; var art = f.closest(".posti");
+        f.outerHTML = (uusi ? '<div class="pt">' + linkit(uusi) + "</div>" : "") + kuvaGalleria(j.kuvat);
         if (art && !$(".muokattu", art)) $("header", art).insertAdjacentHTML("beforeend", '<span class="muokattu">muokattu</span>');
         ilmoitus("Muutokset tallennettu.");
-      }); return;
+      }, function () { if (tb) tb.disabled = false; ilmoitus("Tallennus epäonnistui. Tarkista verkkoyhteys ja yritä uudelleen.", 1); }); return;
     }
     if (f.dataset.lomake) {
       e.preventDefault();
-      var teksti = f.teksti.value.trim(); if (teksti.length < 2) return ilmoitus("Kirjoita jotain.", 1);
+      var teksti = f.teksti.value.trim();
+      if (!kuvatValmiit(f)) return ilmoitus("Odota hetki, kuvaa ladataan.", 1);
+      if (teksti.length < 2 && !kuvaIdt(f).length) return ilmoitus("Kirjoita jotain tai lisää kuva.", 1);
       var nappi = $(".toiminnot .nappi", f); nappi.disabled = true;
-      api("posti", { teksti: teksti, vanhempi: f.dataset.vanhempi ? +f.dataset.vanhempi : null, kortti: f._fakta || null, kunta: f.kunta && f.kunta.checked ? tila.kunta : null }).then(function (j) {
+      api("posti", { teksti: teksti, vanhempi: f.dataset.vanhempi ? +f.dataset.vanhempi : null, kortti: f._fakta || null, kuvat: kuvaIdt(f), kunta: f.kunta && f.kunta.checked ? tila.kunta : null }).then(function (j) {
         nappi.disabled = false;
         if (j.virhe) return ilmoitus(j.virhe, 1);
         if (f.dataset.vanhempi) { avaaKetju(f.dataset.vanhempi, false); ilmoitus("Vastaus julkaistu."); }
-        else { f.reset(); f._fakta = null; tila.tab = "uusimmat"; piirraTabit(); lataaSyote(); piirraKirjoitus(); ilmoitus("Julkaistu. Näytämme postauksesi vähintään 30 ihmiselle."); }
+        else { f.reset(); f._fakta = null; f._kuvat = []; tila.tab = "uusimmat"; piirraTabit(); lataaSyote(); piirraKirjoitus(); ilmoitus("Julkaistu. Näytämme postauksesi vähintään 30 ihmiselle."); }
       });
     }
   });

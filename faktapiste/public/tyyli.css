@@ -232,3 +232,21 @@ a.nappi{text-decoration:none;display:inline-block}
 .pt.tiivis{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:6;overflow:hidden}
 .avaa-teksti{background:none;border:0;padding:4px 0;margin:0;font:700 .9rem var(--f-b);color:var(--navy2);cursor:pointer}
 @media (prefers-color-scheme:dark){.avaa-teksti{color:var(--yel)}}
+
+/* ---- kuvat ---- */
+.kuvat{display:grid;gap:4px;margin:8px 0 2px;border-radius:14px;overflow:hidden;max-width:520px}
+.kuvat.n1{grid-template-columns:1fr}.kuvat.n2,.kuvat.n4{grid-template-columns:1fr 1fr}.kuvat.n3{grid-template-columns:2fr 1fr}.kuvat.n3 .kuva:first-child{grid-row:span 2}
+.kuva{display:block;padding:0;border:0;background:var(--line);cursor:zoom-in;min-height:0}
+.kuva img{display:block;width:100%;height:100%;object-fit:cover}
+.kuvat.n1 .kuva img{max-height:520px;height:auto}.kuvat:not(.n1) .kuva{aspect-ratio:1}
+.kuvaesikatselu{display:flex;flex-wrap:wrap;gap:8px}.kuvaesikatselu:empty{display:none}
+.kuvaesikatselu{margin:8px 0}
+.ek{position:relative;width:84px;height:84px;border-radius:12px;overflow:hidden;background:var(--line)}
+.ek img{width:100%;height:100%;object-fit:cover;display:block}
+.ek.lataa img{opacity:.45}.ek i{position:absolute;inset:0;margin:auto;width:26px;height:26px;border:3px solid #fff;border-top-color:transparent;border-radius:50%;animation:pyori .8s linear infinite}
+@keyframes pyori{to{transform:rotate(360deg)}}
+.ek button{position:absolute;top:4px;right:4px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(0,0,0,.65);color:#fff;font:700 1rem/26px var(--f-b);padding:0;cursor:pointer}
+.kuva-nappi{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:99px;padding:8px 14px;font:600 .9rem var(--f-b);color:var(--ink);cursor:pointer}
+.kuva-nappi svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.muokkaus .rivi{align-items:center}.muokkaus .vali{flex:1}
+.kuvaikkuna{max-width:min(96vw,900px)}.kuvaikkuna img{display:block;max-width:100%;max-height:75vh;margin:0 auto 12px;border-radius:10px}

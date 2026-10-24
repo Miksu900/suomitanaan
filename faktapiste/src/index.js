@@ -17,6 +17,7 @@ const NIMI_RX = new RegExp("^" + OSA + "(?: " + OSA + ")+$");
 const oikeaNimi = n => !!n && n.length <= 60 && NIMI_RX.test(n);
 const isot = n => n.toLowerCase().replace(/(^|[\s-])([a-zåäöüé])/g, (m, a, b) => a + b.toUpperCase());
 const PITUUS = 100000; // käytännössä rajaton, suojaa vain tietokantaa
+const KUVAT_MAX = 4, KUVA_MAX = 1800000; // kuvia per postaus, tavua per kuva (SQLite-rivin raja 2 Mt)
 const TAATTU = 30;        // jokainen postaus näytetään vähintään näin monelle lukijalle
 const SYOTE_MAX = 25;     // Sinulle-syöte loppuu tähän
 // syötteen säätimien luokat: k=keskustelut, u=uutiset, m=otsikkomuutokset, h=huijausvaroitukset, e=päätökset
@@ -109,7 +110,9 @@ export class Faktapiste extends DurableObject {
       CREATE TABLE IF NOT EXISTS asetukset(k TEXT PRIMARY KEY, v TEXT);
       CREATE TABLE IF NOT EXISTS kutsut(koodi TEXT PRIMARY KEY, kayttoja INTEGER DEFAULT 0, max INTEGER, luotu INTEGER);
       CREATE TABLE IF NOT EXISTS nahdyt(posti INTEGER, katsoja TEXT, luotu INTEGER, PRIMARY KEY(posti, katsoja));
-      CREATE INDEX IF NOT EXISTS nahdyt_katsoja ON nahdyt(katsoja, luotu);`);
+      CREATE INDEX IF NOT EXISTS nahdyt_katsoja ON nahdyt(katsoja, luotu);
+      CREATE TABLE IF NOT EXISTS kuvat(id INTEGER PRIMARY KEY, kayttaja INTEGER, posti INTEGER, data BLOB, tyyppi TEXT, w INTEGER, h INTEGER, luotu INTEGER);
+      CREATE INDEX IF NOT EXISTS kuvat_posti ON kuvat(posti);`);
     // nimet eivät ole enää yksilöllisiä (oikeat nimet voivat toistua): taulu rakennetaan kerran uudelleen
     if ((this.sql.exec("SELECT v FROM asetukset WHERE k='skeema'").toArray()[0] || {}).v !== "2") {
       this.sql.exec(`CREATE TABLE IF NOT EXISTS kayttajat2(id INTEGER PRIMARY KEY, email TEXT UNIQUE, nimi TEXT, luotu INTEGER, esto INTEGER DEFAULT 0);
@@ -181,6 +184,8 @@ export class Faktapiste extends DurableObject {
       const lukija = this.lukija(req, minä);
       if (p === "/api/syote" && m === "GET") return json(this.syote(u, minä, lukija));
       if (p === "/api/nahty" && m === "POST") return json(this.nahty(lukija, await req.json().catch(() => ({}))));
+      if (p.startsWith("/api/kuva/") && m === "GET") return this.naytaKuva(+p.split("/")[3]);
+      if (p === "/api/kuva" && m === "POST") return await this.lataaKuva(req, minä);
       if (p.startsWith("/api/posti/") && m === "GET") return json(this.ketju(+p.split("/")[3], minä));
       if (p === "/api/mina") return json({ kayttaja: minä ? { nimi: minä.nimi, nimiOk: minä.nimiOk, admin: minä.admin } : null,
         tilasto: minä && minä.admin ? { kayttajat: this.yksi("SELECT COUNT(*) AS n FROM kayttajat").n, nimelliset: this.yksi("SELECT COUNT(*) AS n FROM kayttajat WHERE nimi IS NOT NULL").n,
@@ -203,10 +208,11 @@ export class Faktapiste extends DurableObject {
         if (!r || r.piilotettu) return virhe("Postausta ei löytynyt.");
         if (r.kayttaja !== minä.id) return virhe("Voit muokata vain omia postauksiasi.", 403);
         const t = puhdas(d.teksti).replace(/\n{3,}/g, "\n\n");
-        if (t.length < 2) return virhe("Kirjoita jotain.");
+        const kuvat = Array.isArray(d.kuvat) ? this.liitaKuvat(+d.id, minä, d.kuvat) : this.kuvaIdt(+d.id);
+        if (t.length < 2 && !kuvat.length) return virhe("Kirjoita jotain tai lisää kuva.");
         if (t.length > PITUUS) return virhe("Teksti on liian pitkä.");
         this.sql.exec("UPDATE postit SET teksti=?, muokattu=? WHERE id=?", t, nyt(), +d.id);
-        return json({ ok: true });
+        return json({ ok: true, kuvat: this.kuvaIdt(+d.id) });
       }
       if (p === "/api/fakta") return await this.fakta(minä, d);
       if (p === "/api/palauta" && minä.admin) { this.sql.exec("UPDATE postit SET piilotettu=0, ilmoitukset=0 WHERE id=?", +d.id); return json({ ok: true }); }
@@ -289,7 +295,7 @@ export class Faktapiste extends DurableObject {
     let k = null; try { k = r.kortti ? JSON.parse(r.kortti) : null; } catch {}
     return { id: r.id, nimi: r.nimi || null, lahde: r.lahde, teksti: r.piilotettu ? "" : r.teksti, kortti: r.piilotettu ? null : k, vanhempi: r.vanhempi, luotu: r.luotu,
       tykkaykset: r.tykkaykset, vastaukset: r.vastaukset, piilotettu: !!r.piilotettu, oma: !!(minä && r.kayttaja === minä.id),
-      nakymat: r.nakymat || 0, muokattu: r.muokattu || null, kunta: r.kunta || null, syy: r._syy || null, taattu: TAATTU,
+      kuvat: r.piilotettu ? [] : this.kuvaIdt(r.id), nakymat: r.nakymat || 0, muokattu: r.muokattu || null, kunta: r.kunta || null, syy: r._syy || null, taattu: TAATTU,
       tykkasin: !!(minä && this.yksi("SELECT 1 AS x FROM tykkaykset WHERE posti=? AND kayttaja=?", r.id, minä.id)) };
   }
   syote(u, minä, lukija) {
@@ -354,10 +360,43 @@ export class Faktapiste extends DurableObject {
     return { posti: this.muoto(r, minä), vanhempi: vanh ? this.muoto(vanh, minä) : null, vastaukset: v.map(x => this.muoto(x, minä)) };
   }
 
+  // ---- kuvat ----
+  // Selain pienentää kuvan (max 1600 px) ja poistaa samalla sijainti- ym. metatiedot ennen latausta.
+  kuvaIdt(posti) { return this.kaikki("SELECT id, w, h FROM kuvat WHERE posti=? ORDER BY id", posti).map(k => ({ id: k.id, w: k.w, h: k.h })); }
+  async lataaKuva(req, minä) {
+    if (!minä) return virhe("Kirjaudu ensin.", 401);
+    if (minä.esto) return virhe("Tilisi on suljettu.", 403);
+    if (!minä.nimiOk) return virhe("Lisää ensin oma nimesi (etu- ja sukunimi).", 400);
+    const tyyppi = (req.headers.get("content-type") || "").split(";")[0].trim();
+    if (!["image/jpeg", "image/png", "image/webp"].includes(tyyppi)) return virhe("Kuvan muoto ei kelpaa.");
+    if (!this.raja("kuva:" + minä.id, 40, 3600)) return virhe("Olet ladannut paljon kuvia tunnin sisällä. Pidä pieni tauko.", 429);
+    const data = new Uint8Array(await req.arrayBuffer());
+    if (data.length < 100) return virhe("Kuva on tyhjä.");
+    if (data.length > KUVA_MAX) return virhe("Kuva on liian suuri.");
+    const w = Math.min(10000, +req.headers.get("x-leveys") || 0), h = Math.min(10000, +req.headers.get("x-korkeus") || 0);
+    // liittämättömät kuvat siivotaan vuorokauden kuluttua
+    this.sql.exec("DELETE FROM kuvat WHERE posti IS NULL AND luotu<?", nyt() - 86400e3);
+    this.sql.exec("INSERT INTO kuvat(kayttaja, posti, data, tyyppi, w, h, luotu) VALUES(?,?,?,?,?,?,?)", minä.id, null, data, tyyppi, w, h, nyt());
+    return json({ ok: true, id: this.yksi("SELECT last_insert_rowid() AS id").id, w, h });
+  }
+  // Asettaa postauksen kuviksi annetut: omat liittämättömät liitetään, listalta puuttuvat poistetaan.
+  liitaKuvat(posti, minä, idt) {
+    const halutut = [...new Set(idt.map(Number).filter(Boolean))].slice(0, KUVAT_MAX);
+    for (const k of this.kaikki("SELECT id FROM kuvat WHERE posti=?", posti)) if (!halutut.includes(k.id)) this.sql.exec("DELETE FROM kuvat WHERE id=?", k.id);
+    for (const id of halutut) this.sql.exec("UPDATE kuvat SET posti=? WHERE id=? AND kayttaja=? AND posti IS NULL", posti, id, minä.id);
+    return this.kuvaIdt(posti);
+  }
+  naytaKuva(id) {
+    const k = this.yksi("SELECT k.data, k.tyyppi FROM kuvat k JOIN postit p ON p.id=k.posti WHERE k.id=? AND p.piilotettu=0", id);
+    if (!k) return new Response("Kuvaa ei löytynyt", { status: 404, headers: { "cache-control": "no-store" } });
+    return new Response(k.data, { headers: { "content-type": k.tyyppi, "cache-control": "private, max-age=3600", "x-content-type-options": "nosniff", "content-security-policy": "default-src 'none'" } });
+  }
+
   // ---- kirjoittaminen ----
   async uusiPosti(minä, d, lukija) {
     const teksti = puhdas(d.teksti).replace(/\n{3,}/g, "\n\n");
-    if (teksti.length < 2) return virhe("Kirjoita jotain.");
+    const kuvaPyynto = Array.isArray(d.kuvat) ? d.kuvat.map(Number).filter(Boolean).slice(0, KUVAT_MAX) : [];
+    if (teksti.length < 2 && !kuvaPyynto.length) return virhe("Kirjoita jotain tai lisää kuva.");
     if (teksti.length > PITUUS) return virhe("Teksti on liian pitkä.");
     if (!this.raja("p:" + minä.id, 15, 3600)) return virhe("Olet kirjoittanut paljon tunnin sisällä. Pidä pieni tauko.", 429);
     const vanhempi = d.vanhempi ? +d.vanhempi : null;
@@ -370,6 +409,7 @@ export class Faktapiste extends DurableObject {
     const kunta = KUNTA.get(String(d.kunta || "").toLowerCase()) || null;
     this.sql.exec("INSERT INTO postit(kayttaja, lahde, teksti, kortti, vanhempi, luotu, kunta) VALUES(?,?,?,?,?,?,?)", minä.id, "kayttaja", teksti, kortti, vanhempi, nyt(), kunta);
     const id = this.yksi("SELECT last_insert_rowid() AS id").id;
+    if (kuvaPyynto.length) this.liitaKuvat(id, minä, kuvaPyynto);
     if (lukija) this.sql.exec("INSERT OR IGNORE INTO nahdyt VALUES(?,?,?)", id, lukija, nyt()); // oma postaus ei kasvata lukijamäärää
     if (vanhempi) this.sql.exec("UPDATE postit SET vastaukset=vastaukset+1 WHERE id=?", vanhempi);
     return json({ ok: true, id });
@@ -412,6 +452,7 @@ export class Faktapiste extends DurableObject {
     if (!r) return virhe("Postausta ei löytynyt.");
     if (r.kayttaja !== minä.id && !minä.admin) return virhe("Voit poistaa vain omia postauksiasi.", 403);
     this.sql.exec("UPDATE postit SET piilotettu=1, teksti='', kortti=NULL WHERE id=?", +d.id);
+    this.sql.exec("DELETE FROM kuvat WHERE posti=?", +d.id);
     return json({ ok: true });
   }
 
