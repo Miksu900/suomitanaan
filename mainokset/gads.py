@@ -52,12 +52,12 @@ if __name__ == "__main__":
     elif t == "pysayta":
         # Pysäyttää kaikki käynnissä olevat kampanjat (tila PAUSED, ei poistoa – voi palauttaa myöhemmin).
         asiakas = os.environ["ASIAKAS"].replace("-", "")
-        v = kutsu(f"/customers/{asiakas}/googleAds:search", {"query": "SELECT campaign.resource_name, campaign.name, campaign.status FROM campaign WHERE campaign.status = 'ENABLED'"})
+        v = kutsu(f"/customers/{asiakas}/googleAds:search", {"query": "SELECT campaign.resource_name, campaign.name, campaign.status FROM campaign WHERE campaign.status = 'ENABLED' AND campaign.advertising_channel_type != 'VIDEO'"})
         rivit = v.get("results", [])
         ilmoita("Käynnissä ennen", json.dumps([r["campaign"]["name"] for r in rivit], ensure_ascii=False) if "results" in v or "virhe" not in v else json.dumps(v))
         if rivit:
             ops = [{"update": {"resourceName": r["campaign"]["resourceName"], "status": "PAUSED"}, "updateMask": "status"} for r in rivit]
-            ilmoita("Pysäytys", json.dumps(kutsu(f"/customers/{asiakas}/campaigns:mutate", {"operations": ops}), ensure_ascii=False)[:3000])
+            ilmoita("Pysäytys", json.dumps(kutsu(f"/customers/{asiakas}/campaigns:mutate", {"operations": ops, "partialFailure": True}), ensure_ascii=False)[:3000])
         v = kutsu(f"/customers/{asiakas}/googleAds:search", {"query": "SELECT campaign.name, campaign.status FROM campaign WHERE campaign.status != 'REMOVED'"})
         ilmoita("Tila nyt", json.dumps([(r["campaign"]["name"], r["campaign"]["status"]) for r in v.get("results", [])], ensure_ascii=False))
     elif t == "kysely":

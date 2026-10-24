@@ -38,7 +38,7 @@ if __name__ == "__main__":
         kamp = [c for c in v.get("Campaigns", []) if c.get("Status") not in ("Paused", "Deleted")]
         ilmoita("Käynnissä ennen", json.dumps([(c["Name"], c.get("Status")) for c in kamp], ensure_ascii=False) if "Campaigns" in v else json.dumps(v))
         if kamp:
-            ilmoita("Pysäytys", json.dumps(kutsu(CM + "/Campaigns", {"AccountId": AID, "Campaigns": [{"Id": c["Id"], "Status": "Paused"} for c in kamp]}, tapa="PATCH"), ensure_ascii=False)[:2000])
+            ilmoita("Pysäytys", json.dumps(kutsu(CM + "/Campaigns", {"AccountId": AID, "Campaigns": [{"Id": c["Id"], "Status": "Paused"} for c in kamp]}, tapa=os.environ.get("MSTAPA", "PUT")), ensure_ascii=False)[:2000])
         v = kutsu(CM + "/Campaigns/QueryByAccountId", {"AccountId": AID, "CampaignType": "Search,Audience"})
         ilmoita("Tila nyt", json.dumps([(c["Name"], c.get("Status")) for c in v.get("Campaigns", [])], ensure_ascii=False))
     elif t == "kutsu":
