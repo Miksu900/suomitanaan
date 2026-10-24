@@ -62,8 +62,8 @@
   function kortti(k) {
     if (!k) return "";
     if (k.tyyppi === "uutinen") return '<a class="kortti uutinen" href="' + esc(k.url) + '" rel="noopener"><span class="kl">' + esc(k.lahde) + "</span><strong>" + esc(k.otsikko) + "</strong>" + (k.kuvaus ? "<span>" + esc(k.kuvaus) + "</span>" : "") + "</a>";
-    if (k.tyyppi === "muutos") return '<a class="kortti muutos" href="' + esc(k.url) + '" rel="noopener"><span class="kl">Otsikko muuttui · ' + esc(k.media) + '</span><span class="ennen"><em>Ennen</em>' + esc(k.ennen) + '</span><span class="nyt"><em>Nyt</em>' + esc(k.nyt) + "</span></a>";
-    if (k.tyyppi === "varoitus") return '<a class="kortti varoitus" href="' + esc(k.url) + '" rel="noopener"><span class="kl">Huijausvaroitus · ' + esc(k.media) + "</span><strong>" + esc(k.otsikko) + "</strong></a>";
+    if (k.tyyppi === "muutos") return '<a class="kortti muutos" href="' + esc(k.url) + '" rel="noopener"><span class="kl">Otsikko muuttui · ' + esc(k.media) + mm(k) + '</span><span class="ennen"><em>Ennen</em>' + esc(k.ennen) + '</span><span class="nyt"><em>Nyt</em>' + esc(k.nyt) + "</span></a>";
+    if (k.tyyppi === "varoitus") return '<a class="kortti varoitus" href="' + esc(k.url) + '" rel="noopener"><span class="kl">Huijausvaroitus · ' + esc(k.media) + mm(k) + "</span><strong>" + esc(k.otsikko) + "</strong></a>";
     if (k.tyyppi === "aanestys") return '<div class="kortti aanestys"><span class="kl">Eduskunnan äänestys' + (k.pv ? " · " + pvm(k.pv) : "") + "</span><strong>" + esc(k.otsikko) + "</strong>" +
       (k.lisaotsikko ? '<span class="lisa">' + esc(k.lisaotsikko) + "</span>" : "") + (k.tulos ? '<span class="tulos ' + (/Hyväks|Jaa/.test(k.tulos) ? "ok" : "no") + '">' + esc(k.tulos) + "</span>" : "") +
       palkit(k) + ryhmat(k) + '<a class="lue" href="' + esc(k.url) + '" rel="noopener">Katso edustajien äänet Eduskuntaseurannasta →</a></div>';
@@ -74,6 +74,7 @@
     return "";
   }
 
+  function mm(k) { return k.maksumuuri === true ? ' <span class="mmuuri" title="Uutinen on maksumuurin takana">🔒 Maksullinen</span>' : k.maksumuuri === false ? ' <span class="mvapaa" title="Uutinen on ilmainen">Ilmainen</span>' : ""; }
   // ---------- kuvat ----------
   function kuvaGalleria(kuvat) {
     if (!kuvat || !kuvat.length) return "";

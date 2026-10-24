@@ -260,3 +260,6 @@ a.nappi{text-decoration:none;display:inline-block}
 .video-ek{position:relative;display:inline-flex;align-items:center;gap:8px;min-width:150px;padding:6px 34px 6px 6px;border:1px solid var(--line);border-radius:10px;background:var(--bg);font-size:.85rem;font-weight:600}
 .video-ek img{width:56px;height:56px;object-fit:cover;border-radius:8px}
 .video-ek button{position:absolute;top:4px;right:4px}
+.mmuuri,.mvapaa{display:inline-block;margin-left:6px;font-size:.72rem;font-weight:700;border-radius:99px;padding:0 7px;line-height:1.6;vertical-align:1px;text-transform:none;letter-spacing:0}
+.mmuuri{background:#fde8c8;color:#7a4a00}.mvapaa{background:#dff3e6;color:#1f6b3a}
+@media (prefers-color-scheme:dark){.mmuuri{background:#4a3410;color:#ffd79a}.mvapaa{background:#163a24;color:#9fe0b6}}
