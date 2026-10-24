@@ -239,15 +239,11 @@
     var A = $("#fp-arvonta"); if (!A) return;
     api("arvonta").then(function (j) {
       if (!j || !j.kaynnissa) { A.innerHTML = ""; return; }
-      var oma = j.yllapitaja ? "Ylläpitäjänä et osallistu." : j.omat === null ? "Kirjaudu ja kirjoita, niin olet mukana." : "Sinulla on nyt <b>" + j.omat + " " + (j.omat === 1 ? "arpa" : "arpaa") + "</b>.";
-      A.innerHTML = '<div class="arvonta"><span class="arv-ik" aria-hidden="true">🎁</span><div><b>Arvomme ' + esc(j.palkinto) + " " + esc(j.arvontaPv) + "</b>" +
-        "<p>Jokainen kirjoitus ja kommentti on arpa (enintään " + j.maxPv + " päivässä). " + oma + ' <a href="/arvonta/">Säännöt</a></p></div></div>';
+      var la = j.arvonnat, otsikko = "Arvomme " + la.map(function (a) { return a.lyhyt + " (" + a.arvontaPv.replace(/\.20\d\d$/, ".") + ")"; }).join(" ja ") + " K-ryhmän lahjakortit";
+      var omat = la[0].omat, oma = j.yllapitaja ? "Ylläpitäjänä et osallistu." : omat === null ? "Kirjaudu ja kirjoita, niin olet mukana." : "Sinulla on nyt <b>" + omat + " " + (omat === 1 ? "arpa" : "arpaa") + "</b>" + (la.length > 1 ? " kumpaankin arvontaan" : "") + ".";
+      A.innerHTML = '<div class="arvonta"><span class="arv-ik" aria-hidden="true">🎁</span><div><b>' + esc(otsikko) + "</b>" +
+        "<p>Jokainen kirjoitus ja kommentti on arpa (enintään " + j.maxPv + " päivässä). Mitä ahkerammin kirjoitat, sitä paremmat mahdollisuudet. " + oma + ' <a href="/arvonta/">Säännöt</a></p></div></div>';
     });
-  }
-  function piirraTabit() {
-    TABIT.innerHTML = [["sinulle", "Sinulle"], ["seuratut", "Seuratut"], ["uusimmat", "Uusimmat"], ["lahella", tila.kunta ? "📍 " + tila.kunta : "📍 Lähellä"]].map(function (t) {
-      return '<button type="button" role="tab" aria-selected="' + (tila.tab === t[0]) + '" data-tab="' + t[0] + '">' + esc(t[1]) + "</button>"; }).join("") +
-      '<button type="button" class="saato-nappi" data-avaasaato aria-label="Säädä syötettä" title="Säädä syötettä">⚙</button>';
   }
   function lataaSyote(lisaa) {
     if (tila.ladataan) return; tila.ladataan = true;

@@ -17,9 +17,14 @@ const NIMI_RX = new RegExp("^" + OSA + "(?: " + OSA + ")+$");
 const oikeaNimi = n => !!n && n.length <= 60 && NIMI_RX.test(n);
 const isot = n => n.toLowerCase().replace(/(^|[\s-])([a-zåäöüé])/g, (m, a, b) => a + b.toUpperCase());
 const PITUUS = 100000; // käytännössä rajaton, suojaa vain tietokantaa
-// Kuukauden arvonta aktiivisten kirjoittajien kesken (säännöt: /arvonta/).
-const ARVONTA = { kausi: "2026-11", alku: Date.parse("2026-10-25T00:00:00+03:00"), loppu: Date.parse("2026-11-30T23:59:59+02:00"),
-  palkinto: "100 euron lahjakortin K-ryhmään", arvontaPv: "1.12.2026", maxPv: 5, minPituus: 20 };
+// Arvonnat aktiivisten kirjoittajien kesken (säännöt: /arvonta/). Arpa = oma kirjoitus tai kommentti.
+const ARVONNAT = [
+  { kausi: "2026-11", alku: Date.parse("2026-10-25T00:00:00+03:00"), loppu: Date.parse("2026-11-30T23:59:59+02:00"),
+    palkinto: "100 euron lahjakortin K-ryhmään", lyhyt: "100 €", arvontaPv: "1.12.2026", vero: "30 € (alle 50 €:n kuukausirajan, ei ilmoiteta)" },
+  { kausi: "suuri-2027-01", alku: Date.parse("2026-10-25T00:00:00+03:00"), loppu: Date.parse("2027-01-31T23:59:59+02:00"),
+    palkinto: "500 euron lahjakortin K-ryhmään", lyhyt: "500 €", arvontaPv: "1.2.2027", vero: "150 € arpajaisveroa, ilmoita ja maksa OmaVerossa viimeistään 12.4.2027" },
+];
+const ARPA = { maxPv: 5, minPituus: 20 };
 const VIDEO_MAX = 100 * 1024 * 1024, VIDEO_KESTO = 180, VIDEO_TYYPIT = ["video/mp4", "video/webm", "video/quicktime"];
 const KUVAT_MAX = 4, KUVA_MAX = 1800000; // kuvia per postaus, tavua per kuva (SQLite-rivin raja 2 Mt)
 const TAATTU = 30;        // jokainen postaus näytetään vähintään näin monelle lukijalle
@@ -261,7 +266,7 @@ export class Faktapiste extends DurableObject {
         }
         return json(out);
       }
-      if (p === "/api/hallinta/arvonta" && this.env.HALLINTA && req.headers.get("x-avain") === this.env.HALLINTA) return json(await this.arvo(u.searchParams.get("pakota") === "1"));
+      if (p === "/api/hallinta/arvonta" && this.env.HALLINTA && req.headers.get("x-avain") === this.env.HALLINTA) return json(await this.arvo(u.searchParams.get("pakota") === "1", u.searchParams.get("kausi") || ""));
       if (p === "/api/hallinta/fakta" && this.env.HALLINTA && req.headers.get("x-avain") === this.env.HALLINTA) {
         const d = await req.json(); return await this.fakta({ id: 0 }, d);
       }
@@ -490,33 +495,42 @@ export class Faktapiste extends DurableObject {
   }
   // ---- arvonta ----
   // Arpa = oma kirjoitus tai kommentti (vähintään 20 merkkiä, ei poistettu), enintään 5 päivässä; samat tekstit lasketaan kerran.
-  arvat() {
-    const a = ARVONTA;
+  arvat(a) {
     return this.kaikki(`SELECT x.kayttaja, k.nimi, k.email, SUM(MIN(x.n, ?)) AS arvat FROM
       (SELECT kayttaja, date(luotu / 1000, 'unixepoch', '+3 hours') AS pv, COUNT(DISTINCT teksti) AS n FROM postit
         WHERE kayttaja IS NOT NULL AND piilotettu=0 AND length(teksti) >= ? AND luotu BETWEEN ? AND ? GROUP BY kayttaja, pv) x
-      JOIN kayttajat k ON k.id=x.kayttaja WHERE k.esto=0 AND k.nimi IS NOT NULL GROUP BY x.kayttaja`, a.maxPv, a.minPituus, a.alku, a.loppu)
+      JOIN kayttajat k ON k.id=x.kayttaja WHERE k.esto=0 AND k.nimi IS NOT NULL GROUP BY x.kayttaja`, ARPA.maxPv, ARPA.minPituus, a.alku, a.loppu)
       .filter(r => !ADMIN.includes(String(r.email || "").toLowerCase()));
   }
   arvontaTila(minä) {
-    const a = ARVONTA, l = this.arvat(), oma = minä ? (l.find(r => r.kayttaja === minä.id) || { arvat: 0 }).arvat : null;
-    return { palkinto: a.palkinto, arvontaPv: a.arvontaPv, kaynnissa: nyt() >= a.alku && nyt() <= a.loppu, maxPv: a.maxPv,
-      osallistujia: l.length, arvoja: l.reduce((s, r) => s + r.arvat, 0), omat: oma, yllapitaja: !!(minä && minä.admin) };
+    const t = nyt();
+    const kaynnissa = ARVONNAT.filter(a => t >= a.alku && t <= a.loppu).map(a => {
+      const l = this.arvat(a);
+      return { kausi: a.kausi, palkinto: a.palkinto, lyhyt: a.lyhyt, arvontaPv: a.arvontaPv, osallistujia: l.length, arvoja: l.reduce((s, r) => s + r.arvat, 0),
+        omat: minä ? (l.find(r => r.kayttaja === minä.id) || { arvat: 0 }).arvat : null };
+    });
+    return { arvonnat: kaynnissa, kaynnissa: kaynnissa.length > 0, maxPv: ARPA.maxPv, yllapitaja: !!(minä && minä.admin) };
   }
-  async arvo(pakota) {
-    const a = ARVONTA, avain = "arvonta:" + a.kausi;
-    const vanha = this.yksi("SELECT v FROM asetukset WHERE k=?", avain);
-    if (vanha) return { jo: JSON.parse(vanha.v) };
-    if (nyt() <= a.loppu && !pakota) return { virhe: "Arvontakausi on vielä käynnissä." };
-    const l = this.arvat(), yht = l.reduce((s, r) => s + r.arvat, 0);
-    if (!yht) return { virhe: "Ei osallistujia." };
-    const r = new Uint32Array(1); crypto.getRandomValues(r);
-    let x = r[0] % yht, voittaja = l[0];
-    for (const o of l) { if (x < o.arvat) { voittaja = o; break; } x -= o.arvat; }
-    const tulos = { kausi: a.kausi, voittaja: voittaja.nimi, arvat: voittaja.arvat, osallistujia: l.length, arvoja: yht, aika: new Date().toISOString() };
-    this.sql.exec("INSERT INTO asetukset VALUES(?,?)", avain, JSON.stringify(tulos));
-    await telegram(this.env, `🎁 Faktapisteen arvonta ${a.kausi}: voittaja ${voittaja.nimi} (${voittaja.email}), ${voittaja.arvat}/${yht} arpaa, ${l.length} osallistujaa.\nLähetä K-ryhmän lahjakortti ja ilmoita voittajasta Faktapisteessä etunimellä.`);
-    return tulos;
+  // Arpoo kaikki päättyneet, arpomattomat kaudet (tai pakotettuna yhden kauden). Voittomahdollisuus on suhteessa arpojen määrään.
+  async arvo(pakota, kausi) {
+    const tulokset = [];
+    for (const a of ARVONNAT) {
+      if (kausi && a.kausi !== kausi) continue;
+      const avain = "arvonta:" + a.kausi, vanha = this.yksi("SELECT v FROM asetukset WHERE k=?", avain);
+      if (vanha) { tulokset.push({ kausi: a.kausi, jo: true }); continue; }
+      if (nyt() <= a.loppu && !(pakota && kausi)) continue;
+      const l = this.arvat(a), yht = l.reduce((s, r) => s + r.arvat, 0);
+      if (!yht) { tulokset.push({ kausi: a.kausi, virhe: "Ei osallistujia." }); continue; }
+      const r = new Uint32Array(1); crypto.getRandomValues(r);
+      let x = r[0] % yht, voittaja = l[0];
+      for (const o of l) { if (x < o.arvat) { voittaja = o; break; } x -= o.arvat; }
+      const tulos = { kausi: a.kausi, voittaja: voittaja.nimi, arvat: voittaja.arvat, osallistujia: l.length, arvoja: yht, aika: new Date().toISOString() };
+      this.sql.exec("INSERT INTO asetukset VALUES(?,?)", avain, JSON.stringify(tulos));
+      await telegram(this.env, `🎁 Faktapisteen arvonta (${a.lyhyt}, ${a.kausi}): voittaja ${voittaja.nimi} (${voittaja.email}), ${voittaja.arvat}/${yht} arpaa, ${l.length} osallistujaa.\n` +
+        `Lähetä ${a.palkinto.replace("lahjakortin", "lahjakortti")} voittajalle ja ilmoita voitosta Faktapisteessä etunimellä.\nVero: ${a.vero}. Palkinto on voittajalle verovapaa.`);
+      tulokset.push(tulos);
+    }
+    return { tulokset };
   }
 
   // ---- videot (Cloudflare R2) ----

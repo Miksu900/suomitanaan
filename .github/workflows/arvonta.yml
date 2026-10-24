@@ -3,10 +3,11 @@ name: Faktapisteen arvonta
 # Tulos (voittajan nimi ja sähköposti) tulee omistajalle Telegramiin. Sama kausi arvotaan vain kerran.
 on:
   schedule:
-    - cron: "7 7 1 12 *"   # 1.12. klo 9.07 Suomen aikaa
+    - cron: "7 7 1 * *"   # joka kuun 1. päivä klo 9.07 Suomen aikaa: arpoo päättyneet kaudet (1.12. 100 €, 1.2. 500 €)
   workflow_dispatch:
     inputs:
-      pakota: { description: "Arvo jo ennen kauden loppua (1 = kyllä)", required: false, default: "" }
+      pakota: { description: "Arvo jo ennen kauden loppua (1 = kyllä, vaatii kauden)", required: false, default: "" }
+      kausi: { description: "Kausi, esim. 2026-11 tai suuri-2027-01", required: false, default: "" }
 jobs:
   arvo:
     runs-on: ubuntu-latest
@@ -15,5 +16,5 @@ jobs:
           CF: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           HALLINTA=$(printf '%s' "$CF-faktapiste" | sha256sum | cut -c1-40)
-          R=$(curl -sS -X POST -H "x-avain: $HALLINTA" "https://faktapiste.fi/api/hallinta/arvonta?pakota=${{ inputs.pakota }}")
-          echo "::notice title=Arvonta::$(echo "$R" | jq -c '{kausi, osallistujia, arvoja, jo: (.jo != null), virhe}')"
+          R=$(curl -sS -X POST -H "x-avain: $HALLINTA" "https://faktapiste.fi/api/hallinta/arvonta?pakota=${{ inputs.pakota }}&kausi=${{ inputs.kausi }}")
+          echo "::notice title=Arvonta::$(echo "$R" | jq -c '[.tulokset[]? | {kausi, osallistujia, arvoja, jo, virhe}]')"
