@@ -2,7 +2,8 @@
 // 1) Hakee lähteet: Eduskuntaseurannan äänestykset ja viranomaistiedotteet (eduskuntaseuranta.fi/data/halytyslahteet.json)
 // 2) Painottaa aiheita, joista mediat juuri nyt puhuvat (nytpuhutaan.fi/feed.json)
 // 3) Lukee jokaisen lähteen alkuperäisen sivun ja pyytää Claudea kirjoittamaan luonnoksen PELKÄSTÄÄN lähteen perusteella
-// 4) Lähettää luonnokset toimituksen hyväksyntäjonoon (Worker /api/luonnokset). Mitään ei julkaista ilman hyväksyntää.
+// 4) Lähettää jutut (Worker /api/luonnokset). Faktantarkistuksen läpäisseet julkaistaan automaattisesti tekoälymerkinnällä,
+//    myös politiikka (omistajan päätös 25.10.2026). Tarkistuksessa hylätyt menevät toimituksen hyväksyntäjonoon.
 const WORKER = (process.env.WORKER_URL || "").replace(/\/$/, "");
 const PW = process.env.TOIMITUS_SALASANA || "";
 const KEY = process.env.ANTHROPIC_API_KEY || "";
@@ -53,7 +54,7 @@ Säännöt:
 - TOIMITUSLINJA: Suomi Tänään on konservatiivis-oikeistolainen uutissivusto. Linja näkyy kulman valinnassa, otsikossa ja painotuksissa, EI faktojen muuttamisessa. Nosta esiin erityisesti, kun lähde sen sallii: veronmaksajien rahan käyttö ja kustannukset, julkisen talouden kestävyys ja velka, turvallisuus, järjestys ja rikollisuus, rajaturvallisuus ja maahanmuuton vaikutukset ja kustannukset, kansallinen etu ja päätösvalta suhteessa EU:hun, maanpuolustus, perhe, yrittäjyys ja työn tekeminen, sananvapaus sekä byrokratian ja sääntelyn kasvu. Kysy aina: kuka maksaa, kuka hyötyy, kuka päätti.
 - Otsikko saa olla terävä ja kärkevä, mutta siinä ei saa väittää mitään, mitä lähde ei sano. Ei arvailua, ei liioiteltuja lukuja, ei harhaanjohtavia klikkiotsikoita.
 - Uutisteksti pysyy faktoissa: jokainen luku, nimi, lainaus ja päätös täsmälleen lähteen mukaan. Päättäjät nimetään ja heidän vastuunsa kerrotaan suoraan.
-- Kirjoita tekstin VIIMEISEKSI kappaleeksi lyhyt kommentti (1–3 virkettä), joka alkaa sanoilla "Suomi Tänään -näkökulma:". Se on selvästi mielipide konservatiivisesta näkökulmasta: suora ja kantaaottava, kritiikki kohdistuu päätöksiin, politiikkaan ja vallankäyttäjiin. Kommentissa ei esitetä uusia tosiasioita eikä lukuja, joita lähteessä ei ole, eikä leimata ihmisryhmiä. Urheilu-, kulttuuri- ja elämä-uutisiin kommenttia ei kirjoiteta, ellei aihe ole selvästi poliittinen.
+- Kirjoita tekstin VIIMEISEKSI kappaleeksi lyhyt kommentti (1–3 virkettä), joka alkaa sanoilla "Suomi Tänään -näkökulma:". Se on selvästi mielipide oikeistokonservatiivisesta näkökulmasta: suora ja kantaaottava. Israelia ja Lähi-itää koskevissa aiheissa näkökulma on Israel-myönteinen. Kritiikki kohdistuu päätöksiin, politiikkaan ja vallankäyttäjiin. Kommentissa ei esitetä uusia tosiasioita eikä lukuja, joita lähteessä ei ole, eikä leimata ihmisryhmiä. Urheilu-, kulttuuri- ja elämä-uutisiin kommenttia ei kirjoiteta, ellei aihe ole selvästi poliittinen.
 - Kerro aina, kuka sanoo tai päättää mitä ("ministeriön mukaan", "eduskunta hyväksyi"). Väite ja tosiasia pidetään erillään.
 - Jos lähde on yksipuolinen (esim. järjestön tai yrityksen tiedote), kerro selvästi, että kyse on sen omasta näkemyksestä.
 - Äänestyksistä: kerro mitä päätettiin, äänet (jaa/ei/tyhjä/poissa jos lähteessä) ja puolueiden kannat jos ne ovat lähteessä.
@@ -195,8 +196,8 @@ async function main() {
       const politiikka = !e.ulko && (j.kategoria === "Politiikka" || e.tyyppi.startsWith("Eduskunnan"));
       if (politiikka) { if (nPol >= KIINTIO.politiikka) continue; nPol++; j.kategoria = "Politiikka"; }
       else { if (nAuto >= KIINTIO.muut) continue; nAuto++; }
-      let automaattinen = !politiikka;
-      if (automaattinen) {
+      let automaattinen = true;
+      {
         let t = await tarkista(teksti, j);
         if (!t.ok) {  // yksi korjauskierros: kirjoittaja korjaa virheet, tarkistetaan uudelleen
           try {
@@ -204,15 +205,16 @@ async function main() {
             if (k && k.otsikko && k.teksti) { Object.assign(j, { otsikko: k.otsikko, ingressi: k.ingressi, teksti: k.teksti, tiktok: k.tiktok || j.tiktok }); t = await tarkista(teksti, j); }
           } catch (er) { console.log("Korjaus epäonnistui", er.message); }
         }
-        if (!t.ok) { console.log("Tarkistus hylkäsi", j.otsikko + ": " + (t.virheet || []).join(" | ")); automaattinen = false; j.tarkistettavat = [...(t.virheet || []).map(v => "Faktantarkistus: " + v), ...(j.tarkistettavat || [])]; console.log("Ei läpäissyt tarkistusta, toimitukseen:", j.otsikko); nAuto--; nPol++; }
+        if (!t.ok) { console.log("Tarkistus hylkäsi", j.otsikko + ": " + (t.virheet || []).join(" | ")); automaattinen = false; j.tarkistettavat = [...(t.virheet || []).map(v => "Faktantarkistus: " + v), ...(j.tarkistettavat || [])]; console.log("Ei läpäissyt tarkistusta, toimitukseen:", j.otsikko); }
       }
       valmiit.push({ ...j, automaattinen, lahde_url: e.url, lahdetyyppi: e.tyyppi, lahteet: [{ nimi: `${e.lahde}: ${e.otsikko}`.slice(0, 200), url: e.url }] });
-      console.log(politiikka ? "Toimitukseen:" : "Automaattisesti:", j.kategoria, j.otsikko);
+      console.log(automaattinen ? "Automaattisesti:" : "Toimitukseen:", j.kategoria, j.otsikko);
     } catch (err) { console.log("Epäonnistui:", e.url, err.message); }
   }
   if (valmiit.length || valmiit.hylatyt) {
     const r = await fetch(WORKER + "/api/luonnokset", { method: "POST", headers: { authorization: "Bearer " + PW, "content-type": "application/json" }, body: JSON.stringify([...valmiit, ...(valmiit.hylatyt || [])]) });
-    huomio("Luonnokset", `${nPol} politiikan luonnosta toimitukseen, ${nAuto} juttua julkaistu automaattisesti (${r.status}). Ehdokkaat: ${aanestykset.length} äänestystä, ${viranomaiset.length} viranomaista, ${urheilu.length} urheilua, ${kulttuuri.length} kulttuuria, ${elama.length} elämää.`);
+    const nJulk = valmiit.filter(x => x.automaattinen).length, nToim = valmiit.length - nJulk;
+    huomio("Luonnokset", `${nJulk} juttua julkaistu automaattisesti (politiikkaa ${nPol}), ${nToim} toimitukseen tarkistettavaksi (${r.status}). Ehdokkaat: ${aanestykset.length} äänestystä, ${viranomaiset.length} viranomaista, ${urheilu.length} urheilua, ${kulttuuri.length} kulttuuria, ${elama.length} elämää.`);
   } else huomio("Luonnokset", `Ei uusia juttuja. Ehdokkaat: ${aanestykset.length} äänestystä, ${viranomaiset.length} viranomaista, ${urheilu.length} urheilua, ${kulttuuri.length} kulttuuria, ${elama.length} elämää.`);
 }
 main().catch(e => { huomio("Virhe", e.message); process.exit(1); });
