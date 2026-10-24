@@ -8,7 +8,7 @@ const MALLI = "claude-haiku-5-5";
 const ES = "https://eduskuntaseuranta.fi";
 const ES_HAKU = "https://arwenhbwzoavbonlwkdr.supabase.co/functions/v1/haku";
 const ES_AVAIN = "sb_publishable_7baeuteHYaarCEv4-j8C_g_OLxcKzJp";
-const ADMIN = ["miika@eduskuntaseuranta.fi", "miika.koskela990@gmail.com"];
+const ADMIN = ["miika@eduskuntaseuranta.fi", "miika.koskela990@gmail.com", "eduskuntaseuranta@gmail.com"];
 // Testivaiheessa (KIRJAUTUMINEN = "testi") vain nämä osoitteet voivat kirjautua.
 const TESTAAJAT = ADMIN;
 // Keskustelu käydään omalla nimellä: etu- ja sukunimi, isot alkukirjaimet, väliviiva sallittu (Anna-Liisa).
