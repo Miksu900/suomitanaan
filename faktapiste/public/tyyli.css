@@ -1,6 +1,6 @@
-:root{--bg:#f4f2ec;--paper:#fff;--ink:#0f1626;--mute:#5a6273;--line:#e1ddd3;--navy:#0d1b3e;--navy2:#162a5c;--yel:#f5c542;--yel-soft:#fdf3d3;
+:root{--bg:#f6f3f7;--paper:#fff;--ink:#1b1228;--mute:#65597a;--line:#e3dde6;--navy:#2a1050;--navy2:#3d1a6e;--yel:#f5c542;--yel-soft:#fdf3d3;
 --f-d:"Anton",Impact,"Arial Narrow",sans-serif;--f-b:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color-scheme:light}
-@media (prefers-color-scheme:dark){:root{--bg:#0b111e;--paper:#131b2c;--ink:#ecebe6;--mute:#a3abba;--line:#253047;--yel-soft:#2b2612;color-scheme:dark}}
+@media (prefers-color-scheme:dark){:root{--bg:#150b22;--paper:#21142f;--ink:#ecebe6;--mute:#b6aac8;--line:#3a2852;--yel-soft:#2b2612;color-scheme:dark}}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--f-b)}
@@ -14,7 +14,7 @@ a{color:inherit}
 .hdw{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:60px;flex-wrap:wrap}
 .brand{text-decoration:none}
 .hd nav{display:flex;gap:2px}
-.hd nav a{color:#c9d2e6;text-decoration:none;font-weight:600;font-size:.92rem;padding:7px 10px;border-radius:8px}
+.hd nav a{color:#dccff0;text-decoration:none;font-weight:600;font-size:.92rem;padding:7px 10px;border-radius:8px}
 .hd nav a[aria-current],.hd nav a:hover{color:#fff;background:var(--navy2)}
 .hero{background:var(--navy);color:#fff;padding:56px 0 64px;position:relative;overflow:hidden}
 .hero>.w{position:relative;z-index:1}
@@ -23,13 +23,13 @@ a{color:inherit}
 .eyebrow{margin:0 0 12px;font-size:.78rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--yel)}
 h1{font:400 clamp(2.4rem,9vw,4.4rem)/1.02 var(--f-d);margin:0;letter-spacing:.01em;text-transform:uppercase}
 .hero h1 .hl{color:var(--yel)}
-.lead{margin:18px 0 0;color:#c9d2e6;font-size:1.08rem;max-width:62ch}
+.lead{margin:18px 0 0;color:#dccff0;font-size:1.08rem;max-width:62ch}
 h2{font:400 1.7rem/1.1 var(--f-d);text-transform:uppercase;letter-spacing:.02em;margin:0 0 14px}
 .osio{margin:44px 0 16px;display:flex;align-items:center;gap:12px}
 .osio::before{content:"";width:14px;height:14px;border-radius:50%;background:var(--yel);flex:none}
 .ruudukko{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
 .palvelu{display:flex;gap:14px;align-items:flex-start;background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:20px;text-decoration:none;color:var(--ink);transition:transform .15s,border-color .15s,box-shadow .15s}
-.palvelu:hover{transform:translateY(-2px);border-color:var(--yel);box-shadow:0 8px 24px rgba(13,27,62,.1)}
+.palvelu:hover{transform:translateY(-2px);border-color:var(--yel);box-shadow:0 8px 24px rgba(42,16,80,.1)}
 .palvelu:focus-visible{outline:3px solid var(--yel);outline-offset:2px}
 .ik{flex:none;width:46px;height:46px;border-radius:12px;background:var(--navy);color:var(--yel);display:grid;place-items:center}
 .ik svg{width:24px;height:24px}
@@ -47,9 +47,9 @@ h2{font:400 1.7rem/1.1 var(--f-d);text-transform:uppercase;letter-spacing:.02em;
 .teksti{max-width:720px;padding-top:40px;padding-bottom:20px}
 .teksti h1{font-size:clamp(2rem,7vw,3rem);margin-bottom:14px}
 .teksti h2{margin-top:28px;font-size:1.35rem}
-.ft{background:var(--navy);color:#c9d2e6;margin-top:64px;padding:36px 0 28px;font-size:.92rem}
+.ft{background:var(--navy);color:#dccff0;margin-top:64px;padding:36px 0 28px;font-size:.92rem}
 .ft p{max-width:64ch}.ft a{color:#fff}
-.ft .mute{color:#8592ad}
+.ft .mute{color:#a596c2}
 @media (max-width:520px){.hero{padding:40px 0 48px}.palvelu{padding:16px}.hd nav a{padding:6px 8px;font-size:.88rem}}
 @media (prefers-reduced-motion:reduce){.palvelu{transition:none}.palvelu:hover{transform:none}}
 /* ---- keskustelu ---- */
@@ -143,7 +143,7 @@ a.kortti:hover{border-color:var(--yel)}
 .ketju-kirj{margin:12px 0}
 .vast{font-size:1.1rem;margin:20px 0 4px}
 dialog{border:0;border-radius:18px;padding:0;max-width:440px;width:calc(100% - 32px);background:var(--paper);color:var(--ink)}
-dialog::backdrop{background:rgba(5,10,25,.55)}
+dialog::backdrop{background:rgba(20,8,38,.55)}
 .dlg{padding:22px;display:grid;gap:12px}.dlg h2{margin:0}.dlg p{margin:0;color:var(--mute)}.dlg label{display:grid;gap:6px;font-weight:700}
 .pieni{font-size:.85rem}
 .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,120px);background:var(--navy);color:#fff;padding:12px 18px;border-radius:12px;font-weight:600;transition:transform .25s;z-index:50;max-width:calc(100% - 32px)}
