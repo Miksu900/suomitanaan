@@ -141,7 +141,10 @@ if __name__ == "__main__":
                                ("Mainosryhmät", f"/accounts/{tili}/line_items", {}),
                                ("Kohdennus", f"/accounts/{tili}/targeting_criteria", {"line_item_ids": ",".join(l["id"] for l in kutsu(f"/accounts/{tili}/line_items").get("data", [])[:20])}),
                                ("Mainostetut", f"/accounts/{tili}/promoted_tweets", {}),
-                               ("Mainostettavat käyttäjät", f"/accounts/{tili}/promotable_users", {})]:
+                               ("Mainostettavat käyttäjät", f"/accounts/{tili}/promotable_users", {}),
+                               ("Twiitit", f"/accounts/{tili}/tweets", {"tweet_type": "PUBLISHED", "tweet_ids": "2112527313615097910,2113288397074706535", "trim_user": "true"}),
+                               ("Kortit", f"/accounts/{tili}/cards", {}),
+                               ("Mediakirjasto", f"/accounts/{tili}/media_library", {})]:
             ilmoita(nimi, json.dumps(kutsu(polku, p), ensure_ascii=False)[:6000])
     elif toiminto == "pysayta":
         tili, kid = sys.argv[2], sys.argv[3]
