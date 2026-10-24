@@ -38,12 +38,35 @@ export default {
     const u = new URL(req.url);
     if (u.hostname === "www.faktapiste.fi") return Response.redirect("https://faktapiste.fi" + u.pathname + u.search, 301);
     if (u.pathname.startsWith("/api/")) return env.FP.get(env.FP.idFromName("main")).fetch(req);
+    const jm = u.pathname.match(/^\/p\/(\d+)\/?$/);
+    if (jm) return jakosivu(env, u, +jm[1]);
     return env.ASSETS.fetch(req);
   },
   async scheduled(ev, env, ctx) {
     ctx.waitUntil(env.FP.get(env.FP.idFromName("main")).fetch(new Request("https://sisainen/_sisaanluku", { method: "POST" })));
   },
 };
+
+// Jaettava postauslinkki /p/<id>: sama sovellus, mutta esikatselu (X, Facebook, WhatsApp) näyttää postauksen tekstin ja kuvan.
+async function jakosivu(env, u, id) {
+  const sivu = await env.ASSETS.fetch(new Request(u.origin + "/"));
+  let p = null;
+  try { const r = await env.FP.get(env.FP.idFromName("main")).fetch(new Request(u.origin + "/api/posti/" + id)); p = (await r.json()).posti || null; } catch {}
+  if (!p || p.piilotettu) return sivu;
+  const teksti = String(p.teksti || (p.kortti && (p.kortti.otsikko || p.kortti.kysymys)) || "").replace(/\s+/g, " ").trim();
+  const kuvaus = teksti.length > 200 ? teksti.slice(0, 197).replace(/\s+\S*$/, "") + "…" : teksti || "Keskustelu Faktapisteessä.";
+  const otsikko = (p.nimi ? p.nimi + " Faktapisteessä" : "Faktapiste");
+  const kuva = p.kuvat && p.kuvat[0] ? `https://faktapiste.fi/api/kuva/${p.kuvat[0].id}` : "https://faktapiste.fi/og.png";
+  const url = `https://faktapiste.fi/p/${id}`;
+  const aseta = (sel, arvo) => ({ element(e) { e.setAttribute("content", arvo); } });
+  return new HTMLRewriter()
+    .on('meta[property="og:title"]', aseta(0, otsikko)).on('meta[property="og:description"]', aseta(0, kuvaus))
+    .on('meta[name="description"]', aseta(0, kuvaus)).on('meta[property="og:image"]', aseta(0, kuva))
+    .on('meta[property="og:url"]', aseta(0, url)).on('link[rel="canonical"]', { element(e) { e.setAttribute("href", url); } })
+    .on("title", { element(e) { e.setInnerContent(otsikko); } })
+    .on("head", { element(e) { e.append(`<script>history.replaceState(null,"","/?p=${id}")</script>`, { html: true }); } })
+    .transform(new Response(sivu.body, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "public, max-age=300" } }));
+}
 
 // ---------- apurit ----------
 const json = (d, s = 200, h = {}) => new Response(JSON.stringify(d), { status: s, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", ...h } });

@@ -253,3 +253,5 @@ a.nappi{text-decoration:none;display:inline-block}
 .seuraa{font:700 .74rem var(--f-b);border:1px solid var(--navy);color:var(--navy);background:transparent;border-radius:99px;padding:1px 10px;cursor:pointer;line-height:1.6}
 .seuraa.on{background:var(--navy);color:#fff}
 @media (prefers-color-scheme:dark){.seuraa{border-color:var(--yel);color:var(--yel)}.seuraa.on{background:var(--yel);color:var(--navy)}}
+.valikko a{display:block;padding:12px 14px;font:600 .92rem var(--f-b);color:var(--ink);text-decoration:none}
+.valikko a:hover{background:var(--yel-soft)}

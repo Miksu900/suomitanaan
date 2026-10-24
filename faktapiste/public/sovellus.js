@@ -298,10 +298,20 @@
       api("tykkaa", { id: +d.tykkaa }).then(function (j) { if (j.virhe) return ilmoitus(j.virhe, 1); var on = !b.classList.contains("on"); b.classList.toggle("on", on); b.innerHTML = IK.tykkaa + "<span>" + (j.tykkaykset || "") + "</span>"; });
     }
     else if (d.jaa) {
-      var url = location.origin + "/?p=" + d.jaa;
-      if (navigator.share) navigator.share({ url: url, title: "Faktapiste" }).catch(function () {});
-      else if (navigator.clipboard) navigator.clipboard.writeText(url).then(function () { ilmoitus("Linkki kopioitu."); });
+      var vj = $(".valikko"); if (vj) { vj.remove(); if (vj.dataset.jaa === d.jaa) return; }
+      var url = "https://faktapiste.fi/p/" + d.jaa, tx = String((tila.tekstit || {})[d.jaa] || "").replace(/\s+/g, " ").trim();
+      if (tx.length > 180) tx = tx.slice(0, 177).replace(/\s+\S*$/, "") + "…";
+      var e = encodeURIComponent;
+      b.insertAdjacentHTML("afterend", '<div class="valikko jaavalikko" data-jaa="' + d.jaa + '">' +
+        '<a href="https://x.com/intent/post?text=' + e(tx ? tx + " " : "") + "&url=" + e(url) + '" target="_blank" rel="noopener">Jaa X:ään</a>' +
+        '<a href="https://www.facebook.com/sharer/sharer.php?u=' + e(url) + '" target="_blank" rel="noopener">Jaa Facebookiin</a>' +
+        '<a href="https://wa.me/?text=' + e((tx ? tx + " " : "") + url) + '" target="_blank" rel="noopener">Lähetä WhatsAppilla</a>' +
+        '<button type="button" data-kopioilinkki="' + url + '">Kopioi linkki</button>' +
+        (navigator.share ? '<button type="button" data-muujako="' + url + '">Muu sovellus…</button>' : "") + "</div>");
     }
+    else if (d.kopioilinkki) { var cl = d.kopioilinkki; ($(".valikko") || { remove: function () {} }).remove();
+      if (navigator.clipboard) navigator.clipboard.writeText(cl).then(function () { ilmoitus("Linkki kopioitu."); }, function () { prompt("Kopioi linkki:", cl); }); else prompt("Kopioi linkki:", cl); }
+    else if (d.muujako) { var mu = d.muujako; ($(".valikko") || { remove: function () {} }).remove(); navigator.share({ url: mu, title: "Faktapiste" }).catch(function () {}); }
     else if (d.lisaa) {
       var vanha = $(".valikko"); if (vanha) { vanha.remove(); if (vanha.dataset.id === d.lisaa) return; }
       var oma = d.oma === "1" || (tila.mina && tila.mina.admin);
