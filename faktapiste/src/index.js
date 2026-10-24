@@ -27,6 +27,8 @@ const TIEDOTTEET = [
     otsikko: "Yksityisyysvahti: onko sijaintisi myynnissä?",
     kuvaus: "Tarkistuslista Androidille ja iPhonelle sekä valmis tietosuojapyyntö, jolla vaadit yritystä kertomaan tai poistamaan tietosi. Maksuton." },
 ];
+// Suomi Tänään -uutiset tauolla syötteestä viikon (Hei 24.10.2026); palaavat automaattisesti.
+const ST_TAUKO_ASTI = Date.parse("2026-10-31T13:00:00Z");
 const LUOKKA = { kayttaja: "k", suomitanaan: "u", korjausvahti: "m", keraysvahti: "h", eduskunta: "e" };
 const KERROIN = [0, 1, 2.5];
 const MS_CLIENT = "a5c26010-4549-400f-806a-4db7204ab906", MS_PALUU = "https://faktapiste.fi/api/oauth/microsoft";
@@ -300,7 +302,7 @@ export class Faktapiste extends DurableObject {
   }
   syote(u, minä, lukija) {
     const tab = u.searchParams.get("tab") || "sinulle", sivu = Math.max(0, +u.searchParams.get("sivu") || 0);
-    const pohja = "SELECT p.*, k.nimi FROM postit p LEFT JOIN kayttajat k ON k.id=p.kayttaja WHERE p.vanhempi IS NULL AND p.piilotettu=0";
+    const pohja = "SELECT p.*, k.nimi FROM postit p LEFT JOIN kayttajat k ON k.id=p.kayttaja WHERE p.vanhempi IS NULL AND p.piilotettu=0" + (nyt() < ST_TAUKO_ASTI ? " AND p.lahde<>'suomitanaan'" : "");
     const ulos = (rivit, lisa = {}) => ({ postit: rivit.map(r => this.muoto(r, minä)), ...lisa });
     if (tab === "uusimmat") { const r = this.kaikki(pohja + " ORDER BY p.luotu DESC LIMIT 30 OFFSET ?", sivu * 30); return ulos(r, { lisaa: r.length === 30 }); }
     if (tab === "lahella") {
@@ -520,8 +522,8 @@ export class Faktapiste extends DurableObject {
     const tulos = {};
     const hae = async (url, tyyppi = "json") => { const r = await fetch(url, { headers: { "user-agent": "Faktapiste/1.0 (+https://faktapiste.fi)" } }); if (!r.ok) throw new Error(url + " " + r.status); return tyyppi === "json" ? r.json() : r.text(); };
     const ensim = !this.yksi("SELECT id FROM postit WHERE kayttaja IS NULL LIMIT 1");
-    // Suomi Tänään
-    try {
+    // Suomi Tänään (ei haeta tauon aikana, jotta tauon jälkeen syöte ei täyty vanhoilla uutisilla)
+    if (nyt() >= ST_TAUKO_ASTI) try {
       const x = await hae("https://suomitanaan.fi/rss.xml", "text"); let n = 0;
       for (const it of [...x.matchAll(/<item>([\s\S]*?)<\/item>/g)].slice(0, 8)) {
         const g = t => xmlPurku((it[1].match(new RegExp(`<${t}>([\\s\\S]*?)</${t}>`)) || [])[1]);
