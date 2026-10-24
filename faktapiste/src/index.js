@@ -17,6 +17,9 @@ const NIMI_RX = new RegExp("^" + OSA + "(?: " + OSA + ")+$");
 const oikeaNimi = n => !!n && n.length <= 60 && NIMI_RX.test(n);
 const isot = n => n.toLowerCase().replace(/(^|[\s-])([a-zåäöüé])/g, (m, a, b) => a + b.toUpperCase());
 const PITUUS = 100000; // käytännössä rajaton, suojaa vain tietokantaa
+// Kuukauden arvonta aktiivisten kirjoittajien kesken (säännöt: /arvonta/).
+const ARVONTA = { kausi: "2026-11", alku: Date.parse("2026-10-25T00:00:00+03:00"), loppu: Date.parse("2026-11-30T23:59:59+02:00"),
+  palkinto: "100 euron lahjakortti", arvontaPv: "1.12.2026", maxPv: 5, minPituus: 20 };
 const VIDEO_MAX = 100 * 1024 * 1024, VIDEO_KESTO = 180, VIDEO_TYYPIT = ["video/mp4", "video/webm", "video/quicktime"];
 const KUVAT_MAX = 4, KUVA_MAX = 1800000; // kuvia per postaus, tavua per kuva (SQLite-rivin raja 2 Mt)
 const TAATTU = 30;        // jokainen postaus näytetään vähintään näin monelle lukijalle
@@ -258,6 +261,8 @@ export class Faktapiste extends DurableObject {
         }
         return json(out);
       }
+      if (p === "/api/arvonta" && m === "GET") return json(this.arvontaTila(minä));
+      if (p === "/api/hallinta/arvonta" && this.env.HALLINTA && req.headers.get("x-avain") === this.env.HALLINTA) return json(await this.arvo(u.searchParams.get("pakota") === "1"));
       if (p === "/api/hallinta/fakta" && this.env.HALLINTA && req.headers.get("x-avain") === this.env.HALLINTA) {
         const d = await req.json(); return await this.fakta({ id: 0 }, d);
       }
@@ -483,6 +488,37 @@ export class Faktapiste extends DurableObject {
     for (const id of halutut) this.sql.exec("UPDATE kuvat SET posti=? WHERE id=? AND kayttaja=? AND posti IS NULL", posti, id, minä.id);
     return this.kuvaIdt(posti);
   }
+  // ---- arvonta ----
+  // Arpa = oma kirjoitus tai kommentti (vähintään 20 merkkiä, ei poistettu), enintään 5 päivässä; samat tekstit lasketaan kerran.
+  arvat() {
+    const a = ARVONTA;
+    return this.kaikki(`SELECT x.kayttaja, k.nimi, k.email, SUM(MIN(x.n, ?)) AS arvat FROM
+      (SELECT kayttaja, date(luotu / 1000, 'unixepoch', '+3 hours') AS pv, COUNT(DISTINCT teksti) AS n FROM postit
+        WHERE kayttaja IS NOT NULL AND piilotettu=0 AND length(teksti) >= ? AND luotu BETWEEN ? AND ? GROUP BY kayttaja, pv) x
+      JOIN kayttajat k ON k.id=x.kayttaja WHERE k.esto=0 AND k.nimi IS NOT NULL GROUP BY x.kayttaja`, a.maxPv, a.minPituus, a.alku, a.loppu)
+      .filter(r => !ADMIN.includes(String(r.email || "").toLowerCase()));
+  }
+  arvontaTila(minä) {
+    const a = ARVONTA, l = this.arvat(), oma = minä ? (l.find(r => r.kayttaja === minä.id) || { arvat: 0 }).arvat : null;
+    return { palkinto: a.palkinto, arvontaPv: a.arvontaPv, kaynnissa: nyt() >= a.alku && nyt() <= a.loppu, maxPv: a.maxPv,
+      osallistujia: l.length, arvoja: l.reduce((s, r) => s + r.arvat, 0), omat: oma, yllapitaja: !!(minä && minä.admin) };
+  }
+  async arvo(pakota) {
+    const a = ARVONTA, avain = "arvonta:" + a.kausi;
+    const vanha = this.yksi("SELECT v FROM asetukset WHERE k=?", avain);
+    if (vanha) return { jo: JSON.parse(vanha.v) };
+    if (nyt() <= a.loppu && !pakota) return { virhe: "Arvontakausi on vielä käynnissä." };
+    const l = this.arvat(), yht = l.reduce((s, r) => s + r.arvat, 0);
+    if (!yht) return { virhe: "Ei osallistujia." };
+    const r = new Uint32Array(1); crypto.getRandomValues(r);
+    let x = r[0] % yht, voittaja = l[0];
+    for (const o of l) { if (x < o.arvat) { voittaja = o; break; } x -= o.arvat; }
+    const tulos = { kausi: a.kausi, voittaja: voittaja.nimi, arvat: voittaja.arvat, osallistujia: l.length, arvoja: yht, aika: new Date().toISOString() };
+    this.sql.exec("INSERT INTO asetukset VALUES(?,?)", avain, JSON.stringify(tulos));
+    await telegram(this.env, `🎁 Faktapisteen arvonta ${a.kausi}: voittaja ${voittaja.nimi} (${voittaja.email}), ${voittaja.arvat}/${yht} arpaa, ${l.length} osallistujaa.\nLähetä ${a.palkinto} ja ilmoita voittajasta Faktapisteessä etunimellä.`);
+    return tulos;
+  }
+
   // ---- videot (Cloudflare R2) ----
   // Video tallennetaan R2:een sellaisenaan. Selain ottaa videosta kansikuvan, joka näkyy myös linkin esikatselussa.
   videoTieto(posti) {

@@ -263,3 +263,6 @@ a.nappi{text-decoration:none;display:inline-block}
 .mmuuri,.mvapaa{display:inline-block;margin-left:6px;font-size:.72rem;font-weight:700;border-radius:99px;padding:0 7px;line-height:1.6;vertical-align:1px;text-transform:none;letter-spacing:0}
 .mmuuri{background:#fde8c8;color:#7a4a00}.mvapaa{background:#dff3e6;color:#1f6b3a}
 @media (prefers-color-scheme:dark){.mmuuri{background:#4a3410;color:#ffd79a}.mvapaa{background:#163a24;color:#9fe0b6}}
+.arvonta{display:flex;gap:12px;align-items:flex-start;background:var(--yel-soft);border:1px solid var(--yel);border-radius:16px;padding:12px 14px;margin-bottom:12px}
+.arvonta .arv-ik{font-size:1.6rem;line-height:1}
+.arvonta b{display:block}.arvonta p{margin:2px 0 0;font-size:.92rem}.arvonta a{font-weight:700}

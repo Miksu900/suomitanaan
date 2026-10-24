@@ -235,6 +235,15 @@
 
   // ---------- näkymät ----------
   var SYOTE = $("#fp-syote"), KIRJ = $("#fp-kirjoita"), TABIT = $("#fp-tabit");
+  function piirraArvonta() {
+    var A = $("#fp-arvonta"); if (!A) return;
+    api("arvonta").then(function (j) {
+      if (!j || !j.kaynnissa) { A.innerHTML = ""; return; }
+      var oma = j.yllapitaja ? "Ylläpitäjänä et osallistu." : j.omat === null ? "Kirjaudu ja kirjoita, niin olet mukana." : "Sinulla on nyt <b>" + j.omat + " " + (j.omat === 1 ? "arpa" : "arpaa") + "</b>.";
+      A.innerHTML = '<div class="arvonta"><span class="arv-ik" aria-hidden="true">🎁</span><div><b>Arvomme ' + esc(j.palkinto) + " " + esc(j.arvontaPv) + "</b>" +
+        "<p>Jokainen kirjoitus ja kommentti on arpa (enintään " + j.maxPv + " päivässä). " + oma + ' <a href="/arvonta/">Säännöt</a></p></div></div>';
+    });
+  }
   function piirraTabit() {
     TABIT.innerHTML = [["sinulle", "Sinulle"], ["seuratut", "Seuratut"], ["uusimmat", "Uusimmat"], ["lahella", tila.kunta ? "📍 " + tila.kunta : "📍 Lähellä"]].map(function (t) {
       return '<button type="button" role="tab" aria-selected="' + (tila.tab === t[0]) + '" data-tab="' + t[0] + '">' + esc(t[1]) + "</button>"; }).join("") +
@@ -488,6 +497,7 @@
       api("posti", { teksti: teksti, vanhempi: f.dataset.vanhempi ? +f.dataset.vanhempi : null, kortti: f._fakta || null, kuvat: kuvaIdt(f), video: videoId, kunta: f.kunta && f.kunta.checked ? tila.kunta : null }).then(function (j) {
         nappi.disabled = false;
         if (j.virhe) return ilmoitus(j.virhe, 1);
+        piirraArvonta();
         if (f.dataset.vanhempi) { avaaKetju(f.dataset.vanhempi, false); ilmoitus("Vastaus julkaistu."); }
         else { f.reset(); f._fakta = null; f._kuvat = []; f._video = null; tila.tab = "uusimmat"; piirraTabit(); lataaSyote(); piirraKirjoitus(); ilmoitus("Julkaistu. Näytämme postauksesi vähintään 30 ihmiselle."); }
       });
@@ -542,6 +552,6 @@
   if (qs.get("tervetuloa")) { history.replaceState({}, "", "/"); setTimeout(function () { ilmoitus("Olet kirjautunut sisään."); }, 300); }
   piirraTabit();
   tarjoaOpastus();
-  mina().then(function () { if (qs.get("p")) avaaKetju(qs.get("p"), false); });
+  mina().then(function () { piirraArvonta(); if (qs.get("p")) avaaKetju(qs.get("p"), false); });
   lataaSyote();
 })();

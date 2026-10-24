@@ -9,7 +9,7 @@ ROOT = pathlib.Path(__file__).parent / "public"
 SITE = os.environ.get("FAKTAPISTE_URL", "https://faktapiste.fi")
 PV = os.environ.get("PYKALAVAHTI_URL", "https://pykalavahti.fi")
 YHTEYS = "miika@eduskuntaseuranta.fi"
-VER = "31"
+VER = "32"
 esc = html.escape
 
 # avain, nimi, osoite, iskulause, kuvaus, merkki, poliittinen
@@ -112,6 +112,7 @@ runko = f"""<section class="fp-intro"><div class="w">
 <div id="fp-paa">
 <div id="fp-asenna"></div>
 <div id="fp-opastus"></div>
+<div id="fp-arvonta"></div>
 <div id="fp-kirjoita"></div>
 <div class="tabit" id="fp-tabit" role="tablist" aria-label="Syöte"></div>
 <div class="saato" id="fp-saato" hidden></div>
@@ -169,6 +170,25 @@ runko = f"""<section class="w teksti">
 <h2>Käyttöehdot</h2>
 <p>Palvelut ovat tällä hetkellä maksuttomia. Ylläpitäjä pidättää oikeuden muuttaa palveluita ja niiden ehtoja sekä ottaa käyttöön maksullisia ominaisuuksia; muutoksista kerrotaan etukäteen. Tiedot ovat yleistä tietoa eivätkä oikeudellista tai taloudellista neuvontaa.</p>
 </section>"""
+ARVONTA_RUNKO = f"""<section class="teksti w">
+<h1>Arvonta: 100 euron lahjakortti</h1>
+<p>Faktapiste arpoo aktiivisten kirjoittajien kesken <b>100 euron lahjakortin</b>. Osallistuminen on maksutonta, eikä se edellytä ostoa.</p>
+<h2>Säännöt</h2>
+<ul class="lista">
+<li><b>Järjestäjä:</b> Faktapiste, ylläpitäjä Miika Koskela, Ylivieska. Yhteys: <span class="mono">{YHTEYS}</span></li>
+<li><b>Kausi:</b> 25.10.–30.11.2026. Arvonta tehdään 1.12.2026.</li>
+<li><b>Kuka voi osallistua:</b> 18 vuotta täyttäneet Suomessa asuvat Faktapisteen käyttäjät, jotka kirjoittavat omalla nimellään. Ylläpitäjä ei osallistu.</li>
+<li><b>Arvat:</b> jokainen oma kirjoitus ja kommentti on yksi arpa, kun siinä on vähintään 20 merkkiä. Päivässä kertyy enintään 5 arpaa. Sama teksti useaan kertaan lasketaan yhtenä. Mitä useammin kirjoitat ja kommentoit, sitä paremmat mahdollisuudet sinulla on.</li>
+<li><b>Ei roskapostia:</b> poistetut tai sääntöjen vastaiset kirjoitukset eivät ole arpoja. Ylläpitäjä voi hylätä arvat, jos kirjoitukset ovat selvästi vain arpojen keräämistä varten tehtyä roskaa, ja sulkea tilin, joka rikkoo keskustelun sääntöjä.</li>
+<li><b>Arvonta:</b> voittaja arvotaan sattumanvaraisesti tietokoneella. Jokaisen osallistujan voittomahdollisuus on suhteessa hänen arpojensa määrään.</li>
+<li><b>Voittajalle ilmoittaminen:</b> voittajalle ilmoitetaan sähköpostilla siihen osoitteeseen, jolla hän kirjautuu Faktapisteeseen. Voittajan etunimi julkaistaan Faktapisteessä. Jos voittaja ei vastaa 14 päivässä, voittaja arvotaan uudelleen.</li>
+<li><b>Palkinto:</b> 100 euron arvoinen lahjakortti. Palkintoa ei voi vaihtaa rahaksi. Arpajaisveron maksaa järjestäjä, joten palkinto on voittajalle verovapaa.</li>
+<li><b>Tietosuoja:</b> arvonnassa käytetään vain Faktapisteeseen jo tallennettuja tietoja (nimi, sähköposti ja kirjoitusten määrä). Tietoja ei luovuteta eteenpäin.</li>
+<li>Faktapiste ei ole Metan, X:n tai minkään muun palvelun sponsoroima, eikä arvonta liity niihin.</li>
+</ul>
+<p><a class="nappi" href="/">Kirjoita keskusteluun →</a></p>
+</section>"""
+kirjoita("/arvonta/", sivu("/arvonta/", "Arvonta: 100 euron lahjakortti | Faktapiste", "Faktapiste arpoo aktiivisten kirjoittajien kesken 100 euron lahjakortin. Säännöt ja ehdot.", ARVONTA_RUNKO))
 kirjoita("/tietoa/", sivu("/tietoa/", "Tietoa ja tietosuoja | Faktapiste", "Mikä Faktapiste on, kuka sitä ylläpitää, keskustelun säännöt, tietosuoja ja käyttöehdot.", runko))
 
 # ---- Yksityisyysvahti ----
@@ -262,5 +282,5 @@ kirjoita("/yksityisyys/", sivu("/yksityisyys/", "Yksityisyysvahti – onko sijai
 (ROOT / "favicon.svg").write_text('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="32" cy="32" r="32" fill="#160a26"/><text x="32" y="30" font-family="Anton,Impact,sans-serif" font-size="17" fill="#fff" text-anchor="middle">FAKTA</text><text x="32" y="48" font-family="Anton,Impact,sans-serif" font-size="17" fill="#f5c542" text-anchor="middle">PISTE.</text></svg>', encoding="utf-8")
 (ROOT / "robots.txt").write_text(f"User-agent: *\nAllow: /\nSitemap: {SITE}/sitemap.xml\n", encoding="utf-8")
 (ROOT / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
-    + "".join(f"<url><loc>{SITE}{p}</loc></url>" for p in ["/", "/palvelut/", "/tietoa/", "/yksityisyys/"]) + "</urlset>", encoding="utf-8")
+    + "".join(f"<url><loc>{SITE}{p}</loc></url>" for p in ["/", "/palvelut/", "/tietoa/", "/yksityisyys/", "/arvonta/"]) + "</urlset>", encoding="utf-8")
 print("Faktapiste rakennettu:", ROOT)
