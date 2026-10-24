@@ -117,6 +117,7 @@ G1, G2, G3 = glow(420, (40, 80, 180), 100), glow(360, KOROSTE, 45), glow(300, (1
 rng = np.random.default_rng(3); grain = [Image.fromarray(rng.integers(0, 22, (H // 2, W // 2), dtype=np.uint8)).resize((W, H)).convert("L") for _ in range(4)]
 
 BRAND = {"korjaus": ("KORJAUSVAHTI", "nytpuhutaan.fi/muutokset"), "huijaus": ("KERÄYSVAHTI", "keraysvahti.fi/huijaukset"), "eduskunta": ("EDUSKUNTASEURANTA", "eduskuntaseuranta.fi"), "uutinen": ("SUOMI TÄNÄÄN", "suomitanaan.fi")}[TYYPPI]
+if A.get("osoite"): BRAND = (BRAND[0], A["osoite"])
 TAG = pill(BRAND[0], M9(34), NAVY, GOLD + (255,))
 LAHDE = pill("Faktapiste · " + BRAND[1], M6(26), (225, 232, 245), (0, 0, 0, 130), 22, 10)
 
@@ -154,8 +155,11 @@ if TYYPPI == "korjaus":
     POIS = [pill(x[:30], M8(44), WHITE, RED + (255,), 26, 14) for x in D.get("poistettiin", [])[:3] if x]
     LIS = [pill(x[:30], M8(44), NAVY, (120, 225, 160, 255), 26, 14) for x in D.get("lisattiin", [])[:3] if x]
 elif TYYPPI == "huijaus":
-    VAR = pill("HUIJAUSVAROITUS", M9(52), WHITE, RED + (255,), 36, 20)
-    UUTINEN = kortti(("UUTINEN · " + D.get("media", "")).upper(), D["otsikko"], RED)
+    # Valinnaiset kentät käsin tehtyihin videoihin (kasivideo.json): merkki, vinkkiotsikko, osoite.
+    # Ilman niitä video on tavallinen huijausvaroitus.
+    _NEUT = bool(A.get("merkki"))
+    VAR = pill(A.get("merkki") or "HUIJAUSVAROITUS", M9(52), WHITE, ((40, 110, 255) if _NEUT else RED) + (255,), 36, 20)
+    UUTINEN = kortti(("UUTINEN · " + D.get("media", "")).upper(), D["otsikko"], (40, 110, 255) if _NEUT else RED)
     VINKIT = [v for v in (A.get("vinkit") or []) if v][:2]
 elif TYYPPI == "uutinen":
     UOTS = kortti("SUOMI TÄNÄÄN · UUTINEN", D["otsikko"], (180, 35, 44))
@@ -192,7 +196,7 @@ def kohtaus(base, si, lt, gt):
     if si == 0:
         paste_c(base, KOUKKU, W / 2, 640, back(lt * 3) * (1 + 0.02 * math.sin(gt * 6)))
         mer = MEDIA if TYYPPI == "korjaus" else VAR if TYYPPI == "huijaus" else pill("UUTINEN", M9(52), WHITE, (180, 35, 44, 255), 36, 20) if TYYPPI == "uutinen" else pill("ÄÄNESTYS", M9(52), WHITE, (40, 110, 255, 255), 36, 20)
-        paste_c(base, mer, W / 2, 380, back(lt * 3 - 0.4))
+        paste_c(base, mer, W / 2, min(380, 640 - KOUKKU.height / 2 - 60), back(lt * 3 - 0.4))
         return
     if si == 4:
         paste_c(base, text_img(BRAND[0], ANTON(130), GOLD), W / 2, 600, back(lt * 3))
@@ -217,7 +221,7 @@ def kohtaus(base, si, lt, gt):
             paste_c(base, VAR, W / 2, 380, 1)
             paste_c(base, UUTINEN, W / 2, 780, back(lt * 3))
         else:
-            paste_c(base, text_img("NÄIN SUOJAUDUT", ANTON(110), GOLD), W / 2, 380, back((t - SC[2]) * 3))
+            paste_c(base, text_img(A.get("vinkkiotsikko") or "NÄIN SUOJAUDUT", ANTON(110 if len(A.get("vinkkiotsikko") or "") < 16 else 86), GOLD), W / 2, 380, back((t - SC[2]) * 3))
             for k, v in enumerate(VINKIT):
                 if t >= SC[2 + k] - 0.1:
                     q = t - SC[2 + k]

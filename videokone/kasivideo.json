@@ -1,0 +1,22 @@
+{
+  "tyyppi": "huijaus",
+  "merkki": "UUTINEN",
+  "vinkkiotsikko": "ENNEN KUIN LAHJOITAT",
+  "osoite": "keraysvahti.fi",
+  "koukku": "Hyvä tarkoitus ei aina toteudu.",
+  "data": {
+    "otsikko": "Puolet Vaasan SPR:n kirppikselle lahjoitetuista tekstiileistä päätyy kaatopaikalle",
+    "media": "Yle",
+    "url": "https://yle.fi/a/74-20252948"
+  },
+  "lauseet": [
+    "Hyvä tarkoitus ei aina toteudu.",
+    "Ylen mukaan puolet Vaasan SPR:n kirppikselle lahjoitetuista tekstiileistä päätyy kaatopaikalle.",
+    "Tavaralahjoituksen kohtaloa on vaikea tarkistaa, mutta rahalahjoituksesta voit tarkistaa, onko keräyksellä poliisin lupa.",
+    "Ja voit varmistaa, että tilinumero kuuluu oikeasti järjestölle.",
+    "Tarkista ennen kuin lahjoitat: keräysvahti piste fi."
+  ],
+  "vinkit": ["Tarkista keräyksen lupa", "Vertaa tilinumeroa"],
+  "kuvateksti": "Hyvä tarkoitus ei aina toteudu: Ylen mukaan puolet Vaasan SPR:n kirppikselle lahjoitetuista tekstiileistä päätyy kaatopaikalle. Rahalahjoituksesta voit sentään tarkistaa, onko keräyksellä poliisin lupa ja kuuluuko tilinumero järjestölle. Tarkista ilmaiseksi: keraysvahti.fi",
+  "hashtagit": ["keräysvahti", "lahjoitus", "hyväntekeväisyys", "kierrätys", "suomi", "fyp"]
+}

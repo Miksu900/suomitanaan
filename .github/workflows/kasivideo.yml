@@ -1,0 +1,53 @@
+name: Käsivideo (yksittäinen video Telegramiin)
+# Tekee videon käsin kirjoitetusta käsikirjoituksesta videokone/kasivideo.json (sama muoto kuin aihe.json).
+# Ääni ElevenLabsilla (Christoffer, 1.05x), renderöinti videokone/render.py, lähetys Telegramiin saatetekstin kanssa.
+on:
+  push:
+    branches: [main]
+    paths: ["videokone/kasivideo.json", ".github/workflows/kasivideo.yml"]
+  workflow_dispatch:
+    inputs:
+      tempo: { description: "Puheen nopeutus", required: false, default: "1.05" }
+concurrency: { group: kasivideo, cancel-in-progress: true }
+jobs:
+  video:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      VOICE: 3OArekHEkHv5XvmZirVD
+      TEMPO: ${{ inputs.tempo || '1.05' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Työkalut
+        run: |
+          which ffmpeg || (sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg)
+          pip install -q pillow numpy
+      - name: Ääni
+        env:
+          EL: ${{ secrets.ELEVENLABS_API_KEY }}
+        run: |
+          set -e
+          mkdir tyo && cp videokone/kasivideo.json tyo/aihe.json && cd tyo
+          jq '{text: (.lauseet|join(" ")), model_id: "eleven_multilingual_v2", voice_settings: {stability: 0.45, similarity_boost: 0.8, style: 0.35}}' aihe.json > body.json
+          curl -sS -f -X POST "https://api.elevenlabs.io/v1/text-to-speech/$VOICE/with-timestamps?output_format=mp3_44100_128" -H "xi-api-key: $EL" -H "content-type: application/json" -d @body.json -o vastaus.json
+          jq -r .audio_base64 vastaus.json | base64 -d > aani.mp3 && jq .alignment vastaus.json > ajoitus.json && rm vastaus.json
+      - name: Video
+        working-directory: tyo
+        run: python3 ../videokone/render.py && ls -la video.mp4
+      - uses: actions/upload-artifact@v4
+        with: { name: kasivideo, path: tyo/video.mp4, retention-days: 14 }
+      - name: Telegramiin
+        working-directory: tyo
+        env:
+          TG: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        run: |
+          T=$(jq -r '.kuvateksti + "\n\n" + ((.hashtagit // []) | map("#" + gsub(" "; "")) | join(" ")) + "\n\nLähde: " + .data.url' aihe.json)
+          R=$(curl -sS -X POST "https://api.telegram.org/bot$TG/sendVideo" -F chat_id=1893930799 -F supports_streaming=true -F video=@video.mp4 -F "caption=$(printf '%s' "$T" | head -c 1000)")
+          echo "::notice title=Telegram::$(echo "$R" | jq -c '.ok')"
+          V=$(printf '🎬 Video yllä. Saateteksti kopioitavaksi:\n\n%s' "$T")
+          curl -sS -X POST "https://api.telegram.org/bot$TG/sendMessage" -H "content-type: application/json" \
+            -d "$(jq -n --arg t "$V" '{chat_id: "1893930799", text: $t, disable_web_page_preview: true}')" > /dev/null
+      - name: Ilmoita virheestä
+        if: failure()
+        run: |
+          curl -sS -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" -d chat_id=1893930799 --data-urlencode "text=⚠️ Käsivideo ei onnistunut. Katso: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" > /dev/null
