@@ -6,8 +6,8 @@
   "start_url": "/?lahde=sovellus",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#2a1050",
-  "theme_color": "#2a1050",
+  "background_color": "#160a26",
+  "theme_color": "#160a26",
   "icons": [
     { "src": "/ikoni-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "/ikoni-512.png", "sizes": "512x512", "type": "image/png" },

@@ -259,9 +259,9 @@ export class Faktapiste extends DurableObject {
     this.sql.exec("INSERT INTO linkit VALUES(?,?,?)", await tiiviste(t), email, nyt() + 30 * 60e3);
     const linkki = `https://faktapiste.fi/api/vahvista?t=${t}`;
     const html = `<div style="max-width:520px;margin:0 auto;font:16px/1.55 -apple-system,Segoe UI,sans-serif;color:#1b1228">
-<div style="background:#2a1050;color:#fff;padding:16px 20px;border-radius:12px;font:700 22px Impact,sans-serif;letter-spacing:.03em">FAKTA<span style="color:#f5c542">PISTE.</span></div>
+<div style="background:#160a26;color:#fff;padding:16px 20px;border-radius:12px;font:700 22px Impact,sans-serif;letter-spacing:.03em">FAKTA<span style="color:#f5c542">PISTE.</span></div>
 <p>Hei! Kirjaudu Faktapisteeseen alla olevasta painikkeesta. Linkki on voimassa 30 minuuttia.</p>
-<p><a href="${linkki}" style="display:inline-block;background:#f5c542;color:#2a1050;padding:12px 20px;border-radius:10px;text-decoration:none;font-weight:700">Kirjaudu Faktapisteeseen</a></p>
+<p><a href="${linkki}" style="display:inline-block;background:#f5c542;color:#160a26;padding:12px 20px;border-radius:10px;text-decoration:none;font-weight:700">Kirjaudu Faktapisteeseen</a></p>
 <p style="color:#65597a;font-size:14px">Jos et pyytänyt tätä viestiä, voit jättää sen huomiotta. Kukaan ei pääse tilillesi ilman tätä linkkiä.</p></div>`;
     const r = await fetch("https://api.brevo.com/v3/smtp/email", { method: "POST", headers: { "api-key": this.env.BREVO_API_KEY, "content-type": "application/json", accept: "application/json" },
       body: JSON.stringify({ sender: { email: "miika@eduskuntaseuranta.fi", name: "Faktapiste" }, to: [{ email }], subject: "Kirjautumislinkki Faktapisteeseen", htmlContent: html }) });

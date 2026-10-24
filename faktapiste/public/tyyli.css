@@ -1,6 +1,6 @@
-:root{--bg:#f6f3f7;--paper:#fff;--ink:#1b1228;--mute:#65597a;--line:#e3dde6;--navy:#2a1050;--navy2:#3d1a6e;--yel:#f5c542;--yel-soft:#fdf3d3;
+:root{--bg:#f6f3f7;--paper:#fff;--ink:#1b1228;--mute:#65597a;--line:#e3dde6;--navy:#160a26;--navy2:#2a1446;--yel:#f5c542;--yel-soft:#fdf3d3;
 --f-d:"Anton",Impact,"Arial Narrow",sans-serif;--f-b:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color-scheme:light}
-@media (prefers-color-scheme:dark){:root{--bg:#150b22;--paper:#21142f;--ink:#ecebe6;--mute:#b6aac8;--line:#3a2852;--yel-soft:#2b2612;color-scheme:dark}}
+@media (prefers-color-scheme:dark){:root{--bg:#0d0716;--paper:#180e25;--ink:#ecebe6;--mute:#b6aac8;--line:#2c1f3e;--yel-soft:#2b2612;color-scheme:dark}}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--f-b)}
@@ -29,7 +29,7 @@ h2{font:400 1.7rem/1.1 var(--f-d);text-transform:uppercase;letter-spacing:.02em;
 .osio::before{content:"";width:14px;height:14px;border-radius:50%;background:var(--yel);flex:none}
 .ruudukko{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
 .palvelu{display:flex;gap:14px;align-items:flex-start;background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:20px;text-decoration:none;color:var(--ink);transition:transform .15s,border-color .15s,box-shadow .15s}
-.palvelu:hover{transform:translateY(-2px);border-color:var(--yel);box-shadow:0 8px 24px rgba(42,16,80,.1)}
+.palvelu:hover{transform:translateY(-2px);border-color:var(--yel);box-shadow:0 8px 24px rgba(22,10,38,.1)}
 .palvelu:focus-visible{outline:3px solid var(--yel);outline-offset:2px}
 .ik{flex:none;width:46px;height:46px;border-radius:12px;background:var(--navy);color:var(--yel);display:grid;place-items:center}
 .ik svg{width:24px;height:24px}
@@ -143,7 +143,7 @@ a.kortti:hover{border-color:var(--yel)}
 .ketju-kirj{margin:12px 0}
 .vast{font-size:1.1rem;margin:20px 0 4px}
 dialog{border:0;border-radius:18px;padding:0;max-width:440px;width:calc(100% - 32px);background:var(--paper);color:var(--ink)}
-dialog::backdrop{background:rgba(20,8,38,.55)}
+dialog::backdrop{background:rgba(10,4,18,.55)}
 .dlg{padding:22px;display:grid;gap:12px}.dlg h2{margin:0}.dlg p{margin:0;color:var(--mute)}.dlg label{display:grid;gap:6px;font-weight:700}
 .pieni{font-size:.85rem}
 .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,120px);background:var(--navy);color:#fff;padding:12px 18px;border-radius:12px;font-weight:600;transition:transform .25s;z-index:50;max-width:calc(100% - 32px)}
