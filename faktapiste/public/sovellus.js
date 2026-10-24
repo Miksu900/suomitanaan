@@ -133,49 +133,65 @@
     return '<div class="video"><video controls playsinline preload="' + (v.kansi ? "none" : "metadata") + '" src="/api/video/' + v.id + '"' + (v.kansi ? ' poster="/api/video/' + v.id + '/kansi"' : "") +
       (v.w && v.h ? ' width="' + v.w + '" height="' + v.h + '"' : "") + "></video></div>";
   }
-  // Lukee videon mitat ja keston sekä ottaa kansikuvan (JPEG) selaimessa.
+  // Lukee videon mitat ja keston sekä ottaa kansikuvan (JPEG) selaimessa. Ei koskaan jää jumiin:
+  // jos puhelin ei suostu purkamaan videota, palautetaan se mitä saatiin (lataus ei odota tätä).
   function videoTiedot(t) {
-    return new Promise(function (ok, ei) {
-      var url = URL.createObjectURL(t), v = document.createElement("video"), valmis = false;
-      v.muted = true; v.playsInline = true; v.preload = "metadata"; v.src = url;
-      v.onerror = function () { ei(new Error("Tätä videota ei voi avata selaimessa. Kokeile MP4-muotoa.")); };
-      v.onloadedmetadata = function () { try { v.currentTime = Math.min(1, (v.duration || 2) / 3); } catch (x) { v.onseeked(); } };
+    return new Promise(function (ok) {
+      var url = URL.createObjectURL(t), v = document.createElement("video"), valmis = false, m = { w: 0, h: 0, kesto: 0, kansi: null };
+      var lopeta = function () { if (valmis) return; valmis = true; try { v.removeAttribute("src"); v.load(); } catch (x) {} if (v.parentNode) v.remove(); URL.revokeObjectURL(url); ok(m); };
+      v.muted = true; v.playsInline = true; v.preload = "auto"; v.setAttribute("playsinline", "");
+      v.style.cssText = "position:fixed;left:-9999px;width:2px;height:2px;opacity:0"; document.body.appendChild(v);
+      setTimeout(lopeta, 8000);
+      v.onerror = lopeta;
+      v.onloadedmetadata = function () { m.w = v.videoWidth; m.h = v.videoHeight; m.kesto = v.duration || 0; try { v.currentTime = Math.min(1, (v.duration || 2) / 3); } catch (x) { lopeta(); } };
       v.onseeked = function () {
-        if (valmis) return; valmis = true;
-        var w = v.videoWidth, h = v.videoHeight, s = Math.min(1, 1280 / Math.max(w, h, 1)), c = document.createElement("canvas");
-        c.width = Math.round(w * s); c.height = Math.round(h * s);
-        try { c.getContext("2d").drawImage(v, 0, 0, c.width, c.height); } catch (x) {}
-        c.toBlob(function (kansi) { ok({ w: w, h: h, kesto: v.duration || 0, kansi: kansi, url: url }); }, "image/jpeg", 0.82);
+        try {
+          var s = Math.min(1, 1280 / Math.max(m.w, m.h, 1)), c = document.createElement("canvas");
+          c.width = Math.round(m.w * s) || 320; c.height = Math.round(m.h * s) || 180;
+          c.getContext("2d").drawImage(v, 0, 0, c.width, c.height);
+          c.toBlob(function (kansi) { m.kansi = kansi; lopeta(); }, "image/jpeg", 0.82);
+        } catch (x) { lopeta(); }
       };
+      v.src = url;
     });
   }
   function lisaaVideo(f, t) {
     if (!tila.video) return ilmoitus("Videoiden lataus avautuu pian.", 1);
     if (f._video) return ilmoitus("Voit liittää yhden videon postausta kohden.", 1);
-    if (t.size > 100 * 1024 * 1024) return ilmoitus("Video on liian suuri (enintään 100 Mt).", 1);
-    var tyyppi = t.type || (/\.mov$/i.test(t.name) ? "video/quicktime" : /\.webm$/i.test(t.name) ? "video/webm" : "video/mp4");
+    if (t.size > 100 * 1024 * 1024) return ilmoitus("Video on liian suuri (enintään 100 Mt). Lyhennä videota tai tallenna se pienemmällä laadulla.", 1);
+    var tyyppi = /^video\/(mp4|webm|quicktime)$/.test(t.type) ? t.type : /\.mov$/i.test(t.name) ? "video/quicktime" : /\.webm$/i.test(t.name) ? "video/webm" : "video/mp4";
     var vid = { lataa: true }; f._video = vid;
-    var paikka = $(".kuvaesikatselu", f);
-    paikka.insertAdjacentHTML("beforeend", '<span class="ek video-ek lataa" data-ek="video"><span class="edistys">Ladataan video… 0 %</span><button type="button" data-poistavideo aria-label="Poista video">×</button></span>');
-    var el = $('[data-ek="video"]', f), pros = $(".edistys", el);
-    var poista = function (viesti) { f._video = null; if (el) el.remove(); if (viesti) ilmoitus(viesti, 1); };
-    videoTiedot(t).then(function (m) {
+    $(".kuvaesikatselu", f).insertAdjacentHTML("beforeend", '<span class="ek video-ek lataa" data-ek="video"><span class="edistys">Ladataan video… 0 %</span><button type="button" data-poistavideo aria-label="Poista video">×</button></span>');
+    var el = $('[data-ek="video"]', f), pros = $(".edistys", el), mb = (t.size / 1048576).toFixed(0);
+    var poista = function (viesti) { if (vid.xhr && vid.lataa) try { vid.xhr.abort(); } catch (x) {} if (f._video === vid) f._video = null; if (el) el.remove(); if (viesti) ilmoitus(viesti, 1); };
+    // Lataus alkaa heti; kansikuva ja mitat haetaan samaan aikaan.
+    var x = new XMLHttpRequest(); vid.xhr = x;
+    x.open("POST", "/api/video"); x.withCredentials = true; x.timeout = 15 * 60 * 1000;
+    x.setRequestHeader("content-type", tyyppi);
+    x.upload.onprogress = function (e) { if (e.lengthComputable && pros && vid.lataa) pros.textContent = "Ladataan video (" + mb + " Mt)… " + Math.round(100 * e.loaded / e.total) + " %"; };
+    x.onerror = function () { poista("Videon lataus katkesi. Tarkista verkkoyhteys ja yritä uudelleen."); };
+    x.ontimeout = function () { poista("Videon lataus kesti liian kauan. Kokeile lyhyempää videota tai parempaa yhteyttä."); };
+    var tiedot = videoTiedot(t), kansiLahetetty = false;
+    var lahetaKansi = function () {
+      if (kansiLahetetty || !vid.id) return; tiedot.then(function (m) {
+        if (kansiLahetetty || !m.kansi) return; kansiLahetetty = true;
+        fetch("/api/video/kansi?id=" + vid.id, { method: "POST", credentials: "same-origin", headers: { "content-type": "image/jpeg" }, body: m.kansi });
+      });
+    };
+    x.onload = function () {
+      var j = {}; try { j = JSON.parse(x.responseText); } catch (er) {}
+      if (j.virhe || !j.id) return poista(j.virhe || "Videon lataus epäonnistui (" + x.status + ").");
+      vid.id = j.id; vid.lataa = false; el.classList.remove("lataa"); if (pros) pros.textContent = "✓ Video valmis";
+      lahetaKansi();
+    };
+    tiedot.then(function (m) {
       if (f._video !== vid) return;
       if (m.kesto > 181) return poista("Video on liian pitkä (enintään 3 minuuttia).");
       if (m.kansi) el.insertAdjacentHTML("afterbegin", '<img src="' + URL.createObjectURL(m.kansi) + '" alt="">');
-      var x = new XMLHttpRequest(); vid.xhr = x;
-      x.open("POST", "/api/video"); x.withCredentials = true;
-      x.setRequestHeader("content-type", tyyppi); x.setRequestHeader("x-leveys", m.w); x.setRequestHeader("x-korkeus", m.h); x.setRequestHeader("x-kesto", m.kesto.toFixed(1));
-      x.upload.onprogress = function (e) { if (e.lengthComputable && pros) pros.textContent = "Ladataan video… " + Math.round(100 * e.loaded / e.total) + " %"; };
-      x.onerror = function () { poista("Videon lataus epäonnistui. Tarkista verkkoyhteys."); };
-      x.onload = function () {
-        var j = {}; try { j = JSON.parse(x.responseText); } catch (er) {}
-        if (j.virhe || !j.id) return poista(j.virhe || "Videon lataus epäonnistui.");
-        vid.id = j.id; vid.lataa = false; el.classList.remove("lataa"); if (pros) pros.textContent = "Video valmis";
-        if (m.kansi) fetch("/api/video/kansi?id=" + j.id, { method: "POST", credentials: "same-origin", headers: { "content-type": "image/jpeg" }, body: m.kansi });
-      };
-      x.send(t);
-    }, function (e) { poista(e.message); });
+      lahetaKansi();
+    });
+    x.setRequestHeader("x-kesto", "0");
+    x.send(t);
   }
   var KUVANAPPI = '<label class="kuva-nappi" title="Lisää kuva"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="M21 16l-5-5-8 8"/></svg><span>Kuva</span><input type="file" name="kuvatiedosto" accept="image/*" multiple hidden></label>';
 

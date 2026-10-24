@@ -38,6 +38,7 @@ export default {
   async fetch(req, env, ctx) {
     const u = new URL(req.url);
     if (u.hostname === "www.faktapiste.fi") return Response.redirect("https://faktapiste.fi" + u.pathname + u.search, 301);
+    if (u.pathname === "/api/video" && req.method === "POST") return lataaVideo(req, env, u);
     if (u.pathname.startsWith("/api/")) return env.FP.get(env.FP.idFromName("main")).fetch(req);
     const jm = u.pathname.match(/^\/p\/(\d+)\/?$/);
     if (jm) return jakosivu(env, u, +jm[1]);
@@ -47,6 +48,25 @@ export default {
     ctx.waitUntil(env.FP.get(env.FP.idFromName("main")).fetch(new Request("https://sisainen/_sisaanluku", { method: "POST" })));
   },
 };
+
+// Videon lataus: tiedosto kulkee suoraan Workerista R2:een (ei Durable Objectin kautta).
+// Durable Object tarkistaa kirjautumisen ja rajat ennen latausta ja kirjaa videon sen jälkeen.
+async function lataaVideo(req, env, u) {
+  const vastaus = (d, s = 200) => new Response(JSON.stringify(d), { status: s, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" } });
+  if (!env.VIDEOT) return vastaus({ virhe: "Videoiden lataus ei ole vielä käytössä." }, 503);
+  const fp = env.FP.get(env.FP.idFromName("main"));
+  const otsakkeet = { "content-type": "application/json", cookie: req.headers.get("cookie") || "" };
+  const tiedot = { tyyppi: (req.headers.get("content-type") || "").split(";")[0].trim(), koko: +req.headers.get("content-length") || 0,
+    kesto: +req.headers.get("x-kesto") || 0, w: +req.headers.get("x-leveys") || 0, h: +req.headers.get("x-korkeus") || 0 };
+  const l = await (await fp.fetch(new Request(u.origin + "/api/video/lupa", { method: "POST", headers: otsakkeet, body: JSON.stringify(tiedot) }))).json();
+  if (!l.avain) return vastaus({ virhe: l.virhe || "Videon lataus ei onnistunut." }, 400);
+  try {
+    const { readable, writable } = new FixedLengthStream(tiedot.koko);
+    await Promise.all([env.VIDEOT.put(l.avain, readable, { httpMetadata: { contentType: tiedot.tyyppi } }), req.body.pipeTo(writable)]);
+  } catch (e) { return vastaus({ virhe: "Videon tallennus keskeytyi. Yritä uudelleen." }, 502); }
+  const v = await (await fp.fetch(new Request(u.origin + "/api/video/valmis", { method: "POST", headers: otsakkeet, body: JSON.stringify({ avain: l.avain, ...tiedot }) }))).json();
+  return vastaus(v, v.id ? 200 : 400);
+}
 
 // Jaettava postauslinkki /p/<id>: sama sovellus, mutta esikatselu (X, Facebook, WhatsApp) näyttää postauksen tekstin ja kuvan.
 async function jakosivu(env, u, id) {
@@ -247,7 +267,6 @@ export class Faktapiste extends DurableObject {
       if (p === "/api/nahty" && m === "POST") return json(this.nahty(lukija, await req.json().catch(() => ({}))));
       if (p.startsWith("/api/kuva/") && m === "GET") return this.naytaKuva(+p.split("/")[3]);
       if (p === "/api/kuva" && m === "POST") return await this.lataaKuva(req, minä);
-      if (p === "/api/video" && m === "POST") return await this.lataaVideo(req, minä);
       if (p === "/api/video/kansi" && m === "POST") return await this.lataaKansi(req, minä, +u.searchParams.get("id"));
       const vm = p.match(/^\/api\/video\/(\d+)(\/kansi)?$/);
       if (vm && m === "GET") return vm[2] ? this.naytaKansi(+vm[1]) : await this.naytaVideo(+vm[1], req);
@@ -265,6 +284,8 @@ export class Faktapiste extends DurableObject {
       if (p === "/api/nimi") return await this.asetaNimi(minä, d);
       if (!minä.nimiOk) return virhe("Lisää ensin oma nimesi (etu- ja sukunimi).", 400);
       if (p === "/api/posti") return await this.uusiPosti(minä, d, lukija);
+      if (p === "/api/video/lupa") return this.videoLupa(minä, d);
+      if (p === "/api/video/valmis") return await this.videoValmis(minä, d);
       if (p === "/api/tykkaa") return this.tykkaa(minä, d);
       if (p === "/api/seuraa") return this.seuraa(minä, d);
       if (p === "/api/ilmoita") return await this.ilmoita(minä, d);
@@ -471,27 +492,28 @@ export class Faktapiste extends DurableObject {
   poistaVideot(rivit) {
     for (const v of rivit) { try { this.env.VIDEOT && this.ctx.waitUntil(this.env.VIDEOT.delete(v.avain)); } catch {} this.sql.exec("DELETE FROM videot WHERE id=?", v.id); }
   }
-  async lataaVideo(req, minä) {
+  videoLupa(minä, d) {
     if (!this.env.VIDEOT) return virhe("Videoiden lataus ei ole vielä käytössä.", 503);
-    if (!minä) return virhe("Kirjaudu ensin.", 401);
-    if (minä.esto) return virhe("Tilisi on suljettu.", 403);
-    if (!minä.nimiOk) return virhe("Lisää ensin oma nimesi (etu- ja sukunimi).", 400);
-    const tyyppi = (req.headers.get("content-type") || "").split(";")[0].trim();
-    if (!VIDEO_TYYPIT.includes(tyyppi)) return virhe("Videon muoto ei kelpaa. Käytä MP4-, MOV- tai WebM-videota.");
-    const koko = +req.headers.get("content-length") || 0;
-    if (koko < 1000) return virhe("Video on tyhjä.");
-    if (koko > VIDEO_MAX) return virhe("Video on liian suuri (enintään 100 Mt).");
-    const kesto = Math.max(0, +req.headers.get("x-kesto") || 0);
-    if (kesto > VIDEO_KESTO + 1) return virhe("Video on liian pitkä (enintään 3 minuuttia).");
+    if (!VIDEO_TYYPIT.includes(d.tyyppi)) return virhe("Videon muoto ei kelpaa. Käytä MP4-, MOV- tai WebM-videota.");
+    if (!(d.koko > 1000)) return virhe("Video on tyhjä.");
+    if (d.koko > VIDEO_MAX) return virhe("Video on liian suuri (enintään 100 Mt).");
+    if (d.kesto > VIDEO_KESTO + 1) return virhe("Video on liian pitkä (enintään 3 minuuttia).");
     if (!this.raja("video:" + minä.id, 10, 86400)) return virhe("Olet ladannut tänään jo 10 videota. Jatka huomenna.", 429);
     // liittämättömät videot siivotaan vuorokauden kuluttua
     this.poistaVideot(this.kaikki("SELECT id, avain FROM videot WHERE posti IS NULL AND luotu<?", nyt() - 86400e3));
     const avain = "v/" + minä.id + "/" + satunnainen();
-    const { readable, writable } = new FixedLengthStream(koko);
-    const putki = req.body.pipeTo(writable);
-    await Promise.all([this.env.VIDEOT.put(avain, readable, { httpMetadata: { contentType: tyyppi } }), putki]);
-    const w = Math.min(10000, +req.headers.get("x-leveys") || 0), h = Math.min(10000, +req.headers.get("x-korkeus") || 0);
-    this.sql.exec("INSERT INTO videot(kayttaja, posti, avain, tyyppi, koko, w, h, kesto, luotu) VALUES(?,?,?,?,?,?,?,?,?)", minä.id, null, avain, tyyppi, koko, w, h, kesto, nyt());
+    this.sql.exec("INSERT OR REPLACE INTO asetukset VALUES(?,?)", "vlupa:" + avain, JSON.stringify({ k: minä.id, t: nyt() }));
+    return json({ ok: true, avain });
+  }
+  async videoValmis(minä, d) {
+    const lupa = this.yksi("SELECT v FROM asetukset WHERE k=?", "vlupa:" + String(d.avain || ""));
+    let l = null; try { l = lupa ? JSON.parse(lupa.v) : null; } catch {}
+    if (!l || l.k !== minä.id || nyt() - l.t > 3 * 3600e3) return virhe("Videon lupa on vanhentunut. Yritä uudelleen.", 403);
+    const o = await this.env.VIDEOT.head(d.avain);
+    if (!o) return virhe("Videon tallennus ei onnistunut. Yritä uudelleen.");
+    this.sql.exec("DELETE FROM asetukset WHERE k=?", "vlupa:" + d.avain);
+    const w = Math.min(10000, +d.w || 0), h = Math.min(10000, +d.h || 0);
+    this.sql.exec("INSERT INTO videot(kayttaja, posti, avain, tyyppi, koko, w, h, kesto, luotu) VALUES(?,?,?,?,?,?,?,?,?)", minä.id, null, d.avain, d.tyyppi, o.size, w, h, +d.kesto || 0, nyt());
     return json({ ok: true, id: this.yksi("SELECT last_insert_rowid() AS id").id });
   }
   async lataaKansi(req, minä, id) {
