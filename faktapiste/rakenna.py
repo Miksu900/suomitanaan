@@ -9,7 +9,7 @@ ROOT = pathlib.Path(__file__).parent / "public"
 SITE = os.environ.get("FAKTAPISTE_URL", "https://faktapiste.fi")
 PV = os.environ.get("PYKALAVAHTI_URL", "https://pykalavahti.fi")
 YHTEYS = "miika@eduskuntaseuranta.fi"
-VER = "36"
+VER = "37"
 esc = html.escape
 
 # avain, nimi, osoite, iskulause, kuvaus, merkki, poliittinen
@@ -171,21 +171,21 @@ runko = f"""<section class="w teksti">
 <p>Palvelut ovat tällä hetkellä maksuttomia. Ylläpitäjä pidättää oikeuden muuttaa palveluita ja niiden ehtoja sekä ottaa käyttöön maksullisia ominaisuuksia; muutoksista kerrotaan etukäteen. Tiedot ovat yleistä tietoa eivätkä oikeudellista tai taloudellista neuvontaa.</p>
 </section>"""
 ARVONTA_RUNKO = f"""<section class="teksti w">
-<h1>Arvonnat: 100 € ja 500 €</h1>
-<p>Faktapiste arpoo aktiivisten kirjoittajien kesken kaksi palkintoa: 100 euron K-ryhmän lahjakortin ja 500 euroa, jonka voittaja saa valita rahana tai K-ryhmän lahjakorttina. Osallistuminen on maksutonta, eikä se edellytä ostoa. Mitä ahkerammin kirjoitat ja kommentoit, sitä enemmän sinulla on arpoja ja sitä todennäköisemmin voitat.</p>
+<h1>Arvonnat: 100 € joka kuukausi ja 500 €</h1>
+<p>Faktapiste arpoo aktiivisten kirjoittajien kesken joka kuukausi 100 euron K-ryhmän lahjakortin ja lisäksi pidemmältä kaudelta 500 euroa, jonka voittaja saa valita rahana tai K-ryhmän lahjakorttina. Osallistuminen on maksutonta, eikä se edellytä ostoa. Mitä ahkerammin kirjoitat ja kommentoit, sitä enemmän sinulla on arpoja ja sitä todennäköisemmin voitat.</p>
 <ul class="lista">
-<li><b>100 euron lahjakortti:</b> kausi 25.10.–30.11.2026, arvonta 1.12.2026.</li>
+<li><b>100 euron K-ryhmän lahjakortti joka kuukausi:</b> marraskuu (25.10.–30.11.2026, arvonta 1.12.2026), joulukuu (1.–31.12.2026, arvonta 1.1.2027) ja tammikuu (1.–31.1.2027, arvonta 1.2.2027).</li>
 <li><b>500 euroa rahana tai K-ryhmän lahjakorttina:</b> kausi 25.10.2026–31.1.2027, arvonta 1.2.2027.</li>
 </ul>
 <h2>Säännöt</h2>
 <ul class="lista">
 <li><b>Järjestäjä:</b> Faktapiste, ylläpitäjä Miika Koskela, Ylivieska. Yhteys: <span class="mono">{YHTEYS}</span></li>
 <li><b>Kuka voi osallistua:</b> 18 vuotta täyttäneet Suomessa asuvat Faktapisteen käyttäjät, jotka kirjoittavat omalla nimellään. Ylläpitäjä ei osallistu.</li>
-<li><b>Arvat:</b> jokainen oma kirjoitus ja kommentti on yksi arpa, kun siinä on vähintään 20 merkkiä. Päivässä kertyy enintään 5 arpaa. Sama teksti useaan kertaan lasketaan yhtenä. Sama arpa on mukana kummassakin arvonnassa, jonka kauteen se osuu.</li>
+<li><b>Arvat:</b> jokainen oma kirjoitus ja kommentti on yksi arpa, kun siinä on vähintään 20 merkkiä. Päivässä kertyy enintään 5 arpaa. Sama teksti useaan kertaan lasketaan yhtenä. Sama arpa on mukana sekä kuukauden arvonnassa että 500 euron arvonnassa, kun se osuu niiden kauteen.</li>
 <li><b>Ei roskapostia:</b> poistetut tai sääntöjen vastaiset kirjoitukset eivät ole arpoja. Ylläpitäjä voi hylätä arvat, jos kirjoitukset ovat selvästi vain arpojen keräämistä varten tehtyä roskaa, ja sulkea tilin, joka rikkoo keskustelun sääntöjä.</li>
-<li><b>Arvonta:</b> voittaja arvotaan sattumanvaraisesti tietokoneella. Jokaisen osallistujan voittomahdollisuus on suhteessa hänen arpojensa määrään. Sama henkilö voi voittaa molemmat arvonnat.</li>
+<li><b>Arvonta:</b> voittaja arvotaan sattumanvaraisesti tietokoneella. Jokaisen osallistujan voittomahdollisuus on suhteessa hänen arpojensa määrään. Sama henkilö voi voittaa useamman arvonnan.</li>
 <li><b>Voittajalle ilmoittaminen:</b> voittajalle ilmoitetaan sähköpostilla siihen osoitteeseen, jolla hän kirjautuu Faktapisteeseen. Voittajan etunimi julkaistaan Faktapisteessä. Jos voittaja ei vastaa 14 päivässä, voittaja arvotaan uudelleen.</li>
-<li><b>Palkinnot:</b> 100 euron K-ryhmän lahjakortti, jota ei voi vaihtaa rahaksi, sekä 500 euroa, jonka voittaja valitsee joko tilisiirtona tai K-ryhmän lahjakorttina. Järjestäjä maksaa arpajaisveron, joten palkinto on voittajalle verovapaa.</li>
+<li><b>Palkinnot:</b> kuukausittain 100 euron K-ryhmän lahjakortti, jota ei voi vaihtaa rahaksi, sekä 500 euroa, jonka voittaja valitsee joko tilisiirtona tai K-ryhmän lahjakorttina. Järjestäjä maksaa arpajaisveron, joten palkinto on voittajalle verovapaa.</li>
 <li><b>Tietosuoja:</b> arvonnassa käytetään vain Faktapisteeseen jo tallennettuja tietoja (nimi, sähköposti ja kirjoitusten määrä). Tietoja ei luovuteta eteenpäin.</li>
 <li>Arvonta ei ole K-ryhmän (Kesko), Metan, X:n tai minkään muun yrityksen järjestämä tai sponsoroima, eikä se liity niihin.</li>
 </ul>

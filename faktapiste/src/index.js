@@ -21,8 +21,12 @@ const PITUUS = 100000; // käytännössä rajaton, suojaa vain tietokantaa
 const ARVONNAT = [
   { kausi: "2026-11", alku: Date.parse("2026-10-25T00:00:00+03:00"), loppu: Date.parse("2026-11-30T23:59:59+02:00"),
     palkinto: "100 euron lahjakortin K-ryhmään", lyhyt: "100 €", arvontaPv: "1.12.2026", vero: "30 € (alle 50 €:n kuukausirajan, ei ilmoiteta)" },
+  { kausi: "2026-12", alku: Date.parse("2026-12-01T00:00:00+02:00"), loppu: Date.parse("2026-12-31T23:59:59+02:00"),
+    palkinto: "100 euron lahjakortin K-ryhmään", lyhyt: "100 €", arvontaPv: "1.1.2027", vero: "30 € (alle 50 €:n kuukausirajan, ei ilmoiteta)" },
+  { kausi: "2027-01", alku: Date.parse("2027-01-01T00:00:00+02:00"), loppu: Date.parse("2027-01-31T23:59:59+02:00"),
+    palkinto: "100 euron lahjakortin K-ryhmään", lyhyt: "100 €", arvontaPv: "1.2.2027", vero: "30 €, joka lasketaan yhteen 500 €:n arvonnan 150 €:n kanssa: helmikuun arpajaisvero yhteensä 180 €, ilmoita ja maksa OmaVerossa viimeistään 12.4.2027" },
   { kausi: "suuri-2027-01", alku: Date.parse("2026-10-25T00:00:00+03:00"), loppu: Date.parse("2027-01-31T23:59:59+02:00"),
-    palkinto: "500 euroa rahana tai K-ryhmän lahjakorttina", lyhyt: "500 €", valinta: true, arvontaPv: "1.2.2027", vero: "150 € arpajaisveroa, ilmoita ja maksa OmaVerossa viimeistään 12.4.2027" },
+    palkinto: "500 euroa rahana tai K-ryhmän lahjakorttina", lyhyt: "500 €", valinta: true, arvontaPv: "1.2.2027", vero: "150 € arpajaisveroa (helmikuussa yhteensä 180 € tammikuun 100 €:n kanssa), ilmoita ja maksa OmaVerossa viimeistään 12.4.2027" },
 ];
 const ARPA = { maxPv: 5, minPituus: 20 };
 const VIDEO_MAX = 100 * 1024 * 1024, VIDEO_KESTO = 180, VIDEO_TYYPIT = ["video/mp4", "video/webm", "video/quicktime"];
