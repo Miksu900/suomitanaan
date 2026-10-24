@@ -8,6 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       fakta: { description: "Testikysymys faktahaulle", required: false, default: "" }
+      mm: { description: "Maksumuuritesti: osoitteet välilyönnillä", required: false, default: "" }
       kutsu: { description: "Luo beta-kutsulinkki (montako käyttäjää), lähetetään Telegramiin", required: false, default: "" }
       salaus: { description: "Julkinen avain (base64 PEM), jolla kutsulinkki salataan lokiin", required: false, default: "" }
 jobs:
@@ -82,6 +83,7 @@ jobs:
           echo "::notice title=Sisäänluku::$(curl -sS -X POST -H "x-avain: $HALLINTA" $U/api/hallinta/sisaanluku | head -c 600)"
           echo "::notice title=Tila::$(curl -sS -X POST -H "x-avain: $HALLINTA" $U/api/hallinta/tila | head -c 600)"
           echo "::notice title=Syöte::$(curl -sS "$U/api/syote?tab=suositut" | jq -c '[.postit[:6][] | {lahde, k: (.kortti.otsikko // .kortti.nyt // "")[:60]}]' | head -c 900)"
+          if [ -n "${{ inputs.mm }}" ]; then echo "::notice title=MM::$(curl -sS -H "x-avain: $HALLINTA" "$U/api/hallinta/mm?u=$(jq -rn --arg q '${{ inputs.mm }}' '$q|@uri')" | head -c 3500)"; fi
           if [ -n "${{ inputs.fakta }}" ]; then echo "::notice title=Fakta::$(curl -sS -X POST -H "x-avain: $HALLINTA" -H 'content-type: application/json' -d "$(jq -n --arg q '${{ inputs.fakta }}' '{kysymys:$q}')" $U/api/hallinta/fakta | jq -c "{v: .kortti.vastaus, a: .kortti.aanestys.otsikko, l: .kortti.aanestys.lisaotsikko, r: .kortti.aanestys.ryhmat[:3], e: .virhe}" | head -c 2500)"; fi
       - name: Kutsulinkki Telegramiin
         if: inputs.kutsu != ''

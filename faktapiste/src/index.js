@@ -221,6 +221,17 @@ export class Faktapiste extends DurableObject {
         if (typeof d.arvo === "string") { this.sql.exec("INSERT OR REPLACE INTO asetukset VALUES(?,?)", k, d.arvo); return json({ ok: true }); }
         const r = this.yksi("SELECT v FROM asetukset WHERE k=?", k); return json({ arvo: r ? r.v : null });
       }
+      if (p === "/api/hallinta/mm" && this.env.HALLINTA && req.headers.get("x-avain") === this.env.HALLINTA) {
+        const out = [];
+        for (const url of (u.searchParams.get("u") || "").split(" ").filter(Boolean).slice(0, 6)) {
+          try {
+            const r = await fetch(url, { headers: { "user-agent": "Mozilla/5.0 (compatible; Faktapiste/1.0; +https://faktapiste.fi)" }, signal: AbortSignal.timeout(8000) });
+            const h = await r.text(); const i = h.search(/isAccessibleForFree|content_tier|paywall|maksumuuri|tilaajille/i);
+            out.push({ url, status: r.status, pituus: h.length, osuma: i < 0 ? null : h.slice(Math.max(0, i - 80), i + 120) });
+          } catch (e) { out.push({ url, virhe: String(e.message || e) }); }
+        }
+        return json(out);
+      }
       if (p === "/api/hallinta/fakta" && this.env.HALLINTA && req.headers.get("x-avain") === this.env.HALLINTA) {
         const d = await req.json(); return await this.fakta({ id: 0 }, d);
       }
