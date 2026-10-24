@@ -72,13 +72,14 @@ async function jakosivu(env, u, id) {
 // Onko uutinen maksumuurin takana? Julkaisijat merkitsevät maksulliset jutut hakukoneille (schema.org isAccessibleForFree).
 // Palauttaa true / false, tai null jos sivua ei saatu luettua.
 async function maksumuuri(url) {
+  if (!url || /^https?:\/\/(news\.google\.com|nytpuhutaan\.fi)\//.test(url)) return null;  // ohjauslinkeistä ei voi päätellä
   try {
     const r = await fetch(url, { headers: { "user-agent": "Mozilla/5.0 (compatible; Faktapiste/1.0; +https://faktapiste.fi)" }, signal: AbortSignal.timeout(6000), redirect: "follow" });
     if (!r.ok) return null;
     const h = (await r.text()).slice(0, 400000);
     if (/"isAccessibleForFree"\s*:\s*(false|"false")/i.test(h) || /<meta[^>]+(content_tier|article:content_tier)[^>]+(locked|metered)/i.test(h)) return true;
     if (/"isAccessibleForFree"\s*:\s*(true|"true")/i.test(h)) return false;
-    return /\bhs\.fi\/[^"]*\/art-|\/plus\/|paywall|maksumuuri/i.test(url + " " + (h.match(/<meta[^>]+og:url[^>]+>/i) || [""])[0]) ? true : false;
+    return null;
   } catch { return null; }
 }
 
@@ -668,8 +669,8 @@ export class Faktapiste extends DurableObject {
       for (const x of (j.nostot || []).slice(0, ensim ? 6 : 10)) {
         if (!x.url) continue;
         if (this.yksi("SELECT id FROM postit WHERE ext=?", x.url)) continue;
-        const mm = await maksumuuri(x.url);
-        n += this.lisaaAuto("korjausvahti", x.url, "", { tyyppi: "muutos", lahde: "Korjausvahti", media: x.media, ennen: x.ennen, nyt: x.nyt, url: x.url, maksumuuri: mm }, Date.parse(x.havaittu) || nyt());
+        const mm = await maksumuuri(x.juttu);
+        n += this.lisaaAuto("korjausvahti", x.url, "", { tyyppi: "muutos", lahde: "Korjausvahti", media: x.media, ennen: x.ennen, nyt: x.nyt, url: x.url, juttu: x.juttu || null, maksumuuri: mm, mmv: 2 }, Date.parse(x.havaittu) || nyt());
       }
       tulos.korjausvahti = n;
     } catch (e) { tulos.korjausvahti = "virhe " + e.message; }
@@ -703,7 +704,7 @@ export class Faktapiste extends DurableObject {
         if (!x.l) continue;
         if (this.yksi("SELECT id FROM postit WHERE ext=?", x.l)) continue;
         const mm = await maksumuuri(x.l);
-        n += this.lisaaAuto("keraysvahti", x.l, "", { tyyppi: "varoitus", lahde: "Keräysvahti", otsikko: x.o, media: x.s, url: x.l, maksumuuri: mm }, Date.parse(x.a) || nyt());
+        n += this.lisaaAuto("keraysvahti", x.l, "", { tyyppi: "varoitus", lahde: "Keräysvahti", otsikko: x.o, media: x.s, url: x.l, maksumuuri: mm, mmv: 2 }, Date.parse(x.a) || nyt());
       }
       tulos.keraysvahti = n;
     } catch (e) { tulos.keraysvahti = "virhe " + e.message; }
@@ -711,10 +712,18 @@ export class Faktapiste extends DurableObject {
     let tn = 0;
     for (const x of TIEDOTTEET) tn += this.lisaaAuto("faktapiste", "tiedote:" + x.id, x.teksti, { tyyppi: "uutinen", lahde: "Uusi palvelu", otsikko: x.otsikko, kuvaus: x.kuvaus, url: x.url }, Date.parse(x.aika));
     tulos.faktapiste = tn;
-    // Maksumuurimerkintä myös aiemmin tuoduille uutisille (enintään 8 kerralla)
-    let tm = 0;
-    for (const r of this.kaikki("SELECT id, kortti FROM postit WHERE lahde IN ('korjausvahti','keraysvahti') AND luotu>? AND kortti NOT LIKE '%\"maksumuuri\"%' ORDER BY luotu DESC LIMIT 8", nyt() - 5 * 86400e3)) {
-      try { const k = JSON.parse(r.kortti); k.maksumuuri = await maksumuuri(k.url); this.sql.exec("UPDATE postit SET kortti=? WHERE id=?", JSON.stringify(k), r.id); tm++; } catch {}
+    // Maksumuurimerkintä myös aiemmin tuoduille uutisille (enintään 8 kerralla). Korjausvahdissa tarkistetaan alkuperäinen juttu.
+    let tm = 0, jutut = null;
+    for (const r of this.kaikki("SELECT id, lahde, kortti FROM postit WHERE lahde IN ('korjausvahti','keraysvahti') AND luotu>? AND kortti NOT LIKE '%\"mmv\":2%' ORDER BY luotu DESC LIMIT 8", nyt() - 5 * 86400e3)) {
+      try {
+        const k = JSON.parse(r.kortti);
+        if (r.lahde === "korjausvahti" && !k.juttu) {
+          if (!jutut) { jutut = {}; try { for (const x of (await hae("https://nytpuhutaan.fi/muutokset/nostot.json")).nostot || []) jutut[x.url] = x.juttu; } catch {} }
+          k.juttu = jutut[k.url] || null;
+        }
+        k.maksumuuri = await maksumuuri(r.lahde === "korjausvahti" ? k.juttu : k.url); k.mmv = 2;
+        this.sql.exec("UPDATE postit SET kortti=? WHERE id=?", JSON.stringify(k), r.id); tm++;
+      } catch {}
     }
     tulos.maksumuuri = tm;
     // siivous
