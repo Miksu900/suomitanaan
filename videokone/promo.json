@@ -1,14 +1,23 @@
 {
   "koukku": "Kirjoitit hyvän postauksen.",
+  "arvonta": true,
   "lauseet": [
     "Kirjoitit hyvän postauksen, eikä kukaan nähnyt sitä.",
     "Algoritmi päätti, ettet ole tarpeeksi kiinnostava.",
     "Faktapisteessä jokainen postaus näytetään vähintään kolmellekymmenelle ihmiselle, vaikka sinulla ei olisi yhtään seuraajaa.",
-    "Täällä keskustellaan oikeilla nimillä.",
-    "Näet oman paikkakuntasi keskustelut, ja sinä säädät, mitä syötteessä näkyy.",
-    "Kun olet nähnyt tärkeimmät, syöte loppuu.",
+    "Täällä keskustellaan oikeilla nimillä, ja voit jakaa myös kuvia ja videoita.",
+    "Näet oman paikkakuntasi keskustelut ja säädät itse, mitä syötteessä näkyy.",
+    "Ja nyt jokainen kirjoitus on arpa: arvomme sadan euron lahjakortin S- tai K-ryhmään.",
     "Suomalainen somepalvelu. Liity ilmaiseksi: faktapiste piste fi."
   ],
-  "kuvateksti": "Kirjoitit hyvän postauksen, eikä kukaan nähnyt sitä? Faktapisteessä jokainen postaus näytetään vähintään 30 ihmiselle, vaikka sinulla ei olisi yhtään seuraajaa. Oikeat nimet, oman paikkakunnan keskustelut ja syöte, joka loppuu. Suomalainen somepalvelu, liity ilmaiseksi: faktapiste.fi",
-  "hashtagit": ["faktapiste", "suomi", "some", "somepalvelu", "suomalainen", "keskustelu", "fyp"]
+  "kuvateksti": "Kirjoitit hyvän postauksen, eikä kukaan nähnyt sitä? Faktapisteessä jokainen postaus näytetään vähintään 30 ihmiselle, vaikka sinulla ei olisi yhtään seuraajaa. Oikeat nimet, oman paikkakunnan keskustelut, kuvat ja videot. Ja nyt jokainen kirjoitus ja kommentti on arpa: arvomme 100 € lahjakortin S- tai K-ryhmään 1.12. Liity ilmaiseksi: faktapiste.fi (säännöt: faktapiste.fi/arvonta)",
+  "hashtagit": [
+    "faktapiste",
+    "suomi",
+    "some",
+    "arvonta",
+    "lahjakortti",
+    "suomalainen",
+    "fyp"
+  ]
 }

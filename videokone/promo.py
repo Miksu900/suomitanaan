@@ -13,7 +13,7 @@ TEMPO = float(os.environ.get("TEMPO", "1.05"))
 OUT = os.environ.get("ULOS", "video.mp4")
 def F(n, s): return ImageFont.truetype(str(HERE / "fontit" / n), s)
 ANTON = lambda s: F("Anton.ttf", s); M9 = lambda s: F("Mont900.ttf", s); M8 = lambda s: F("Mont800.ttf", s); M6 = lambda s: F("Mont600.ttf", s)
-WHITE = (255, 255, 255); YEL = (255, 210, 70); GOLD = (245, 197, 66); NAVY = (11, 31, 69); NAVY2 = (22, 42, 92); GREY = (170, 182, 205)
+WHITE = (255, 255, 255); YEL = (255, 210, 70); GOLD = (245, 197, 66); NAVY = (26, 12, 46); NAVY2 = (46, 24, 78); GREY = (170, 182, 205)
 RED = (225, 60, 75); GREEN = (40, 185, 110); INK = (20, 22, 28); MUTE = (110, 118, 135); PAPER = (250, 250, 252)
 
 A = json.load(open("promo.json"))
@@ -121,13 +121,13 @@ def postaus(nimi, teksti, nakymat, w=940, taattu=None, sydan=0, aika="nyt", paik
 # ---------- tausta ----------
 yy = np.linspace(0, 1, H)[:, None]
 bg = np.zeros((H, W, 3), np.float32)
-bg[..., 0] = 8 + 8 * yy; bg[..., 1] = 18 + 14 * yy; bg[..., 2] = 50 + 30 * (1 - yy)
+bg[..., 0] = 26 + 14 * (1 - yy); bg[..., 1] = 10 + 6 * yy; bg[..., 2] = 40 + 24 * (1 - yy)  # Faktapisteen tumma violetti
 BG = Image.fromarray(bg.clip(0, 255).astype(np.uint8)).convert("RGBA")
 def glow(r, col, a):
     g = Image.new("RGBA", (r * 2, r * 2), col + (0,)); q = int(r * 0.45)
     ImageDraw.Draw(g).ellipse((q, q, r * 2 - q, r * 2 - q), fill=col + (a,))
     return g.filter(ImageFilter.GaussianBlur(r // 4))
-G1, G2, G3 = glow(420, (40, 80, 180), 100), glow(360, GOLD, 40), glow(300, (100, 140, 220), 45)
+G1, G2, G3 = glow(420, (110, 50, 180), 90), glow(360, GOLD, 40), glow(300, (150, 100, 220), 40)
 rng = np.random.default_rng(3); grain = [Image.fromarray(rng.integers(0, 22, (H // 2, W // 2), dtype=np.uint8)).resize((W, H)).convert("L") for _ in range(4)]
 
 def logo(koko):
@@ -239,6 +239,17 @@ def kohtaus(base, si, lt, gt):
             q = lt - dur * 0.5
             paste_c(base, text_img("Sinä säädät syötteesi", M9(60), WHITE), W / 2, 480, back(q * 3))
             saato(base, q)
+        return
+    if si == 5 and A.get("arvonta"):
+        # arvonta: lahjapaketti, summa ja ehto
+        lahja = Image.new("RGBA", (240, 240), (0, 0, 0, 0)); dl = ImageDraw.Draw(lahja)
+        dl.rounded_rectangle((20, 100, 220, 228), radius=18, fill=GOLD); dl.rounded_rectangle((8, 64, 232, 112), radius=14, fill=(255, 225, 120))
+        dl.rectangle((108, 64, 132, 228), fill=RED); dl.ellipse((62, 22, 118, 70), outline=RED, width=14); dl.ellipse((122, 22, 178, 70), outline=RED, width=14)
+        paste_c(base, lahja, W / 2, 420, back(lt * 3) * (1 + 0.03 * math.sin(gt * 6)))
+        paste_c(base, iso_teksti("Voita 100 €", koko=170, vari=GOLD, vari2=GOLD), W / 2, 700, back(lt * 3 - 0.2))
+        paste_c(base, text_img("lahjakortti S- tai K-ryhmään", M8(58), WHITE), W / 2, 860, back(lt * 3 - 0.4))
+        paste_c(base, pill("Jokainen kirjoitus = arpa", M9(56), NAVY, (255, 255, 255, 255), 40, 24), W / 2, 1040, back(lt * 3 - 0.7))
+        paste_c(base, text_img("Arvonta 1.12. · säännöt faktapiste.fi/arvonta", M6(38), GREY), W / 2, 1180, back(lt * 3 - 0.95))
         return
     if si == 5:
         ok = Image.new("RGBA", (200, 200), (0, 0, 0, 0)); dk = ImageDraw.Draw(ok); dk.ellipse((0, 0, 199, 199), fill=GOLD)
