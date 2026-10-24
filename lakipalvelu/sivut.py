@@ -9,7 +9,7 @@ SITE = os.environ.get("PALVELU_URL", "").rstrip("/")
 YHTEYS = "miika@eduskuntaseuranta.fi"
 MYYJA = os.environ.get("PALVELU_MYYJA", "Miika Koskela, Ylivieska")
 HINTA = "29"
-VOIMASSA = "21.10.2026"
+VOIMASSA = "24.10.2026"
 esc = lambda s: html.escape(s or "", quote=True)
 
 try:
@@ -24,13 +24,13 @@ LOGO = ('<svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><rect x="2" y=
 VAROITA = ('<section class="varoita"><p><b>Tunnetko jonkun, jolla on riita kaupan, vuokranantajan tai perintäfirman kanssa?</b> '
            'Lähetä hänelle vinkki – se vie viisi sekuntia.</p><button type="button" class="btn" id="varoita">📲 Lähetä vinkki</button></section>')
 VAROITAJS = ('<script>(function(){var b=document.getElementById("varoita");if(!b)return;b.onclick=function(){'
-             'var t="Tällä saa ilmaiseksi selville, mitä laki sanoo esimerkiksi reklamaatiosta, takuusta tai vuokrasopimuksesta – ja valmiin kirjeen oikeine pykälineen:",u="https://pykalavahti.fi/";'
+             'var t="Tällä saa ilmaiseksi selville, mitä laki sanoo esimerkiksi reklamaatiosta, takuusta tai vuokrasopimuksesta:",u="https://pykalavahti.fi/";'
              'if(navigator.share)navigator.share({text:t,url:u}).catch(function(){});else location.href="https://wa.me/?text="+encodeURIComponent(t+" "+u)}})();</script>')
 
 
 def sivu(polku, otsikko, kuvaus, runko, skripti="", aktiivinen=""):
     nav = "".join(f'<a href="{u}"{" aria-current=page" if aktiivinen == k else ""}>{n}</a>' for k, u, n in
-                  (("kysy", "/", "Kysy laista"), ("kirje", "/kirje/", "Valmis kirje"), ("esitys", "/pohjaesitys/", "Pohjaesitys"), ("toimistot", "/toimistot/", "Lakitoimistot")))
+                  (("kysy", "/", "Kysy laista"), ("toimistot", "/toimistot/", "Lakitoimistot")))
     return f"""<!doctype html>
 <html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>{esc(otsikko)}</title><meta name="description" content="{esc(kuvaus)}">
@@ -69,15 +69,21 @@ VAROITUS = ('<p class="huom"><b>Älä kirjoita</b> nimiä, henkilötunnuksia, os
             'Kysymystä ei tallenneta. Se välitetään tekoälypalvelulle vastauksen muodostamista varten.</p>')
 
 
+TAUKO = ('<h1>Toiminto on tauolla</h1><p class="lead">Valmiiden kirjeiden ja juristille laadittavien pohjaesitysten tekeminen on toistaiseksi '
+         'poistettu käytöstä. Voit edelleen kysyä, mitä laki sanoo, ja etsiä lakitoimiston.</p>'
+         '<p><a class="btn" href="/">Kysy laista</a> <a class="btn toissij" href="/toimistot/">Lakitoimistot</a></p>'
+         '<aside class="huom">Maksutonta apua: <a href="https://www.kkv.fi/kuluttaja-asiat/kuluttajaneuvonta/" rel="noopener">kuluttajaneuvonta</a> '
+         'ja valtion <a href="https://oikeus.fi/oikeusapu" rel="noopener">oikeusaputoimistot</a>.</aside>')
+
+
 def main():
     lait_lkm = len(LAIT["lait"])
     # ---- etusivu: kysy laista ----
     esim = "".join(f'<button type="button" class="esim" data-q="{esc(x)}">{esc(x)}</button>' for x in ESIMERKIT)
     runko = f"""<section class="hero">
 <p class="eyebrow">Suomen laki selkokielellä</p>
-<h1>Kysy laista. Hoida asia itse.</h1>
-<p class="lead">{esc(NIMI)} etsii vastauksen ajantasaisesta lainsäädännöstä ja kertoo, mitä laki sanoo ja mitä voit tehdä. Jokainen väite on merkitty pykälään. Tarvittaessa saat valmiin kirjeen ja tiedon, mistä apua saa maksutta.</p>
-<p class="tiedote"><b>Avajaisvaihe: kaikki on nyt maksutonta.</b> Osa palveluista, kuten valmiit kirjeet ja pohjaesitykset, muuttuu myöhemmin maksulliseksi. Muutoksesta kerrotaan sivulla etukäteen.</p>
+<h1>Mitä laki sanoo?</h1>
+<p class="lead">{esc(NIMI)} kertoo yleisellä tasolla, mitä ajantasainen lainsäädäntö sanoo, ja mistä saat apua maksutta. Jokainen väite on merkitty pykälään. Vastaukset tuottaa tekoäly, ja ne ovat yleistä tietoa, eivät oikeudellista neuvontaa eivätkä arvio sinun tilanteestasi.</p>
 <form id="kysyLomake" class="kysy" onsubmit="return false">
 <label for="kysymys" class="sr">Kysymyksesi</label>
 <textarea id="kysymys" rows="4" maxlength="1500" placeholder="Kirjoita kysymyksesi omin sanoin…"></textarea>
@@ -89,8 +95,6 @@ def main():
 </section>
 <section id="tulos" class="tulos" aria-live="polite" hidden></section>
 <section class="kolme">
-<a class="kortti" href="/kirje/"><b>Valmis kirje</b><span>Reklamaatio, vakuuden palautus, vastine perintäkirjeeseen… Kirjoitettuna oikeine pykälineen.</span></a>
-<a class="kortti" href="/pohjaesitys/"><b>Pohjaesitys juristille</b><span>Kuvaa tilanteesi, niin saat valmiin muistion. Juristi pääsee heti asiaan, ja säästät kuluissa.</span></a>
 <a class="kortti" href="/toimistot/"><b>Löydä lakitoimisto</b><span>Kaikki asianajo- ja lakiasiaintoimistot paikkakunnittain. Näe lähimmät.</span></a>
 <a class="kortti" href="/tietoa/"><b>Miten tämä toimii?</b><span>{lait_lkm} keskeistä lakia Finlexistä, päivitetään viikoittain.</span></a>
 </section>"""
@@ -99,7 +103,7 @@ def main():
                        runko, '<script>Pv.kysy()</script>' + ('<script type="application/ld+json">' + json.dumps({
                            "@context": "https://schema.org", "@type": "WebApplication", "name": NIMI, "url": (SITE or "") + "/",
                            "applicationCategory": "LegalService", "operatingSystem": "Web", "inLanguage": "fi",
-                           "description": "Kysy Suomen laista omin sanoin ja saat vastauksen ajantasaisista pykälistä lähteineen. Kirjoittaa myös reklamaation ja muita vaatimuskirjeitä.",
+                           "description": "Kysy Suomen laista omin sanoin ja saat vastauksen ajantasaisista pykälistä lähteineen.",
                            "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"},
                            "publisher": {"@type": "Organization", "name": "Faktapiste", "url": "https://faktapiste.fi"}}, ensure_ascii=False).replace("<", "\\u003c") + '</script>'), "kysy"))
 
@@ -111,7 +115,6 @@ def main():
               ("vuokrairtisanominen", "Vuokrasopimuksen irtisanominen (vuokralainen)"), ("muu", "Muu kirje tai vaatimus")]
     runko = f"""<h1>Valmis kirje</h1>
 <p class="lead">Kerro tilanne omin sanoin, niin {esc(NIMI)} kirjoittaa valmiin kirjeen oikeine pykälineen ja määräaikoineen. Lakia ei tarvitse osata itse: palvelu etsii säännökset puolestasi.</p>
-<p class="tiedote"><b>Avajaisvaihe: kaikki on nyt maksutonta.</b> Osa palveluista, kuten valmiit kirjeet ja pohjaesitykset, muuttuu myöhemmin maksulliseksi. Muutoksesta kerrotaan sivulla etukäteen.</p>
 <p class="huom" id="taustaInfo" hidden>Kirje pohjautuu äskeiseen vastaukseesi. Tarkista tilanne ja täydennä tiedot.</p>
 <form id="kirjeLomake" class="kysy" onsubmit="return false">
 <label for="tyyppi">Millainen kirje?</label>
@@ -130,14 +133,12 @@ def main():
 <p class="huom"><b>Yksityisyys:</b> nimesi ja osoitteesi lisätään kirjeeseen vasta omassa selaimessasi, eikä niitä lähetetä minnekään. Älä kirjoita tilannekuvaukseen henkilötunnuksia tai muita tunnistettavia tietoja.</p>
 </form>
 <section id="tulos" class="tulos" aria-live="polite" hidden></section>"""
-    kirjoita("/kirje/", sivu("/kirje/", f"Valmis kirje oikeine pykälineen | {NIMI}",
-             "Reklamaatio, vuokravakuuden palautusvaatimus, vastine perintäkirjeeseen tai oikaisuvaatimus valmiiksi kirjoitettuna oikeine pykälineen.", runko,
-             '<script>Pv.kirje()</script>', "kirje"))
+    kirjoita("/kirje/", sivu("/kirje/", f"Toiminto on tauolla | {NIMI}", "Valmiiden kirjeiden laatiminen on toistaiseksi poistettu käytöstä.", TAUKO)
+             .replace("<head>", '<head><meta name="robots" content="noindex">', 1))
 
     # ---- pohjaesitys ----
     runko = f"""<h1>Pohjaesitys juristille</h1>
 <p class="lead">Kuvaa tilanteesi, niin {esc(NIMI)} kokoaa siitä muistion: tosiseikat, sovellettavat pykälät, alustavan arvion ja avoimet kysymykset. Kun viet muistion juristille, hän pääsee heti asiaan, eikä sinun tarvitse maksaa selvitystyöstä.</p>
-<p class="tiedote"><b>Avajaisvaihe: kaikki on nyt maksutonta.</b> Osa palveluista, kuten valmiit kirjeet ja pohjaesitykset, muuttuu myöhemmin maksulliseksi. Muutoksesta kerrotaan sivulla etukäteen.</p>
 <form id="esitysLomake" class="kysy" onsubmit="return false">
 <label for="kuvaus">Mitä on tapahtunut?</label>
 <textarea id="kuvaus" rows="8" maxlength="4000" placeholder="Kerro tapahtumat aikajärjestyksessä: mitä sovittiin, mitä tapahtui, mitä toinen osapuoli on sanonut…"></textarea>
@@ -152,9 +153,8 @@ def main():
 {VAROITUS.replace("Kysymystä", "Kuvausta")}
 </form>
 <section id="tulos" class="tulos" aria-live="polite" hidden></section>"""
-    kirjoita("/pohjaesitys/", sivu("/pohjaesitys/", f"Pohjaesitys juristille | {NIMI}",
-             "Kuvaa oikeudellinen tilanteesi ja saat juristille valmiin muistion pykälineen. Säästä juristin selvitystyössä.", runko,
-             '<script>Pv.esitys()</script>', "esitys"))
+    kirjoita("/pohjaesitys/", sivu("/pohjaesitys/", f"Toiminto on tauolla | {NIMI}", "Pohjaesitysten laatiminen on toistaiseksi poistettu käytöstä.", TAUKO)
+             .replace("<head>", '<head><meta name="robots" content="noindex">', 1))
 
     # ---- toimistot ----
     runko = """<h1>Lakitoimistot</h1>
@@ -165,7 +165,7 @@ def main():
 <p id="tl" class="mute">Ladataan…</p>
 <div id="toimistot" class="lista"></div>
 <aside class="huom"><b>Asianajaja vai lakimies?</b> Asianajotoimistossa työskentelee yleensä asianajajia, jotka ovat Suomen Asianajajaliiton jäseniä ja valvottuja. Lakiasiaintoimistossa voi työskennellä myös muita lakimiehiä. Jos tulosi ovat pienet, voit saada <a href="https://oikeus.fi/oikeusapu" rel="noopener">julkista oikeusapua</a> valtion oikeusaputoimistosta.</aside>
-<aside class="huom"><b>Vertaa hintoja:</b> pyydä toimistoilta hinta-arvio ja liitä mukaan <a href="/pohjaesitys/">pohjaesitys</a>. Kun asia on valmiiksi jäsennelty, arvio on helpompi antaa, ja selvitystyön osuus laskusta pienenee.</aside>"""
+<aside class="huom"><b>Vertaa hintoja:</b> pyydä toimistoilta hinta-arvio ennen kuin sovit toimeksiannosta.</aside>"""
     kirjoita("/toimistot/", sivu("/toimistot/", f"Lakitoimistot ja asianajotoimistot paikkakunnittain | {NIMI}",
              "Löydä lähin asianajotoimisto tai lakiasiaintoimisto. Kaikki toimistot kaupparekisterin avoimesta datasta.", runko,
              '<script>Pv.toimistot()</script>', "toimistot"))
@@ -189,11 +189,11 @@ def main():
 
     # ---- käyttöehdot ----
     runko = f"""<h1>Käyttöehdot</h1><div class="proosa"><p class="mute">Voimassa {VOIMASSA} alkaen.</p>
-<h2>1. Palvelu</h2><p>{esc(NIMI)} ({esc(SITE or "")}) on verkkopalvelu, joka selittää Suomen lainsäädäntöä tekoälyn avulla ajantasaisen lainsäädännön (Finlex) pohjalta, laatii käyttäjän kuvauksen perusteella pohjaesityksiä juristille ja näyttää lakitoimistojen yhteystietoja. Palvelun tarjoaa {esc(MYYJA)}.</p>
-<h2>2. Ei oikeudellista neuvontaa</h2><p>Palvelun vastaukset ja pohjaesitykset ovat yleistä tietoa laista ja juristin tarkistettavaksi tarkoitettuja luonnoksia. Ne eivät ole oikeudellista neuvontaa eivätkä korvaa juristia. Palvelu ei ole asianajotoimisto, eikä palveluntarjoaja ole asianajaja. Tekoäly voi erehtyä, ja lopputulokseen voivat vaikuttaa seikat, joita palvelu ei tunne, kuten sopimukset, työehtosopimukset ja oikeuskäytäntö. Käyttäjä vastaa itse siitä, miten hän käyttää palvelun antamaa tietoa.</p>
-<h2>3. Maksut</h2><p><b>Palvelu on avajaisvaiheessa kokonaan maksuton.</b> Osa palveluista muuttuu myöhemmin maksulliseksi, ja muutoksesta kerrotaan palvelussa etukäteen. Kysymykset laista ovat maksuttomia. Pohjaesitys juristille maksaa {HINTA} euroa (sis. arvonlisäveron), ellei sitä tarjota maksutta esimerkiksi avajaiskaudella. Hinta näkyy ennen maksamista. Maksu suoritetaan Stripe-maksupalvelun kautta, eikä palveluntarjoaja näe kortin tietoja.</p>
-<h2>4. Toimitus ja peruuttamisoikeus</h2><p>Pohjaesitys on digitaalista sisältöä, joka toimitetaan heti maksun jälkeen näytölle. Käyttäjä pyytää toimitusta ennen peruuttamisajan päättymistä ja hyväksyy, että peruuttamisoikeus päättyy, kun esitys on toimitettu (kuluttajansuojalaki 6 luku 16 §). Jos pohjaesitystä ei teknisen vian vuoksi saada laadittua, käyttäjä voi yrittää uudelleen samalla maksulla tai pyytää maksun palautusta osoitteesta <span class="mono">{YHTEYS}</span>.</p>
-<h2>5. Vastuunrajoitus</h2><p>Palveluntarjoaja ei vastaa vahingoista, jotka aiheutuvat palvelun antaman tiedon käyttämisestä, palvelun keskeytyksistä tai tekoälyn virheistä, ellei pakottavasta lainsäädännöstä muuta johdu. Vastuu rajoittuu enintään käyttäjän palvelusta maksamaan hintaan.</p>
+<h2>1. Palvelu</h2><p>{esc(NIMI)} ({esc(SITE or "")}) on verkkopalvelu, joka selittää Suomen lainsäädäntöä tekoälyn avulla yleisellä tasolla ajantasaisen lainsäädännön (Finlex) pohjalta ja näyttää lakitoimistojen yhteystietoja. Valmiiden kirjeiden ja pohjaesitysten laatiminen on toistaiseksi poistettu käytöstä. Palvelun tarjoaa {esc(MYYJA)}.</p>
+<h2>2. Ei oikeudellista neuvontaa</h2><p>Palvelun vastaukset tuottaa tekoäly. Ne ovat yleistä tietoa laista eivätkä arvio käyttäjän omasta tilanteesta. Ne eivät ole oikeudellista neuvontaa eivätkä korvaa juristia. Palvelu ei ole asianajotoimisto, eikä palveluntarjoaja ole asianajaja. Tekoäly voi erehtyä, ja lopputulokseen voivat vaikuttaa seikat, joita palvelu ei tunne, kuten sopimukset, työehtosopimukset ja oikeuskäytäntö. Käyttäjä vastaa itse siitä, miten hän käyttää palvelun antamaa tietoa.</p>
+<h2>3. Maksut</h2><p>Palvelu on maksuton. Jos palveluun lisätään myöhemmin maksullisia osia, niiden hinnat, toimitus ja peruuttamisoikeus kerrotaan näissä ehdoissa ennen käyttöönottoa.</p>
+<h2>4. Palvelun keskeytykset</h2><p>Palvelu voi olla ajoittain pois käytöstä huollon, häiriöiden tai palvelun muutosten vuoksi.</p>
+<h2>5. Vastuunrajoitus</h2><p>Palveluntarjoaja ei vastaa vahingoista, jotka aiheutuvat palvelun antaman tiedon käyttämisestä, palvelun keskeytyksistä tai tekoälyn virheistä, ellei pakottavasta lainsäädännöstä muuta johdu. </p>
 <h2>6. Lakitoimistojen tiedot</h2><p>Toimistotiedot perustuvat kaupparekisterin avoimeen dataan. Palvelu ei suosittele mitään toimistoa eikä vastaa toimistojen palveluista tai hinnoista.</p>
 <h2>7. Muutokset palveluun, hinnoitteluun ja ehtoihin</h2><p><b>Palveluntarjoaja pidättää oikeuden muuttaa palvelun sisältöä, hinnoittelua, ansaintamallia ja näitä käyttöehtoja.</b> Palveluun voidaan esimerkiksi lisätä tarjouspyyntöjen välitys lakitoimistoille ja siihen liittyvä välitys- tai säästöön perustuva palkkio. Muutokset tulevat voimaan, kun ne on julkaistu tällä sivulla. Muutokset eivät koske jo maksettuja tilauksia.</p>
 <h2>8. Sovellettava laki ja riidat</h2><p>Ehtoihin sovelletaan Suomen lakia. Kuluttaja voi saattaa riidan kuluttajariitalautakunnan käsiteltäväksi. Ennen sitä kannattaa olla yhteydessä kuluttajaneuvontaan. Lisätietoja: <a href="https://www.kuluttajariita.fi" rel="noopener">kuluttajariita.fi</a>.</p>
@@ -225,7 +225,9 @@ def main():
 <li><b>Tarkistuspalvelu:</b> asiakas pyytää juristia tarkistamaan tekoälyn laatiman muistion kiinteään hintaan.</li></ul>
 <p>Kiinnostaako? Ota yhteyttä: <span class="mono">{YHTEYS}</span></p>
 <h2>Onko toimistonne tiedoissa virhe?</h2><p>Toimistotiedot tulevat kaupparekisteristä. Ilmoita korjaus tai lisätieto (esim. verkkosivu tai erikoisalat) yllä olevaan osoitteeseen.</p></div>"""
-    kirjoita("/juristeille/", sivu("/juristeille/", f"Juristeille ja lakitoimistoille | {NIMI}", "Asiakkaita valmiiksi jäsennellyn pohjaesityksen kanssa. Tule kumppaniksi.", runko))
+    runko = f'<h1>Juristeille ja lakitoimistoille</h1><p class="lead">Yhteistyö lakitoimistojen kanssa on valmisteilla. Jos olet kiinnostunut, ota yhteyttä: <span class="mono">{YHTEYS}</span></p>'
+    kirjoita("/juristeille/", sivu("/juristeille/", f"Juristeille ja lakitoimistoille | {NIMI}", "Yhteistyö lakitoimistojen kanssa on valmisteilla.", runko)
+             .replace("<head>", '<head><meta name="robots" content="noindex">', 1))
 
 
     # ---- seuranta (ylläpitäjälle, ei hakukoneisiin) ----
@@ -244,7 +246,7 @@ var t=Object.entries(L).sort((a,b)=>b[1]-a[1]).slice(0,15),mm=Math.max(1,...t.ma
     if SITE:
         open(os.path.join(PUB, "robots.txt"), "w").write(f"User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /seuranta/\nSitemap: {SITE}/sitemap.xml\n")
         open(os.path.join(PUB, "sitemap.xml"), "w").write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
-            + "".join(f"<url><loc>{SITE}{u}</loc></url>" for u in ("/", "/kirje/", "/pohjaesitys/", "/toimistot/", "/tietoa/", "/juristeille/", "/ehdot/", "/tietosuoja/")) + "</urlset>\n")
+            + "".join(f"<url><loc>{SITE}{u}</loc></url>" for u in ("/", "/toimistot/", "/tietoa/", "/ehdot/", "/tietosuoja/")) + "</urlset>\n")
     print("sivut valmiit")
 
 

@@ -420,7 +420,7 @@ export class Faktapiste extends DurableObject {
     if (/(https?:\/\/\S+.*){4,}/i.test(teksti)) return { ok: false, syy: "liikaa linkkejä." };
     try {
       const v = jsonista(await claude(this.env,
-        `Olet suomalaisen keskustelupalstan moderaattori. Estä VAIN selvästi laiton tai haitallinen sisältö: väkivallalla uhkaaminen, yksityishenkilön henkilötietojen (osoite, puhelinnumero, henkilötunnus) levittäminen, kiihottaminen kansanryhmää vastaan, lapsia seksualisoiva sisältö, kaupallinen roskaposti tai huijaus. SALLI kova poliittinen kritiikki, kiroilu, ivailu, kärkevät mielipiteet ja erimielisyys, myös poliitikkoja ja puolueita kohtaan. Vastaa vain JSON: {"ok":true} tai {"ok":false,"syy":"lyhyt syy suomeksi"}.`,
+        `Olet suomalaisen keskustelupalstan moderaattori. Estä VAIN selvästi laiton tai haitallinen sisältö: väkivallalla uhkaaminen, yksityishenkilön henkilötietojen (osoite, puhelinnumero, henkilötunnus) levittäminen, kiihottaminen kansanryhmää vastaan, lapsia seksualisoiva sisältö, pornografia tai muu seksuaalinen tai hyvän tavan vastainen sisältö, lainatarjoukset, kaupallinen roskaposti tai huijaus. SALLI kova poliittinen kritiikki, kiroilu, ivailu, kärkevät mielipiteet ja erimielisyys, myös poliitikkoja ja puolueita kohtaan. Vastaa vain JSON: {"ok":true} tai {"ok":false,"syy":"lyhyt syy suomeksi"}.`,
         teksti, 120));
       if (v && v.ok === false) return { ok: false, syy: String(v.syy || "sisältö rikkoo sääntöjä.").slice(0, 160) };
     } catch {}

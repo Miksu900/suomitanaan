@@ -140,12 +140,15 @@ const julki = (osumat) => osumat.map((o, i) => ({ n: i + 1, laki: o.laki, lyh: o
 
 const YHTEISET = `Kirjoita selkeää yleiskieltä, jota tavallinen ihminen ymmärtää. Perusta jokainen oikeudellinen väite VAIN annettuihin pykäliin ja merkitse lähde hakasulkeisiin, esim. [2]. Älä keksi pykäliä, numeroita, määräaikoja tai ennakkopäätöksiä, joita aineistossa ei ole. Jos annetut pykälät eivät riitä vastaamaan, sano se suoraan ja kerro, millaista lisätietoa tai asiantuntijaa tarvitaan. Huomaa, että sopimukset, työehtosopimukset, taloyhtiön yhtiöjärjestys ja oikeuskäytäntö voivat muuttaa lopputulosta. Muotoilu: väliotsikot rivin alussa "## ", luettelot "- ", lihavointi **näin**. Ei taulukoita.`;
 
+// Näytetään jokaisen vastauksen lopussa (ei mallin varassa): tekoälyn käyttö ja vastuunrajoitus.
+const HUOMAUTUS = "\n\n## Huomaa\nTämän vastauksen on tuottanut tekoäly ajantasaisten pykälien pohjalta. Se on yleistä tietoa laista, ei oikeudellista neuvontaa eikä arvio sinun tilanteestasi. Tekoäly voi erehtyä, ja samaan kysymykseen voi tulla eri kerroilla erilainen vastaus. Tarkista pykälät itse alla olevista lähteistä, ja jos asialla on sinulle merkitystä tai siinä on määräaika, käänny juristin, kuluttajaneuvonnan tai oikeusaputoimiston puoleen.";
+
 async function vastaa(env, origin, kysymys) {
   const h = await haePykalat(env, origin, kysymys);
   if (!h.osumat.length) return { diag: h.diag, vastaus: "En löytänyt tähän kysymykseen sopivia säännöksiä palvelun lakiaineistosta. Palvelussa on tällä hetkellä noin 40 tavallisimmin tarvittua lakia. Kokeile muotoilla kysymys toisin tai kysy juristilta.", lahteet: [] };
-  const sys = `Olet Pykälävahti, palvelu joka selittää Suomen lakia tavallisille ihmisille ajantasaisen lainsäädännön pohjalta. Et ole asianajaja etkä anna sitovaa oikeudellista neuvontaa, vaan yleistä tietoa laista. ${YHTEISET}`;
-  const u = `Ajantasaiset pykälät (Finlex):\n\n${lahteet(h.osumat)}\n\n---\nKäyttäjän kysymys:\n"""${kysymys}"""\n\nVastaa rakenteella:\n## Lyhyesti\n(1–3 virkettä)\n## Mitä laki sanoo\n(selitys lähdeviittein)\n## Mitä voit tehdä\n(käytännön askeleet, määräajat jos laissa)\n## Milloin kannattaa kysyä juristilta\n(1–3 kohtaa)`;
-  const t = await claude(env, MALLI_VASTAUS, sys, u, 1800);
+  const sys = `Olet Pykälävahti, palvelu joka selittää Suomen lakia tavallisille ihmisille yleisellä tasolla ajantasaisen lainsäädännön pohjalta. Et ole asianajaja etkä anna oikeudellista neuvontaa. Kerro, mitä laki yleisesti sanoo kysymyksen aiheesta. ÄLÄ arvioi käyttäjän omaa tapausta, älä kerro, miten hänen asiansa todennäköisesti ratkeaa, älä kehota häntä tekemään tiettyjä oikeudellisia toimia äläkä laadi kirjeitä tai asiakirjoja. Jos kysymys koskee selvästi käyttäjän omaa riitaa tai tilannetta, kerro yleiset säännöt ja ohjaa hänet kuluttajaneuvontaan, oikeusaputoimistoon tai juristille. ${YHTEISET}`;
+  const u = `Ajantasaiset pykälät (Finlex):\n\n${lahteet(h.osumat)}\n\n---\nKäyttäjän kysymys:\n"""${kysymys}"""\n\nVastaa rakenteella:\n## Lyhyesti\n(1–3 virkettä yleisellä tasolla)\n## Mitä laki sanoo\n(selitys lähdeviittein, laissa mainitut määräajat)\n## Mistä saat apua\n(maksuton apu kuten kuluttajaneuvonta tai oikeusaputoimisto, jos aihe sopii, ja milloin kannattaa kääntyä juristin puoleen)`;
+  const t = (await claude(env, MALLI_VASTAUS, sys, u, 1800)) + HUOMAUTUS;
   await tilastoi(env, "kysymys", h.lait);
   return { vastaus: t, lahteet: julki(h.osumat), aihe: h.aihe, lait: h.lait, muutokset: h.muutokset };
 }
@@ -257,7 +260,9 @@ export default {
           return json(await vastaa(env, url.origin, k));
         }
         if (url.pathname === "/api/seuranta") return json(await tilasto(env));
-        if (url.pathname === "/api/tila") return json({ maksullinen: maksullinen(env), hinta: HINTA_SNT / 100 });
+        if (url.pathname === "/api/tila") return json({ maksullinen: false, hinta: HINTA_SNT / 100 });
+        if (["/api/maksu", "/api/kirje", "/api/esitys"].includes(url.pathname))
+          return json({ virhe: "Tämä toiminto on toistaiseksi poistettu käytöstä. Voit edelleen kysyä, mitä laki sanoo." }, 410);
         if (url.pathname === "/api/maksu") {
           if (!maksullinen(env)) return json({ virhe: "Maksu ei ole käytössä." }, 400);
           if (b.ehdot !== true) return json({ virhe: "Hyväksy ehdot ennen maksamista." }, 400);
