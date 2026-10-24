@@ -39,6 +39,7 @@
     return new Date(ms).toLocaleDateString("fi-FI");
   }
   function linkit(t) {
+    t = String(t == null ? "" : t).replace(/\r/g, "").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
     return esc(t).replace(/https?:\/\/[^\s<]+/g, function (u) { return '<a href="' + u + '" rel="nofollow noopener ugc">' + u.replace(/^https?:\/\//, "").slice(0, 40) + (u.length > 48 ? "…" : "") + "</a>"; }).replace(/\n/g, "<br>");
   }
   function ilmoitus(t, virhe) {
@@ -74,6 +75,7 @@
   }
 
   // ---------- postaus ----------
+  function pitka(t) { t = String(t || "").replace(/\n{3,}/g, "\n\n").trim(); return t.length > 420 || t.split("\n").length > 8; }
   function posti(p, iso) {
     var l = LAHTEET[p.lahde];
     var nimi = l ? l.nimi : p.nimi || "Käyttäjä";
@@ -85,7 +87,7 @@
     if (p.piilotettu) return '<article class="posti piilo" data-id="' + p.id + '"><p class="mute">Tämä postaus on poistettu tai piilotettu.</p></article>';
     return '<article class="posti' + (iso ? " iso" : "") + '" data-id="' + p.id + '">' + av + '<div class="pm"><header>' + (l ? '<a class="lahdelinkki" href="' + l.url + '" rel="noopener">' + esc(nimi) + " ↗</a>" : "<b>" + esc(nimi) + "</b>") + (l ? '<span class="auto">automaattinen</span>' : "") + (p.kunta ? '<span class="paikka">📍 ' + esc(p.kunta) + "</span>" : "") +
       '<a class="aika" href="/?p=' + p.id + '" data-avaa="' + p.id + '">' + aika(p.luotu) + "</a>" + (p.muokattu ? '<span class="muokattu">muokattu</span>' : "") + "</header>" +
-      (p.teksti ? '<div class="pt">' + linkit(p.teksti) + "</div>" : "") + kortti(p.kortti) + (l && l.palvelu ? '<a class="palvelulinkki" href="' + l.url + '" rel="noopener">' + esc(l.palvelu) + " →</a>" : "") + taattu +
+      (p.teksti ? '<div class="pt' + (!iso && pitka(p.teksti) ? " tiivis" : "") + '">' + linkit(p.teksti) + "</div>" + (!iso && pitka(p.teksti) ? '<button type="button" class="avaa-teksti" data-avaateksti>Näytä koko teksti</button>' : "") : "") + kortti(p.kortti) + (l && l.palvelu ? '<a class="palvelulinkki" href="' + l.url + '" rel="noopener">' + esc(l.palvelu) + " →</a>" : "") + taattu +
       '<footer><button type="button" data-vastaa="' + p.id + '" aria-label="Vastaa">' + IK.vastaa + "<span>" + (p.vastaukset || "Vastaa") + '</span></button>' +
       '<button type="button" data-tykkaa="' + p.id + '" class="' + (p.tykkasin ? "on" : "") + '" aria-label="Tykkää">' + IK.tykkaa + "<span>" + (p.tykkaykset || "") + "</span></button>" +
       '<button type="button" data-jaa="' + p.id + '" aria-label="Jaa">' + IK.jaa + "<span>Jaa</span></button>" +
@@ -149,13 +151,13 @@
   function piirraKirjoitus() { KIRJ.innerHTML = kirjoitus(null); }
   function mina() {
     return api("mina").then(function (j) {
-      tila.mina = j.kayttaja; tila.kirjautuminen = j.kirjautuminen === true;
+      tila.mina = j.kayttaja; tila.tilasto = j.tilasto || null; tila.kirjautuminen = j.kirjautuminen === true;
       // Testivaihe: kirjautumisnappi näkyy vain osoitteella /?testi=1 avattuna (muistetaan selaimessa).
       var kq = (location.search.match(/[?&]kutsu=([a-f0-9]{6,20})/) || [])[1]; if (kq) tallenna("fp_kutsu", kq);
       if (j.testi && lue("fp_kutsu")) tila.kirjautuminen = true;
       if (j.testi) { var t = /[?&]testi=1/.test(location.search); try { if (t) localStorage.setItem("fp_testi", "1"); t = t || localStorage.getItem("fp_testi") === "1"; } catch (x) {} if (t) tila.kirjautuminen = true; }
       var a = $("#fp-tili");
-      if (a) a.innerHTML = tila.mina ? '<button type="button" class="tili" data-ulos title="Kirjaudu ulos">' + esc(tila.mina.nimi || "Oma tili") + "</button>" : tila.kirjautuminen ? '<button type="button" class="tili" data-kirjaudu>Kirjaudu</button>' : "";
+      if (a) a.innerHTML = tila.mina ? '<button type="button" class="tili" data-tilivalikko aria-haspopup="true" aria-expanded="false">' + esc((tila.mina.nimi || "Oma tili").split(" ")[0]) + ' <span aria-hidden="true">▾</span></button>' : tila.kirjautuminen ? '<button type="button" class="tili" data-kirjaudu>Kirjaudu</button>' : "";
       piirraKirjoitus();
     });
   }
@@ -203,6 +205,7 @@
 
   // ---------- tapahtumat ----------
   document.addEventListener("click", function (e) {
+    var avoin = $(".tilivalikko"); if (avoin && !e.target.closest(".tilivalikko, [data-tilivalikko]")) { avoin.remove(); var tb = $("[data-tilivalikko]"); if (tb) tb.setAttribute("aria-expanded", "false"); }
     var b = e.target.closest("button, a[data-avaa]"); if (!b) {
       var art = e.target.closest(".posti"); if (art && !e.target.closest("a, details, form, .kortti.aanestys, .kortti.fakta") && !art.classList.contains("iso") && !art.classList.contains("piilo")) avaaKetju(art.getAttribute("data-id"), true);
       return;
@@ -215,6 +218,15 @@
     else if (d.lisaasivu !== undefined) { tila.sivu++; lataaSyote(true); }
     else if (d.kirjaudu !== undefined) avaaKirjautuminen();
     else if (d.sulje !== undefined) DLG.close();
+    else if (d.tilivalikko !== undefined) {
+      var tv = $(".tilivalikko"); if (tv) { tv.remove(); b.setAttribute("aria-expanded", "false"); return; }
+      var ts = tila.tilasto;
+      b.setAttribute("aria-expanded", "true");
+      b.insertAdjacentHTML("afterend", '<div class="valikko tilivalikko" role="menu"><div class="tv-nimi">' + esc(tila.mina.nimi || "Oma tili") + "</div>" +
+        (ts ? '<div class="tv-tilasto"><b>Ylläpito</b><span>Rekisteröityneitä <b>' + ts.kayttajat + "</b></span><span>Nimen antaneita <b>" + ts.nimelliset + "</b></span><span>Kirjoittaneita <b>" + ts.kirjoittajat + "</b></span><span>Lukijoita 7 pv <b>" + ts.lukijat7 + "</b></span></div>" : "") +
+        '<button type="button" role="menuitem" data-ulos>Kirjaudu ulos</button></div>');
+    }
+    else if (d.avaateksti !== undefined) { var ptx = b.previousElementSibling; if (ptx) ptx.classList.remove("tiivis"); b.remove(); }
     else if (d.ulos !== undefined && confirmOk("Kirjaudutaanko ulos?")) api("ulos", {}).then(function () { location.href = "/"; });
     else if (d.vastaa) avaaKetju(d.vastaa, true);
     else if (d.tykkaa) {

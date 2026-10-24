@@ -221,3 +221,14 @@ a.av{text-decoration:none}
 #yv-tulos{margin-top:14px;display:grid;gap:10px}
 a.nappi{text-decoration:none;display:inline-block}
 .yv-varoita{border-left:4px solid var(--korostus,#f5c542);padding-left:16px!important}
+
+/* ---- käyttökokemus 24.10. ---- */
+#fp-tili{position:relative}
+.tilivalikko{top:42px;min-width:220px;padding:6px 0}
+.tv-nimi{padding:10px 14px 8px;font-weight:700;color:var(--ink);border-bottom:1px solid var(--line)}
+.tv-tilasto{display:grid;gap:4px;padding:10px 14px;border-bottom:1px solid var(--line);font-size:.88rem;color:var(--mute)}
+.tv-tilasto>b{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.tv-tilasto span{display:flex;justify-content:space-between;gap:16px}.tv-tilasto span b{color:var(--ink)}
+.pt.tiivis{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:6;overflow:hidden}
+.avaa-teksti{background:none;border:0;padding:4px 0;margin:0;font:700 .9rem var(--f-b);color:var(--navy2);cursor:pointer}
+@media (prefers-color-scheme:dark){.avaa-teksti{color:var(--yel)}}
