@@ -1,0 +1,27 @@
+name: Promovideo talteen
+# Kopioi valmiin promovideon (Actions-artefakti) haaraan promovideo-tiedosto, josta sen saa ladattua gitillä.
+on:
+  push:
+    branches: [main]
+    paths: [".github/workflows/promo-haku.yml"]
+  workflow_dispatch:
+    inputs:
+      ajo: { description: "Promovideo-ajon id", required: true }
+permissions:
+  contents: write
+  actions: read
+jobs:
+  talteen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: promovideo
+          run-id: ${{ inputs.ajo || '40089923120' }}
+          github-token: ${{ github.token }}
+          path: v
+      - name: Haaraan
+        run: |
+          cd v && git init -q && git checkout -q -b promovideo-tiedosto && mv video.mp4 faktapiste_tiktok.mp4
+          git add -A && git -c user.name=bot -c user.email=bot@x commit -qm "Promovideo"
+          git push -f -q "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" promovideo-tiedosto
