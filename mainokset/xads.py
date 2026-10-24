@@ -234,6 +234,15 @@ if __name__ == "__main__":
             ilmoita("Kohdennus " + tyyppi, json.dumps(kutsu(f"/accounts/{tili}/targeting_criteria", {"line_item_id": a["lid"], "targeting_type": tyyppi, "targeting_value": arvo, "operator_type": "EQ"}, "POST"), ensure_ascii=False)[:600])
         ilmoita("Mainostus", json.dumps(kutsu(f"/accounts/{tili}/promoted_tweets", {"line_item_id": a["lid"], "tweet_ids": a["tw"]}, "POST"), ensure_ascii=False)[:800])
         ilmoita("Kampanja", json.dumps(kutsu(f"/accounts/{tili}/campaigns/{a['kid']}"), ensure_ascii=False)[:800])
+    elif toiminto == "kaynnista":
+        # Käynnistää kampanjan ja sen mainosryhmät (vain omistajan luvalla).
+        tili, kid = sys.argv[2], sys.argv[3]
+        v = kutsu(f"/accounts/{tili}/campaigns/{kid}", {"entity_status": "ACTIVE"}, "PUT")
+        ilmoita("Kampanja", json.dumps(v.get("data", v), ensure_ascii=False)[:1500])
+        for l in kutsu(f"/accounts/{tili}/line_items", {"campaign_ids": kid}).get("data", []):
+            r = kutsu(f"/accounts/{tili}/line_items/{l['id']}", {"entity_status": "ACTIVE"}, "PUT")
+            ilmoita("Mainosryhmä", json.dumps(r.get("data", r), ensure_ascii=False)[:1500])
+        ilmoita("Tila", json.dumps(kutsu(f"/accounts/{tili}/campaigns/{kid}").get("data", {}), ensure_ascii=False)[:1500])
     elif toiminto == "pysayta":
         tili, kid = sys.argv[2], sys.argv[3]
         v = kutsu(f"/accounts/{tili}/campaigns/{kid}", {"entity_status": "PAUSED"}, "PUT")
