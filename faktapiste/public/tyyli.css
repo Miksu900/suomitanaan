@@ -229,3 +229,6 @@ a.nappi{text-decoration:none;display:inline-block}
 .tv-tilasto{display:grid;gap:4px;padding:10px 14px;border-bottom:1px solid var(--line);font-size:.88rem;color:var(--mute)}
 .tv-tilasto>b{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
 .tv-tilasto span{display:flex;justify-content:space-between;gap:16px}.tv-tilasto span b{color:var(--ink)}
+.pt.tiivis{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:6;overflow:hidden}
+.avaa-teksti{background:none;border:0;padding:4px 0;margin:0;font:700 .9rem var(--f-b);color:var(--navy2);cursor:pointer}
+@media (prefers-color-scheme:dark){.avaa-teksti{color:var(--yel)}}
