@@ -16,6 +16,10 @@ jobs:
           MSDEV: ${{ secrets.MSADS_DEVELOPER_TOKEN }}
           CF: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           TG: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
         run: |
           export HALLINTA=$(printf '%s' "$CF-faktapiste" | sha256sum | cut -c1-40)
           cd mainokset && python3 raportti.py

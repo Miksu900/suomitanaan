@@ -1,6 +1,6 @@
 """Päivittäinen mainosraportti Telegramiin (Google Ads + Bing). Ei tulosta avaimia."""
 import os, json, urllib.request, datetime
-import gads, msads
+import gads, msads, xads
 
 G = "4566722878"
 def eur(m): return f"{int(m or 0)/1e6:.2f} €".replace(".", ",")
@@ -44,10 +44,9 @@ def laheta(teksti):
 if __name__ == "__main__":
     pv = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%-d.%-m.")
     osat = [f"📊 <b>Mainosraportti</b> (eilen {pv})", ""]
-    for f in (google, bing):
+    for f in (google, bing, xads.raporttirivit):
         try: osat += f()
-        except Exception as e: osat.append(f"⚠️ {f.__name__}: {type(e).__name__}")
+        except Exception as e: osat.append(f"⚠️ {getattr(f, '__name__', 'X')}: {type(e).__name__}")
         osat.append("")
-    osat.append("X: odottaa rajapinnan hyväksyntää")
     laheta("\n".join(osat))
     print("::notice title=Raportti::lähetetty")
