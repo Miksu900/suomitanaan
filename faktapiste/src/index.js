@@ -22,7 +22,7 @@ const ARVONNAT = [
   { kausi: "2026-11", alku: Date.parse("2026-10-25T00:00:00+03:00"), loppu: Date.parse("2026-11-30T23:59:59+02:00"),
     palkinto: "100 euron lahjakortin K-ryhmään", lyhyt: "100 €", arvontaPv: "1.12.2026", vero: "30 € (alle 50 €:n kuukausirajan, ei ilmoiteta)" },
   { kausi: "suuri-2027-01", alku: Date.parse("2026-10-25T00:00:00+03:00"), loppu: Date.parse("2027-01-31T23:59:59+02:00"),
-    palkinto: "500 euron lahjakortin K-ryhmään", lyhyt: "500 €", arvontaPv: "1.2.2027", vero: "150 € arpajaisveroa, ilmoita ja maksa OmaVerossa viimeistään 12.4.2027" },
+    palkinto: "500 euroa rahana tai K-ryhmän lahjakorttina", lyhyt: "500 €", valinta: true, arvontaPv: "1.2.2027", vero: "150 € arpajaisveroa, ilmoita ja maksa OmaVerossa viimeistään 12.4.2027" },
 ];
 const ARPA = { maxPv: 5, minPituus: 20 };
 const VIDEO_MAX = 100 * 1024 * 1024, VIDEO_KESTO = 180, VIDEO_TYYPIT = ["video/mp4", "video/webm", "video/quicktime"];
@@ -527,7 +527,7 @@ export class Faktapiste extends DurableObject {
       const tulos = { kausi: a.kausi, voittaja: voittaja.nimi, arvat: voittaja.arvat, osallistujia: l.length, arvoja: yht, aika: new Date().toISOString() };
       this.sql.exec("INSERT INTO asetukset VALUES(?,?)", avain, JSON.stringify(tulos));
       await telegram(this.env, `🎁 Faktapisteen arvonta (${a.lyhyt}, ${a.kausi}): voittaja ${voittaja.nimi} (${voittaja.email}), ${voittaja.arvat}/${yht} arpaa, ${l.length} osallistujaa.\n` +
-        `Lähetä ${a.palkinto.replace("lahjakortin", "lahjakortti")} voittajalle ja ilmoita voitosta Faktapisteessä etunimellä.\nVero: ${a.vero}. Palkinto on voittajalle verovapaa.`);
+        (a.valinta ? "Kysy voittajalta, haluaako hän 500 € rahana vai K-ryhmän lahjakorttina, ja maksa tai lähetä se. Ilmoita" : `Lähetä ${a.palkinto.replace("lahjakortin", "lahjakortti")} voittajalle ja ilmoita`) + ` voitosta Faktapisteessä etunimellä.\nVero: ${a.vero}. Palkinto on voittajalle verovapaa.`);
       tulokset.push(tulos);
     }
     return { tulokset };

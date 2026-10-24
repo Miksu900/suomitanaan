@@ -239,7 +239,7 @@
     var A = $("#fp-arvonta"); if (!A) return;
     api("arvonta").then(function (j) {
       if (!j || !j.kaynnissa) { A.innerHTML = ""; return; }
-      var la = j.arvonnat, otsikko = "Arvomme " + la.map(function (a) { return a.lyhyt + " (" + a.arvontaPv.replace(/\.20\d\d$/, ".") + ")"; }).join(" ja ") + " K-ryhmän lahjakortit";
+      var la = j.arvonnat, otsikko = "Arvomme " + la.map(function (a) { return a.lyhyt + " (" + a.arvontaPv.replace(/\.20\d\d$/, ".") + ")"; }).join(" ja ") + (la.length > 1 ? " – 500 € voi ottaa myös rahana" : " K-ryhmän lahjakorttina");
       var omat = la[0].omat, oma = j.yllapitaja ? "Ylläpitäjänä et osallistu." : omat === null ? "Kirjaudu ja kirjoita, niin olet mukana." : "Sinulla on nyt <b>" + omat + " " + (omat === 1 ? "arpa" : "arpaa") + "</b>" + (la.length > 1 ? " kumpaankin arvontaan" : "") + ".";
       A.innerHTML = '<div class="arvonta"><span class="arv-ik" aria-hidden="true">🎁</span><div><b>' + esc(otsikko) + "</b>" +
         "<p>Jokainen kirjoitus ja kommentti on arpa (enintään " + j.maxPv + " päivässä). Mitä ahkerammin kirjoitat, sitä paremmat mahdollisuudet. " + oma + ' <a href="/arvonta/">Säännöt</a></p></div></div>';
