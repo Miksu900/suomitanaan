@@ -7,7 +7,7 @@ from .malli import sivu as mallisivu
 from .data import DEMOT
 
 esc = html.escape
-YHTEYS = "miika@eduskuntaseuranta.fi"
+YHTEYS = "info@netvo.fi"
 
 HINTA_KK = 19
 SITOUTUS = "12 tai 24 kuukautta"
