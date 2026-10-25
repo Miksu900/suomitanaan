@@ -308,6 +308,9 @@
       var a = $("#fp-tili");
       if (a) a.innerHTML = tila.mina ? '<button type="button" class="tili" data-tilivalikko aria-haspopup="true" aria-expanded="false">' + esc((tila.mina.nimi || "Oma tili").split(" ")[0]) + ' <span aria-hidden="true">▾</span></button>' : tila.kirjautuminen ? '<button type="button" class="tili" data-kirjaudu>Kirjaudu</button>' : "";
       piirraKirjoitus();
+      // Linkillä kirjautunut, jolla on nimi mutta ei salasanaa: ehdotetaan salasanan asettamista kerran istunnossa
+      var myoh = false; try { myoh = sessionStorage.getItem("fp_salmyoh") === "1"; } catch (x) {}
+      if (tila.mina && tila.mina.nimiOk && !tila.mina.salasana && !myoh && !DLG.open) avaaSalasana(true);
     });
   }
 
@@ -346,10 +349,21 @@
   // ---------- kirjautumisikkuna ----------
   var DLG = $("#fp-kirjaudu");
   function avaaKirjautuminen() {
-    DLG.innerHTML = '<form method="dialog" class="dlg" id="kirjform"><h2>Kirjaudu Faktapisteeseen</h2><p>Saat sähköpostiisi kirjautumislinkin. Salasanaa ei tarvita, ja sama linkki luo tilin, jos sinulla ei vielä ole sitä.</p>' +
-      '<label>Sähköposti<input type="email" name="email" required autocomplete="email"></label><p class="pieni">Kirjautumalla hyväksyt <a href="/tietoa/#keskustelu">keskustelun säännöt ja tietosuojan</a>.</p>' +
+    DLG.innerHTML = '<form method="dialog" class="dlg" id="kirjform"><h2>Kirjaudu Faktapisteeseen</h2>' +
+      '<label>Sähköposti<input type="email" name="email" required autocomplete="email"></label>' +
+      '<label>Salasana<input type="password" name="salasana" autocomplete="current-password" placeholder="Jätä tyhjäksi, jos olet uusi"></label>' +
+      '<p class="pieni">Uusi käyttäjä tai unohtunut salasana? Jätä salasana tyhjäksi, niin lähetämme sähköpostiisi kirjautumislinkin. Sen jälkeen voit asettaa salasanan.</p>' +
+      '<p class="pieni">Kirjautumalla hyväksyt <a href="/tietoa/#keskustelu">keskustelun säännöt ja tietosuojan</a>.</p>' +
       '<p class="ehto">Kirjoitukset ja kommentit ovat mukana Faktapisteen arvonnoissa. Osallistumalla hyväksyt <a href="/arvonta/" target="_blank" rel="noopener">arvonnan säännöt</a>.</p>' +
-      '<div class="rivi"><button type="button" class="nappi toissijainen" data-sulje>Peruuta</button><button class="nappi" value="laheta">Lähetä linkki</button></div></form>';
+      '<div class="rivi"><button type="button" class="nappi toissijainen" data-sulje>Peruuta</button><button class="nappi" value="laheta">Kirjaudu</button></div></form>';
+    DLG.showModal();
+  }
+
+  function avaaSalasana(ehdotus) {
+    DLG.innerHTML = '<form method="dialog" class="dlg" id="salasanaform"><h2>' + (ehdotus ? "Aseta salasana" : (tila.mina && tila.mina.salasana ? "Vaihda salasana" : "Aseta salasana")) + '</h2>' +
+      (ehdotus ? "<p>Aseta salasana, niin voit jatkossa kirjautua suoraan ilman sähköpostilinkkiä.</p>" : "") +
+      '<label>Uusi salasana<input type="password" name="uusi" required minlength="8" autocomplete="new-password" placeholder="Vähintään 8 merkkiä"></label>' +
+      '<div class="rivi"><button type="button" class="nappi toissijainen" data-sulje>' + (ehdotus ? "Myöhemmin" : "Peruuta") + '</button><button class="nappi" value="tallenna">Tallenna</button></div></form>';
     DLG.showModal();
   }
 
@@ -367,13 +381,15 @@
     else if (d.takaisin !== undefined) { if (history.state && history.state.p && history.length > 1) history.back(); else suljeKetju(true); }
     else if (d.lisaasivu !== undefined) { tila.sivu++; lataaSyote(true); }
     else if (d.kirjaudu !== undefined) avaaKirjautuminen();
-    else if (d.sulje !== undefined) DLG.close();
+    else if (d.sulje !== undefined) { if (DLG.querySelector("#salasanaform")) { try { sessionStorage.setItem("fp_salmyoh", "1"); } catch (x) {} } DLG.close(); }
+    else if (d.salasana !== undefined) avaaSalasana();
     else if (d.tilivalikko !== undefined) {
       var tv = $(".tilivalikko"); if (tv) { tv.remove(); b.setAttribute("aria-expanded", "false"); return; }
       var ts = tila.tilasto;
       b.setAttribute("aria-expanded", "true");
       b.insertAdjacentHTML("afterend", '<div class="valikko tilivalikko" role="menu"><div class="tv-nimi">' + esc(tila.mina.nimi || "Oma tili") + "</div>" +
         (ts ? '<div class="tv-tilasto"><b>Ylläpito</b><span>Rekisteröityneitä <b>' + ts.kayttajat + "</b></span><span>Nimen antaneita <b>" + ts.nimelliset + "</b></span><span>Kirjoittaneita <b>" + ts.kirjoittajat + "</b></span><span>Lukijoita 7 pv <b>" + ts.lukijat7 + "</b></span></div>" : "") +
+        '<button type="button" role="menuitem" data-salasana>' + (tila.mina.salasana ? "Vaihda salasana" : "Aseta salasana") + '</button>' +
         '<button type="button" role="menuitem" data-ulos>Kirjaudu ulos</button></div>');
     }
     else if (d.avaateksti !== undefined) { var ptx = b.previousElementSibling; if (ptx) ptx.classList.remove("tiivis"); b.remove(); }
@@ -484,11 +500,24 @@
   document.addEventListener("submit", function (e) {
     var f = e.target;
     if (f.id === "kirjform") {
-      e.preventDefault(); var em = f.email.value.trim(); var nb = $("button[value=laheta]", f); nb.disabled = true;
-      api("kirjaudu", { email: em, kutsu: lue("fp_kutsu") || "" }).then(function (j) {
+      e.preventDefault(); var em = f.email.value.trim(), sa = f.salasana ? f.salasana.value : ""; var nb = $("button[value=laheta]", f); nb.disabled = true;
+      api("kirjaudu", { email: em, salasana: sa, kutsu: lue("fp_kutsu") || "" }).then(function (j) {
         nb.disabled = false;
         if (j.virhe) return ilmoitus(j.virhe, 1);
+        if (j.sisaan) { DLG.close(); ilmoitus("Olet kirjautunut sisään."); mina(); lataaSyote(); piirraArvonta(); return; }
+        if (j.uusi || j.eiSalasanaa) {
+          // Ei tiliä tai salasanaa vielä: lähetetään kirjautumislinkki
+          f.salasana.value = ""; ilmoitus(j.uusi ? "Tällä osoitteella ei ole vielä tiliä. Lähetämme vahvistuslinkin." : "Tilillesi ei ole vielä asetettu salasanaa. Lähetämme kirjautumislinkin.");
+          nb.click(); return;
+        }
         f.innerHTML = "<h2>Tarkista sähköpostisi</h2><p>Lähetimme kirjautumislinkin osoitteeseen <b>" + esc(em) + "</b>. Linkki on voimassa 30 minuuttia. Katso tarvittaessa myös roskapostikansio.</p><div class=\"rivi\"><button type=\"button\" class=\"nappi\" data-sulje>Selvä</button></div>";
+      }); return;
+    }
+    if (f.id === "salasanaform") {
+      e.preventDefault(); var sb = $("button[value=tallenna]", f); sb.disabled = true;
+      api("salasana", { salasana: f.uusi.value }).then(function (j) {
+        sb.disabled = false; if (j.virhe) return ilmoitus(j.virhe, 1);
+        DLG.close(); ilmoitus("Salasana tallennettu. Voit nyt kirjautua sähköpostilla ja salasanalla."); mina();
       }); return;
     }
     if (f.id === "nimilomake") {

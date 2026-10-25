@@ -21,6 +21,7 @@ jobs:
             console.log("Ilmoitus:", await p.$eval("#fp-toast", t => t.textContent)); }
           const v = await p.request.get("https://faktapiste.fi/api/vahvista?t=abc", { maxRedirects: 0 }); console.log("vahvista:", v.status(), v.headers().location);
           const k = await p.request.post("https://faktapiste.fi/api/kirjaudu", { data: { email: "x" } }); console.log("kirjaudu (huono osoite):", k.status(), await k.text());
+          const s1 = await p.request.post("https://faktapiste.fi/api/kirjaudu", { data: { email: "ei.ole.olemassa.testi@gmail.com", salasana: "testisalasana" } }); console.log("salasana, uusi osoite:", s1.status(), await s1.text());
           const m = await p.request.get("https://faktapiste.fi/api/mina"); console.log("mina:", m.status(), (await m.text()).slice(0, 300));
           console.log("API:", vastaukset.join(" | ")); console.log("Virheet:", virheet.join(" | ") || "ei");
           await p.screenshot({ path: "kuva.png" }); await b.close();

@@ -147,6 +147,22 @@ const json = (d, s = 200, h = {}) => new Response(JSON.stringify(d), { status: s
 const virhe = (v, s = 400) => json({ virhe: v }, s);
 const nyt = () => Date.now();
 function satunnainen(n = 32) { const b = new Uint8Array(n); crypto.getRandomValues(b); return [...b].map(x => x.toString(16).padStart(2, "0")).join(""); }
+// Salasanat: PBKDF2-SHA256 (100 000 kierrosta, satunnainen suola). Selkokielistä salasanaa ei tallenneta.
+async function pbkdf2(s, suola, n) {
+  const avain = await crypto.subtle.importKey("raw", new TextEncoder().encode(s), "PBKDF2", false, ["deriveBits"]);
+  const b = await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: suola, iterations: n }, avain, 256);
+  return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, "0")).join("");
+}
+async function teeSalasana(s) {
+  const suola = new Uint8Array(16); crypto.getRandomValues(suola);
+  return `pbkdf2$100000$${[...suola].map(x => x.toString(16).padStart(2, "0")).join("")}$${await pbkdf2(s, suola, 100000)}`;
+}
+async function tarkistaSalasana(s, tallennettu) {
+  const [laji, n, suola, h] = String(tallennettu).split("$"); if (laji !== "pbkdf2") return false;
+  const x = await pbkdf2(s, new Uint8Array(suola.match(/../g).map(c => parseInt(c, 16))), +n);
+  let ero = x.length ^ h.length; for (let i = 0; i < x.length && i < h.length; i++) ero |= x.charCodeAt(i) ^ h.charCodeAt(i);
+  return ero === 0;
+}
 async function tiiviste(s) { const d = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)); return [...new Uint8Array(d)].map(x => x.toString(16).padStart(2, "0")).join(""); }
 function evaste(req, nimi) { const m = (req.headers.get("cookie") || "").match(new RegExp("(?:^|;\\s*)" + nimi + "=([^;]+)")); return m ? m[1] : null; }
 const puhdas = s => String(s || "").replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "").trim();
@@ -230,7 +246,7 @@ export class Faktapiste extends DurableObject {
         DROP TABLE kayttajat; ALTER TABLE kayttajat2 RENAME TO kayttajat;
         INSERT OR REPLACE INTO asetukset VALUES('skeema', '2');`);
     }
-    for (const a of ["ALTER TABLE postit ADD COLUMN nakymat INTEGER DEFAULT 0", "ALTER TABLE postit ADD COLUMN kunta TEXT", "ALTER TABLE postit ADD COLUMN muokattu INTEGER"]) { try { this.sql.exec(a); } catch {} }
+    for (const a of ["ALTER TABLE kayttajat ADD COLUMN salasana TEXT", "ALTER TABLE postit ADD COLUMN nakymat INTEGER DEFAULT 0", "ALTER TABLE postit ADD COLUMN kunta TEXT", "ALTER TABLE postit ADD COLUMN muokattu INTEGER"]) { try { this.sql.exec(a); } catch {} }
   }
   yksi(q, ...p) { return this.sql.exec(q, ...p).toArray()[0] || null; }
   kaikki(q, ...p) { return this.sql.exec(q, ...p).toArray(); }
@@ -245,7 +261,7 @@ export class Faktapiste extends DurableObject {
   kayttaja(req) {
     const t = evaste(req, "fp_s");
     if (!t) return null;
-    const k = this.yksi("SELECT k.id, k.email, k.nimi, k.esto FROM sessiot s JOIN kayttajat k ON k.id=s.kayttaja WHERE s.t=? AND s.vanhenee>?", t, nyt());
+    const k = this.yksi("SELECT k.id, k.email, k.nimi, k.esto, k.salasana IS NOT NULL AS sala FROM sessiot s JOIN kayttajat k ON k.id=s.kayttaja WHERE s.t=? AND s.vanhenee>?", t, nyt());
     if (k) { k.admin = onAdmin(k.email); k.nimiOk = oikeaNimi(k.nimi); }
     return k;
   }
@@ -319,7 +335,7 @@ export class Faktapiste extends DurableObject {
       if (vm && m === "GET") return vm[2] ? this.naytaKansi(+vm[1]) : await this.naytaVideo(+vm[1], req);
       if (p.startsWith("/api/posti/") && m === "GET") return json(this.ketju(+p.split("/")[3], minä));
       if (p === "/api/mina" && minä) await this.jalki(req, minä.id);
-      if (p === "/api/mina") return json({ kayttaja: minä ? { nimi: minä.nimi, nimiOk: minä.nimiOk, admin: minä.admin } : null,
+      if (p === "/api/mina") return json({ kayttaja: minä ? { nimi: minä.nimi, nimiOk: minä.nimiOk, admin: minä.admin, salasana: !!minä.sala } : null,
         tilasto: minä && minä.admin ? { kayttajat: this.yksi("SELECT COUNT(*) AS n FROM kayttajat").n, nimelliset: this.yksi("SELECT COUNT(*) AS n FROM kayttajat WHERE nimi IS NOT NULL").n,
           kirjoittajat: this.yksi("SELECT COUNT(DISTINCT kayttaja) AS n FROM postit WHERE kayttaja IS NOT NULL").n, lukijat7: this.yksi("SELECT COUNT(DISTINCT katsoja) AS n FROM nahdyt WHERE luotu>?", nyt() - 7 * 86400e3).n } : null, kirjautuminen: this.env.KIRJAUTUMINEN === "auki", video: !!this.env.VIDEOT, testi: this.env.KIRJAUTUMINEN === "testi" });
       if (p === "/api/kirjaudu" && m === "POST") return await this.kirjaudu(req);
@@ -330,6 +346,7 @@ export class Faktapiste extends DurableObject {
       if (minä.esto) return virhe("Tilisi on suljettu.", 403);
       const d = await req.json().catch(() => ({}));
       if (p === "/api/nimi") return await this.asetaNimi(minä, d, req);
+      if (p === "/api/salasana") return await this.asetaSalasana(minä, d);
       if (!minä.nimiOk) return virhe("Lisää ensin oma nimesi (etu- ja sukunimi).", 400);
       if (p === "/api/posti") return await this.uusiPosti(minä, d, lukija);
       if (p === "/api/video/lupa") return this.videoLupa(minä, d);
@@ -389,6 +406,16 @@ export class Faktapiste extends DurableObject {
       this.sql.exec("UPDATE kutsut SET kayttoja=kayttoja+1 WHERE koodi=?", k.koodi);
     }
     const ip = await tiiviste((req.headers.get("cf-connecting-ip") || "") + "fp");
+    if (typeof d.salasana === "string" && d.salasana) {
+      // Salasanakirjautuminen
+      if (!this.raja("ls:" + email, 10, 3600) || !this.raja("lsi:" + ip, 40, 3600)) return virhe("Liian monta yritystä. Yritä hetken päästä uudelleen.", 429);
+      const k = olemassa && this.yksi("SELECT id, salasana FROM kayttajat WHERE id=?", olemassa.id);
+      if (!k) return json({ uusi: true });
+      if (!k.salasana) return json({ eiSalasanaa: true });
+      if (!(await tarkistaSalasana(d.salasana, k.salasana))) return virhe("Väärä sähköposti tai salasana.", 401);
+      await this.jalki(req, k.id);
+      return json({ ok: true, sisaan: true }, 200, { "set-cookie": this.uusiSessio(k.id) });
+    }
     if (!this.raja("lk:" + email, 4, 3600) || !this.raja("li:" + ip, 15, 3600)) return virhe("Liian monta yritystä. Yritä hetken päästä uudelleen.", 429);
     const t = satunnainen();
     this.sql.exec("INSERT INTO linkit VALUES(?,?,?)", await tiiviste(t), email, nyt() + 30 * 60e3);
@@ -427,10 +454,21 @@ export class Faktapiste extends DurableObject {
     if (!k) { this.sql.exec("INSERT INTO kayttajat(email, luotu) VALUES(?,?)", l.email, nyt()); k = this.yksi("SELECT id FROM kayttajat WHERE email=?", l.email); }
     await this.jalki(req, k.id);
     this.sql.exec("DELETE FROM jaljet WHERE luotu<?", nyt() - 180 * 86400e3);
+    return new Response(null, { status: 302, headers: { location: "/?tervetuloa=1", "set-cookie": this.uusiSessio(k.id) } });
+  }
+  uusiSessio(kid) {
     const s = satunnainen();
-    this.sql.exec("INSERT INTO sessiot VALUES(?,?,?)", s, k.id, nyt() + 60 * 86400e3);
+    this.sql.exec("INSERT INTO sessiot VALUES(?,?,?)", s, kid, nyt() + 60 * 86400e3);
     this.sql.exec("DELETE FROM sessiot WHERE vanhenee<?", nyt());
-    return new Response(null, { status: 302, headers: { location: "/?tervetuloa=1", "set-cookie": `fp_s=${s}; Path=/; Max-Age=${60 * 86400}; HttpOnly; Secure; SameSite=Lax` } });
+    return `fp_s=${s}; Path=/; Max-Age=${60 * 86400}; HttpOnly; Secure; SameSite=Lax`;
+  }
+  async asetaSalasana(minä, d) {
+    const s = String(d.salasana || "");
+    if (s.length < 8) return virhe("Salasanassa pitää olla vähintään 8 merkkiä.");
+    if (s.length > 200) return virhe("Salasana on liian pitkä.");
+    if (!this.raja("ss:" + minä.id, 10, 3600)) return virhe("Liian monta yritystä. Yritä hetken päästä uudelleen.", 429);
+    this.sql.exec("UPDATE kayttajat SET salasana=? WHERE id=?", await teeSalasana(s), minä.id);
+    return json({ ok: true });
   }
   async asetaNimi(minä, d, req) {
     const n = isot(puhdas(d.nimi).replace(/\s+/g, " "));
