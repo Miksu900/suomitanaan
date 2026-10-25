@@ -1,4 +1,4 @@
-"""Nettikoti – myynti- ja ehtosivu sekä mallisivujen galleria. Oma brändi, erillään Faktapisteesta.
+"""Netvo – myynti- ja ehtosivu sekä mallisivujen galleria. Oma brändi, erillään Faktapisteesta.
 
 Reiluus on kärki: selkeä hinta, oma domain asiakkaalle, keskeytys 2 kk maksulla, ei loukkua.
 """
@@ -17,7 +17,7 @@ SAKKO_KK = 2
 def _demokortti(d):
     kauppa = d.get("tyyppi") == "kauppa"
     merkki = "Verkkokauppa" if kauppa else d["ala"]
-    return f"""<a class="malli" href="/nettikoti/mallit/{d['slug']}/" target="_blank" rel="noopener">
+    return f"""<a class="malli" href="/netvo/mallit/{d['slug']}/" target="_blank" rel="noopener">
 <span class="malli-kuva teema-{d.get('teema','sininen')}"><b>{esc(d['nimi'])}</b><i>{esc(d.get('slogan',''))}</i></span>
 <span class="malli-tieto"><span class="malli-ala">{esc(merkki)}</span>Katso malli →</span></a>"""
 
@@ -89,13 +89,13 @@ footer.jalka a{{color:#cfd0d4}}
 </style></head>
 <body>
 <header class="top"><div class="w">
-<a class="logo" href="/nettikoti/">Netti<span>koti</span></a>
+<a class="logo" href="/netvo/">Net<span>vo</span></a>
 <a class="nappi" href="#yhteys">Ota yhteyttä</a>
 </div></header>
 {runko}
-<footer class="jalka"><p><b>Nettikoti</b> – valmiit nettisivut suomalaisille yrityksille.</p>
-<p>Yhteys: {esc(YHTEYS)} · <a href="/nettikoti/ehdot/">Sopimusehdot</a></p>
-<p>Osa Faktapisteen palveluita.</p></footer>
+<footer class="jalka"><p><b>Netvo</b> – valmiit nettisivut suomalaisille yrityksille.</p>
+<p>Yhteys: {esc(YHTEYS)} · <a href="/netvo/ehdot/">Sopimusehdot</a></p>
+<p>Netvo on osa Faktapisteen palveluita.</p></footer>
 </body></html>"""
 
 
@@ -140,7 +140,7 @@ def etusivu():
 <div class="r"><h3>Ei automaattista kallistumista</h3><p>Sitoutumisajan jälkeen sopimus ei muutu kalliimmaksi, vaan jatkuu samalla hinnalla kuukausi kerrallaan.</p></div>
 <div class="r"><h3>Selkeä hinta etukäteen</h3><p>Kerromme kaiken ennen kuin sitoudut mihinkään. Ei piilokuluja, ei pientä pränttiä.</p></div>
 </div>
-<p style="text-align:center;margin-top:24px"><a href="/nettikoti/ehdot/" style="color:#ffd24a;font-weight:700">Lue tarkat sopimusehdot →</a></p>
+<p style="text-align:center;margin-top:24px"><a href="/netvo/ehdot/" style="color:#ffd24a;font-weight:700">Lue tarkat sopimusehdot →</a></p>
 </div></section>
 
 <section class="osio" id="mallit"><div class="w"><h2>Katso mallisivut</h2>
@@ -161,20 +161,20 @@ def etusivu():
 <section class="osio hinnoittelu" id="yhteys"><div class="w teksti" style="text-align:center">
 <h2>Hanki nettisivut yrityksellesi</h2>
 <p style="color:var(--mute);max-width:46ch;margin:0 auto 20px">Kerro lyhyesti yrityksestäsi, niin otamme yhteyttä ja kerromme lisää. Ei sitoumusta vielä tässä vaiheessa.</p>
-<a class="nappi iso" href="mailto:{esc(YHTEYS)}?subject=Nettikoti%20-%20nettisivut%20yritykselleni">Lähetä sähköposti</a>
+<a class="nappi iso" href="mailto:{esc(YHTEYS)}?subject=Netvo%20-%20nettisivut%20yritykselleni">Lähetä sähköposti</a>
 <p style="margin-top:16px;color:var(--mute)">tai sähköposti: <b>{esc(YHTEYS)}</b></p>
 </div></section>
 """
-    return _sivu("Nettikoti – valmiit nettisivut yrityksellesi ilman pystytysmaksua",
+    return _sivu("Netvo – valmiit nettisivut yrityksellesi ilman pystytysmaksua",
                  "Ammattimaiset nettisivut suomalaisille yrityksille. Pystytys 0 €, oma verkkotunnus, reilut ehdot. Peru milloin vain 2 kk maksulla.", runko)
 
 
 def ehtosivu():
     runko = f"""<section class="osio"><div class="w teksti">
 <h1>Sopimusehdot</h1>
-<p style="color:var(--mute)">Nämä ehdot kuvaavat Nettikoti-palvelun sisällön ja hinnoittelun selkeästi ja reilusti. Ehdot täydentyvät tilauksen yhteydessä.</p>
+<p style="color:var(--mute)">Nämä ehdot kuvaavat Netvo-palvelun sisällön ja hinnoittelun selkeästi ja reilusti. Ehdot täydentyvät tilauksen yhteydessä.</p>
 <h2>1. Palvelun sisältö</h2>
-<p>Nettikoti rakentaa asiakkaalle valmiit nettisivut ja pitää ne toiminnassa. Kuukausimaksu sisältää verkkotunnuksen, hostingin, varmuuskopiot, tietoturvan, yhteydenottolomakkeen ja pienet sisältömuutokset (kuten aukioloajat, hinnat ja yhteystiedot).</p>
+<p>Netvo rakentaa asiakkaalle valmiit nettisivut ja pitää ne toiminnassa. Kuukausimaksu sisältää verkkotunnuksen, hostingin, varmuuskopiot, tietoturvan, yhteydenottolomakkeen ja pienet sisältömuutokset (kuten aukioloajat, hinnat ja yhteystiedot).</p>
 <h2>2. Hinta</h2>
 <p>Sivujen pystytys on maksuton. Palvelun kuukausihinta on {HINTA_KK} € (sis. alv). Hinta kerrotaan selkeästi ennen sopimuksen tekoa, eikä piilokuluja ole.</p>
 <h2>3. Sitoutumisaika</h2>
@@ -184,24 +184,24 @@ def ehtosivu():
 <h2>5. Verkkotunnus</h2>
 <p>Verkkotunnus (domain) rekisteröidään asiakkaan tai asiakkaan yrityksen nimiin, ja se on asiakkaan omaisuutta. Sopimuksen päättyessä asiakas voi siirtää verkkotunnuksen toiselle palveluntarjoajalle.</p>
 <h2>6. Sivujen sisältö ja vastuu</h2>
-<p>Asiakas vastaa toimittamiensa tietojen ja kuvien oikeellisuudesta ja siitä, että niillä on oikeus julkaista ne. Nettikoti vastaa sivujen teknisestä toiminnasta ja ylläpidosta.</p>
+<p>Asiakas vastaa toimittamiensa tietojen ja kuvien oikeellisuudesta ja siitä, että niillä on oikeus julkaista ne. Netvo vastaa sivujen teknisestä toiminnasta ja ylläpidosta.</p>
 <h2>7. Sopimuksen päättyminen</h2>
 <p>Sopimuksen päättyessä sivut poistetaan verkosta. Asiakas voi halutessaan pyytää sivujen sisällön itselleen. Verkkotunnus jää asiakkaalle.</p>
 <p style="color:var(--mute);margin-top:30px">Kysymyksiä ehdoista? Ota yhteyttä: {esc(YHTEYS)}</p>
-<p class="keskita"><a class="nappi" href="/nettikoti/">← Takaisin etusivulle</a></p>
+<p class="keskita"><a class="nappi" href="/netvo/">← Takaisin etusivulle</a></p>
 </div></section>"""
-    return _sivu("Sopimusehdot – Nettikoti", "Nettikoti-palvelun selkeät ja reilut sopimusehdot: hinta, sitoutumisaika ja keskeytys.", runko)
+    return _sivu("Sopimusehdot – Netvo", "Netvo-palvelun selkeät ja reilut sopimusehdot: hinta, sitoutumisaika ja keskeytys.", runko)
 
 
 def rakenna_nettikoti(root):
-    """Kirjoittaa Nettikoti-sivut kansioon <root>/nettikoti/."""
+    """Kirjoittaa Netvo-sivut kansioon <root>/netvo/."""
     root = pathlib.Path(root)
-    (root / "nettikoti").mkdir(parents=True, exist_ok=True)
-    (root / "nettikoti" / "index.html").write_text(etusivu(), encoding="utf-8")
-    (root / "nettikoti" / "ehdot").mkdir(exist_ok=True)
-    (root / "nettikoti" / "ehdot" / "index.html").write_text(ehtosivu(), encoding="utf-8")
+    (root / "netvo").mkdir(parents=True, exist_ok=True)
+    (root / "netvo" / "index.html").write_text(etusivu(), encoding="utf-8")
+    (root / "netvo" / "ehdot").mkdir(exist_ok=True)
+    (root / "netvo" / "ehdot" / "index.html").write_text(ehtosivu(), encoding="utf-8")
     for d in DEMOT:
-        kansio = root / "nettikoti" / "mallit" / d["slug"]
+        kansio = root / "netvo" / "mallit" / d["slug"]
         kansio.mkdir(parents=True, exist_ok=True)
         (kansio / "index.html").write_text(mallisivu(d), encoding="utf-8")
     return len(DEMOT)

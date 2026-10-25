@@ -160,5 +160,5 @@ footer.jalka{{background:#0c0c0e;color:#9a9aa0;text-align:center;padding:26px 16
 <p style="color:#9a9aa0;font-size:.82rem;margin:0">Mallisivulla lomake ei lähetä viestiä. Oikealla sivustolla viesti tulee suoraan sähköpostiisi.</p>
 </form>
 </div></div></section>
-<footer class="jalka">© {esc(nimi)} · {esc(d.get("osoite", ""))} · Sivuston tekee Faktapiste</footer>
+<footer class="jalka">© {esc(nimi)} · {esc(d.get("osoite", ""))} · Sivuston toteuttaa Netvo</footer>
 </body></html>"""
