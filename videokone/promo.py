@@ -171,7 +171,7 @@ TEKSTI = "Tämä on minusta tärkeä asia, ja haluaisin kuulla muidenkin mielipi
 LUOKAT = ["Keskustelut", "Uutiset", "Paikalliset", "Huijausvaroitukset", "Päätökset"]
 TASOT = [2, 0, 2, 1, 1]
 def iso(s, koko=130, **k): return iso_teksti(s, koko=koko, **k)
-OTS = [iso("Kirjoitit hyvän postauksen.", 140), iso("Kone päätti puolestasi.", 130), None, iso("Oikeat ihmiset, omat nimet", 120), iso("Oma paikkakunta", 120), None, None]
+OTS = [iso("Kirjoitit hyvän postauksen.", 140), iso("Kukaan ei nähnyt sitä?", 130), None, iso("Oikeat ihmiset, omat nimet", 120), iso("Oma paikkakunta", 120), None, None]
 IHMISET = [("Liisa Korhonen", "Ylivieskaan tarvitaan lisää iltavuoroja bussiliikenteeseen. Kuka muu on samaa mieltä?", "12 min", 41, 7),
            ("Jari Mäkinen", "Kokeilin eilen uutta kirjastoa. Ihan mahtava paikka lapsiperheille!", "35 min", 58, 12),
            ("Aino Lahtinen", "Miksi sähkön siirtohinta nousee taas? Onko jollain tietoa?", "1 t", 77, 9)]
@@ -205,6 +205,16 @@ def tabit(lt):
 
 def kohtaus(base, si, lt, gt):
     dur = SC[si + 1] - SC[si]
+    if si == 0 and A.get("koukku500"):
+        # koukku: raha heti ensimmäisessä kuvassa
+        lahja = Image.new("RGBA", (260, 260), (0, 0, 0, 0)); dl = ImageDraw.Draw(lahja)
+        dl.rounded_rectangle((22, 108, 238, 246), radius=20, fill=GOLD); dl.rounded_rectangle((8, 68, 252, 120), radius=16, fill=(255, 225, 120))
+        dl.rectangle((116, 68, 144, 246), fill=RED); dl.ellipse((66, 22, 126, 76), outline=RED, width=15); dl.ellipse((134, 22, 194, 76), outline=RED, width=15)
+        paste_c(base, lahja, W / 2, 470, back(lt * 4) * (1 + 0.04 * math.sin(gt * 7)))
+        paste_c(base, iso_teksti("VOITA JOPA", koko=110, vari=WHITE, vari2=WHITE), W / 2, 760, back(lt * 4 - 0.15))
+        paste_c(base, iso_teksti("500\u00a0€", koko=260, vari=GOLD, vari2=GOLD), W / 2, 980, back(lt * 4 - 0.3) * (1 + 0.025 * math.sin(gt * 5)))
+        paste_c(base, pill("kirjoittamalla mielipiteesi", M9(54), NAVY, (255, 255, 255, 255), 38, 22), W / 2, 1220, back(lt * 4 - 0.6))
+        return
     if si == 0:
         paste_c(base, OTS[0], W / 2, 430, back(lt * 3) * (1 + 0.015 * math.sin(gt * 6)))
         paste_c(base, postaus("Sinä", TEKSTI, 0), W / 2, 980, back(lt * 3 - 0.4))
