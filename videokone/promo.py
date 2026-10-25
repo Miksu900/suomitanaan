@@ -283,10 +283,10 @@ def kohtaus(base, si, lt, gt):
         paste_c(base, text_img("rahana tai lahjakorttina minne haluat", M8(42), WHITE), W / 2, 410, back(lt * 3 - 0.2))
         laatikko = Image.new("RGBA", (860, 420), (0, 0, 0, 0)); dl = ImageDraw.Draw(laatikko)
         dl.rounded_rectangle((0, 0, 859, 419), radius=30, fill=(255, 255, 255, 30), outline=(255, 255, 255, 90), width=3)
-        dl.text((430, 52), "Iso arvonta 1.2.", font=M9(44), fill=GOLD, anchor="mm")
-        for r, (kuka, summa) in enumerate([("alle 250 käyttäjää", "100 €"), ("250 käyttäjää", "250 €"), ("1000 käyttäjää", "500 €"), ("5000 käyttäjää", "1000 €")]):
+        dl.text((430, 52), "Iso arvonta 1.12.", font=M9(44), fill=GOLD, anchor="mm")
+        for r, (kuka, summa) in enumerate([("500 käyttäjää", "250 €"), ("1000 käyttäjää", "500 €"), ("5000 käyttäjää", "1000 €"), ("alle 500", "ei arvontaa")]):
             y = 125 + r * 76
-            dl.text((60, y), kuka, font=M8(42), fill=WHITE, anchor="lm"); dl.text((800, y), summa.replace(" ", "\u00a0"), font=M9(46), fill=GOLD if r == 3 else WHITE, anchor="rm")
+            dl.text((60, y), kuka, font=M8(42), fill=WHITE, anchor="lm"); dl.text((800, y), summa.replace(" ", "\u00a0"), font=M9(46), fill=GOLD if r == 2 else (GREY if r == 3 else WHITE), anchor="rm")
         paste_c(base, laatikko, W / 2, 700, back(lt * 3 - 0.4))
         paste_c(base, pill("Jokainen kirjoitus = arpa", M9(52), NAVY, (255, 255, 255, 255), 40, 22), W / 2, 1000, back(lt * 3 - 0.7))
         paste_c(base, text_img("+ 100\u00a0€ joka kuukausi", M8(46), WHITE), W / 2, 1120, back(lt * 3 - 0.9))

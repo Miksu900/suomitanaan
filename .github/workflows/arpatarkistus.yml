@@ -7,7 +7,7 @@ on:
       toiminto: { description: "paiva = päivän arvat pois, kausi = koko kauden arvat pois, palauta = peru kaikki käyttäjän hylkäykset", type: choice, options: [paiva, kausi, palauta], default: paiva }
       kayttaja: { description: "Tilin numero Telegram-viestistä (esim. 12)", required: true }
       pv: { description: "Päivä (toiminto=paiva), esim. 2026-10-25", required: false, default: "" }
-      kausi: { description: "Kausi (toiminto=kausi), esim. 2026-11 tai suuri-2027-01 – voi antaa molemmat", required: false, default: "" }
+      kausi: { description: "Kausi (toiminto=kausi), esim. 2026-11 tai suuri-2026-11 – voi antaa molemmat", required: false, default: "" }
 jobs:
   tarkistus:
     runs-on: ubuntu-latest

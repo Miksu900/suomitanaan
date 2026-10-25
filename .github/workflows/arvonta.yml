@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       pakota: { description: "Arvo jo ennen kauden loppua (1 = kyllä, vaatii kauden)", required: false, default: "" }
-      kausi: { description: "Kausi, esim. 2026-11 tai suuri-2027-01", required: false, default: "" }
+      kausi: { description: "Kausi, esim. 2026-11 tai suuri-2026-11", required: false, default: "" }
       hylkaa: { description: "Hylkää voittaja ja arvo uudelleen: tilin numero Telegram-viestistä (vaatii kauden)", required: false, default: "" }
 jobs:
   arvo:

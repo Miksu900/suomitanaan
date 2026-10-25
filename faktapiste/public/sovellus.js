@@ -246,7 +246,7 @@
       h += "<p>Jokainen kirjoitus ja kommentti on arpa, ja kaverin kutsusta saat " + (j.kutsuArvat || 10) + " lisäarpaa. " + oma + "</p>";
       if (iso) {
         var max = iso.seuraava ? iso.seuraava.min : iso.tasot[iso.tasot.length - 1].min, pros = Math.min(100, 100 * iso.kayttajia / max);
-        h += '<div class="iso-arv"><b>Iso arvonta ' + esc(iso.arvontaPv.replace(/\.20\d\d$/, ".")) + ": nyt " + iso.nyt + " €</b>" +
+        h += '<div class="iso-arv"><b>Iso arvonta ' + esc(iso.arvontaPv.replace(/\.20\d\d$/, ".")) + (iso.nyt ? ": nyt " + iso.nyt + " €" : ": " + (iso.seuraava ? iso.seuraava.summa + " €, kun meitä on " + iso.seuraava.min : "")) + "</b>" +
           '<span class="mittari" role="img" aria-label="' + iso.kayttajia + " / " + max + ' käyttäjää"><i style="width:' + pros.toFixed(1) + '%"></i></span>' +
           "<small>Meitä on " + iso.kayttajia + " / " + max + "." + (iso.seuraava ? " Kun meitä on " + iso.seuraava.min + ", palkinto nousee " + iso.seuraava.summa + " euroon." : "") + " Kutsu kaverit mukaan!</small></div>";
       }
