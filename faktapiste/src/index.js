@@ -24,11 +24,11 @@ const ARVONNAT = [
   { kausi: "2026-12", alku: Date.parse("2026-12-01T00:00:00+02:00"), loppu: Date.parse("2026-12-31T23:59:59+02:00"),
     palkinto: "100 euroa rahana tai lahjakorttina haluamaasi kauppaan", lyhyt: "100 €", valinta: true, arvontaPv: "1.1.2027", vero: "30 € (alle 50 €:n kuukausirajan, ei ilmoiteta)" },
   { kausi: "2027-01", alku: Date.parse("2027-01-01T00:00:00+02:00"), loppu: Date.parse("2027-01-31T23:59:59+02:00"),
-    palkinto: "100 euroa rahana tai lahjakorttina haluamaasi kauppaan", lyhyt: "100 €", valinta: true, arvontaPv: "1.2.2027", vero: "30 €, joka lasketaan yhteen 500 €:n arvonnan 150 €:n kanssa: helmikuun arpajaisvero yhteensä 180 €, ilmoita ja maksa OmaVerossa viimeistään 12.4.2027" },
+    palkinto: "100 euroa rahana tai lahjakorttina haluamaasi kauppaan", lyhyt: "100 €", valinta: true, arvontaPv: "1.2.2027", vero: "30 €, joka lasketaan yhteen ison arvonnan arpajaisveron kanssa (helmikuun arpajaisvero): ilmoita ja maksa OmaVerossa viimeistään 12.4.2027" },
   { kausi: "suuri-2027-01", alku: Date.parse("2026-10-25T00:00:00+03:00"), loppu: Date.parse("2027-01-31T23:59:59+02:00"),
-    palkinto: "jopa 500 euroa rahana tai lahjakorttina haluamaasi kauppaan", lyhyt: "jopa 500 €", valinta: true, arvontaPv: "1.2.2027",
+    palkinto: "jopa 1000 euroa rahana tai lahjakorttina haluamaasi kauppaan", lyhyt: "jopa 1000 €", valinta: true, arvontaPv: "1.2.2027",
     // Palkinto kasvaa käyttäjämäärän mukaan (omalla nimellä rekisteröityneet, ei suljettuja tilejä), laskettu arvontahetkellä.
-    tasot: [{ min: 0, summa: 100 }, { min: 250, summa: 250 }, { min: 1000, summa: 500 }], muuVero: 30 },
+    tasot: [{ min: 0, summa: 100 }, { min: 250, summa: 250 }, { min: 1000, summa: 500 }, { min: 5000, summa: 1000 }], muuVero: 30 },
 ];
 const ARPA = { minPituus: 20, vali: 30e3, kutsuArvat: 10, kutsuMax: 10 };
 // Suomen aikaa: päivämäärä (YYYY-MM-DD) ja päivän alku/loppu millisekunteina

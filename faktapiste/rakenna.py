@@ -9,7 +9,7 @@ ROOT = pathlib.Path(__file__).parent / "public"
 SITE = os.environ.get("FAKTAPISTE_URL", "https://faktapiste.fi")
 PV = os.environ.get("PYKALAVAHTI_URL", "https://pykalavahti.fi")
 YHTEYS = "miika@eduskuntaseuranta.fi"
-VER = "44"
+VER = "45"
 esc = html.escape
 
 # avain, nimi, osoite, iskulause, kuvaus, merkki, poliittinen
@@ -174,16 +174,16 @@ runko = f"""<section class="w teksti">
 <p>Palvelut ovat tällä hetkellä maksuttomia. Ylläpitäjä pidättää oikeuden muuttaa palveluita ja niiden ehtoja sekä ottaa käyttöön maksullisia ominaisuuksia; muutoksista kerrotaan etukäteen. Tiedot ovat yleistä tietoa eivätkä oikeudellista tai taloudellista neuvontaa.</p>
 </section>"""
 ARVONTA_RUNKO = f"""<section class="teksti w">
-<h1>Arvonnat: 100 € joka kuukausi ja jopa 500 €</h1>
-<p>Faktapiste arpoo aktiivisten kirjoittajien kesken joka kuukausi 100 euroa ja lisäksi pidemmältä kaudelta ison palkinnon, joka kasvaa käyttäjämäärän mukana jopa 500 euroon. Voittaja saa valita palkintonsa rahana tai lahjakorttina haluamaansa kauppaan. Osallistuminen on maksutonta, eikä se edellytä ostoa. Mitä ahkerammin kirjoitat ja kommentoit, sitä enemmän sinulla on arpoja ja sitä todennäköisemmin voitat.</p>
+<h1>Arvonnat: 100 € joka kuukausi ja jopa 1000 €</h1>
+<p>Faktapiste arpoo aktiivisten kirjoittajien kesken joka kuukausi 100 euroa ja lisäksi pidemmältä kaudelta ison palkinnon, joka kasvaa käyttäjämäärän mukana jopa 1000 euroon. Voittaja saa valita palkintonsa rahana tai lahjakorttina haluamaansa kauppaan. Osallistuminen on maksutonta, eikä se edellytä ostoa. Mitä ahkerammin kirjoitat ja kommentoit, sitä enemmän sinulla on arpoja ja sitä todennäköisemmin voitat.</p>
 <ul class="lista">
 <li><b>100 euroa joka kuukausi rahana tai lahjakorttina haluamaasi kauppaan:</b> marraskuu (25.10.–30.11.2026, arvonta 1.12.2026), joulukuu (1.–31.12.2026, arvonta 1.1.2027) ja tammikuu (1.–31.1.2027, arvonta 1.2.2027).</li>
-<li><b>Iso arvonta, jopa 500 euroa rahana tai lahjakorttina haluamaasi kauppaan:</b> kausi 25.10.2026–31.1.2027, arvonta 1.2.2027. Palkinnon suuruus riippuu Faktapisteen käyttäjämäärästä arvontahetkellä:
-<ul><li>alle 250 käyttäjää: 100 €</li><li>250–999 käyttäjää: 250 €</li><li>vähintään 1000 käyttäjää: 500 €</li></ul>
+<li><b>Iso arvonta, jopa 1000 euroa rahana tai lahjakorttina haluamaasi kauppaan:</b> kausi 25.10.2026–31.1.2027, arvonta 1.2.2027. Palkinnon suuruus riippuu Faktapisteen käyttäjämäärästä arvontahetkellä:
+<ul><li>alle 250 käyttäjää: 100 €</li><li>250–999 käyttäjää: 250 €</li><li>1000–4999 käyttäjää: 500 €</li><li>vähintään 5000 käyttäjää: 1000 €</li></ul>
 Käyttäjiksi lasketaan omalla nimellä rekisteröityneet tilit, joita ei ole suljettu. Ajantasainen käyttäjämäärä näkyy keskustelusivun arvontalaatikossa.</li>
 </ul>
 <h2>Säännöt</h2>
-<p class="pieni">Säännöt päivitetty 25.10.2026: arpojen päiväraja poistettiin, kutsuarvat nostettiin 10 arpaan ja kaikki palkinnot voi valita rahana tai lahjakorttina mihin tahansa kauppaan.</p>
+<p class="pieni">Säännöt päivitetty 25.10.2026: arpojen päiväraja poistettiin, kutsuarvat nostettiin 10 arpaan ja kaikki palkinnot voi valita rahana tai lahjakorttina mihin tahansa kauppaan ja ison arvonnan palkinto nousee 1000 euroon, kun käyttäjiä on vähintään 5000.</p>
 <ul class="lista">
 <li><b>Järjestäjä:</b> Faktapiste, ylläpitäjä Miika Koskela, Ylivieska. Yhteys: <span class="mono">{YHTEYS}</span></li>
 <li><b>Kuka voi osallistua:</b> 18 vuotta täyttäneet Suomessa asuvat Faktapisteen käyttäjät, jotka kirjoittavat omalla nimellään. Ylläpitäjä ei osallistu.</li>
@@ -194,13 +194,13 @@ Käyttäjiksi lasketaan omalla nimellä rekisteröityneet tilit, joita ei ole su
 <li><b>Arvonta:</b> voittaja arvotaan sattumanvaraisesti tietokoneella. Jokaisen osallistujan voittomahdollisuus on suhteessa hänen arpojensa määrään. Sama henkilö voi voittaa useamman arvonnan.</li>
 <li><b>Voittajalle ilmoittaminen:</b> voittajalle ilmoitetaan sähköpostilla siihen osoitteeseen, jolla hän kirjautuu Faktapisteeseen. Voittajan etunimi julkaistaan Faktapisteessä. Jos voittaja ei vastaa 14 päivässä, voittaja arvotaan uudelleen.</li>
 <li><b>Voittajan tarkistus:</b> ylläpitäjä tarkistaa ennen palkinnon antamista, että voittaja on noudattanut sääntöjä. Voittajan on pyydettäessä osoitettava, että hänen nimensä Faktapisteessä on hänen oikea nimensä. Rahapalkinto maksetaan vain voittajan omissa nimissä olevalle pankkitilille. Jos voittaja on rikkonut sääntöjä (esimerkiksi useita tilejä tai valetilejä), voitto hylätään ja voittaja arvotaan uudelleen.</li>
-<li><b>Palkinnot:</b> kuukausittain 100 euroa sekä ison arvonnan palkinto (100, 250 tai 500 euroa käyttäjämäärän mukaan). Voittaja valitsee palkintonsa joko tilisiirtona tai lahjakorttina haluamaansa Suomessa toimivaan kauppaan, joka myy lahjakortteja. Järjestäjä maksaa arpajaisveron, joten palkinto on voittajalle verovapaa.</li>
+<li><b>Palkinnot:</b> kuukausittain 100 euroa sekä ison arvonnan palkinto (100, 250, 500 tai 1000 euroa käyttäjämäärän mukaan). Voittaja valitsee palkintonsa joko tilisiirtona tai lahjakorttina haluamaansa Suomessa toimivaan kauppaan, joka myy lahjakortteja. Järjestäjä maksaa arpajaisveron, joten palkinto on voittajalle verovapaa.</li>
 <li><b>Tietosuoja:</b> arvonnassa käytetään Faktapisteeseen tallennettuja tietoja (nimi, sähköposti, kirjoitusten määrä sekä väärinkäytösten estoon tallennetut laite- ja verkkotiivisteet). Voittajalta pyydetään lisäksi palkinnon toimittamiseen tarvittavat tiedot. Tietoja ei luovuteta eteenpäin. Lisätietoja <a href="/tietoa/#valetilit">tietosuojaselosteessa</a>.</li>
 <li>Arvonta ei ole K-ryhmän (Kesko), Metan, X:n tai minkään muun yrityksen järjestämä tai sponsoroima, eikä se liity niihin.</li>
 </ul>
 <p><a class="nappi" href="/">Kirjoita keskusteluun →</a></p>
 </section>"""
-kirjoita("/arvonta/", sivu("/arvonta/", "Arvonnat: 100 € joka kuukausi ja jopa 500 € | Faktapiste", "Faktapiste arpoo joka kuukausi 100 euroa ja lisäksi jopa 500 euroa rahana tai lahjakorttina käyttäjämäärän mukaan. Säännöt ja ehdot.", ARVONTA_RUNKO))
+kirjoita("/arvonta/", sivu("/arvonta/", "Arvonnat: 100 € joka kuukausi ja jopa 1000 € | Faktapiste", "Faktapiste arpoo joka kuukausi 100 euroa ja lisäksi jopa 1000 euroa rahana tai lahjakorttina käyttäjämäärän mukaan. Säännöt ja ehdot.", ARVONTA_RUNKO))
 kirjoita("/tietoa/", sivu("/tietoa/", "Tietoa ja tietosuoja | Faktapiste", "Mikä Faktapiste on, kuka sitä ylläpitää, keskustelun säännöt, tietosuoja ja käyttöehdot.", runko))
 
 # ---- Yksityisyysvahti ----

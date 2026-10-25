@@ -212,7 +212,7 @@ def kohtaus(base, si, lt, gt):
         dl.rectangle((116, 68, 144, 246), fill=RED); dl.ellipse((66, 22, 126, 76), outline=RED, width=15); dl.ellipse((134, 22, 194, 76), outline=RED, width=15)
         paste_c(base, lahja, W / 2, 470, back(lt * 4) * (1 + 0.04 * math.sin(gt * 7)))
         paste_c(base, iso_teksti("VOITA JOPA", koko=110, vari=WHITE, vari2=WHITE), W / 2, 760, back(lt * 4 - 0.15))
-        paste_c(base, iso_teksti("500\u00a0€", koko=260, vari=GOLD, vari2=GOLD), W / 2, 980, back(lt * 4 - 0.3) * (1 + 0.025 * math.sin(gt * 5)))
+        paste_c(base, iso_teksti("1000\u00a0€", koko=250, vari=GOLD, vari2=GOLD), W / 2, 980, back(lt * 4 - 0.3) * (1 + 0.025 * math.sin(gt * 5)))
         paste_c(base, pill("kirjoittamalla mielipiteesi", M9(54), NAVY, (255, 255, 255, 255), 38, 22), W / 2, 1220, back(lt * 4 - 0.6))
         return
     if si == 0:
@@ -251,18 +251,20 @@ def kohtaus(base, si, lt, gt):
             saato(base, q)
         return
     if si == 5 and A.get("arvonta"):
-        # arvonta: lahjapaketti, summa ja ehto
-        lahja = Image.new("RGBA", (240, 240), (0, 0, 0, 0)); dl = ImageDraw.Draw(lahja)
-        dl.rounded_rectangle((20, 100, 220, 228), radius=18, fill=GOLD); dl.rounded_rectangle((8, 64, 232, 112), radius=14, fill=(255, 225, 120))
-        dl.rectangle((108, 64, 132, 228), fill=RED); dl.ellipse((62, 22, 118, 70), outline=RED, width=14); dl.ellipse((122, 22, 178, 70), outline=RED, width=14)
-        paste_c(base, lahja, W / 2, 420, back(lt * 3) * (1 + 0.03 * math.sin(gt * 6)))
-        paste_c(base, iso_teksti("Voita jopa 500\u00a0€", koko=124, vari=GOLD, vari2=GOLD), W / 2, 700, back(lt * 3 - 0.2))
-        paste_c(base, text_img("rahana tai lahjakorttina minne haluat", M8(42), WHITE), W / 2, 845, back(lt * 3 - 0.4))
-        paste_c(base, text_img("1.2. · 500\u00a0€, kun meitä on 1000", M6(38), GREY), W / 2, 905, back(lt * 3 - 0.5))
-        paste_c(base, pill("Jokainen kirjoitus = arpa", M9(56), NAVY, (255, 255, 255, 255), 40, 24), W / 2, 1040, back(lt * 3 - 0.7))
-        paste_c(base, text_img("+ 100\u00a0€ joka kuukausi", M8(46), WHITE), W / 2, 1160, back(lt * 3 - 0.95))
-        paste_c(base, pill("Kutsu kaveri = +10 arpaa", M9(50), NAVY, GOLD, 36, 20), W / 2, 1290, back(lt * 3 - 1.15))
-        paste_c(base, text_img("Lue säännöt: faktapiste.fi/arvonta", M8(42), WHITE), W / 2, 1420, back(lt * 3 - 1.3))
+        # arvonta: palkintoportaat käyttäjämäärän mukaan
+        paste_c(base, iso_teksti("Voita jopa 1000\u00a0€", koko=112, vari=GOLD, vari2=GOLD), W / 2, 300, back(lt * 3))
+        paste_c(base, text_img("rahana tai lahjakorttina minne haluat", M8(42), WHITE), W / 2, 410, back(lt * 3 - 0.2))
+        laatikko = Image.new("RGBA", (860, 420), (0, 0, 0, 0)); dl = ImageDraw.Draw(laatikko)
+        dl.rounded_rectangle((0, 0, 859, 419), radius=30, fill=(255, 255, 255, 30), outline=(255, 255, 255, 90), width=3)
+        dl.text((430, 52), "Iso arvonta 1.2.", font=M9(44), fill=GOLD, anchor="mm")
+        for r, (kuka, summa) in enumerate([("alle 250 käyttäjää", "100 €"), ("250 käyttäjää", "250 €"), ("1000 käyttäjää", "500 €"), ("5000 käyttäjää", "1000 €")]):
+            y = 125 + r * 76
+            dl.text((60, y), kuka, font=M8(42), fill=WHITE, anchor="lm"); dl.text((800, y), summa.replace(" ", "\u00a0"), font=M9(46), fill=GOLD if r == 3 else WHITE, anchor="rm")
+        paste_c(base, laatikko, W / 2, 700, back(lt * 3 - 0.4))
+        paste_c(base, pill("Jokainen kirjoitus = arpa", M9(52), NAVY, (255, 255, 255, 255), 40, 22), W / 2, 1000, back(lt * 3 - 0.7))
+        paste_c(base, text_img("+ 100\u00a0€ joka kuukausi", M8(46), WHITE), W / 2, 1120, back(lt * 3 - 0.9))
+        paste_c(base, pill("Kutsu kaveri = +10 arpaa", M9(50), NAVY, GOLD, 36, 20), W / 2, 1240, back(lt * 3 - 1.1))
+        paste_c(base, text_img("Lue säännöt: faktapiste.fi/arvonta", M8(42), WHITE), W / 2, 1365, back(lt * 3 - 1.3))
         return
     if si == 5:
         ok = Image.new("RGBA", (200, 200), (0, 0, 0, 0)); dk = ImageDraw.Draw(ok); dk.ellipse((0, 0, 199, 199), fill=GOLD)
