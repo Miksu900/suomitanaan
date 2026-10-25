@@ -44,7 +44,7 @@ def sivu(d, demo=True):
     palvelut = "".join(
         f'<div class="kortti"><h3>{esc(s["nimi"])}</h3><p>{esc(s["kuvaus"])}</p>'
         + (f'<span class="hinta">{esc(s["hinta"])}</span>' if s.get("hinta") else "")
-        + (f'<a class="osta" href="#yhteys">Tilaa</a>' if kauppa else "")
+        + (f'<button type="button" class="osta" data-nimi="{esc(s["nimi"])}" data-hinta="{esc(s.get("hinta", ""))}">Lisää koriin</button>' if kauppa and s.get("hinta") else "")
         + "</div>"
         for s in d.get("palvelut", []))
 
@@ -65,6 +65,35 @@ def sivu(d, demo=True):
                  f'<p style="margin-top:20px"><a class="nappi" href="mailto:info@netvo.fi?subject=Netvo%20-%20Kauppa%20K%C3%A4yntiin">Pyydä kauppa käyntiin</a></p>'
                  '</div></section>')
 
+    kori = ""
+    kori_js = ""
+    if kauppa:
+        kori = ('<section class="osio" id="kori"><div class="w kaksi"><div><h2>Ostoskori</h2>'
+                '<ul id="korilista" style="padding-left:18px;line-height:1.8"></ul>'
+                '<p id="kori-yht" style="font-weight:800;color:var(--p)">Kori on tyhjä</p></div>'
+                '<form class="lomake" id="tilaus">'
+                '<input name="nimi" placeholder="Nimi" required><input name="sposti" type="email" placeholder="Sähköposti" required>'
+                '<input name="puh" placeholder="Puhelin"><input name="osoite" placeholder="Toimitusosoite" required>'
+                '<button type="submit">Lähetä tilaus</button>'
+                '<p style="color:#9a9aa0;font-size:.82rem;margin:0">Mallisivulla tilaus avaa sähköpostin. Maksua ei veloiteta.</p>'
+                '</form></div></div></section>')
+        kori_js = """<script>
+var KORI={};
+function eur(c){return (c/100).toFixed(2).replace('.',',')+' €';}
+function hintaCent(h){var m=(h||'').replace(/\\s/g,'').replace(',','.').match(/[0-9.]+/);return m?Math.round(parseFloat(m[0])*100):0;}
+function paivita(){var l=document.getElementById('korilista');l.innerHTML='';var tot=0,n=0;
+ Object.keys(KORI).forEach(function(k){var r=KORI[k];if(r.maara<1)return;n++;tot+=r.hinta*r.maara;
+  var li=document.createElement('li');li.textContent=r.maara+' kpl '+r.nimi+' – '+eur(r.hinta*r.maara);l.appendChild(li);});
+ document.getElementById('kori-yht').textContent=n?'Yhteensä '+eur(tot):'Kori on tyhjä';return tot;}
+document.querySelectorAll('.osta[data-nimi]').forEach(function(b){b.addEventListener('click',function(){
+ var n=b.getAttribute('data-nimi');KORI[n]=KORI[n]||{nimi:n,hinta:hintaCent(b.getAttribute('data-hinta')),maara:0};KORI[n].maara++;paivita();
+ document.getElementById('kori').scrollIntoView({behavior:'smooth'});});});
+document.getElementById('tilaus').addEventListener('submit',function(e){e.preventDefault();var f=e.target;
+ var rivit=Object.keys(KORI).filter(function(k){return KORI[k].maara>0}).map(function(k){var r=KORI[k];return r.maara+' kpl '+r.nimi+' ('+eur(r.hinta*r.maara)+')';});
+ if(!rivit.length){document.getElementById('kori-yht').textContent='Lisää ensin tuotteita koriin';return;}
+ var body=['Tilaus:'].concat(rivit,['',document.getElementById('kori-yht').textContent,'','Nimi: '+f.nimi.value,'Sähköposti: '+f.sposti.value,'Puhelin: '+f.puh.value,'Osoite: '+f.osoite.value,'','Mallisivu: tilaus lähtee sähköpostina.']).join('\\n');
+ location.href='mailto:info@netvo.fi?subject='+encodeURIComponent('Tilaus')+'&body='+encodeURIComponent(body);});
+</script>"""
     esittely = ""
     if d.get("esittely"):
         esittely = f'<section class="osio" id="meista"><div class="w kaksi"><div><h2>{esc(d.get("esittely_otsikko", "Meistä"))}</h2>' + \
@@ -162,6 +191,7 @@ footer.jalka{{background:#0c0c0e;color:#9a9aa0;text-align:center;padding:26px 16
 </div></section>
 <section class="osio" id="palvelut"><div class="w"><h2>{esc(d.get("palvelut_otsikko", "Tuotteet" if kauppa else "Palvelut"))}</h2><div class="ruudut">{palvelut}</div></div></section>
 {esittely}
+{kori}
 {arvostelut}
 {maksu}
 <section class="osio" id="yhteys" style="padding:56px 0"><div class="w"><h2>Ota yhteyttä</h2><div class="yht-grid">
@@ -174,4 +204,5 @@ footer.jalka{{background:#0c0c0e;color:#9a9aa0;text-align:center;padding:26px 16
 </form>
 </div></div></section>
 <footer class="jalka">© {esc(nimi)} · {esc(d.get("osoite", ""))} · Sivuston toteuttaa Netvo</footer>
+{kori_js}
 </body></html>"""
