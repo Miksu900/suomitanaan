@@ -31,6 +31,22 @@ const ARVONNAT = [
     tasot: [{ min: 0, summa: 100 }, { min: 250, summa: 250 }, { min: 1000, summa: 500 }], muuVero: 30 },
 ];
 const ARPA = { maxPv: 5, minPituus: 20, kutsuArvat: 5, kutsuMax: 10 };
+// Väärinkäytösten esto: kertakäyttöiset sähköpostit eivät kelpaa, ja Gmailin pisteet/+-päätteet tulkitaan samaksi osoitteeksi.
+const KERTAKAYTTO = new Set(("10minutemail.com 10minutemail.net 20minutemail.com guerrillamail.com guerrillamail.net guerrillamail.org guerrillamailblock.com sharklasers.com grr.la " +
+  "mailinator.com mailinator.net maildrop.cc yopmail.com yopmail.fr yopmail.net temp-mail.org temp-mail.io tempmail.com tempmail.net tempmailo.com tempr.email " +
+  "throwawaymail.com trashmail.com trashmail.de trashmail.net getnada.com nada.email dispostable.com fakeinbox.com mintemail.com mohmal.com emailondeck.com " +
+  "mailnesia.com mytemp.email spamgourmet.com tmail.ws tmpmail.org tmpmail.net burnermail.io inboxkitten.com mailpoof.com moakt.com emailfake.com " +
+  "fakemail.net luxusmail.org 1secmail.com 1secmail.org 1secmail.net mail.tm mail.gw harakirimail.com discard.email spambox.us mailcatch.com " +
+  "dropmail.me 33mail.com anonaddy.me simplelogin.co duck.com").split(" "));
+const PLUS_PALVELUT = new Set(["gmail.com", "googlemail.com", "outlook.com", "hotmail.com", "live.com", "msn.com", "icloud.com", "me.com", "mac.com", "proton.me", "protonmail.com", "pm.me", "fastmail.com"]);
+function perusEmail(e) {
+  let [n, d] = String(e).toLowerCase().split("@"); if (!d) return e;
+  if (d === "googlemail.com") d = "gmail.com";
+  if (PLUS_PALVELUT.has(d)) n = n.split("+")[0];
+  if (d === "gmail.com") n = n.replace(/\./g, "");
+  return n + "@" + d;
+}
+const onAdmin = e => !!e && ADMIN.some(a => perusEmail(a) === perusEmail(e));
 const VIDEO_MAX = 100 * 1024 * 1024, VIDEO_KESTO = 180, VIDEO_TYYPIT = ["video/mp4", "video/webm", "video/quicktime"];
 const KUVAT_MAX = 4, KUVA_MAX = 1800000; // kuvia per postaus, tavua per kuva (SQLite-rivin raja 2 Mt)
 const TAATTU = 30;        // jokainen postaus näytetään vähintään näin monelle lukijalle
@@ -196,7 +212,9 @@ export class Faktapiste extends DurableObject {
       CREATE TABLE IF NOT EXISTS suositukset(kutsuttu INTEGER PRIMARY KEY, kutsuja INTEGER, luotu INTEGER);
       CREATE INDEX IF NOT EXISTS suositukset_kutsuja ON suositukset(kutsuja);
       CREATE TABLE IF NOT EXISTS seuraukset(seuraaja INTEGER, seurattava INTEGER, luotu INTEGER, PRIMARY KEY(seuraaja, seurattava));
-      CREATE INDEX IF NOT EXISTS seuraukset_kohde ON seuraukset(seurattava);`);
+      CREATE INDEX IF NOT EXISTS seuraukset_kohde ON seuraukset(seurattava);
+      CREATE TABLE IF NOT EXISTS jaljet(kayttaja INTEGER, tyyppi TEXT, tunniste TEXT, luotu INTEGER, PRIMARY KEY(kayttaja, tyyppi, tunniste));
+      CREATE INDEX IF NOT EXISTS jaljet_t ON jaljet(tyyppi, tunniste);`);
     // nimet eivät ole enää yksilöllisiä (oikeat nimet voivat toistua): taulu rakennetaan kerran uudelleen
     if ((this.sql.exec("SELECT v FROM asetukset WHERE k='skeema'").toArray()[0] || {}).v !== "2") {
       this.sql.exec(`CREATE TABLE IF NOT EXISTS kayttajat2(id INTEGER PRIMARY KEY, email TEXT UNIQUE, nimi TEXT, luotu INTEGER, esto INTEGER DEFAULT 0);
@@ -220,7 +238,7 @@ export class Faktapiste extends DurableObject {
     const t = evaste(req, "fp_s");
     if (!t) return null;
     const k = this.yksi("SELECT k.id, k.email, k.nimi, k.esto FROM sessiot s JOIN kayttajat k ON k.id=s.kayttaja WHERE s.t=? AND s.vanhenee>?", t, nyt());
-    if (k) { k.admin = ADMIN.includes(k.email); k.nimiOk = oikeaNimi(k.nimi); }
+    if (k) { k.admin = onAdmin(k.email); k.nimiOk = oikeaNimi(k.nimi); }
     return k;
   }
 
@@ -275,7 +293,7 @@ export class Faktapiste extends DurableObject {
         }
         return json(out);
       }
-      if (p === "/api/hallinta/arvonta" && this.env.HALLINTA && req.headers.get("x-avain") === this.env.HALLINTA) return json(await this.arvo(u.searchParams.get("pakota") === "1", u.searchParams.get("kausi") || ""));
+      if (p === "/api/hallinta/arvonta" && this.env.HALLINTA && req.headers.get("x-avain") === this.env.HALLINTA) return json(await this.arvo(u.searchParams.get("pakota") === "1", u.searchParams.get("kausi") || "", +u.searchParams.get("hylkaa") || 0));
       if (p === "/api/hallinta/fakta" && this.env.HALLINTA && req.headers.get("x-avain") === this.env.HALLINTA) {
         const d = await req.json(); return await this.fakta({ id: 0 }, d);
       }
@@ -291,17 +309,18 @@ export class Faktapiste extends DurableObject {
       const vm = p.match(/^\/api\/video\/(\d+)(\/kansi)?$/);
       if (vm && m === "GET") return vm[2] ? this.naytaKansi(+vm[1]) : await this.naytaVideo(+vm[1], req);
       if (p.startsWith("/api/posti/") && m === "GET") return json(this.ketju(+p.split("/")[3], minä));
+      if (p === "/api/mina" && minä) await this.jalki(req, minä.id);
       if (p === "/api/mina") return json({ kayttaja: minä ? { nimi: minä.nimi, nimiOk: minä.nimiOk, admin: minä.admin } : null,
         tilasto: minä && minä.admin ? { kayttajat: this.yksi("SELECT COUNT(*) AS n FROM kayttajat").n, nimelliset: this.yksi("SELECT COUNT(*) AS n FROM kayttajat WHERE nimi IS NOT NULL").n,
           kirjoittajat: this.yksi("SELECT COUNT(DISTINCT kayttaja) AS n FROM postit WHERE kayttaja IS NOT NULL").n, lukijat7: this.yksi("SELECT COUNT(DISTINCT katsoja) AS n FROM nahdyt WHERE luotu>?", nyt() - 7 * 86400e3).n } : null, kirjautuminen: this.env.KIRJAUTUMINEN === "auki", video: !!this.env.VIDEOT, testi: this.env.KIRJAUTUMINEN === "testi" });
       if (p === "/api/kirjaudu" && m === "POST") return await this.kirjaudu(req);
-      if (p === "/api/vahvista" && m === "GET") return this.vahvista(u);
+      if (p === "/api/vahvista" && m === "GET") return await this.vahvista(u, req);
       if (p === "/api/ulos" && m === "POST") { const t = evaste(req, "fp_s"); if (t) this.sql.exec("DELETE FROM sessiot WHERE t=?", t); return json({ ok: true }, 200, { "set-cookie": "fp_s=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax" }); }
       if (m !== "POST") return virhe("Tuntematon osoite", 404);
       if (!minä) return virhe("Kirjaudu ensin.", 401);
       if (minä.esto) return virhe("Tilisi on suljettu.", 403);
       const d = await req.json().catch(() => ({}));
-      if (p === "/api/nimi") return await this.asetaNimi(minä, d);
+      if (p === "/api/nimi") return await this.asetaNimi(minä, d, req);
       if (!minä.nimiOk) return virhe("Lisää ensin oma nimesi (etu- ja sukunimi).", 400);
       if (p === "/api/posti") return await this.uusiPosti(minä, d, lukija);
       if (p === "/api/video/lupa") return this.videoLupa(minä, d);
@@ -350,9 +369,11 @@ export class Faktapiste extends DurableObject {
   async kirjaudu(req) {
     if (this.env.KIRJAUTUMINEN === "pois") return virhe("Kirjautuminen avataan pian.", 503);
     const d = await req.json().catch(() => ({}));
-    const email = puhdas(d.email).toLowerCase();
-    if (!/^[^\s@]{1,64}@[^\s@]+\.[a-z]{2,}$/.test(email) || email.length > 120) return virhe("Tarkista sähköpostiosoite.");
-    if (this.env.KIRJAUTUMINEN !== "auki" && !TESTAAJAT.includes(email) && !this.yksi("SELECT id FROM kayttajat WHERE email=?", email)) {
+    const osoite = puhdas(d.email).toLowerCase();
+    if (!/^[^\s@]{1,64}@[^\s@]+\.[a-z]{2,}$/.test(osoite) || osoite.length > 120) return virhe("Tarkista sähköpostiosoite.");
+    const email = perusEmail(osoite), olemassa = this.loydaEmail(email);
+    if (!olemassa && KERTAKAYTTO.has(email.split("@")[1])) return virhe("Kertakäyttöisellä sähköpostiosoitteella ei voi liittyä. Käytä omaa sähköpostiosoitettasi.");
+    if (this.env.KIRJAUTUMINEN !== "auki" && !TESTAAJAT.some(a => perusEmail(a) === email) && !olemassa) {
       // Beta: uusi käyttäjä tarvitsee voimassa olevan kutsukoodin
       const k = this.yksi("SELECT koodi FROM kutsut WHERE koodi=? AND kayttoja<max", String(d.kutsu || ""));
       if (!k) return virhe("Keskustelu on beta-testissä. Tarvitset kutsulinkin, jotta voit liittyä.", 403);
@@ -369,27 +390,45 @@ export class Faktapiste extends DurableObject {
 <p><a href="${linkki}" style="display:inline-block;background:#f5c542;color:#160a26;padding:12px 20px;border-radius:10px;text-decoration:none;font-weight:700">Kirjaudu Faktapisteeseen</a></p>
 <p style="color:#65597a;font-size:14px">Jos et pyytänyt tätä viestiä, voit jättää sen huomiotta. Kukaan ei pääse tilillesi ilman tätä linkkiä.</p></div>`;
     const r = await fetch("https://api.brevo.com/v3/smtp/email", { method: "POST", headers: { "api-key": this.env.BREVO_API_KEY, "content-type": "application/json", accept: "application/json" },
-      body: JSON.stringify({ sender: { email: "miika@eduskuntaseuranta.fi", name: "Faktapiste" }, to: [{ email }], subject: "Kirjautumislinkki Faktapisteeseen", htmlContent: html }) });
+      body: JSON.stringify({ sender: { email: "miika@eduskuntaseuranta.fi", name: "Faktapiste" }, to: [{ email: osoite }], subject: "Kirjautumislinkki Faktapisteeseen", htmlContent: html }) });
     if (!r.ok) return virhe("Viestin lähetys ei onnistunut. Yritä myöhemmin.", 502);
     return json({ ok: true });
   }
-  async vahvista(u) {
+  // Etsii tilin myös Gmailin piste- ja +-muunnelmilla (vanhat tilit on voitu luoda muunnelmalla).
+  loydaEmail(email) {
+    const k = this.yksi("SELECT id, email FROM kayttajat WHERE email=?", email); if (k) return k;
+    const d = email.split("@")[1];
+    return this.kaikki("SELECT id, email FROM kayttajat WHERE email LIKE ?", "%@" + (d === "gmail.com" ? "g%mail.com" : d)).find(x => perusEmail(x.email) === email) || null;
+  }
+  // Tallentaa tiivisteen IP-verkosta ja selaimen satunnaistunnisteesta valetilien tunnistamiseen (ei selkokielistä IP:tä). Poistuu 180 päivässä.
+  async jalki(req, kid) {
+    const suola = (this.env.HALLINTA || "") + "fp-jalki", t = nyt();
+    let ip = req.headers.get("cf-connecting-ip") || "";
+    if (ip.includes(":")) ip = ip.split(":").slice(0, 4).join(":"); // IPv6: sama kotiverkko (/64)
+    if (ip) this.sql.exec("INSERT OR REPLACE INTO jaljet VALUES(?,?,?,?)", kid, "ip", (await tiiviste(ip + suola)).slice(0, 32), t);
+    const l = (req.headers.get("x-lukija") || "").replace(/[^a-f0-9]/g, "").slice(0, 32);
+    if (l.length === 32) this.sql.exec("INSERT OR REPLACE INTO jaljet VALUES(?,?,?,?)", kid, "laite", (await tiiviste(l + suola)).slice(0, 32), t);
+  }
+  async vahvista(u, req) {
     const h = await tiiviste(u.searchParams.get("t") || "");
     const l = this.yksi("SELECT email, vanhenee FROM linkit WHERE t=?", h);
     this.sql.exec("DELETE FROM linkit WHERE t=? OR vanhenee<?", h, nyt());
     if (!l || l.vanhenee < nyt()) return new Response(null, { status: 302, headers: { location: "/?kirjautuminen=vanhentunut" } });
-    let k = this.yksi("SELECT id FROM kayttajat WHERE email=?", l.email);
+    let k = this.loydaEmail(l.email);
     if (!k) { this.sql.exec("INSERT INTO kayttajat(email, luotu) VALUES(?,?)", l.email, nyt()); k = this.yksi("SELECT id FROM kayttajat WHERE email=?", l.email); }
+    await this.jalki(req, k.id);
+    this.sql.exec("DELETE FROM jaljet WHERE luotu<?", nyt() - 180 * 86400e3);
     const s = satunnainen();
     this.sql.exec("INSERT INTO sessiot VALUES(?,?,?)", s, k.id, nyt() + 60 * 86400e3);
     this.sql.exec("DELETE FROM sessiot WHERE vanhenee<?", nyt());
     return new Response(null, { status: 302, headers: { location: "/?tervetuloa=1", "set-cookie": `fp_s=${s}; Path=/; Max-Age=${60 * 86400}; HttpOnly; Secure; SameSite=Lax` } });
   }
-  async asetaNimi(minä, d) {
+  async asetaNimi(minä, d, req) {
     const n = isot(puhdas(d.nimi).replace(/\s+/g, " "));
     if (!oikeaNimi(n)) return virhe("Kirjoita oma etu- ja sukunimesi, esimerkiksi Matti Virtanen.");
     if (/faktapiste|ylläpito|moderaattori/i.test(n)) return virhe("Tätä nimeä ei voi käyttää.");
     this.sql.exec("UPDATE kayttajat SET nimi=? WHERE id=?", n, minä.id);
+    if (req) await this.jalki(req, minä.id);
     if (!minä.nimiOk && d.suosittelija) {
       const k = this.yksi("SELECT kayttaja FROM omakutsu WHERE koodi=?", String(d.suosittelija).toLowerCase().slice(0, 12));
       if (k && k.kayttaja !== minä.id) this.sql.exec("INSERT OR IGNORE INTO suositukset VALUES(?,?,?)", minä.id, k.kayttaja, nyt());
@@ -514,17 +553,20 @@ export class Faktapiste extends DurableObject {
       (SELECT kayttaja, date(luotu / 1000, 'unixepoch', '+3 hours') AS pv, COUNT(DISTINCT teksti) AS n FROM postit
         WHERE kayttaja IS NOT NULL AND piilotettu=0 AND length(teksti) >= ? AND luotu BETWEEN ? AND ? GROUP BY kayttaja, pv) x
       JOIN kayttajat k ON k.id=x.kayttaja WHERE k.esto=0 AND k.nimi IS NOT NULL GROUP BY x.kayttaja`, ARPA.maxPv, ARPA.minPituus, a.alku, a.loppu)
-      .filter(r => !ADMIN.includes(String(r.email || "").toLowerCase()));
+      .filter(r => !onAdmin(r.email));
     // Kutsubonus: 5 arpaa jokaisesta kaverista, joka liittyi kauden aikana kutsulinkillä ja kirjoitti kauden aikana (enintään 10 kaveria kaudessa).
     const bonus = new Map(this.kaikki(`SELECT s.kutsuja, MIN(COUNT(DISTINCT s.kutsuttu), ?) AS n FROM suositukset s JOIN kayttajat k ON k.id=s.kutsuttu
       WHERE k.esto=0 AND k.nimi IS NOT NULL AND s.luotu BETWEEN ? AND ?
         AND EXISTS (SELECT 1 FROM postit p WHERE p.kayttaja=s.kutsuttu AND p.piilotettu=0 AND length(p.teksti) >= ? AND p.luotu BETWEEN ? AND ?)
+        AND NOT EXISTS (SELECT 1 FROM jaljet j1 JOIN jaljet j2 ON j2.tyyppi='laite' AND j2.tunniste=j1.tunniste WHERE j1.tyyppi='laite' AND j1.kayttaja=s.kutsuttu AND j2.kayttaja=s.kutsuja)
+        AND NOT EXISTS (SELECT 1 FROM suositukset s2 JOIN jaljet j1 ON j1.kayttaja=s2.kutsuttu AND j1.tyyppi='laite' JOIN jaljet j2 ON j2.kayttaja=s.kutsuttu AND j2.tyyppi='laite' AND j2.tunniste=j1.tunniste
+          WHERE s2.kutsuja=s.kutsuja AND s2.kutsuttu<s.kutsuttu)
       GROUP BY s.kutsuja`, ARPA.kutsuMax, a.alku, a.loppu, ARPA.minPituus, a.alku, a.loppu).map(r => [r.kutsuja, r.n]));
     for (const r of l) { r.kutsut = bonus.get(r.kayttaja) || 0; r.arvat += r.kutsut * ARPA.kutsuArvat; bonus.delete(r.kayttaja); }
     // kutsuja, joka ei itse ole kirjoittanut kaudella, saa silti kutsuarpansa
     for (const [kid, n] of bonus) {
       const k = this.yksi("SELECT id, nimi, email, esto FROM kayttajat WHERE id=?", kid);
-      if (k && !k.esto && k.nimi && !ADMIN.includes(String(k.email || "").toLowerCase())) l.push({ kayttaja: k.id, nimi: k.nimi, email: k.email, arvat: n * ARPA.kutsuArvat, kutsut: n });
+      if (k && !k.esto && k.nimi && !onAdmin(k.email)) l.push({ kayttaja: k.id, nimi: k.nimi, email: k.email, arvat: n * ARPA.kutsuArvat, kutsut: n });
     }
     return l;
   }
@@ -556,14 +598,44 @@ export class Faktapiste extends DurableObject {
     return { arvonnat: kaynnissa, kaynnissa: kaynnissa.length > 0, maxPv: ARPA.maxPv, yllapitaja: !!(minä && minä.admin) };
   }
   // Arpoo kaikki päättyneet, arpomattomat kaudet (tai pakotettuna yhden kauden). Voittomahdollisuus on suhteessa arpojen määrään.
-  async arvo(pakota, kausi) {
+  // Ylläpidon tarkistuslista voittajasta: tilin ikä, kirjoitukset ja yhteiset laitteet/verkot muiden osallistujien tai kutsuttujen kanssa.
+  riski(v, l, a) {
+    const k = this.yksi("SELECT luotu FROM kayttajat WHERE id=?", v.kayttaja) || {};
+    const pv = Math.floor((nyt() - (k.luotu || nyt())) / 86400e3);
+    const n = this.yksi("SELECT COUNT(*) AS n FROM postit WHERE kayttaja=? AND piilotettu=0 AND length(teksti)>=? AND luotu BETWEEN ? AND ?", v.kayttaja, ARPA.minPituus, a.alku, a.loppu).n;
+    const nimi = new Map(l.map(r => [r.kayttaja, r.nimi]));
+    const yhteiset = tyyppi => [...new Set(this.kaikki(`SELECT DISTINCT j2.kayttaja AS id FROM jaljet j1 JOIN jaljet j2 ON j2.tyyppi=j1.tyyppi AND j2.tunniste=j1.tunniste
+      WHERE j1.kayttaja=? AND j1.tyyppi=? AND j2.kayttaja<>?`, v.kayttaja, tyyppi, v.kayttaja).map(r => r.id))];
+    const kutsutut = new Set(this.kaikki("SELECT kutsuttu FROM suositukset WHERE kutsuja=?", v.kayttaja).map(r => r.kutsuttu));
+    const kuvaa = ids => ids.map(id => (nimi.get(id) || "tili #" + id) + (kutsutut.has(id) ? " (kutsuttu)" : "")).slice(0, 6).join(", ");
+    const laite = yhteiset("laite"), verkko = yhteiset("ip");
+    const varoitukset = [];
+    if (pv < 7) varoitukset.push(`tili on vain ${pv} päivää vanha`);
+    if (laite.length) varoitukset.push(`sama laite/selain kuin: ${kuvaa(laite)}`);
+    if (verkko.filter(id => kutsutut.has(id)).length >= 2) varoitukset.push(`${verkko.filter(id => kutsutut.has(id)).length} kutsuttua samasta verkosta`);
+    return `\n\n🔎 Tarkista ennen palkinnon antamista (tili #${v.kayttaja}):\n– tilin ikä ${pv} pv, ${n} arpaan kelpaavaa kirjoitusta kaudella, ${v.kutsut || 0} kutsuttua kaveria\n` +
+      (verkko.length ? `– sama verkko kuin: ${kuvaa(verkko)} (voi olla sama koti tai mobiiliverkko)\n` : "") +
+      (varoitukset.length ? "⚠️ " + varoitukset.join("; ") + "\n" : "✅ ei varoituksia\n") +
+      `Lue voittajan kirjoitukset Faktapisteessä. Rahapalkinto maksetaan vain voittajan omissa nimissä olevalle tilille.\n` +
+      `Jos hylkäät: aja GitHubissa \"Faktapisteen arvonta\" kausi=${a.kausi}, hylkaa=${v.kayttaja}.`;
+  }
+  async arvo(pakota, kausi, hylkaa) {
     const tulokset = [];
     for (const a of ARVONNAT) {
       if (kausi && a.kausi !== kausi) continue;
-      const avain = "arvonta:" + a.kausi, vanha = this.yksi("SELECT v FROM asetukset WHERE k=?", avain);
+      const avain = "arvonta:" + a.kausi, hk = "arvonta-hylatyt:" + a.kausi;
+      if (hylkaa && kausi) {
+        // Uudelleenarvonta: hylätty voittaja suljetaan pois ja kausi arvotaan uudelleen.
+        const h = JSON.parse((this.yksi("SELECT v FROM asetukset WHERE k=?", hk) || { v: "[]" }).v);
+        if (!h.includes(hylkaa)) h.push(hylkaa);
+        this.sql.exec("INSERT OR REPLACE INTO asetukset VALUES(?,?)", hk, JSON.stringify(h));
+        this.sql.exec("DELETE FROM asetukset WHERE k=?", avain);
+      }
+      const hylatyt = new Set(JSON.parse((this.yksi("SELECT v FROM asetukset WHERE k=?", hk) || { v: "[]" }).v));
+      const vanha = this.yksi("SELECT v FROM asetukset WHERE k=?", avain);
       if (vanha) { tulokset.push({ kausi: a.kausi, jo: true }); continue; }
-      if (nyt() <= a.loppu && !(pakota && kausi)) continue;
-      const l = this.arvat(a), yht = l.reduce((s, r) => s + r.arvat, 0);
+      if (nyt() <= a.loppu && !(pakota && kausi) && !(hylkaa && kausi)) continue;
+      const l = this.arvat(a).filter(r => !hylatyt.has(r.kayttaja)), yht = l.reduce((s, r) => s + r.arvat, 0);
       if (!yht) { tulokset.push({ kausi: a.kausi, virhe: "Ei osallistujia." }); continue; }
       const r = new Uint32Array(1); crypto.getRandomValues(r);
       let x = r[0] % yht, voittaja = l[0];
@@ -571,10 +643,10 @@ export class Faktapiste extends DurableObject {
       const ta = a.tasot ? this.taso(a, this.kayttajia()) : null;
       const palkinto = ta ? `${ta.summa} euroa rahana tai K-ryhmän lahjakorttina` : a.palkinto;
       const vero = ta ? `${Math.round(ta.summa * 0.3)} € arpajaisveroa (${this.kayttajia()} käyttäjää → ${ta.summa} €). Helmikuun arpajaisvero yhteensä ${Math.round(ta.summa * 0.3) + (a.muuVero || 0)} € tammikuun 100 €:n kanssa: ilmoita ja maksa OmaVerossa viimeistään 12.4.2027` : a.vero;
-      const tulos = { kausi: a.kausi, summa: ta ? ta.summa : null, voittaja: voittaja.nimi, arvat: voittaja.arvat, osallistujia: l.length, arvoja: yht, aika: new Date().toISOString() };
+      const tulos = { kausi: a.kausi, uusinta: hylatyt.size || undefined, summa: ta ? ta.summa : null, voittaja: voittaja.nimi, arvat: voittaja.arvat, osallistujia: l.length, arvoja: yht, aika: new Date().toISOString() };
       this.sql.exec("INSERT INTO asetukset VALUES(?,?)", avain, JSON.stringify(tulos));
       await telegram(this.env, `🎁 Faktapisteen arvonta (${ta ? ta.summa + " €" : a.lyhyt}, ${a.kausi}): voittaja ${voittaja.nimi} (${voittaja.email}), ${voittaja.arvat}/${yht} arpaa, ${l.length} osallistujaa.\n` +
-        (a.valinta ? `Palkinto: ${palkinto}. Kysy voittajalta, haluaako hän sen rahana vai K-ryhmän lahjakorttina, ja maksa tai lähetä se. Ilmoita` : `Lähetä ${a.palkinto.replace("lahjakortin", "lahjakortti")} voittajalle ja ilmoita`) + ` voitosta Faktapisteessä etunimellä.\nVero: ${vero}. Palkinto on voittajalle verovapaa.`);
+        (a.valinta ? `Palkinto: ${palkinto}. Kysy voittajalta, haluaako hän sen rahana vai K-ryhmän lahjakorttina, ja maksa tai lähetä se. Ilmoita` : `Lähetä ${a.palkinto.replace("lahjakortin", "lahjakortti")} voittajalle ja ilmoita`) + ` voitosta Faktapisteessä etunimellä.\nVero: ${vero}. Palkinto on voittajalle verovapaa.` + (hylatyt.size ? `\n(Uusinta-arvonta, hylättyjä: ${hylatyt.size})` : "") + this.riski(voittaja, l, a));
       tulokset.push(tulos);
     }
     return { tulokset };

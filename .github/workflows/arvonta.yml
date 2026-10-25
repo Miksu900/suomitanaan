@@ -8,6 +8,7 @@ on:
     inputs:
       pakota: { description: "Arvo jo ennen kauden loppua (1 = kyllä, vaatii kauden)", required: false, default: "" }
       kausi: { description: "Kausi, esim. 2026-11 tai suuri-2027-01", required: false, default: "" }
+      hylkaa: { description: "Hylkää voittaja ja arvo uudelleen: tilin numero Telegram-viestistä (vaatii kauden)", required: false, default: "" }
 jobs:
   arvo:
     runs-on: ubuntu-latest
@@ -16,5 +17,5 @@ jobs:
           CF: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           HALLINTA=$(printf '%s' "$CF-faktapiste" | sha256sum | cut -c1-40)
-          R=$(curl -sS -X POST -H "x-avain: $HALLINTA" "https://faktapiste.fi/api/hallinta/arvonta?pakota=${{ inputs.pakota }}&kausi=${{ inputs.kausi }}")
-          echo "::notice title=Arvonta::$(echo "$R" | jq -c '[.tulokset[]? | {kausi, osallistujia, arvoja, jo, virhe}]')"
+          R=$(curl -sS -X POST -H "x-avain: $HALLINTA" "https://faktapiste.fi/api/hallinta/arvonta?pakota=${{ inputs.pakota }}&kausi=${{ inputs.kausi }}&hylkaa=${{ inputs.hylkaa }}")
+          echo "::notice title=Arvonta::$(echo "$R" | jq -c '[.tulokset[]? | {kausi, osallistujia, arvoja, jo, virhe, uusinta}]')"
