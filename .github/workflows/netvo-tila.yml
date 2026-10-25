@@ -1,0 +1,14 @@
+name: Netvo domainin tila
+# Tarkistaa, onko netvo.fi aktivoitunut Cloudflaressa (nimipalvelinmuutos tullut voimaan).
+on: { workflow_dispatch: {} }
+jobs:
+  tila:
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          CF: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          R=$(curl -sS -H "Authorization: Bearer $CF" "https://api.cloudflare.com/client/v4/zones?name=netvo.fi")
+          S=$(echo "$R" | jq -r '.result[0].status // "ei löydy"')
+          NS=$(echo "$R" | jq -rc '.result[0].name_servers // []')
+          echo "::notice title=Netvo::status=$S nameservers=$NS"
