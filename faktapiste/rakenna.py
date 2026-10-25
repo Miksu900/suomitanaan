@@ -9,7 +9,7 @@ ROOT = pathlib.Path(__file__).parent / "public"
 SITE = os.environ.get("FAKTAPISTE_URL", "https://faktapiste.fi")
 PV = os.environ.get("PYKALAVAHTI_URL", "https://pykalavahti.fi")
 YHTEYS = "miika@eduskuntaseuranta.fi"
-VER = "38"
+VER = "39"
 esc = html.escape
 
 # avain, nimi, osoite, iskulause, kuvaus, merkki, poliittinen
@@ -184,6 +184,7 @@ Käyttäjiksi lasketaan omalla nimellä rekisteröityneet tilit, joita ei ole su
 <li><b>Järjestäjä:</b> Faktapiste, ylläpitäjä Miika Koskela, Ylivieska. Yhteys: <span class="mono">{YHTEYS}</span></li>
 <li><b>Kuka voi osallistua:</b> 18 vuotta täyttäneet Suomessa asuvat Faktapisteen käyttäjät, jotka kirjoittavat omalla nimellään. Ylläpitäjä ei osallistu.</li>
 <li><b>Arvat:</b> jokainen oma kirjoitus ja kommentti on yksi arpa, kun siinä on vähintään 20 merkkiä. Päivässä kertyy enintään 5 arpaa. Sama teksti useaan kertaan lasketaan yhtenä. Sama arpa on mukana sekä kuukauden arvonnassa että isossa arvonnassa, kun se osuu niiden kauteen.</li>
+<li><b>Kutsuarvat:</b> jokaisella käyttäjällä on oma kutsulinkki (näkyy keskustelusivun arvontalaatikossa). Saat <b>5 lisäarpaa</b> jokaisesta kaverista, joka liittyy Faktapisteeseen linkkisi kautta arvontakauden aikana ja kirjoittaa kauden aikana vähintään yhden arpaan kelpaavan kirjoituksen tai kommentin. Kutsuarpoja voi saada enintään 10 kaverista kautta kohden. Omien tai keksittyjen tilien kutsuminen on kielletty, ja ylläpitäjä hylkää tällaiset arvat ja voi sulkea tilit.</li>
 <li><b>Ei roskapostia:</b> poistetut tai sääntöjen vastaiset kirjoitukset eivät ole arpoja. Ylläpitäjä voi hylätä arvat, jos kirjoitukset ovat selvästi vain arpojen keräämistä varten tehtyä roskaa, ja sulkea tilin, joka rikkoo keskustelun sääntöjä.</li>
 <li><b>Arvonta:</b> voittaja arvotaan sattumanvaraisesti tietokoneella. Jokaisen osallistujan voittomahdollisuus on suhteessa hänen arpojensa määrään. Sama henkilö voi voittaa useamman arvonnan.</li>
 <li><b>Voittajalle ilmoittaminen:</b> voittajalle ilmoitetaan sähköpostilla siihen osoitteeseen, jolla hän kirjautuu Faktapisteeseen. Voittajan etunimi julkaistaan Faktapisteessä. Jos voittaja ei vastaa 14 päivässä, voittaja arvotaan uudelleen.</li>

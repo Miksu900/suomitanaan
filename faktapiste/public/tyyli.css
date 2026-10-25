@@ -271,3 +271,6 @@ a.nappi{text-decoration:none;display:inline-block}
 .mittari{display:block;height:10px;border-radius:99px;background:rgba(0,0,0,.08);overflow:hidden;margin-top:6px}
 .mittari i{display:block;height:100%;background:var(--yel);min-width:4px}
 @media (prefers-color-scheme:dark){.mittari{background:rgba(255,255,255,.12)}}
+.kutsu-arv:not(:empty){margin-top:10px;padding-top:10px;border-top:1px dashed var(--yel)}
+.kutsu-arv small{display:block;font-size:.85rem;margin:2px 0 6px}
+.kutsu-arv .rivi{display:flex;gap:8px}.kutsu-arv input{flex:1;min-width:0;font:600 .85rem var(--f-b);padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink)}

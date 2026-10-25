@@ -30,7 +30,7 @@ const ARVONNAT = [
     // Palkinto kasvaa käyttäjämäärän mukaan (omalla nimellä rekisteröityneet, ei suljettuja tilejä), laskettu arvontahetkellä.
     tasot: [{ min: 0, summa: 100 }, { min: 250, summa: 250 }, { min: 1000, summa: 500 }], muuVero: 30 },
 ];
-const ARPA = { maxPv: 5, minPituus: 20 };
+const ARPA = { maxPv: 5, minPituus: 20, kutsuArvat: 5, kutsuMax: 10 };
 const VIDEO_MAX = 100 * 1024 * 1024, VIDEO_KESTO = 180, VIDEO_TYYPIT = ["video/mp4", "video/webm", "video/quicktime"];
 const KUVAT_MAX = 4, KUVA_MAX = 1800000; // kuvia per postaus, tavua per kuva (SQLite-rivin raja 2 Mt)
 const TAATTU = 30;        // jokainen postaus näytetään vähintään näin monelle lukijalle
@@ -192,6 +192,9 @@ export class Faktapiste extends DurableObject {
       CREATE INDEX IF NOT EXISTS kuvat_posti ON kuvat(posti);
       CREATE TABLE IF NOT EXISTS videot(id INTEGER PRIMARY KEY, kayttaja INTEGER, posti INTEGER, avain TEXT, tyyppi TEXT, koko INTEGER, w INTEGER, h INTEGER, kesto REAL, kansi BLOB, luotu INTEGER);
       CREATE INDEX IF NOT EXISTS videot_posti ON videot(posti);
+      CREATE TABLE IF NOT EXISTS omakutsu(kayttaja INTEGER PRIMARY KEY, koodi TEXT UNIQUE);
+      CREATE TABLE IF NOT EXISTS suositukset(kutsuttu INTEGER PRIMARY KEY, kutsuja INTEGER, luotu INTEGER);
+      CREATE INDEX IF NOT EXISTS suositukset_kutsuja ON suositukset(kutsuja);
       CREATE TABLE IF NOT EXISTS seuraukset(seuraaja INTEGER, seurattava INTEGER, luotu INTEGER, PRIMARY KEY(seuraaja, seurattava));
       CREATE INDEX IF NOT EXISTS seuraukset_kohde ON seuraukset(seurattava);`);
     // nimet eivät ole enää yksilöllisiä (oikeat nimet voivat toistua): taulu rakennetaan kerran uudelleen
@@ -279,6 +282,7 @@ export class Faktapiste extends DurableObject {
       const minä = this.kayttaja(req);
       const lukija = this.lukija(req, minä);
       if (p === "/api/arvonta" && m === "GET") return json(this.arvontaTila(minä));
+      if (p === "/api/kutsulinkki" && m === "GET") return minä && minä.nimiOk ? json(this.omaKutsu(minä)) : virhe("Kirjaudu ensin.", 401);
       if (p === "/api/syote" && m === "GET") return json(this.syote(u, minä, lukija));
       if (p === "/api/nahty" && m === "POST") return json(this.nahty(lukija, await req.json().catch(() => ({}))));
       if (p.startsWith("/api/kuva/") && m === "GET") return this.naytaKuva(+p.split("/")[3]);
@@ -386,6 +390,10 @@ export class Faktapiste extends DurableObject {
     if (!oikeaNimi(n)) return virhe("Kirjoita oma etu- ja sukunimesi, esimerkiksi Matti Virtanen.");
     if (/faktapiste|ylläpito|moderaattori/i.test(n)) return virhe("Tätä nimeä ei voi käyttää.");
     this.sql.exec("UPDATE kayttajat SET nimi=? WHERE id=?", n, minä.id);
+    if (!minä.nimiOk && d.suosittelija) {
+      const k = this.yksi("SELECT kayttaja FROM omakutsu WHERE koodi=?", String(d.suosittelija).toLowerCase().slice(0, 12));
+      if (k && k.kayttaja !== minä.id) this.sql.exec("INSERT OR IGNORE INTO suositukset VALUES(?,?,?)", minä.id, k.kayttaja, nyt());
+    }
     if (!minä.nimiOk) {
       const yht = this.yksi("SELECT COUNT(*) AS n FROM kayttajat WHERE nimi IS NOT NULL").n;
       await telegram(this.env, `👤 Uusi käyttäjä liittyi Faktapisteeseen: ${n}\nKäyttäjiä yhteensä: ${yht}\nhttps://faktapiste.fi`);
@@ -502,11 +510,37 @@ export class Faktapiste extends DurableObject {
   // ---- arvonta ----
   // Arpa = oma kirjoitus tai kommentti (vähintään 20 merkkiä, ei poistettu), enintään 5 päivässä; samat tekstit lasketaan kerran.
   arvat(a) {
-    return this.kaikki(`SELECT x.kayttaja, k.nimi, k.email, SUM(MIN(x.n, ?)) AS arvat FROM
+    const l = this.kaikki(`SELECT x.kayttaja, k.nimi, k.email, SUM(MIN(x.n, ?)) AS arvat FROM
       (SELECT kayttaja, date(luotu / 1000, 'unixepoch', '+3 hours') AS pv, COUNT(DISTINCT teksti) AS n FROM postit
         WHERE kayttaja IS NOT NULL AND piilotettu=0 AND length(teksti) >= ? AND luotu BETWEEN ? AND ? GROUP BY kayttaja, pv) x
       JOIN kayttajat k ON k.id=x.kayttaja WHERE k.esto=0 AND k.nimi IS NOT NULL GROUP BY x.kayttaja`, ARPA.maxPv, ARPA.minPituus, a.alku, a.loppu)
       .filter(r => !ADMIN.includes(String(r.email || "").toLowerCase()));
+    // Kutsubonus: 5 arpaa jokaisesta kaverista, joka liittyi kauden aikana kutsulinkillä ja kirjoitti kauden aikana (enintään 10 kaveria kaudessa).
+    const bonus = new Map(this.kaikki(`SELECT s.kutsuja, MIN(COUNT(DISTINCT s.kutsuttu), ?) AS n FROM suositukset s JOIN kayttajat k ON k.id=s.kutsuttu
+      WHERE k.esto=0 AND k.nimi IS NOT NULL AND s.luotu BETWEEN ? AND ?
+        AND EXISTS (SELECT 1 FROM postit p WHERE p.kayttaja=s.kutsuttu AND p.piilotettu=0 AND length(p.teksti) >= ? AND p.luotu BETWEEN ? AND ?)
+      GROUP BY s.kutsuja`, ARPA.kutsuMax, a.alku, a.loppu, ARPA.minPituus, a.alku, a.loppu).map(r => [r.kutsuja, r.n]));
+    for (const r of l) { r.kutsut = bonus.get(r.kayttaja) || 0; r.arvat += r.kutsut * ARPA.kutsuArvat; bonus.delete(r.kayttaja); }
+    // kutsuja, joka ei itse ole kirjoittanut kaudella, saa silti kutsuarpansa
+    for (const [kid, n] of bonus) {
+      const k = this.yksi("SELECT id, nimi, email, esto FROM kayttajat WHERE id=?", kid);
+      if (k && !k.esto && k.nimi && !ADMIN.includes(String(k.email || "").toLowerCase())) l.push({ kayttaja: k.id, nimi: k.nimi, email: k.email, arvat: n * ARPA.kutsuArvat, kutsut: n });
+    }
+    return l;
+  }
+  omaKutsu(minä) {
+    let r = this.yksi("SELECT koodi FROM omakutsu WHERE kayttaja=?", minä.id);
+    if (!r) {
+      const aakk = "abcdefghjkmnpqrstuvwxyz23456789";
+      for (let i = 0; i < 5 && !r; i++) {
+        const b = new Uint8Array(6); crypto.getRandomValues(b); const koodi = [...b].map(x => aakk[x % aakk.length]).join("");
+        try { this.sql.exec("INSERT INTO omakutsu VALUES(?,?)", minä.id, koodi); r = { koodi }; } catch {}
+      }
+    }
+    const kutsutut = this.yksi("SELECT COUNT(*) AS n FROM suositukset s JOIN kayttajat k ON k.id=s.kutsuttu WHERE s.kutsuja=? AND k.esto=0", minä.id).n;
+    const kirjoittaneet = this.yksi(`SELECT COUNT(*) AS n FROM suositukset s WHERE s.kutsuja=? AND EXISTS
+      (SELECT 1 FROM postit p WHERE p.kayttaja=s.kutsuttu AND p.piilotettu=0 AND length(p.teksti) >= ?)`, minä.id, ARPA.minPituus).n;
+    return { koodi: r.koodi, url: "https://faktapiste.fi/?k=" + r.koodi, kutsutut, kirjoittaneet, arvatPerKaveri: ARPA.kutsuArvat };
   }
   kayttajia() { return this.yksi("SELECT COUNT(*) AS n FROM kayttajat WHERE nimi IS NOT NULL AND esto=0").n; }
   taso(a, n) { return a.tasot ? a.tasot.filter(x => n >= x.min).at(-1) : null; }

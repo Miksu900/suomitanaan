@@ -250,7 +250,13 @@
           '<span class="mittari" role="img" aria-label="' + iso.kayttajia + " / " + max + ' käyttäjää"><i style="width:' + pros.toFixed(1) + '%"></i></span>' +
           "<small>Meitä on " + iso.kayttajia + " / " + max + "." + (iso.seuraava ? " Kun meitä on " + iso.seuraava.min + ", palkinto nousee " + iso.seuraava.summa + " euroon." : "") + " Kutsu kaverit mukaan!</small></div>";
       }
-      A.innerHTML = h + "</div></div>";
+      A.innerHTML = h + '<div class="kutsu-arv" id="fp-kutsuarv"></div></div></div>';
+      if (tila.mina && tila.mina.nimiOk && !j.yllapitaja) api("kutsulinkki").then(function (k) {
+        var K = $("#fp-kutsuarv"); if (!K || !k || !k.url) return;
+        K.innerHTML = "<b>Kutsu kaverit: +" + k.arvatPerKaveri + " arpaa jokaisesta</b><small>Saat lisäarvat, kun kaveri liittyy linkilläsi ja kirjoittaa. " +
+          (k.kutsutut ? "Olet kutsunut " + k.kutsutut + ", joista " + k.kirjoittaneet + " on kirjoittanut." : "") + "</small>" +
+          '<div class="rivi"><input readonly value="' + esc(k.url) + '" aria-label="Oma kutsulinkki"><button type="button" class="nappi" data-kutsujako="' + esc(k.url) + '">Jaa</button></div>';
+      });
     });
   }
   function lataaSyote(lisaa) {
@@ -291,6 +297,7 @@
       tila.mina = j.kayttaja; tila.video = j.video === true; tila.tilasto = j.tilasto || null; tila.kirjautuminen = j.kirjautuminen === true;
       // Testivaihe: kirjautumisnappi näkyy vain osoitteella /?testi=1 avattuna (muistetaan selaimessa).
       var kq = (location.search.match(/[?&]kutsu=([a-f0-9]{6,20})/) || [])[1]; if (kq) tallenna("fp_kutsu", kq);
+      var sq = (location.search.match(/[?&]k=([a-z0-9]{6})/) || [])[1]; if (sq && !lue("fp_suos")) tallenna("fp_suos", sq);
       if (j.testi && lue("fp_kutsu")) tila.kirjautuminen = true;
       if (j.testi) { var t = /[?&]testi=1/.test(location.search); try { if (t) localStorage.setItem("fp_testi", "1"); t = t || localStorage.getItem("fp_testi") === "1"; } catch (x) {} if (t) tila.kirjautuminen = true; }
       var a = $("#fp-tili");
@@ -390,6 +397,12 @@
         '<button type="button" data-kopioilinkki="' + url + '">Kopioi linkki</button>' +
         (navigator.share ? '<button type="button" data-muujako="' + url + '">Muu sovellus…</button>' : "") + "</div>");
     }
+    else if (d.kutsujako) {
+      var ku = d.kutsujako, kt = "Liity Faktapisteeseen! Siellä jokainen kirjoitus näytetään vähintään 30 ihmiselle, ja jokainen kirjoitus on arpa: 100 € K-ryhmän lahjakortti joka kuukausi.";
+      if (navigator.share) navigator.share({ text: kt, url: ku }).catch(function () {});
+      else if (navigator.clipboard) navigator.clipboard.writeText(kt + " " + ku).then(function () { ilmoitus("Kutsu kopioitu. Liitä se viestiin."); });
+      else prompt("Kopioi kutsu:", kt + " " + ku);
+    }
     else if (d.kopioilinkki) { var cl = d.kopioilinkki; ($(".valikko") || { remove: function () {} }).remove();
       if (navigator.clipboard) navigator.clipboard.writeText(cl).then(function () { ilmoitus("Linkki kopioitu."); }, function () { prompt("Kopioi linkki:", cl); }); else prompt("Kopioi linkki:", cl); }
     else if (d.muujako) { var mu = d.muujako; ($(".valikko") || { remove: function () {} }).remove(); navigator.share({ url: mu, title: "Faktapiste" }).catch(function () {}); }
@@ -474,7 +487,7 @@
     }
     if (f.id === "nimilomake") {
       e.preventDefault();
-      api("nimi", { nimi: f.nimi.value }).then(function (j) { if (j.virhe) return ilmoitus(j.virhe, 1); ilmoitus("Tervetuloa, " + j.nimi + "!"); mina(); }); return;
+      api("nimi", { nimi: f.nimi.value, suosittelija: lue("fp_suos") || "" }).then(function (j) { if (j.virhe) return ilmoitus(j.virhe, 1); ilmoitus("Tervetuloa, " + j.nimi + "!"); mina(); }); return;
     }
     if (f.dataset.muokkaus) {
       e.preventDefault(); var mid = f.dataset.muokkaus, uusi = f.teksti.value.trim();
