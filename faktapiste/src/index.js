@@ -26,7 +26,7 @@ const ARVONNAT = [
   { kausi: "2027-01", alku: Date.parse("2027-01-01T00:00:00+02:00"), loppu: Date.parse("2027-01-31T23:59:59+02:00"),
     palkinto: "100 euron lahjakortin K-ryhmään", lyhyt: "100 €", arvontaPv: "1.2.2027", vero: "30 €, joka lasketaan yhteen 500 €:n arvonnan 150 €:n kanssa: helmikuun arpajaisvero yhteensä 180 €, ilmoita ja maksa OmaVerossa viimeistään 12.4.2027" },
   { kausi: "suuri-2027-01", alku: Date.parse("2026-10-25T00:00:00+03:00"), loppu: Date.parse("2027-01-31T23:59:59+02:00"),
-    palkinto: "jopa 500 euroa rahana tai K-ryhmän lahjakorttina", lyhyt: "jopa 500 €", valinta: true, arvontaPv: "1.2.2027",
+    palkinto: "jopa 500 euroa rahana tai lahjakorttina haluamaasi kauppaan", lyhyt: "jopa 500 €", valinta: true, arvontaPv: "1.2.2027",
     // Palkinto kasvaa käyttäjämäärän mukaan (omalla nimellä rekisteröityneet, ei suljettuja tilejä), laskettu arvontahetkellä.
     tasot: [{ min: 0, summa: 100 }, { min: 250, summa: 250 }, { min: 1000, summa: 500 }], muuVero: 30 },
 ];
@@ -658,12 +658,12 @@ export class Faktapiste extends DurableObject {
       let x = r[0] % yht, voittaja = l[0];
       for (const o of l) { if (x < o.arvat) { voittaja = o; break; } x -= o.arvat; }
       const ta = a.tasot ? this.taso(a, this.kayttajia()) : null;
-      const palkinto = ta ? `${ta.summa} euroa rahana tai K-ryhmän lahjakorttina` : a.palkinto;
+      const palkinto = ta ? `${ta.summa} euroa rahana tai lahjakorttina voittajan valitsemaan kauppaan` : a.palkinto;
       const vero = ta ? `${Math.round(ta.summa * 0.3)} € arpajaisveroa (${this.kayttajia()} käyttäjää → ${ta.summa} €). Helmikuun arpajaisvero yhteensä ${Math.round(ta.summa * 0.3) + (a.muuVero || 0)} € tammikuun 100 €:n kanssa: ilmoita ja maksa OmaVerossa viimeistään 12.4.2027` : a.vero;
       const tulos = { kausi: a.kausi, uusinta: hylatyt.size || undefined, summa: ta ? ta.summa : null, voittaja: voittaja.nimi, arvat: voittaja.arvat, osallistujia: l.length, arvoja: yht, aika: new Date().toISOString() };
       this.sql.exec("INSERT INTO asetukset VALUES(?,?)", avain, JSON.stringify(tulos));
       await telegram(this.env, `🎁 Faktapisteen arvonta (${ta ? ta.summa + " €" : a.lyhyt}, ${a.kausi}): voittaja ${voittaja.nimi} (${voittaja.email}), ${voittaja.arvat}/${yht} arpaa, ${l.length} osallistujaa.\n` +
-        (a.valinta ? `Palkinto: ${palkinto}. Kysy voittajalta, haluaako hän sen rahana vai K-ryhmän lahjakorttina, ja maksa tai lähetä se. Ilmoita` : `Lähetä ${a.palkinto.replace("lahjakortin", "lahjakortti")} voittajalle ja ilmoita`) + ` voitosta Faktapisteessä etunimellä.\nVero: ${vero}. Palkinto on voittajalle verovapaa.` + (hylatyt.size ? `\n(Uusinta-arvonta, hylättyjä: ${hylatyt.size})` : "") + this.riski(voittaja, l, a));
+        (a.valinta ? `Palkinto: ${palkinto}. Kysy voittajalta, haluaako hän sen rahana vai lahjakorttina ja mihin kauppaan, ja maksa tai lähetä se. Ilmoita` : `Lähetä ${a.palkinto.replace("lahjakortin", "lahjakortti")} voittajalle ja ilmoita`) + ` voitosta Faktapisteessä etunimellä.\nVero: ${vero}. Palkinto on voittajalle verovapaa.` + (hylatyt.size ? `\n(Uusinta-arvonta, hylättyjä: ${hylatyt.size})` : "") + this.riski(voittaja, l, a));
       tulokset.push(tulos);
     }
     return { tulokset };
