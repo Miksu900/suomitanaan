@@ -223,7 +223,7 @@
     var id = vanhempi ? "v" : "u";
     if (!tila.mina) {
       if (!tila.kirjautuminen) return '<div class="kirjoita lukko"><b>Keskustelu on beta-testissä.</b><span>Kirjoittaminen avautuu kaikille pian. Voit jo lukea syötettä.</span></div>';
-      return '<div class="kirjoita lukko"><b>' + (vanhempi ? "Kirjaudu vastataksesi." : "Mitä mieltä olet? Kirjaudu ja kirjoita.") + '</b><span>Kirjautuminen sähköpostilinkillä, ei salasanaa.</span><button type="button" class="nappi" data-kirjaudu>Kirjaudu</button></div>';
+      return '<div class="kirjoita lukko"><b>' + (vanhempi ? "Kirjaudu vastataksesi." : "Mitä mieltä olet? Kirjaudu ja kirjoita.") + '</b><span>Kirjaudu salasanalla tai sähköpostiin tulevalla linkillä.</span><button type="button" class="nappi" data-kirjaudu>Kirjaudu</button></div>';
     }
     if (!tila.mina.nimiOk) return '<form class="kirjoita" id="nimilomake"><b>Kirjoita oma nimesi</b><span>Faktapisteessä keskustellaan omalla nimellä. Etu- ja sukunimesi näkyvät postaustesi yhteydessä. Sähköpostiosoitetta ei näytetä kenellekään.' + (tila.mina.nimi ? " Nimimerkit on vaihdettu oikeisiin nimiin." : "") + '</span><div class="rivi"><input name="nimi" maxlength="60" placeholder="Etunimi Sukunimi" autocomplete="name" required><button class="nappi">Tallenna</button></div></form>';
     return '<form class="kirjoita" data-lomake="' + id + '"' + (vanhempi ? ' data-vanhempi="' + vanhempi + '"' : "") + '>' +
