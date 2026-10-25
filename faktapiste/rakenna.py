@@ -9,7 +9,7 @@ ROOT = pathlib.Path(__file__).parent / "public"
 SITE = os.environ.get("FAKTAPISTE_URL", "https://faktapiste.fi")
 PV = os.environ.get("PYKALAVAHTI_URL", "https://pykalavahti.fi")
 YHTEYS = "miika@eduskuntaseuranta.fi"
-VER = "55"
+VER = "56"
 esc = html.escape
 
 # avain, nimi, osoite, iskulause, kuvaus, merkki, poliittinen
@@ -292,7 +292,63 @@ kirjoita("/yksityisyys/", sivu("/yksityisyys/", "Yksityisyysvahti – onko sijai
     '<section class="w teksti"><h1>Sivua ei löytynyt</h1><p><a href="/">Takaisin etusivulle</a></p></section>', noindex=True), encoding="utf-8")
 
 (ROOT / "favicon.svg").write_text('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="32" cy="32" r="32" fill="#000"/><text x="32" y="30" font-family="Anton,Impact,sans-serif" font-size="17" fill="#fff" text-anchor="middle">FAKTA</text><text x="32" y="48" font-family="Anton,Impact,sans-serif" font-size="17" fill="#f5c542" text-anchor="middle">PISTE.</text></svg>', encoding="utf-8")
+# ---- laskurit: /laskurit/ ja /laskurit/<slug>/ ----
+import sys, json
+sys.path.insert(0, str(pathlib.Path(__file__).parent))
+from laskurit import LASKURIT, RYHMAT
+
+def kentta(k):
+    tunnus = "k-" + k["nimi"]
+    if k["tyyppi"] == "valinta":
+        opt = "".join(f'<option value="{esc(str(a))}"{" selected" if str(a) == str(k["oletus"]) else ""}>{esc(t)}</option>' for a, t in k["valinnat"])
+        inp = f'<select id="{tunnus}" name="{esc(k["nimi"])}">{opt}</select>'
+    elif k["tyyppi"] in ("pvm", "aika"):
+        tyyppi = "date" if k["tyyppi"] == "pvm" else "time"
+        inp = f'<input id="{tunnus}" name="{esc(k["nimi"])}" type="{tyyppi}" value="{esc(str(k["oletus"]))}" data-teksti>'
+    else:
+        inp = f'<input id="{tunnus}" name="{esc(k["nimi"])}" inputmode="decimal" autocomplete="off" value="{esc(str(k["oletus"]).replace(".", ","))}">'
+    yks = f'<span class="yks">{esc(k["yks"])}</span>' if k["yks"] else ""
+    return f'<label for="{tunnus}"><span>{esc(k["otsikko"])}</span><span class="kent">{inp}{yks}</span></label>'
+
+def laskurisivu(l):
+    samat = [x for x in LASKURIT if x["ryhma"] == l["ryhma"] and x["slug"] != l["slug"]]
+    muut = samat + [x for x in LASKURIT if x["ryhma"] != l["ryhma"]]
+    ukk_ld = json.dumps({"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [
+        {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in l["ukk"]]}, ensure_ascii=False)
+    sovellus_ld = json.dumps({"@context": "https://schema.org", "@type": "WebApplication", "name": l["nimi"], "url": f"{SITE}/laskurit/{l['slug']}/",
+        "applicationCategory": "FinanceApplication", "operatingSystem": "Kaikki", "inLanguage": "fi", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"}}, ensure_ascii=False)
+    return f"""<section class="w teksti laskurisivu">
+<p class="murut"><a href="/laskurit/">Laskurit</a> › {esc(l["ryhma"])}</p>
+<h1>{esc(l["nimi"])}</h1>
+<p class="lead-t">{esc(l["johdanto"])}</p>
+<form class="laskuri" data-s="{esc(l["slug"])}" novalidate>
+<div class="kentat">{''.join(kentta(k) for k in l["kentat"])}</div>
+<div class="tulos" aria-live="polite"></div>
+</form>
+<h2>Näin laskuri toimii</h2>
+{l["teksti"]}
+<h2>Usein kysyttyä</h2>
+{''.join(f'<details class="ukk"><summary>{esc(q)}</summary><p>{esc(a)}</p></details>' for q, a in l["ukk"])}
+<p class="pieni mute">Laskuri on suuntaa antava apuväline, eikä se ole talous-, vero- tai oikeudellista neuvontaa. Tarkista tärkeät päätökset asiantuntijalta tai viranomaiselta.</p>
+<h2>Muut laskurit</h2>
+<ul class="laskurilinkit">{''.join(f'<li><a href="/laskurit/{x["slug"]}/">{esc(x["nimi"])}</a></li>' for x in muut[:8])}</ul>
+</section>
+<script type="application/ld+json">{ukk_ld}</script><script type="application/ld+json">{sovellus_ld}</script>
+<script>window.LASKE=function(v,f){{{l["js"]}}};</script>
+<script src="/laskuri.js?v={VER}" defer></script>"""
+
+for l in LASKURIT:
+    kirjoita(f"/laskurit/{l['slug']}/", sivu(f"/laskurit/{l['slug']}/", f"{l['otsikko']} | Faktapiste", l["kuvaus"], laskurisivu(l)))
+
+runko = '<section class="w teksti"><h1>Laskurit</h1><p class="lead-t">Ilmaiset laskurit rahaan, asumiseen, sähköön ja autoiluun. Ei rekisteröitymistä, ja kaikki laskenta tapahtuu omassa selaimessasi.</p>'
+for r in RYHMAT:
+    runko += f'<h2>{esc(r)}</h2><ul class="laskurilista">' + "".join(
+        f'<li><a href="/laskurit/{x["slug"]}/"><b>{esc(x["nimi"])}</b><span>{esc(x["johdanto"])}</span></a></li>' for x in LASKURIT if x["ryhma"] == r) + "</ul>"
+runko += "</section>"
+kirjoita("/laskurit/", sivu("/laskurit/", "Laskurit – ilmaiset laskurit rahaan, asumiseen ja sähköön | Faktapiste",
+                           "Ilmaiset suomalaiset laskurit: asuntolaina, osamaksun todellinen vuosikorko, vuokratuotto, sähkösopimusten vertailu, sähköauton lataus ja auton kulut.", runko))
+
 (ROOT / "robots.txt").write_text(f"User-agent: *\nAllow: /\nSitemap: {SITE}/sitemap.xml\n", encoding="utf-8")
 (ROOT / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
-    + "".join(f"<url><loc>{SITE}{p}</loc></url>" for p in ["/", "/palvelut/", "/tietoa/", "/yksityisyys/", "/arvonta/"]) + "</urlset>", encoding="utf-8")
+    + "".join(f"<url><loc>{SITE}{p}</loc></url>" for p in ["/", "/palvelut/", "/tietoa/", "/yksityisyys/", "/arvonta/", "/laskurit/"] + [f"/laskurit/{l['slug']}/" for l in LASKURIT]) + "</urlset>", encoding="utf-8")
 print("Faktapiste rakennettu:", ROOT)

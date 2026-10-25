@@ -1,0 +1,24 @@
+name: Laskuriraportti
+# Viikoittainen raportti Telegramiin: mitkä laskurit saivat eniten näyttöjä ja käyttöjä (7 pv).
+# Kertoo, mitkä aiheet kiinnostavat, jotta tiedetään mihin panostaa.
+on:
+  schedule:
+    - cron: "17 6 * * 1"   # maanantaisin n. klo 8.17 Suomen aikaa
+  workflow_dispatch:
+    inputs:
+      pv: { description: "Montako päivää taaksepäin", required: false, default: "7" }
+jobs:
+  raportti:
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          CF: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TG: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        run: |
+          HALLINTA=$(printf '%s' "$CF-faktapiste" | sha256sum | cut -c1-40)
+          PV=${{ inputs.pv || '7' }}
+          R=$(curl -sS -H "x-avain: $HALLINTA" "https://faktapiste.fi/api/hallinta/laskurit?pv=$PV")
+          T=$(echo "$R" | jq -r '"📊 Laskurit (" + (.pv|tostring) + " pv)\n" + (( .laskurit // [] ) | if length==0 then "Ei vielä näyttöjä." else (sort_by(-.nayt) | .[:20] | map("• " + .sivu + ": " + (.nayt|tostring) + " näyttöä, " + (.kaytot|tostring) + " käyttöä") | join("\n")) end)')
+          echo "::notice title=Laskurit::$(echo "$R" | head -c 800)"
+          curl -sS -X POST "https://api.telegram.org/bot$TG/sendMessage" -H 'content-type: application/json' \
+            -d "$(jq -n --arg t "$T" '{chat_id:"1893930799", text:$t, disable_web_page_preview:true}')" >/dev/null

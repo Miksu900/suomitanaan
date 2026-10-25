@@ -279,3 +279,34 @@ a.nappi{text-decoration:none;display:inline-block}
 .jasenet:empty{display:none}.jasenet b{color:var(--yel)}.jasenet i{width:9px;height:9px;border-radius:50%;background:#3ccf7a;box-shadow:0 0 0 3px rgba(60,207,122,.25)}
 .hd nav a{white-space:nowrap}
 @media (max-width:430px){.hd nav{gap:2px}.hd nav a{padding:7px 7px;font-size:.84rem}.hd .tili{padding-left:12px;padding-right:12px}}
+/* laskurit */
+.laskurisivu .murut{font-size:.85rem;color:var(--mute);margin:0 0 6px}
+.laskurisivu .murut a{color:var(--yel)}
+.lead-t{font-size:1.1rem;color:var(--mute);margin:0 0 20px;max-width:60ch}
+.laskuri{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:18px;margin:0 0 28px}
+.laskuri .kentat{display:grid;gap:12px}
+@media(min-width:560px){.laskuri .kentat{grid-template-columns:1fr 1fr}}
+.laskuri label{display:flex;flex-direction:column;gap:5px;font-weight:600;font-size:.95rem}
+.laskuri .kent{display:flex;align-items:center;gap:8px}
+.laskuri input,.laskuri select{flex:1;width:100%;font:16px/1.4 var(--f-b);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:11px 12px}
+.laskuri input:focus,.laskuri select:focus{outline:2px solid var(--yel);border-color:transparent}
+.laskuri .yks{color:var(--mute);font-weight:600;font-size:.9rem;white-space:nowrap}
+.tulos{margin-top:18px;display:grid;gap:1px;background:var(--line);border-radius:12px;overflow:hidden;border:1px solid var(--line)}
+.tulos:empty{display:none}
+.tulos .tr{display:flex;justify-content:space-between;align-items:baseline;gap:12px;background:var(--bg);padding:12px 14px}
+.tulos .tr span{color:var(--mute);font-size:.95rem}
+.tulos .tr b{font-weight:700;font-size:1.05rem;text-align:right}
+.tulos .tr.paa{background:var(--navy2)}
+.tulos .tr.paa span{color:#d4d4d4}.tulos .tr.paa b{color:var(--yel);font-size:1.5rem}
+.ukk{border-bottom:1px solid var(--line);padding:4px 0}
+.ukk summary{cursor:pointer;font-weight:600;padding:8px 0;list-style:none}
+.ukk summary::-webkit-details-marker{display:none}
+.ukk summary::before{content:"+ ";color:var(--yel);font-weight:800}
+.ukk[open] summary::before{content:"– "}
+.ukk p{margin:0 0 10px;color:var(--mute)}
+.laskurilinkit{columns:2;gap:16px;padding-left:18px}
+.laskurilinkit a{color:var(--yel)}
+.laskurilista{list-style:none;padding:0;display:grid;gap:10px}
+.laskurilista a{display:flex;flex-direction:column;gap:2px;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:14px 16px;text-decoration:none}
+.laskurilista a:hover{border-color:var(--yel)}
+.laskurilista b{color:var(--ink)}.laskurilista span{color:var(--mute);font-size:.9rem}
