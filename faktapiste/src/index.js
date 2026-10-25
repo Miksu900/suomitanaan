@@ -30,7 +30,7 @@ const ARVONNAT = [
     // Palkinto kasvaa käyttäjämäärän mukaan (omalla nimellä rekisteröityneet, ei suljettuja tilejä), laskettu arvontahetkellä.
     tasot: [{ min: 0, summa: 100 }, { min: 250, summa: 250 }, { min: 1000, summa: 500 }], muuVero: 30 },
 ];
-const ARPA = { minPituus: 20, vali: 60e3, kutsuArvat: 10, kutsuMax: 10 };
+const ARPA = { minPituus: 20, vali: 30e3, kutsuArvat: 10, kutsuMax: 10 };
 // Suomen aikaa: päivämäärä (YYYY-MM-DD) ja päivän alku/loppu millisekunteina
 const fiPv = ms => new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Helsinki" }).format(new Date(ms));
 function fiPaiva(pv) {
@@ -742,7 +742,7 @@ export class Faktapiste extends DurableObject {
     const videoPyynto = +d.video || 0;
     if (teksti.length < 2 && !kuvaPyynto.length && !videoPyynto) return virhe("Kirjoita jotain tai lisää kuva tai video.");
     if (teksti.length > PITUUS) return virhe("Teksti on liian pitkä.");
-    if (!this.raja("p:" + minä.id, 15, 3600)) return virhe("Olet kirjoittanut paljon tunnin sisällä. Pidä pieni tauko.", 429);
+    if (!this.raja("p:" + minä.id, 60, 3600)) return virhe("Olet kirjoittanut paljon tunnin sisällä. Pidä pieni tauko.", 429);
     const vanhempi = d.vanhempi ? +d.vanhempi : null;
     if (vanhempi && !this.yksi("SELECT id FROM postit WHERE id=? AND piilotettu=0", vanhempi)) return virhe("Postausta ei enää ole.");
     let kortti = null;
@@ -767,10 +767,13 @@ export class Faktapiste extends DurableObject {
       const t = nyt();
       if (teksti.length < ARPA.minPituus || onAdmin(minä.email) || !ARVONNAT.some(a => t >= a.alku && t <= a.loppu)) return;
       const pv = fiPv(t), [alku] = fiPaiva(pv);
+      // Vastaus toisen käyttäjän viestiin: mukaan alkuperäinen viesti, jotta väittelyä ei tulkita roskaksi.
+      const ylempi = this.yksi("SELECT p.teksti, p.kayttaja FROM postit p JOIN postit u ON u.vanhempi=p.id WHERE u.id=?", id);
+      const keskustelu = ylempi && ylempi.kayttaja !== minä.id ? "\n\nViesti on VASTAUS toisen käyttäjän viestiin:\n" + String(ylempi.teksti || "").slice(0, 400) : "";
       const aiemmat = this.kaikki("SELECT teksti FROM postit WHERE kayttaja=? AND id<>? AND luotu>=? ORDER BY id DESC LIMIT 6", minä.id, id, alku).map(r => "- " + r.teksti.slice(0, 200));
       const v = jsonista(await claude(this.env,
-        `Faktapisteessä jokainen kirjoitus on arpa kuukausiarvonnassa. Arvioi, onko UUSI viesti selvästi pelkkää arpojen keräämistä varten tehtyä roskaa: merkityksetöntä täytettä, sanasalaattia, samaa asiaa toistavaa sarjapostausta, pelkkää "osallistun arvontaan" -tyyppistä tekstiä tai muualta kopioitua massaa. Lyhyt mutta aito kommentti, mielipide, kysymys tai kärkeväkin kannanotto EI ole roskaa. Jos olet epävarma, vastaa false. Vastaa vain JSON: {"roska":false} tai {"roska":true,"syy":"lyhyt syy suomeksi"}.`,
-        "UUSI viesti:\n" + teksti.slice(0, 800) + "\n\nSaman käyttäjän aiemmat viestit tänään:\n" + (aiemmat.join("\n") || "(ei muita)"), 120));
+        `Faktapisteessä jokainen kirjoitus on arpa kuukausiarvonnassa. Arvioi, onko UUSI viesti selvästi pelkkää arpojen keräämistä varten tehtyä roskaa: merkityksetöntä täytettä, sanasalaattia, samaa asiaa toistavaa sarjapostausta, pelkkää "osallistun arvontaan" -tyyppistä tekstiä tai muualta kopioitua massaa. Lyhyt mutta aito kommentti, mielipide, kysymys tai kärkeväkin kannanotto EI ole roskaa. Keskustelu ja väittely muiden kanssa EI KOSKAAN ole roskaa, vaikka viestejä tulisi paljon, ne olisivat lyhyitä tai samoja perusteluja toistettaisiin: jos viesti vastaa toisen ihmisen viestiin asiaan liittyen, vastaa false. Viestien määrä ei yksinään ole koskaan peruste. Jos olet epävarma, vastaa false. Vastaa vain JSON: {"roska":false} tai {"roska":true,"syy":"lyhyt syy suomeksi"}.`,
+        "UUSI viesti:\n" + teksti.slice(0, 800) + keskustelu + "\n\nSaman käyttäjän aiemmat viestit tänään:\n" + (aiemmat.join("\n") || "(ei muita)"), 120));
       if (!v || v.roska !== true) return;
       this.sql.exec("INSERT OR REPLACE INTO arpaepailyt VALUES(?,?,?,?,?)", id, minä.id, pv, String(v.syy || "").slice(0, 160), t);
       const n = this.yksi("SELECT COUNT(*) AS n FROM arpaepailyt WHERE kayttaja=? AND pv=?", minä.id, pv).n;
