@@ -1,50 +1,44 @@
-name: Netvo-kelan ääni (ElevenLabs)
-# Luo Netvo-kelan puheen ElevenLabsilla (ääni valitaan syötteellä) ja lataa mp3 artifaktina.
+name: Netvo-kela äänellä (ElevenLabs → Telegram)
+# Luo puheen ElevenLabsilla, yhdistää sen Netvo-kelaan ja lähettää valmiin videon Telegramiin.
 # Avain on GitHub-salaisuus ELEVENLABS_API_KEY. Ajetaan käsin workflow_dispatchilla.
 on:
   workflow_dispatch:
     inputs:
       voice: { description: "ElevenLabs voice_id", required: true }
       teksti: { description: "Puhuttava teksti", required: true }
-      nimi: { description: "Tiedoston nimi ilman päätettä", required: false, default: "netvo-aani" }
-      haara: { description: "Haara, johon mp3 talletetaan (tyhjä = vain artifakti)", required: false, default: "" }
-permissions:
-  contents: write
+      kela: { description: "Repon mp4-polku haarassa", required: false, default: "netvo-video/netvo-kela-01.mp4" }
+      haara: { description: "Haara, josta kela luetaan", required: false, default: "netvo-kela-01" }
 jobs:
-  aani:
+  kela:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
-      - name: Luo ääni
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.haara }}
+      - name: Työkalut
+        run: which ffmpeg || (sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg)
+      - name: Ääni
         env:
           EL: ${{ secrets.ELEVENLABS_API_KEY }}
           VOICE: ${{ inputs.voice }}
           TEKSTI: ${{ inputs.teksti }}
-          NIMI: ${{ inputs.nimi }}
         run: |
           set -e
           jq -n --arg t "$TEKSTI" '{text: $t, model_id: "eleven_multilingual_v2", voice_settings: {stability: 0.45, similarity_boost: 0.8, style: 0.35}}' > body.json
           curl -sS -f -X POST "https://api.elevenlabs.io/v1/text-to-speech/$VOICE?output_format=mp3_44100_128" \
-            -H "xi-api-key: $EL" -H "content-type: application/json" -d @body.json -o "$NIMI.mp3"
-          ls -la "$NIMI.mp3"
-      - uses: actions/upload-artifact@v4
-        with:
-          name: netvo-aani
-          path: "*.mp3"
-          retention-days: 7
-      - name: Talleta haaraan
-        if: inputs.haara != ''
+            -H "xi-api-key: $EL" -H "content-type: application/json" -d @body.json -o aani.mp3
+      - name: Yhdistä kelaan
         env:
-          HAARA: ${{ inputs.haara }}
-          NIMI: ${{ inputs.nimi }}
+          KELA: ${{ inputs.kela }}
         run: |
           set -e
-          git config user.name "netvo-aani"
-          git config user.email "noreply@github.com"
-          git fetch -q origin "$HAARA"
-          git checkout -q -B "$HAARA" "origin/$HAARA"
-          mkdir -p netvo-video/aani
-          mv "$NIMI.mp3" netvo-video/aani/
-          git add netvo-video/aani
-          git commit -q -m "Netvo: ääni $NIMI (ElevenLabs)"
-          git push -q origin "$HAARA"
+          ffmpeg -y -i "$KELA" -i aani.mp3 -filter_complex "[1:a]atempo=1.05,apad=pad_dur=2[a]" \
+            -map 0:v -map "[a]" -t 25 -c:v copy -c:a aac -b:a 160k -movflags +faststart kela-aani.mp4
+          ls -la kela-aani.mp4
+      - name: Telegramiin
+        env:
+          TG: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        run: |
+          R=$(curl -sS -X POST "https://api.telegram.org/bot$TG/sendVideo" -F chat_id=1893930799 -F supports_streaming=true -F video=@kela-aani.mp4 -F "caption=Netvo-kela äänellä")
+          echo "::notice title=Telegram::$(echo "$R" | jq -c '.ok')"
