@@ -7,6 +7,9 @@ on:
       voice: { description: "ElevenLabs voice_id", required: true }
       teksti: { description: "Puhuttava teksti", required: true }
       nimi: { description: "Tiedoston nimi ilman päätettä", required: false, default: "netvo-aani" }
+      haara: { description: "Haara, johon mp3 talletetaan (tyhjä = vain artifakti)", required: false, default: "" }
+permissions:
+  contents: write
 jobs:
   aani:
     runs-on: ubuntu-latest
@@ -29,3 +32,19 @@ jobs:
           name: netvo-aani
           path: "*.mp3"
           retention-days: 7
+      - name: Talleta haaraan
+        if: inputs.haara != ''
+        env:
+          HAARA: ${{ inputs.haara }}
+          NIMI: ${{ inputs.nimi }}
+        run: |
+          set -e
+          git config user.name "netvo-aani"
+          git config user.email "noreply@github.com"
+          git fetch -q origin "$HAARA"
+          git checkout -q -B "$HAARA" "origin/$HAARA"
+          mkdir -p netvo-video/aani
+          mv "$NIMI.mp3" netvo-video/aani/
+          git add netvo-video/aani
+          git commit -q -m "Netvo: ääni $NIMI (ElevenLabs)"
+          git push -q origin "$HAARA"
