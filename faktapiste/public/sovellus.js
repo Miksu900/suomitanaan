@@ -243,14 +243,14 @@
       var omat = j.arvonnat[0].omat, oma = j.yllapitaja ? "Ylläpitäjänä et osallistu." : omat === null ? "Kirjaudu ja kirjoita, niin olet mukana." : "Sinulla on nyt <b>" + omat + " " + (omat === 1 ? "arpa" : "arpaa") + "</b>.";
       var h = '<div class="arvonta"><span class="arv-ik" aria-hidden="true">🎁</span><div>';
       if (kk) h += "<b>Arvomme 100 € K-ryhmän lahjakortin " + esc(kk.arvontaPv.replace(/\.20\d\d$/, ".")) + "</b>";
-      h += "<p>Jokainen kirjoitus ja kommentti on arpa (enintään " + j.maxPv + " päivässä). " + oma + ' <a href="/arvonta/">Säännöt</a></p>';
+      h += "<p>Jokainen kirjoitus ja kommentti on arpa (enintään " + j.maxPv + " päivässä). " + oma + "</p>";
       if (iso) {
         var max = iso.tasot[iso.tasot.length - 1].min, pros = Math.min(100, 100 * iso.kayttajia / max);
         h += '<div class="iso-arv"><b>Iso arvonta ' + esc(iso.arvontaPv.replace(/\.20\d\d$/, ".")) + ": nyt " + iso.nyt + " €</b>" +
           '<span class="mittari" role="img" aria-label="' + iso.kayttajia + " / " + max + ' käyttäjää"><i style="width:' + pros.toFixed(1) + '%"></i></span>' +
           "<small>Meitä on " + iso.kayttajia + " / " + max + "." + (iso.seuraava ? " Kun meitä on " + iso.seuraava.min + ", palkinto nousee " + iso.seuraava.summa + " euroon." : "") + " Kutsu kaverit mukaan!</small></div>";
       }
-      A.innerHTML = h + '<div class="kutsu-arv" id="fp-kutsuarv"></div></div></div>';
+      A.innerHTML = h + '<div class="kutsu-arv" id="fp-kutsuarv"></div><a class="arv-saannot" href="/arvonta/">Lue säännöt →</a></div></div>';
       if (tila.mina && tila.mina.nimiOk && !j.yllapitaja) api("kutsulinkki").then(function (k) {
         var K = $("#fp-kutsuarv"); if (!K || !k || !k.url) return;
         K.innerHTML = "<b>Kutsu kaverit: +" + k.arvatPerKaveri + " arpaa jokaisesta</b><small>Saat lisäarvat, kun kaveri liittyy linkilläsi ja kirjoittaa. " +
@@ -343,6 +343,7 @@
   function avaaKirjautuminen() {
     DLG.innerHTML = '<form method="dialog" class="dlg" id="kirjform"><h2>Kirjaudu Faktapisteeseen</h2><p>Saat sähköpostiisi kirjautumislinkin. Salasanaa ei tarvita, ja sama linkki luo tilin, jos sinulla ei vielä ole sitä.</p>' +
       '<label>Sähköposti<input type="email" name="email" required autocomplete="email"></label><p class="pieni">Kirjautumalla hyväksyt <a href="/tietoa/#keskustelu">keskustelun säännöt ja tietosuojan</a>.</p>' +
+      '<p class="ehto">Kirjoitukset ja kommentit ovat mukana Faktapisteen arvonnoissa. Osallistumalla hyväksyt <a href="/arvonta/" target="_blank" rel="noopener">arvonnan säännöt</a>.</p>' +
       '<div class="rivi"><button type="button" class="nappi toissijainen" data-sulje>Peruuta</button><button class="nappi" value="laheta">Lähetä linkki</button></div></form>';
     DLG.showModal();
   }

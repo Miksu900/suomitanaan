@@ -274,3 +274,5 @@ a.nappi{text-decoration:none;display:inline-block}
 .kutsu-arv:not(:empty){margin-top:10px;padding-top:10px;border-top:1px dashed var(--yel)}
 .kutsu-arv small{display:block;font-size:.85rem;margin:2px 0 6px}
 .kutsu-arv .rivi{display:flex;gap:8px}.kutsu-arv input{flex:1;min-width:0;font:600 .85rem var(--f-b);padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink)}
+.arvonta .arv-saannot{display:inline-block;margin-top:10px;padding:7px 14px;border:1.5px solid currentColor;border-radius:10px;text-decoration:none;font-size:.92rem}
+.dlg .ehto{font-size:.85rem;opacity:.8;margin:8px 0 0}.dlg .ehto a{font-weight:700}
