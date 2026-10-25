@@ -30,7 +30,7 @@ const ARVONNAT = [
     // Palkinto kasvaa käyttäjämäärän mukaan (omalla nimellä rekisteröityneet, ei suljettuja tilejä), laskettu arvontahetkellä.
     tasot: [{ min: 0, summa: 100 }, { min: 250, summa: 250 }, { min: 1000, summa: 500 }, { min: 5000, summa: 1000 }], muuVero: 30 },
 ];
-const ARPA = { minPituus: 20, vali: 30e3, kutsuArvat: 10, kutsuPaivat: 2, kutsuHalytys: 20 };
+const ARPA = { minPituus: 0, vali: 30e3, kutsuArvat: 10, kutsuPaivat: 2, kutsuHalytys: 20 };
 // Suomen aikaa: päivämäärä (YYYY-MM-DD) ja päivän alku/loppu millisekunteina
 const fiPv = ms => new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Helsinki" }).format(new Date(ms));
 function fiPaiva(pv) {
@@ -560,10 +560,10 @@ export class Faktapiste extends DurableObject {
   }
   // ---- arvonta ----
   arvat(a) {
-    // 1 arpa jokaisesta kirjoituksesta tai kommentista (vähintään 20 merkkiä, ei piilotettu). Ei päivärajaa.
+    // 1 arpa jokaisesta kirjoituksesta tai kommentista (ei pituusvaatimusta, ei piilotettu). Ei päivärajaa.
     // Sama teksti lasketaan kerran, ja alle minuutin välein kirjoitetut viestit lasketaan yhdeksi.
     // Ylläpitäjän hylkäämät päivät (arpahylkays.alku–loppu) ja kaudet (arpahylkays.kausi) eivät tuota arpoja.
-    const l = this.kaikki(`SELECT p.kayttaja, k.nimi, k.email, COUNT(DISTINCT p.teksti) AS arvat FROM postit p JOIN kayttajat k ON k.id=p.kayttaja
+    const l = this.kaikki(`SELECT p.kayttaja, k.nimi, k.email, COUNT(DISTINCT CASE WHEN p.teksti <> '' THEN p.teksti ELSE 'kuva' || p.id END) AS arvat FROM postit p JOIN kayttajat k ON k.id=p.kayttaja
       WHERE p.kayttaja IS NOT NULL AND p.piilotettu=0 AND length(p.teksti) >= ? AND p.luotu BETWEEN ? AND ? AND k.esto=0 AND k.nimi IS NOT NULL
         AND NOT EXISTS (SELECT 1 FROM postit q WHERE q.kayttaja=p.kayttaja AND q.piilotettu=0 AND length(q.teksti) >= ? AND q.luotu < p.luotu AND q.luotu > p.luotu - ?)
         AND NOT EXISTS (SELECT 1 FROM arpahylkays h WHERE h.kayttaja=p.kayttaja AND h.kausi IS NULL AND p.luotu BETWEEN h.alku AND h.loppu)
@@ -784,7 +784,7 @@ export class Faktapiste extends DurableObject {
   async arpaTarkistus(id, minä, teksti) {
     try {
       const t = nyt();
-      if (teksti.length < ARPA.minPituus || onAdmin(minä.email) || !ARVONNAT.some(a => t >= a.alku && t <= a.loppu)) return;
+      if (!teksti || onAdmin(minä.email) || !ARVONNAT.some(a => t >= a.alku && t <= a.loppu)) return;
       const pv = fiPv(t), [alku] = fiPaiva(pv);
       // Vastaus toisen käyttäjän viestiin: mukaan alkuperäinen viesti, jotta väittelyä ei tulkita roskaksi.
       const ylempi = this.yksi("SELECT p.teksti, p.kayttaja FROM postit p JOIN postit u ON u.vanhempi=p.id WHERE u.id=?", id);
