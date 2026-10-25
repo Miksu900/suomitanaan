@@ -1,0 +1,13 @@
+name: Laskuritesti
+on: { workflow_dispatch: {} }
+jobs:
+  testi:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          for u in "" sahkosopimusvertailu osamaksulaskuri vuokratuottolaskuri; do
+            URL="https://faktapiste.fi/laskurit/${u:+$u/}"
+            H=$(curl -sS "$URL")
+            CODE=$(curl -sS -o /dev/null -w '%{http_code}' "$URL")
+            echo "::notice title=Laskuri::$URL $CODE  lomake:$(echo "$H"|grep -c 'class=.laskuri.')  LASKE:$(echo "$H"|grep -c 'window.LASKE')  ukk:$(echo "$H"|grep -c 'class=.ukk.')"
+          done
