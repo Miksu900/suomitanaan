@@ -7,7 +7,7 @@ on:
     paths: ["mainokset/xads.py", ".github/workflows/xads.yml"]
   workflow_dispatch:
     inputs:
-      toiminto: { description: "tila, tutki, luo, viimeistele, kaynnista tai pysayta", required: true, default: "tila" }
+      toiminto: { description: "tila, tutki, uusimmat, mainosta, luo, viimeistele, kaynnista tai pysayta", required: true, default: "tila" }
       tili: { description: "Mainostilin id (pysayta)", required: false, default: "" }
       kampanja: { description: "Kampanjan id (pysayta)", required: false, default: "" }
       asetukset: { description: "JSON (luo)", required: false, default: "" }

@@ -171,6 +171,49 @@ def luo(a):
     ilmoita("Valmis", f"kampanja {kid}, mainosryhmä {lid}, twiitti {tw} – PYSÄYTETTY")
 
 
+def uusimmat(tili, n=8):
+    """Tilin uusimmat omat (orgaaniset) julkaisut, ei vastauksia eikä uudelleenjakoja, uusin ensin."""
+    v = kutsu(f"/accounts/{tili}/tweets", {"tweet_type": "PUBLISHED", "timeline_type": "ORGANIC", "count": 40, "trim_user": "true"})
+    if "virhe" in v:
+        ilmoita("Julkaisut", f"virhe {v.get('virhe')}: {v.get('vastaus')}"); sys.exit(1)
+    out = []
+    for t in v.get("data", []):
+        if t.get("in_reply_to_status_id_str") or t.get("retweeted_status"):
+            continue
+        out.append({"id": t.get("id_str") or str(t.get("id")), "aika": t.get("created_at"), "teksti": (t.get("full_text") or t.get("text") or "").replace("\n", " ")})
+    out.sort(key=lambda t: int(t["id"]), reverse=True)
+    return out[:n]
+
+
+def mainosta(a):
+    """Mainostaa olemassa olevaa julkaisua (oletuksena uusin): kokonaisbudjetti ja kesto päivinä. Käynnistyy heti (vain omistajan luvalla)."""
+    tili = tilit()[0]["id"]
+    rah = kutsu(f"/accounts/{tili}/funding_instruments")["data"][0]["id"]
+    tw = a.get("tweet") or "uusin"
+    if tw == "uusin":
+        u = uusimmat(tili, 1)
+        if not u: ilmoita("Julkaisu", "Julkaisuja ei löytynyt"); sys.exit(1)
+        tw = u[0]["id"]; ilmoita("Mainostettava julkaisu", f"{tw} {u[0]['aika']}: {u[0]['teksti'][:400]}")
+    yht, paivat = float(a.get("yhteensa", 30)), int(a.get("paivat", 7))
+    nyt = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0) + datetime.timedelta(minutes=10)
+    loppu = nyt + datetime.timedelta(days=paivat)
+    nimi = a.get("nimi") or f"Julkaisu {tw[-6:]} – {int(yht)} € / {paivat} pv"
+    def vaihe(n, v, avain="id"):
+        ilmoita(n, json.dumps(v.get("data", v) if isinstance(v, dict) else v, ensure_ascii=False)[:1500])
+        if not isinstance(v, dict) or "virhe" in v: sys.exit(1)
+        return (v.get("data") or v).get(avain) if avain else v
+    kid = vaihe("Kampanja", kutsu(f"/accounts/{tili}/campaigns", {"name": nimi, "funding_instrument_id": rah, "budget_optimization": "LINE_ITEM", "entity_status": "ACTIVE"}, "POST"))
+    lid = vaihe("Mainosryhmä", kutsu(f"/accounts/{tili}/line_items", {
+        "campaign_id": kid, "name": "Ad group 1", "objective": "ENGAGEMENTS", "goal": "ENGAGEMENT", "placements": "ALL_ON_TWITTER",
+        "product_type": "PROMOTED_TWEETS", "bid_strategy": "AUTO", "daily_budget_amount_local_micro": int(round(yht / paivat + 0.01, 2) * 1e6),
+        "total_budget_amount_local_micro": int(yht * 1e6), "start_time": nyt.isoformat().replace("+00:00", "Z"), "end_time": loppu.isoformat().replace("+00:00", "Z"),
+        "entity_status": "ACTIVE"}, "POST"))
+    for tyyppi, arvo in (("LOCATION", "e7c97cdfef3a741a"), ("LANGUAGE", "fi"), ("AGE", "AGE_OVER_25")):
+        vaihe("Kohdennus " + tyyppi, kutsu(f"/accounts/{tili}/targeting_criteria", {"line_item_id": lid, "targeting_type": tyyppi, "targeting_value": arvo, "operator_type": "EQ"}, "POST"))
+    vaihe("Mainostus", kutsu(f"/accounts/{tili}/promoted_tweets", {"line_item_id": lid, "tweet_ids": tw}, "POST"), None)
+    ilmoita("Valmis", f"kampanja {kid}, mainosryhmä {lid}, julkaisu {tw}: {yht:.0f} € yhteensä, {paivat} pv ({nyt:%d.%m.}–{loppu:%d.%m.%Y}) – KÄYNNISSÄ")
+
+
 def ilmoita(otsikko, teksti):
     for rivi in str(teksti).splitlines() or [""]:
         [print(f"::notice title={otsikko}::{rivi[i:i+3500]}") for i in range(0, max(len(rivi), 1), 3500)]
@@ -243,6 +286,13 @@ if __name__ == "__main__":
             r = kutsu(f"/accounts/{tili}/line_items/{l['id']}", {"entity_status": "ACTIVE"}, "PUT")
             ilmoita("Mainosryhmä", json.dumps(r.get("data", r), ensure_ascii=False)[:1500])
         ilmoita("Tila", json.dumps(kutsu(f"/accounts/{tili}/campaigns/{kid}").get("data", {}), ensure_ascii=False)[:1500])
+    elif toiminto == "uusimmat":
+        # Näyttää tilin uusimmat omat julkaisut (vain luku)
+        tili = tilit()[0]["id"]
+        for t in uusimmat(tili):
+            ilmoita("Julkaisu", f"{t['id']} {t['aika']} {t['teksti'][:200]}")
+    elif toiminto == "mainosta":
+        mainosta(json.loads(os.environ.get("ASETUKSET") or "{}"))
     elif toiminto == "pysayta":
         tili, kid = sys.argv[2], sys.argv[3]
         v = kutsu(f"/accounts/{tili}/campaigns/{kid}", {"entity_status": "PAUSED"}, "PUT")
