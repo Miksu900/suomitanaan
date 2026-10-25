@@ -209,12 +209,15 @@ def kohtaus(base, si, lt, gt):
     dur = SC[si + 1] - SC[si]
     si = KOHT[si]  # lyhyessä versiossa lause voi käyttää minkä tahansa kohtauksen kuvaa
     if si == 7:
-        # koukku: yksi sana voi olla 1000 euron arvoinen
-        paste_c(base, iso_teksti("TÄMÄ YKSI SANA", koko=118, vari=WHITE, vari2=WHITE), W / 2, 360, back(lt * 4))
-        paste_c(base, iso_teksti("VOI OLLA 1000\u00a0€", koko=118, vari=GOLD, vari2=GOLD), W / 2, 500, back(lt * 4 - 0.15) * (1 + 0.02 * math.sin(gt * 6)))
-        paste_c(base, iso_teksti("ARVOINEN", koko=118, vari=WHITE, vari2=WHITE), W / 2, 640, back(lt * 4 - 0.3))
-        paste_c(base, postaus("Liisa K.", "Totta.", 31, sydan=4, aika="1 min"), W / 2, 960, back(lt * 3 - 0.5))
-        if lt > 1.0: paste_c(base, pill("= 1 ARPA", M9(60), NAVY, GOLD + (255,), 44, 24), W / 2 + 250, 1160, back((lt - 1.0) * 4))
+        # koukku: raha edellä – yksi sana voi tuoda 1000 €
+        hehku = Image.new("RGBA", (900, 520), (0, 0, 0, 0)); ImageDraw.Draw(hehku).ellipse((60, 60, 840, 460), fill=GOLD + (70,))
+        paste_c(base, hehku.filter(ImageFilter.GaussianBlur(70)), W / 2, 560, back(lt * 3))
+        paste_c(base, iso_teksti("TÄMÄ YKSI SANA VOI TUODA", koko=78, vari=WHITE, vari2=WHITE), W / 2, 300, back(lt * 4))
+        paste_c(base, iso_teksti("1000\u00a0€", koko=300, vari=GOLD, vari2=GOLD), W / 2, 560, back(lt * 4 - 0.1) * (1 + 0.035 * math.sin(gt * 7)))
+        for k, (x, y) in enumerate([(120, 830), (960, 800), (300, 880), (790, 875)]):
+            if lt > 0.3 + k * 0.12: paste_c(base, text_img("€", ANTON(110 - k * 12), GOLD), x, y + 18 * math.sin(gt * 3 + k), back((lt - 0.3 - k * 0.12) * 4))
+        paste_c(base, postaus("Liisa K.", "Totta.", 31, sydan=4, aika="1 min"), W / 2, 1040, back(lt * 3 - 0.5) * 0.86)
+        if lt > 0.9: paste_c(base, pill("= 1 ARPA", M9(60), NAVY, GOLD + (255,), 44, 24), W / 2 + 250, 1230, back((lt - 0.9) * 4))
         return
     if si == 8:
         # jokainen kirjoitus = arpa: kommentit liukuvat sisään ja arpalaskuri kasvaa
