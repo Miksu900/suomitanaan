@@ -239,10 +239,18 @@
     var A = $("#fp-arvonta"); if (!A) return;
     api("arvonta").then(function (j) {
       if (!j || !j.kaynnissa) { A.innerHTML = ""; return; }
-      var la = j.arvonnat, otsikko = "Arvomme " + la.map(function (a) { return a.lyhyt + " (" + a.arvontaPv.replace(/\.20\d\d$/, ".") + ")"; }).join(" ja ") + (la.length > 1 ? " – 500 € voi ottaa myös rahana" : " K-ryhmän lahjakorttina");
-      var omat = la[0].omat, oma = j.yllapitaja ? "Ylläpitäjänä et osallistu." : omat === null ? "Kirjaudu ja kirjoita, niin olet mukana." : "Sinulla on nyt <b>" + omat + " " + (omat === 1 ? "arpa" : "arpaa") + "</b>" + (la.length > 1 ? " kumpaankin arvontaan" : "") + ".";
-      A.innerHTML = '<div class="arvonta"><span class="arv-ik" aria-hidden="true">🎁</span><div><b>' + esc(otsikko) + "</b>" +
-        "<p>Jokainen kirjoitus ja kommentti on arpa (enintään " + j.maxPv + " päivässä). Mitä ahkerammin kirjoitat, sitä paremmat mahdollisuudet. " + oma + ' <a href="/arvonta/">Säännöt</a></p></div></div>';
+      var kk = j.arvonnat.filter(function (a) { return !a.tasot; })[0], iso = j.arvonnat.filter(function (a) { return a.tasot; })[0];
+      var omat = j.arvonnat[0].omat, oma = j.yllapitaja ? "Ylläpitäjänä et osallistu." : omat === null ? "Kirjaudu ja kirjoita, niin olet mukana." : "Sinulla on nyt <b>" + omat + " " + (omat === 1 ? "arpa" : "arpaa") + "</b>.";
+      var h = '<div class="arvonta"><span class="arv-ik" aria-hidden="true">🎁</span><div>';
+      if (kk) h += "<b>Arvomme 100 € K-ryhmän lahjakortin " + esc(kk.arvontaPv.replace(/\.20\d\d$/, ".")) + "</b>";
+      h += "<p>Jokainen kirjoitus ja kommentti on arpa (enintään " + j.maxPv + " päivässä). " + oma + ' <a href="/arvonta/">Säännöt</a></p>';
+      if (iso) {
+        var max = iso.tasot[iso.tasot.length - 1].min, pros = Math.min(100, 100 * iso.kayttajia / max);
+        h += '<div class="iso-arv"><b>Iso arvonta ' + esc(iso.arvontaPv.replace(/\.20\d\d$/, ".")) + ": nyt " + iso.nyt + " €</b>" +
+          '<span class="mittari" role="img" aria-label="' + iso.kayttajia + " / " + max + ' käyttäjää"><i style="width:' + pros.toFixed(1) + '%"></i></span>' +
+          "<small>Meitä on " + iso.kayttajia + " / " + max + "." + (iso.seuraava ? " Kun meitä on " + iso.seuraava.min + ", palkinto nousee " + iso.seuraava.summa + " euroon." : "") + " Kutsu kaverit mukaan!</small></div>";
+      }
+      A.innerHTML = h + "</div></div>";
     });
   }
   function lataaSyote(lisaa) {

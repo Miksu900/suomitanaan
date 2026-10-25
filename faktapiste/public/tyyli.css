@@ -266,3 +266,8 @@ a.nappi{text-decoration:none;display:inline-block}
 .arvonta{display:flex;gap:12px;align-items:flex-start;background:var(--yel-soft);border:1px solid var(--yel);border-radius:16px;padding:12px 14px;margin-bottom:12px}
 .arvonta .arv-ik{font-size:1.6rem;line-height:1}
 .arvonta b{display:block}.arvonta p{margin:2px 0 0;font-size:.92rem}.arvonta a{font-weight:700}
+.iso-arv{margin-top:10px;padding-top:10px;border-top:1px dashed var(--yel)}
+.iso-arv small{display:block;font-size:.85rem;margin-top:4px}
+.mittari{display:block;height:10px;border-radius:99px;background:rgba(0,0,0,.08);overflow:hidden;margin-top:6px}
+.mittari i{display:block;height:100%;background:var(--yel);min-width:4px}
+@media (prefers-color-scheme:dark){.mittari{background:rgba(255,255,255,.12)}}
