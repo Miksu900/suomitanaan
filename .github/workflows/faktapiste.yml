@@ -65,6 +65,7 @@ jobs:
             echo '[assets]'
             echo 'directory = "./public"'
             echo 'binding = "ASSETS"'
+            echo 'run_worker_first = true'
             echo 'not_found_handling = "404-page"'
             echo '[[durable_objects.bindings]]'
             echo 'name = "FP"'
