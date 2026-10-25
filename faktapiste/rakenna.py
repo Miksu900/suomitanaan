@@ -9,7 +9,7 @@ ROOT = pathlib.Path(__file__).parent / "public"
 SITE = os.environ.get("FAKTAPISTE_URL", "https://faktapiste.fi")
 PV = os.environ.get("PYKALAVAHTI_URL", "https://pykalavahti.fi")
 YHTEYS = "miika@eduskuntaseuranta.fi"
-VER = "51"
+VER = "52"
 esc = html.escape
 
 # avain, nimi, osoite, iskulause, kuvaus, merkki, poliittinen
@@ -61,7 +61,7 @@ def kortti(p, iso=False):
 
 def sivu(polku, otsikko, kuvaus, runko, noindex=False):
     can = SITE + polku
-    nav = [("/", "Keskustelu"), ("/palvelut/", "Palvelut"), ("/tietoa/", "Tietoa")]
+    nav = [("/", "Etusivu / Keskustelu"), ("/palvelut/", "Palvelut"), ("/tietoa/", "Tietoa")]
     navh = "".join(f'<a href="{h}"{" aria-current=\"page\"" if h == polku else ""}>{t}</a>' for h, t in nav)
     vuosi = datetime.date.today().year
     tili = '<span id="fp-tili"></span>' if polku == "/" else ""
@@ -86,7 +86,7 @@ def sivu(polku, otsikko, kuvaus, runko, noindex=False):
 <main id="sisalto">{runko}</main>
 <footer class="ft"><div class="w">{LOGO}
 <p>Faktapiste on suomalainen keskustelupalvelu, jossa sinut nähdään. Keskustelun tukena ovat ilmaiset palvelut, jotka perustuvat julkisiin lähteisiin: poliisin lupatietoihin, Finlexiin, eduskunnan avoimeen dataan ja uutismedian otsikoihin.</p>
-<p><a href="/">Keskustelu</a> · <a href="/palvelut/">Palvelut</a> · <a href="/tietoa/">Tietoa, säännöt ja tietosuoja</a> · <span class="mono">{YHTEYS}</span></p>
+<p><a href="/">Etusivu / Keskustelu</a> · <a href="/palvelut/">Palvelut</a> · <a href="/tietoa/">Tietoa, säännöt ja tietosuoja</a> · <span class="mono">{YHTEYS}</span></p>
 <p class="mute">© {vuosi} Faktapiste</p></div></footer>
 </body></html>"""
 
