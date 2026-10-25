@@ -119,10 +119,11 @@ header.top{{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px s
 .osio{{padding:56px 0}}
 .osio h2{{font-size:clamp(1.5rem,4vw,2rem);text-align:center;margin-bottom:1em}}
 .ruudut{{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}}
-.kortti{{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px}}
+.kortti{{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;display:flex;flex-wrap:wrap;align-items:center;gap:0 12px}}
+.kortti h3,.kortti p{{flex-basis:100%}}
 .kortti h3{{font-size:1.15rem}}.kortti p{{color:var(--mute);margin:0 0 10px}}
 .kortti .hinta{{font-weight:800;color:var(--p);font-size:1.1rem}}
-.kortti .osta{{display:inline-block;margin-top:10px;background:var(--pehmea);color:var(--p2);font-weight:700;text-decoration:none;padding:8px 16px;border-radius:9px}}
+.kortti .osta{{display:inline-block;margin:10px 0 0 auto;background:var(--pehmea);color:var(--p2);font-weight:700;text-decoration:none;padding:8px 16px;border-radius:9px}}
 .kaksi{{display:grid;gap:36px;grid-template-columns:1fr 1fr;align-items:start}}
 @media(max-width:720px){{.kaksi{{grid-template-columns:1fr}}}}
 .edut{{list-style:none;padding:0;margin:0;display:grid;gap:12px}}
