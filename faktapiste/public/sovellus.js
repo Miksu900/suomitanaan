@@ -243,6 +243,7 @@
       var omat = j.arvonnat[0].omat, oma = j.yllapitaja ? "Ylläpitäjänä et osallistu." : omat === null ? "Kirjaudu ja kirjoita, niin olet mukana." : "Sinulla on nyt <b>" + omat + " " + (omat === 1 ? "arpa" : "arpaa") + "</b>.";
       var h = '<div class="arvonta"><span class="arv-ik" aria-hidden="true">🎁</span><div>';
       if (kk) h += "<b>Arvomme 100 € rahana tai lahjakorttina " + esc(kk.arvontaPv.replace(/\.20\d\d$/, ".")) + "</b>";
+      else if (iso) h += "<b>Arvomme jopa 1000 € rahana tai lahjakorttina " + esc(iso.arvontaPv.replace(/\.20\d\d$/, ".")) + "</b>";
       h += "<p>Jokainen kirjoitus ja kommentti on arpa, ja kaverin kutsusta saat " + (j.kutsuArvat || 10) + " lisäarpaa. " + oma + "</p>";
       if (iso) {
         var max = iso.seuraava ? iso.seuraava.min : iso.tasot[iso.tasot.length - 1].min, pros = Math.min(100, 100 * iso.kayttajia / max);
@@ -421,7 +422,7 @@
         (navigator.share ? '<button type="button" data-muujako="' + url + '">Muu sovellus…</button>' : "") + "</div>");
     }
     else if (d.kutsujako) {
-      var ku = d.kutsujako, kt = "Liity Faktapisteeseen! Siellä jokainen kirjoitus näytetään vähintään 30 ihmiselle, ja jokainen kirjoitus on arpa: 100 € joka kuukausi rahana tai lahjakorttina.";
+      var ku = d.kutsujako, kt = "Liity Faktapisteeseen! Siellä jokainen kirjoitus näytetään vähintään 30 ihmiselle, ja jokainen kirjoitus on arpa: 1.12. arvotaan jopa 1000 € rahana tai lahjakorttina.";
       if (navigator.share) navigator.share({ text: kt, url: ku }).catch(function () {});
       else if (navigator.clipboard) navigator.clipboard.writeText(kt + " " + ku).then(function () { ilmoitus("Kutsu kopioitu. Liitä se viestiin."); });
       else prompt("Kopioi kutsu:", kt + " " + ku);

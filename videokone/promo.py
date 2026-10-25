@@ -289,7 +289,6 @@ def kohtaus(base, si, lt, gt):
             dl.text((60, y), kuka, font=M8(42), fill=WHITE, anchor="lm"); dl.text((800, y), summa.replace(" ", "\u00a0"), font=M9(46), fill=GOLD if r == 2 else (GREY if r == 3 else WHITE), anchor="rm")
         paste_c(base, laatikko, W / 2, 700, back(lt * 3 - 0.4))
         paste_c(base, pill("Jokainen kirjoitus = arpa", M9(52), NAVY, (255, 255, 255, 255), 40, 22), W / 2, 1000, back(lt * 3 - 0.7))
-        paste_c(base, text_img("+ 100\u00a0€ joka kuukausi", M8(46), WHITE), W / 2, 1120, back(lt * 3 - 0.9))
         paste_c(base, pill("Kutsu kaveri = +10 arpaa", M9(50), NAVY, GOLD, 36, 20), W / 2, 1240, back(lt * 3 - 1.1))
         paste_c(base, text_img("Lue säännöt: faktapiste.fi/arvonta", M8(42), WHITE), W / 2, 1365, back(lt * 3 - 1.3))
         return

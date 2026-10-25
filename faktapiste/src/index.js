@@ -19,17 +19,12 @@ const isot = n => n.toLowerCase().replace(/(^|[\s-])([a-zåäöüé])/g, (m, a, 
 const PITUUS = 100000; // käytännössä rajaton, suojaa vain tietokantaa
 // Arvonnat aktiivisten kirjoittajien kesken (säännöt: /arvonta/). Arpa = oma kirjoitus tai kommentti.
 const ARVONNAT = [
-  { kausi: "2026-11", alku: Date.parse("2026-10-25T00:00:00+03:00"), loppu: Date.parse("2026-11-30T23:59:59+02:00"),
-    palkinto: "100 euroa rahana tai lahjakorttina haluamaasi kauppaan", lyhyt: "100 €", valinta: true, arvontaPv: "1.12.2026", vero: "30 €, joka lasketaan yhteen ison arvonnan arpajaisveron kanssa (joulukuun arpajaisvero; jos isoa palkintoa ei arvota, alle 50 €:n rajan eikä ilmoiteta): ilmoita ja maksa OmaVerossa viimeistään 12.2.2027" },
-  { kausi: "2026-12", alku: Date.parse("2026-12-01T00:00:00+02:00"), loppu: Date.parse("2026-12-31T23:59:59+02:00"),
-    palkinto: "100 euroa rahana tai lahjakorttina haluamaasi kauppaan", lyhyt: "100 €", valinta: true, arvontaPv: "1.1.2027", vero: "30 € (alle 50 €:n kuukausirajan, ei ilmoiteta)" },
-  { kausi: "2027-01", alku: Date.parse("2027-01-01T00:00:00+02:00"), loppu: Date.parse("2027-01-31T23:59:59+02:00"),
-    palkinto: "100 euroa rahana tai lahjakorttina haluamaasi kauppaan", lyhyt: "100 €", valinta: true, arvontaPv: "1.2.2027", vero: "30 € (alle 50 €:n kuukausirajan, ei ilmoiteta)" },
+  // Kuukausittaiset 100 €:n arvonnat poistettiin 25.10.2026 klo 16.
   { kausi: "suuri-2026-11", alku: Date.parse("2026-10-25T00:00:00+03:00"), loppu: Date.parse("2026-11-30T23:59:59+02:00"),
     palkinto: "jopa 1000 euroa rahana tai lahjakorttina haluamaasi kauppaan", lyhyt: "jopa 1000 €", valinta: true, arvontaPv: "1.12.2026",
     // Palkinto kasvaa käyttäjämäärän mukaan (omalla nimellä rekisteröityneet, ei suljettuja tilejä), laskettu arvontahetkellä.
     // Muutettu 25.10.2026: alle 500 käyttäjällä isoa palkintoa ei arvota.
-    tasot: [{ min: 0, summa: 0 }, { min: 500, summa: 250 }, { min: 1000, summa: 500 }, { min: 5000, summa: 1000 }], muuVero: 30, veroKk: "joulukuun", veroPv: "12.2.2027", muuKuvaus: "marraskuun 100 €:n" },
+    tasot: [{ min: 0, summa: 0 }, { min: 500, summa: 250 }, { min: 1000, summa: 500 }, { min: 5000, summa: 1000 }], veroKk: "joulukuun", veroPv: "12.2.2027" },
 ];
 const ARPA = { minPituus: 0, vali: 30e3, kutsuArvat: 10, kutsuPaivat: 2, kutsuHalytys: 20 };
 // Suomen aikaa: päivämäärä (YYYY-MM-DD) ja päivän alku/loppu millisekunteina
@@ -724,7 +719,7 @@ export class Faktapiste extends DurableObject {
       for (const o of l) { if (x < o.arvat) { voittaja = o; break; } x -= o.arvat; }
       const ta = a.tasot ? this.taso(a, this.kayttajia()) : null;
       const palkinto = ta ? `${ta.summa} euroa rahana tai lahjakorttina voittajan valitsemaan kauppaan` : a.palkinto;
-      const vero = ta ? `${Math.round(ta.summa * 0.3)} € arpajaisveroa (${this.kayttajia()} käyttäjää → ${ta.summa} €). ${a.veroKk || ""} arpajaisvero yhteensä ${Math.round(ta.summa * 0.3) + (a.muuVero || 0)} € ${a.muuKuvaus || "kuukausiarvonnan"} kanssa: ilmoita ja maksa OmaVerossa viimeistään ${a.veroPv || ""}` : a.vero;
+      const vero = ta ? `${Math.round(ta.summa * 0.3)} € arpajaisveroa (${this.kayttajia()} käyttäjää → ${ta.summa} €). Ilmoita ja maksa ${a.veroKk || ""} arpajaisvero OmaVerossa viimeistään ${a.veroPv || ""}` : a.vero;
       const tulos = { kausi: a.kausi, uusinta: hylatyt.size || undefined, summa: ta ? ta.summa : null, voittaja: voittaja.nimi, arvat: voittaja.arvat, osallistujia: l.length, arvoja: yht, aika: new Date().toISOString() };
       this.sql.exec("INSERT INTO asetukset VALUES(?,?)", avain, JSON.stringify(tulos));
       await telegram(this.env, `🎁 Faktapisteen arvonta (${ta ? ta.summa + " €" : a.lyhyt}, ${a.kausi}): voittaja ${voittaja.nimi} (${voittaja.email}), ${voittaja.arvat}/${yht} arpaa, ${l.length} osallistujaa.\n` +
