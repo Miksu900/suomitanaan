@@ -132,6 +132,11 @@ def etusivu():
 <a class="nappi iso" href="#yhteys">Aloita nyt</a>
 </div></div></section>
 
+<section class="osio"><div class="w teksti" style="text-align:center"><h2>Verkkokauppa ja maksut</h2>
+<p style="max-width:58ch;margin:0 auto">Verkkokaupassa asiakas voi maksaa tilauksensa suoraan sivuilla. Pyydä maksupalvelun liittäminen kauppaasi itse, niin me integroimme sen. Maksupalvelun kulut ovat erikseen. Ehdotamme sinulle sopivan palvelun.Isommat verkkokaupat räätälöidään, pyydä tarjous.</p>
+<p style="margin-top:20px"><a class="nappi" href="mailto:{esc(YHTEYS)}?subject=Netvo%20-%20maksupalvelun%20integrointi%20verkkokauppaan">Pyydä maksupalvelu</a></p>
+</div></section>
+
 <section class="osio reilu"><div class="w"><h2>Reilut ehdot – ei loukkua</h2>
 <p style="text-align:center;color:#d4d6db;max-width:52ch;margin:0 auto">Moni "ilmainen sivu" -palvelu sitoo asiakkaan loukkuun. Me teemme toisin. Reiluus on lupauksemme.</p>
 <div class="ruudut">
