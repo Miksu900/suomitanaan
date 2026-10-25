@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
-          for u in "" sahkosopimusvertailu osamaksulaskuri vuokratuottolaskuri; do
+          for u in perintoverolaskuri lahjaverolaskuri varainsiirtoverolaskuri alv-laskuri kotitalousvahennys kilometrikorvaus; do
             URL="https://faktapiste.fi/laskurit/${u:+$u/}"
             H=$(curl -sS "$URL")
             CODE=$(curl -sS -o /dev/null -w '%{http_code}' "$URL")
