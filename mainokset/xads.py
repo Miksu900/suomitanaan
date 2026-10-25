@@ -293,6 +293,11 @@ if __name__ == "__main__":
             ilmoita("Julkaisu", f"{t['id']} {t['aika']} {t['teksti'][:200]}")
     elif toiminto == "mainosta":
         mainosta(json.loads(os.environ.get("ASETUKSET") or "{}"))
+    elif toiminto == "poista":
+        # Poistaa kampanjan pysyvästi (vain omistajan luvalla).
+        tili, kid = sys.argv[2], sys.argv[3]
+        v = kutsu(f"/accounts/{tili}/campaigns/{kid}", {}, "DELETE")
+        ilmoita("Poisto", json.dumps(v.get("data", v), ensure_ascii=False)[:1500])
     elif toiminto == "pysayta":
         tili, kid = sys.argv[2], sys.argv[3]
         v = kutsu(f"/accounts/{tili}/campaigns/{kid}", {"entity_status": "PAUSED"}, "PUT")
