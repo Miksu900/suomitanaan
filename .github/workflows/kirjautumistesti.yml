@@ -14,6 +14,8 @@ jobs:
           const virheet = []; p.on("pageerror", e => virheet.push("JS: " + e.message)); p.on("console", m => { if (m.type() === "error") virheet.push("console: " + m.text()); });
           const vastaukset = []; p.on("response", r => { if (r.url().includes("/api/")) vastaukset.push(r.status() + " " + r.url().replace("https://faktapiste.fi", "")); });
           await p.goto("https://faktapiste.fi/", { waitUntil: "networkidle" });
+          console.log("Valikko:", await p.$eval(".hd nav a", a => a.textContent));
+          const h = await p.request.get("https://faktapiste.fi/"); console.log("Etusivu-otsakkeet:", JSON.stringify({ cc: h.headers()["cache-control"], cf: h.headers()["cf-cache-status"], age: h.headers()["age"] }));
           const nappi = await p.$("[data-kirjaudu]"); console.log("Kirjaudu-nappi:", !!nappi, nappi ? await nappi.isVisible() : "");
           if (nappi) { await nappi.click(); await p.waitForTimeout(800);
             console.log("Dialogi auki:", await p.$eval("#fp-kirjaudu", d => d.open));
