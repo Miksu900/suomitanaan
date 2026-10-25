@@ -253,8 +253,8 @@
       A.innerHTML = h + '<div class="kutsu-arv" id="fp-kutsuarv"></div><a class="arv-saannot" href="/arvonta/">Lue säännöt →</a></div></div>';
       if (tila.mina && tila.mina.nimiOk && !j.yllapitaja) api("kutsulinkki").then(function (k) {
         var K = $("#fp-kutsuarv"); if (!K || !k || !k.url) return;
-        K.innerHTML = "<b>Kutsu kaverit: +" + k.arvatPerKaveri + " arpaa jokaisesta</b><small>Saat lisäarvat, kun kaveri liittyy linkilläsi ja kirjoittaa. " +
-          (k.kutsutut ? "Olet kutsunut " + k.kutsutut + ", joista " + k.kirjoittaneet + " on kirjoittanut." : "") + "</small>" +
+        K.innerHTML = "<b>Kutsu kaverit: +" + k.arvatPerKaveri + " arpaa jokaisesta</b><small>Saat lisäarvat, kun kaveri liittyy linkilläsi ja kirjoittaa kahtena eri päivänä. Kavereiden määrää ei ole rajoitettu. " +
+          (k.kutsutut ? "Olet kutsunut " + k.kutsutut + ", joista " + k.kirjoittaneet + " on jo tuonut sinulle arvat." : "") + "</small>" +
           '<div class="rivi"><input readonly value="' + esc(k.url) + '" aria-label="Oma kutsulinkki"><button type="button" class="nappi" data-kutsujako="' + esc(k.url) + '">Jaa</button></div>';
       });
     });

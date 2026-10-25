@@ -30,7 +30,7 @@ const ARVONNAT = [
     // Palkinto kasvaa käyttäjämäärän mukaan (omalla nimellä rekisteröityneet, ei suljettuja tilejä), laskettu arvontahetkellä.
     tasot: [{ min: 0, summa: 100 }, { min: 250, summa: 250 }, { min: 1000, summa: 500 }, { min: 5000, summa: 1000 }], muuVero: 30 },
 ];
-const ARPA = { minPituus: 20, vali: 30e3, kutsuArvat: 10, kutsuMax: 10 };
+const ARPA = { minPituus: 20, vali: 30e3, kutsuArvat: 10, kutsuPaivat: 2, kutsuHalytys: 20 };
 // Suomen aikaa: päivämäärä (YYYY-MM-DD) ja päivän alku/loppu millisekunteina
 const fiPv = ms => new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Helsinki" }).format(new Date(ms));
 function fiPaiva(pv) {
@@ -440,7 +440,10 @@ export class Faktapiste extends DurableObject {
     if (req) await this.jalki(req, minä.id);
     if (!minä.nimiOk && d.suosittelija) {
       const k = this.yksi("SELECT kayttaja FROM omakutsu WHERE koodi=?", String(d.suosittelija).toLowerCase().slice(0, 12));
-      if (k && k.kayttaja !== minä.id) this.sql.exec("INSERT OR IGNORE INTO suositukset VALUES(?,?,?)", minä.id, k.kayttaja, nyt());
+      if (k && k.kayttaja !== minä.id) {
+        this.sql.exec("INSERT OR IGNORE INTO suositukset VALUES(?,?,?)", minä.id, k.kayttaja, nyt());
+        await this.kutsuHalytys(k.kayttaja);
+      }
     }
     if (!minä.nimiOk) {
       const yht = this.yksi("SELECT COUNT(*) AS n FROM kayttajat WHERE nimi IS NOT NULL").n;
@@ -566,14 +569,14 @@ export class Faktapiste extends DurableObject {
         AND NOT EXISTS (SELECT 1 FROM arpahylkays h WHERE h.kayttaja=p.kayttaja AND h.kausi IS NULL AND p.luotu BETWEEN h.alku AND h.loppu)
       GROUP BY p.kayttaja`, ARPA.minPituus, a.alku, a.loppu, ARPA.minPituus, ARPA.vali)
       .filter(r => !onAdmin(r.email));
-    // Kutsubonus: 10 arpaa jokaisesta kaverista, joka liittyi kauden aikana kutsulinkillä ja kirjoitti kauden aikana (enintään 10 kaveria kaudessa).
-    const bonus = new Map(this.kaikki(`SELECT s.kutsuja, MIN(COUNT(DISTINCT s.kutsuttu), ?) AS n FROM suositukset s JOIN kayttajat k ON k.id=s.kutsuttu
+    // Kutsubonus: 10 arpaa jokaisesta kaverista, joka liittyi kauden aikana kutsulinkillä ja kirjoitti kauden aikana vähintään kahtena eri päivänä. Ei ylärajaa.
+    const bonus = new Map(this.kaikki(`SELECT s.kutsuja, COUNT(DISTINCT s.kutsuttu) AS n FROM suositukset s JOIN kayttajat k ON k.id=s.kutsuttu
       WHERE k.esto=0 AND k.nimi IS NOT NULL AND s.luotu BETWEEN ? AND ?
-        AND EXISTS (SELECT 1 FROM postit p WHERE p.kayttaja=s.kutsuttu AND p.piilotettu=0 AND length(p.teksti) >= ? AND p.luotu BETWEEN ? AND ?)
+        AND (SELECT COUNT(DISTINCT date(p.luotu / 1000, 'unixepoch', '+2 hours')) FROM postit p WHERE p.kayttaja=s.kutsuttu AND p.piilotettu=0 AND length(p.teksti) >= ? AND p.luotu BETWEEN ? AND ?) >= ?
         AND NOT EXISTS (SELECT 1 FROM jaljet j1 JOIN jaljet j2 ON j2.tyyppi='laite' AND j2.tunniste=j1.tunniste WHERE j1.tyyppi='laite' AND j1.kayttaja=s.kutsuttu AND j2.kayttaja=s.kutsuja)
         AND NOT EXISTS (SELECT 1 FROM suositukset s2 JOIN jaljet j1 ON j1.kayttaja=s2.kutsuttu AND j1.tyyppi='laite' JOIN jaljet j2 ON j2.kayttaja=s.kutsuttu AND j2.tyyppi='laite' AND j2.tunniste=j1.tunniste
           WHERE s2.kutsuja=s.kutsuja AND s2.kutsuttu<s.kutsuttu)
-      GROUP BY s.kutsuja`, ARPA.kutsuMax, a.alku, a.loppu, ARPA.minPituus, a.alku, a.loppu).map(r => [r.kutsuja, r.n]));
+      GROUP BY s.kutsuja`, a.alku, a.loppu, ARPA.minPituus, a.alku, a.loppu, ARPA.kutsuPaivat).map(r => [r.kutsuja, r.n]));
     for (const r of l) { r.kutsut = bonus.get(r.kayttaja) || 0; r.arvat += r.kutsut * ARPA.kutsuArvat; bonus.delete(r.kayttaja); }
     // kutsuja, joka ei itse ole kirjoittanut kaudella, saa silti kutsuarpansa
     for (const [kid, n] of bonus) {
@@ -593,9 +596,25 @@ export class Faktapiste extends DurableObject {
       }
     }
     const kutsutut = this.yksi("SELECT COUNT(*) AS n FROM suositukset s JOIN kayttajat k ON k.id=s.kutsuttu WHERE s.kutsuja=? AND k.esto=0", minä.id).n;
-    const kirjoittaneet = this.yksi(`SELECT COUNT(*) AS n FROM suositukset s WHERE s.kutsuja=? AND EXISTS
-      (SELECT 1 FROM postit p WHERE p.kayttaja=s.kutsuttu AND p.piilotettu=0 AND length(p.teksti) >= ?)`, minä.id, ARPA.minPituus).n;
+    const kirjoittaneet = this.yksi(`SELECT COUNT(*) AS n FROM suositukset s WHERE s.kutsuja=? AND
+      (SELECT COUNT(DISTINCT date(p.luotu / 1000, 'unixepoch', '+2 hours')) FROM postit p WHERE p.kayttaja=s.kutsuttu AND p.piilotettu=0 AND length(p.teksti) >= ?) >= ?`, minä.id, ARPA.minPituus, ARPA.kutsuPaivat).n;
     return { koodi: r.koodi, url: "https://faktapiste.fi/?k=" + r.koodi, kutsutut, kirjoittaneet, arvatPerKaveri: ARPA.kutsuArvat };
+  }
+  // Ilmoitus ylläpitäjälle, kun joku on kutsunut 20, 40, 60... kaveria: lista kutsutuista tarkistusta varten.
+  async kutsuHalytys(kid) {
+    try {
+      const n = this.yksi("SELECT COUNT(*) AS n FROM suositukset WHERE kutsuja=?", kid).n;
+      if (!n || n % ARPA.kutsuHalytys !== 0) return;
+      const kutsuja = this.yksi("SELECT nimi, luotu FROM kayttajat WHERE id=?", kid) || {};
+      const lista = this.kaikki(`SELECT k.id, k.nimi, k.luotu, (SELECT COUNT(*) FROM postit p WHERE p.kayttaja=k.id AND p.piilotettu=0 AND length(p.teksti) >= ?) AS kirj,
+          EXISTS (SELECT 1 FROM jaljet j1 JOIN jaljet j2 ON j2.tyyppi=j1.tyyppi AND j2.tunniste=j1.tunniste WHERE j1.kayttaja=k.id AND j2.kayttaja=? AND j1.tyyppi='ip') AS verkko
+        FROM suositukset s JOIN kayttajat k ON k.id=s.kutsuttu WHERE s.kutsuja=? ORDER BY s.luotu DESC LIMIT 25`, ARPA.minPituus, kid, kid);
+      const verkossa = lista.filter(r => r.verkko).length, hiljaiset = lista.filter(r => !r.kirj).length;
+      await telegram(this.env, `👥 ${kutsuja.nimi || "Käyttäjä"} (tili #${kid}) on kutsunut nyt ${n} kaveria Faktapisteeseen.\n` +
+        `Viimeisimmät ${lista.length}: ${hiljaiset} ei ole vielä kirjoittanut, ${verkossa} samasta verkosta kuin kutsuja.\n` +
+        lista.slice(0, 15).map(r => `– ${r.nimi || "(ei nimeä)"} #${r.id}, ${r.kirj} kirjoitusta${r.verkko ? ", sama verkko" : ""}`).join("\n") +
+        `\n\nJos kutsutut näyttävät oikeilta ihmisiltä, älä tee mitään. Valetileistä voit hylätä kutsujan kauden arvat GitHubissa "Arpojen tarkistus" (toiminto=kausi, kayttaja=${kid}).`);
+    } catch {}
   }
   kayttajia() { return this.yksi("SELECT COUNT(*) AS n FROM kayttajat WHERE nimi IS NOT NULL AND esto=0").n; }
   taso(a, n) { return a.tasot ? a.tasot.filter(x => n >= x.min).at(-1) : null; }
