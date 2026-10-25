@@ -251,7 +251,7 @@ def kohtaus(base, si, lt, gt):
         paste_c(base, pill("Jokainen kirjoitus = arpa", M9(56), NAVY, (255, 255, 255, 255), 40, 24), W / 2, 1040, back(lt * 3 - 0.7))
         paste_c(base, text_img("+ 100 € lahjakortti joka kuukausi", M8(46), WHITE), W / 2, 1160, back(lt * 3 - 0.95))
         paste_c(base, pill("Kutsu kaveri = lisäarpoja molempiin", M9(42), NAVY, GOLD, 36, 20), W / 2, 1290, back(lt * 3 - 1.15))
-        paste_c(base, text_img("säännöt: faktapiste.fi/arvonta", M6(36), GREY), W / 2, 1410, back(lt * 3 - 1.3))
+        paste_c(base, text_img("Lue säännöt: faktapiste.fi/arvonta", M8(42), WHITE), W / 2, 1420, back(lt * 3 - 1.3))
         return
     if si == 5:
         ok = Image.new("RGBA", (200, 200), (0, 0, 0, 0)); dk = ImageDraw.Draw(ok); dk.ellipse((0, 0, 199, 199), fill=GOLD)
