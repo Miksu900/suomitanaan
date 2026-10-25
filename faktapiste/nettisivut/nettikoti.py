@@ -17,7 +17,7 @@ SAKKO_KK = 2
 def _demokortti(d):
     kauppa = d.get("tyyppi") == "kauppa"
     merkki = "Verkkokauppa" if kauppa else d["ala"]
-    return f"""<a class="malli" href="/netvo/mallit/{d['slug']}/" target="_blank" rel="noopener">
+    return f"""<a class="malli" href="/mallit/{d['slug']}/" target="_blank" rel="noopener">
 <span class="malli-kuva teema-{d.get('teema','sininen')}"><b>{esc(d['nimi'])}</b><i>{esc(d.get('slogan',''))}</i></span>
 <span class="malli-tieto"><span class="malli-ala">{esc(merkki)}</span>Katso malli →</span></a>"""
 
@@ -89,12 +89,12 @@ footer.jalka a{{color:#cfd0d4}}
 </style></head>
 <body>
 <header class="top"><div class="w">
-<a class="logo" href="/netvo/">Net<span>vo</span></a>
+<a class="logo" href="/">Net<span>vo</span></a>
 <a class="nappi" href="#yhteys">Ota yhteyttä</a>
 </div></header>
 {runko}
 <footer class="jalka"><p><b>Netvo</b> – valmiit nettisivut suomalaisille yrityksille.</p>
-<p>Yhteys: {esc(YHTEYS)} · <a href="/netvo/ehdot/">Sopimusehdot</a></p>
+<p>Yhteys: {esc(YHTEYS)} · <a href="/ehdot/">Sopimusehdot</a></p>
 <p>Netvo on osa Faktapisteen palveluita.</p></footer>
 </body></html>"""
 
@@ -140,7 +140,7 @@ def etusivu():
 <div class="r"><h3>Ei automaattista kallistumista</h3><p>Sitoutumisajan jälkeen sopimus ei muutu kalliimmaksi, vaan jatkuu samalla hinnalla kuukausi kerrallaan.</p></div>
 <div class="r"><h3>Selkeä hinta etukäteen</h3><p>Kerromme kaiken ennen kuin sitoudut mihinkään. Ei piilokuluja, ei pientä pränttiä.</p></div>
 </div>
-<p style="text-align:center;margin-top:24px"><a href="/netvo/ehdot/" style="color:#ffd24a;font-weight:700">Lue tarkat sopimusehdot →</a></p>
+<p style="text-align:center;margin-top:24px"><a href="/ehdot/" style="color:#ffd24a;font-weight:700">Lue tarkat sopimusehdot →</a></p>
 </div></section>
 
 <section class="osio" id="mallit"><div class="w"><h2>Katso mallisivut</h2>
@@ -188,7 +188,7 @@ def ehtosivu():
 <h2>7. Sopimuksen päättyminen</h2>
 <p>Sopimuksen päättyessä sivut poistetaan verkosta. Asiakas voi halutessaan pyytää sivujen sisällön itselleen. Verkkotunnus jää asiakkaalle.</p>
 <p style="color:var(--mute);margin-top:30px">Kysymyksiä ehdoista? Ota yhteyttä: {esc(YHTEYS)}</p>
-<p class="keskita"><a class="nappi" href="/netvo/">← Takaisin etusivulle</a></p>
+<p class="keskita"><a class="nappi" href="/">← Takaisin etusivulle</a></p>
 </div></section>"""
     return _sivu("Sopimusehdot – Netvo", "Netvo-palvelun selkeät ja reilut sopimusehdot: hinta, sitoutumisaika ja keskeytys.", runko)
 

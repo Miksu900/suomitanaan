@@ -70,6 +70,16 @@ export default {
   async fetch(req, env, ctx) {
     const u = new URL(req.url);
     if (u.hostname === "www.faktapiste.fi") return Response.redirect("https://faktapiste.fi" + u.pathname + u.search, 301);
+    if (u.hostname === "www.netvo.fi") return Response.redirect("https://netvo.fi" + u.pathname + u.search, 301);
+    if (u.hostname === "netvo.fi") {
+      const np = "/netvo" + (u.pathname === "/" ? "/" : u.pathname);
+      return env.ASSETS.fetch(new Request(u.origin + np + u.search));
+    }
+    // Vanha polku faktapiste.fi/netvo/* ohjataan kanoniseen netvo.fi:hin
+    if (u.hostname === "faktapiste.fi" && (u.pathname === "/netvo" || u.pathname.startsWith("/netvo/"))) {
+      const rest = u.pathname.replace(/^\/netvo/, "") || "/";
+      return Response.redirect("https://netvo.fi" + rest + u.search, 301);
+    }
     if (u.pathname === "/api/video" && req.method === "POST") return lataaVideo(req, env, u);
     if (u.pathname.startsWith("/api/")) return env.FP.get(env.FP.idFromName("main")).fetch(req);
     const jm = u.pathname.match(/^\/p\/(\d+)\/?$/);

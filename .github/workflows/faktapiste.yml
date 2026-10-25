@@ -29,6 +29,8 @@ jobs:
           echo "sub=$(curl "${h[@]}" "$API/accounts/$(curl "${h[@]}" "$API/accounts" | jq -r '.result[0].id')/workers/subdomain" | jq -r '.result.subdomain // empty')" >> $GITHUB_OUTPUT
           T=$(curl "${h[@]}" "$API/zones?name=faktapiste.fi" | jq -r '.result[0].status // "puuttuu"'); echo "tila=$T" >> $GITHUB_OUTPUT
           echo "::notice title=faktapiste.fi Cloudflaressa::$T"
+          N=$(curl "${h[@]}" "$API/zones?name=netvo.fi" | jq -r '.result[0].status // "puuttuu"'); echo "netvo=$N" >> $GITHUB_OUTPUT
+          echo "::notice title=netvo.fi Cloudflaressa::$N"
       - name: Sivut
         run: python3 faktapiste/rakenna.py
       - name: Julkaise
@@ -47,9 +49,15 @@ jobs:
             echo 'compatibility_date = "2026-09-01"'
             echo 'compatibility_flags = ["assets_navigation_has_no_effect"]'
             echo 'workers_dev = true'
+            R=""
             if [ "${{ steps.cf.outputs.tila }}" = "active" ]; then
-              echo 'routes = [ { pattern = "faktapiste.fi", custom_domain = true }, { pattern = "www.faktapiste.fi", custom_domain = true } ]'
+              R='{ pattern = "faktapiste.fi", custom_domain = true }, { pattern = "www.faktapiste.fi", custom_domain = true }'
             fi
+            if [ "${{ steps.cf.outputs.netvo }}" = "active" ]; then
+              if [ -n "$R" ]; then R="$R, "; fi
+              R="$R{ pattern = \"netvo.fi\", custom_domain = true }, { pattern = \"www.netvo.fi\", custom_domain = true }"
+            fi
+            if [ -n "$R" ]; then echo "routes = [ $R ]"; fi
             echo '[vars]'
             echo 'KIRJAUTUMINEN = "${{ vars.FP_KIRJAUTUMINEN || 'auki' }}"'
             echo '[triggers]'
@@ -72,8 +80,10 @@ jobs:
             '{ANTHROPIC_API_KEY:$a, BREVO_API_KEY:$b, TELEGRAM_BOT_TOKEN:$t, TG_CHAT:"1893930799", HALLINTA:$h, MSADS_CLIENT_SECRET:$ms}' > /tmp/s.json
           npx --yes wrangler@3.99.0 secret bulk /tmp/s.json; rm /tmp/s.json
           # Tyhjennä Cloudflaren välimuisti, jotta uudet sivut näkyvät heti (muuten vanha HTML voi jäädä reunavälimuistiin)
-          Z=$(curl -sS -H "Authorization: Bearer $CF" "$API/zones?name=faktapiste.fi" | jq -r '.result[0].id // empty')
-          if [ -n "$Z" ]; then P=$(curl -sS -X POST "$API/zones/$Z/purge_cache" -H "Authorization: Bearer $CF" -H "content-type: application/json" -d '{"purge_everything":true}'); echo "::notice title=Välimuisti::$(echo "$P" | jq -c '{success, errors}')"; fi
+          for ZN in faktapiste.fi netvo.fi; do
+            Z=$(curl -sS -H "Authorization: Bearer $CF" "$API/zones?name=$ZN" | jq -r '.result[0].id // empty')
+            if [ -n "$Z" ]; then P=$(curl -sS -X POST "$API/zones/$Z/purge_cache" -H "Authorization: Bearer $CF" -H "content-type: application/json" -d '{"purge_everything":true}'); echo "::notice title=Välimuisti $ZN::$(echo "$P" | jq -c '{success, errors}')"; fi
+          done
       - name: Savutesti
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -82,6 +92,7 @@ jobs:
           U=https://faktapiste.${{ steps.cf.outputs.sub }}.workers.dev
           HALLINTA=$(printf '%s' "$CLOUDFLARE_API_TOKEN-faktapiste" | sha256sum | cut -c1-40)
           echo "::notice title=Testi::workers.dev $(curl -s -o /dev/null -w '%{http_code}' $U/)  palvelut $(curl -s -o /dev/null -w '%{http_code}' $U/palvelut/)  faktapiste.fi $(curl -s -o /dev/null -w '%{http_code}' https://faktapiste.fi/ || true)"
+          echo "::notice title=Netvo::etusivu $(curl -s -o /dev/null -w '%{http_code}' https://netvo.fi/ || true)  ehdot $(curl -s -o /dev/null -w '%{http_code}' https://netvo.fi/ehdot/ || true)  malli $(curl -s -o /dev/null -w '%{http_code}' https://netvo.fi/mallit/parturi/ || true)"
           echo "::notice title=Linkkitesti::$(curl -s -o /dev/null -w '%{http_code} %{redirect_url}' -H 'Sec-Fetch-Mode: navigate' -H 'Sec-Fetch-Dest: document' -H 'Accept: text/html' 'https://faktapiste.fi/api/vahvista?t=testi')"
           echo "::notice title=Sisäänluku::$(curl -sS -X POST -H "x-avain: $HALLINTA" $U/api/hallinta/sisaanluku | head -c 600)"
           echo "::notice title=Tila::$(curl -sS -X POST -H "x-avain: $HALLINTA" $U/api/hallinta/tila | head -c 600)"

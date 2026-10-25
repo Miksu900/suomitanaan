@@ -75,7 +75,7 @@ def sivu(d, demo=True):
         ] if txt)
 
     demopalkki = ('<div class="demopalkki">Tämä on <b>mallisivu</b>. Oma sivustosi näyttää tältä sisällölläsi ja väreilläsi. '
-                  '<a href="/nettisivut/">Katso hinta ja ehdot →</a></div>') if demo else ""
+                  '<a href="/">Katso hinta ja ehdot →</a></div>') if demo else ""
 
     return f"""<!doctype html>
 <html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
