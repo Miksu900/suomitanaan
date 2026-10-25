@@ -1,0 +1,27 @@
+{
+  "koukku": "Kirjoitit hyvän postauksen.",
+  "arvonta": true,
+  "koukku500": true,
+  "kohtaukset": [
+    0,
+    2,
+    5,
+    6
+  ],
+  "lauseet": [
+    "Voita jopa tuhat euroa, kun kirjoitat mielipiteesi.",
+    "Faktapisteessä jokainen postaus näytetään ainakin kolmellekymmenelle ihmiselle.",
+    "Jokainen kirjoitus on arpa. Joka kuukausi arvotaan sata euroa, ja helmikuussa iso palkinto, joka kasvaa tuhanteen euroon, kun meitä on viisituhatta. Kutsu kaveri, niin saat kymmenen arpaa lisää.",
+    "Liity ilmaiseksi: faktapiste piste fi."
+  ],
+  "kuvateksti": "Voita jopa 1000 € kirjoittamalla! Faktapisteessä jokainen postaus näytetään ainakin 30 ihmiselle, ja jokainen kirjoitus on arpa. 100 € joka kuukausi ja helmikuussa iso palkinto: 100 €, 250 €, 500 € tai 1000 € sen mukaan, montako meitä on. Rahana tai lahjakorttina minne haluat. Kutsu kaveri = +10 arpaa. Säännöt: faktapiste.fi/arvonta. Suomalainen ja ilmainen, nyt betaversiona: faktapiste.fi",
+  "hashtagit": [
+    "faktapiste",
+    "suomi",
+    "some",
+    "arvonta",
+    "lahjakortti",
+    "suomalainen",
+    "fyp"
+  ]
+}

@@ -35,6 +35,8 @@ DUR = en[-1] / TEMPO + 2.2
 N = int(DUR * FPS)
 NS = len(LAUSEET)
 SC = sent_starts + [DUR]
+# kohtaukset: mikä kuva (0 koukku, 1 näkyvyys, 2 30 lukijaa, 3 nimet, 4 paikkakunta, 5 arvonta, 6 loppu) kullekin lauseelle
+KOHT = A.get("kohtaukset") or list(range(NS))
 print("lauseet", [round(x, 1) for x in sent_starts], "kesto", round(DUR, 1))
 
 # ---------- apurit ----------
@@ -205,6 +207,7 @@ def tabit(lt):
 
 def kohtaus(base, si, lt, gt):
     dur = SC[si + 1] - SC[si]
+    si = KOHT[si]  # lyhyessä versiossa lause voi käyttää minkä tahansa kohtauksen kuvaa
     if si == 0 and A.get("koukku500"):
         # koukku: raha heti ensimmäisessä kuvassa
         lahja = Image.new("RGBA", (260, 260), (0, 0, 0, 0)); dl = ImageDraw.Draw(lahja)
@@ -301,7 +304,7 @@ for f in ([int(float(x) * FPS) for x in PV.split(",")] if PV else range(N)):
     if out < 1:
         a = layer.getchannel("A").point(lambda v: int(v * out)); layer.putalpha(a)
     fr.alpha_composite(layer)
-    if si not in (2, NS - 1): fr.alpha_composite(TAG, (50, 90))
+    if KOHT[si] not in (2, 6) and si != NS - 1: fr.alpha_composite(TAG, (50, 90))
     fr.alpha_composite(LAHDE, (60, 1790))
     subtitle(fr, t)
     g = grain[f % 4]; fr = Image.composite(Image.new("RGBA", (W, H), (255, 255, 255, 255)), fr, g.point(lambda v: v // 3))
