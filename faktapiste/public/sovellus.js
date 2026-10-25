@@ -259,6 +259,11 @@
       });
     });
   }
+  function piirraTabit() {
+    TABIT.innerHTML = [["sinulle", "Sinulle"], ["seuratut", "Seuratut"], ["uusimmat", "Uusimmat"], ["lahella", tila.kunta ? "📍 " + tila.kunta : "📍 Lähellä"]].map(function (t) {
+      return '<button type="button" role="tab" aria-selected="' + (tila.tab === t[0]) + '" data-tab="' + t[0] + '">' + esc(t[1]) + "</button>"; }).join("") +
+      '<button type="button" class="saato-nappi" data-avaasaato aria-label="Säädä syötettä" title="Säädä syötettä">⚙</button>';
+  }
   function lataaSyote(lisaa) {
     if (tila.ladataan) return; tila.ladataan = true;
     if (!lisaa) { tila.sivu = 0; SYOTE.innerHTML = '<p class="lataa">Ladataan…</p>'; }
