@@ -219,6 +219,18 @@ def kohtaus(base, si, lt, gt):
         paste_c(base, postaus("Liisa K.", "Totta.", 31, sydan=4, aika="1 min"), W / 2, 1040, back(lt * 3 - 0.5) * 0.86)
         if lt > 0.9: paste_c(base, pill("= 1 ARPA", M9(60), NAVY, GOLD + (255,), 44, 24), W / 2 + 250, 1230, back((lt - 0.9) * 4))
         return
+    if si == 9:
+        # koukku: kuukauden päästä 1000 € voi olla sinun – ei kuukausien odotusta
+        hehku = Image.new("RGBA", (900, 520), (0, 0, 0, 0)); ImageDraw.Draw(hehku).ellipse((60, 60, 840, 460), fill=GOLD + (70,))
+        paste_c(base, hehku.filter(ImageFilter.GaussianBlur(70)), W / 2, 560, back(lt * 3))
+        paste_c(base, iso_teksti("KUUKAUDEN PÄÄSTÄ", koko=104, vari=WHITE, vari2=WHITE), W / 2, 300, back(lt * 4))
+        paste_c(base, iso_teksti("1000\u00a0€", koko=300, vari=GOLD, vari2=GOLD), W / 2, 560, back(lt * 4 - 0.1) * (1 + 0.035 * math.sin(gt * 7)))
+        paste_c(base, iso_teksti("VOI OLLA SINUN", koko=110, vari=WHITE, vari2=WHITE), W / 2, 820, back(lt * 4 - 0.25))
+        for k, (x, y) in enumerate([(110, 470), (970, 450), (150, 700), (940, 690)]):
+            if lt > 0.3 + k * 0.12: paste_c(base, text_img("€", ANTON(100 - k * 10), GOLD), x, y + 18 * math.sin(gt * 3 + k), back((lt - 0.3 - k * 0.12) * 4))
+        if lt > 0.8: paste_c(base, pill("ARVONTA JO 1.12.", M9(64), NAVY, GOLD + (255,), 48, 26), W / 2, 1040, back((lt - 0.8) * 4))
+        if lt > 1.2: paste_c(base, text_img("ei kuukausien odotusta", M8(48), WHITE), W / 2, 1170, back((lt - 1.2) * 4))
+        return
     if si == 8:
         # jokainen kirjoitus = arpa: kommentit liukuvat sisään ja arpalaskuri kasvaa
         paste_c(base, iso_teksti("Jokainen kirjoitus = arpa", koko=96, vari=WHITE, vari2=GOLD), W / 2, 330, back(lt * 3))
