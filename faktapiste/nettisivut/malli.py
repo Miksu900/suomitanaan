@@ -60,7 +60,7 @@ def sivu(d, demo=True):
                  '<p style="max-width:58ch;margin:0 auto">Rakennamme kaupan niin, että voit liittää minkä tahansa suomalaisen maksupalvelun, etkä ole sidottu meihin. '
                  'Maksupalvelun sopimus teet suoraan palveluntarjoajan kanssa, maksut menevät suoraan sinulle, ja maksupalvelun kulut maksat palveluntarjoajalle.</p>'
                  '<p style="max-width:58ch;margin:16px auto 0">Ylläpitoon kuuluu nopea hosting Suomessa, SSL, päivittäiset varmuuskopiot ja päivitykset, '
-                 'Tuki arkisin 9–16, vastaus 2 h. Sisältää 1 h pieniä muutoksia kuukaudessa ja yhden yhteyshenkilön.</p>'
+                 'Tuki arkisin 9–21, vastaus 2 h. Sisältää 1 h pieniä muutoksia kuukaudessa ja yhden yhteyshenkilön.</p>'
                  '<p style="max-width:58ch;margin:16px auto 0">Isommat verkkokaupat räätälöidään, pyydä tarjous.</p>'
                  f'<p style="margin-top:20px"><a class="nappi" href="mailto:info@netvo.fi?subject=Netvo%20-%20Kauppa%20K%C3%A4yntiin">Pyydä kauppa käyntiin</a></p>'
                  '</div></section>')
