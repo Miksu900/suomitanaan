@@ -257,10 +257,10 @@ def kohtaus(base, si, lt, gt):
         dl.rectangle((108, 64, 132, 228), fill=RED); dl.ellipse((62, 22, 118, 70), outline=RED, width=14); dl.ellipse((122, 22, 178, 70), outline=RED, width=14)
         paste_c(base, lahja, W / 2, 420, back(lt * 3) * (1 + 0.03 * math.sin(gt * 6)))
         paste_c(base, iso_teksti("Voita jopa 500\u00a0€", koko=124, vari=GOLD, vari2=GOLD), W / 2, 700, back(lt * 3 - 0.2))
-        paste_c(base, text_img("1.2. rahana tai lahjakorttina minne haluat", M8(40), WHITE), W / 2, 845, back(lt * 3 - 0.4))
-        paste_c(base, text_img("500\u00a0€, kun meitä on 1000", M6(38), GREY), W / 2, 905, back(lt * 3 - 0.5))
+        paste_c(base, text_img("rahana tai lahjakorttina minne haluat", M8(42), WHITE), W / 2, 845, back(lt * 3 - 0.4))
+        paste_c(base, text_img("1.2. · 500\u00a0€, kun meitä on 1000", M6(38), GREY), W / 2, 905, back(lt * 3 - 0.5))
         paste_c(base, pill("Jokainen kirjoitus = arpa", M9(56), NAVY, (255, 255, 255, 255), 40, 24), W / 2, 1040, back(lt * 3 - 0.7))
-        paste_c(base, text_img("+ 100\u00a0€ K-ryhmän lahjakortti joka kuukausi", M8(42), WHITE), W / 2, 1160, back(lt * 3 - 0.95))
+        paste_c(base, text_img("+ 100\u00a0€ joka kuukausi", M8(46), WHITE), W / 2, 1160, back(lt * 3 - 0.95))
         paste_c(base, pill("Kutsu kaveri = +10 arpaa", M9(50), NAVY, GOLD, 36, 20), W / 2, 1290, back(lt * 3 - 1.15))
         paste_c(base, text_img("Lue säännöt: faktapiste.fi/arvonta", M8(42), WHITE), W / 2, 1420, back(lt * 3 - 1.3))
         return
