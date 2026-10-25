@@ -75,11 +75,11 @@ jobs:
             echo 'new_sqlite_classes = ["Faktapiste"]'
             if [ "$R2" = 1 ]; then echo '[[r2_buckets]]'; echo 'binding = "VIDEOT"'; echo 'bucket_name = "faktapiste-videot"'; fi
           } > wrangler.toml
-          npx --yes wrangler@3.99.0 deploy
+          npx --yes wrangler@4.152.0 deploy
           HALLINTA=$(printf '%s' "$CLOUDFLARE_API_TOKEN-faktapiste" | sha256sum | cut -c1-40)
           jq -n --arg a "${{ secrets.ANTHROPIC_API_KEY }}" --arg b "${{ secrets.BREVO_API_KEY }}" --arg t "${{ secrets.TELEGRAM_BOT_TOKEN }}" --arg h "$HALLINTA" --arg ms "${{ secrets.MSADS_CLIENT_SECRET }}" \
             '{ANTHROPIC_API_KEY:$a, BREVO_API_KEY:$b, TELEGRAM_BOT_TOKEN:$t, TG_CHAT:"1893930799", HALLINTA:$h, MSADS_CLIENT_SECRET:$ms}' > /tmp/s.json
-          npx --yes wrangler@3.99.0 secret bulk /tmp/s.json; rm /tmp/s.json
+          npx --yes wrangler@4.152.0 secret bulk /tmp/s.json; rm /tmp/s.json
           # Tyhjennä Cloudflaren välimuisti, jotta uudet sivut näkyvät heti (muuten vanha HTML voi jäädä reunavälimuistiin)
           for ZN in faktapiste.fi netvo.fi; do
             Z=$(curl -sS -H "Authorization: Bearer $CF" "$API/zones?name=$ZN" | jq -r '.result[0].id // empty')
