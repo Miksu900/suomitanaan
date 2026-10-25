@@ -1,0 +1,31 @@
+name: Kirjautumistesti
+# Testaa Faktapisteen kirjautumisen selaimella (ei lähetä oikeaa sähköpostia: käyttää estettyä kertakäyttöosoitetta).
+on:
+  workflow_dispatch:
+jobs:
+  testi:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          npm i -s playwright@1.48.2 >/dev/null && npx playwright install --with-deps chromium >/dev/null 2>&1
+          cat > t.mjs <<'JS'
+          import { chromium } from "playwright";
+          const b = await chromium.launch(); const p = await b.newPage({ viewport: { width: 390, height: 844 } });
+          const virheet = []; p.on("pageerror", e => virheet.push("JS: " + e.message)); p.on("console", m => { if (m.type() === "error") virheet.push("console: " + m.text()); });
+          const vastaukset = []; p.on("response", r => { if (r.url().includes("/api/")) vastaukset.push(r.status() + " " + r.url().replace("https://faktapiste.fi", "")); });
+          await p.goto("https://faktapiste.fi/", { waitUntil: "networkidle" });
+          const nappi = await p.$("[data-kirjaudu]"); console.log("Kirjaudu-nappi:", !!nappi, nappi ? await nappi.isVisible() : "");
+          if (nappi) { await nappi.click(); await p.waitForTimeout(800);
+            console.log("Dialogi auki:", await p.$eval("#fp-kirjaudu", d => d.open));
+            await p.fill("#kirjform input[name=email]", "testi@yopmail.com"); await p.click("#kirjform button[value=laheta]"); await p.waitForTimeout(2500);
+            console.log("Ilmoitus:", await p.$eval("#fp-toast", t => t.textContent)); }
+          const v = await p.request.get("https://faktapiste.fi/api/vahvista?t=abc", { maxRedirects: 0 }); console.log("vahvista:", v.status(), v.headers().location);
+          const k = await p.request.post("https://faktapiste.fi/api/kirjaudu", { data: { email: "x" } }); console.log("kirjaudu (huono osoite):", k.status(), await k.text());
+          const m = await p.request.get("https://faktapiste.fi/api/mina"); console.log("mina:", m.status(), (await m.text()).slice(0, 300));
+          console.log("API:", vastaukset.join(" | ")); console.log("Virheet:", virheet.join(" | ") || "ei");
+          await p.screenshot({ path: "kuva.png" }); await b.close();
+          JS
+          node t.mjs | tee tulos.txt
+          while read -r r; do echo "::notice title=Testi::$r"; done < tulos.txt
+      - uses: actions/upload-artifact@v4
+        with: { name: kirjautuminen, path: kuva.png }
