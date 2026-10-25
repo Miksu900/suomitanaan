@@ -234,7 +234,8 @@ export class Faktapiste extends DurableObject {
       CREATE TABLE IF NOT EXISTS jaljet(kayttaja INTEGER, tyyppi TEXT, tunniste TEXT, luotu INTEGER, PRIMARY KEY(kayttaja, tyyppi, tunniste));
       CREATE INDEX IF NOT EXISTS jaljet_t ON jaljet(tyyppi, tunniste);
       CREATE TABLE IF NOT EXISTS arpaepailyt(posti INTEGER PRIMARY KEY, kayttaja INTEGER, pv TEXT, syy TEXT, luotu INTEGER);
-      CREATE TABLE IF NOT EXISTS arpahylkays(id INTEGER PRIMARY KEY, kayttaja INTEGER, alku INTEGER, loppu INTEGER, kausi TEXT, syy TEXT, luotu INTEGER);`);
+      CREATE TABLE IF NOT EXISTS arpahylkays(id INTEGER PRIMARY KEY, kayttaja INTEGER, alku INTEGER, loppu INTEGER, kausi TEXT, syy TEXT, luotu INTEGER);
+      CREATE TABLE IF NOT EXISTS laskurit(sivu TEXT, pv TEXT, nayt INTEGER DEFAULT 0, kaytot INTEGER DEFAULT 0, PRIMARY KEY(sivu, pv));`);
     // nimet eivät ole enää yksilöllisiä (oikeat nimet voivat toistua): taulu rakennetaan kerran uudelleen
     if ((this.sql.exec("SELECT v FROM asetukset WHERE k='skeema'").toArray()[0] || {}).v !== "2") {
       this.sql.exec(`CREATE TABLE IF NOT EXISTS kayttajat2(id INTEGER PRIMARY KEY, email TEXT UNIQUE, nimi TEXT, luotu INTEGER, esto INTEGER DEFAULT 0);
@@ -293,6 +294,12 @@ export class Faktapiste extends DurableObject {
         await telegram(this.env, "🔑 Microsoft Advertising -lupa tallennettu Faktapisteen holviin.");
         return sivu("Valmis! Microsoft Advertising on nyt yhdistetty. Voit sulkea tämän sivun.");
       }
+      if (p === "/api/hallinta/laskurit" && this.env.HALLINTA && req.headers.get("x-avain") === this.env.HALLINTA) {
+        // Laskurien näytöt ja käytöt viimeisiltä päiviltä, suosituin ensin
+        const pv = Math.min(90, Math.max(1, +u.searchParams.get("pv") || 7));
+        const raja = new Date(Date.now() - pv * 86400e3).toISOString().slice(0, 10);
+        return json({ pv, laskurit: this.kaikki("SELECT sivu, SUM(nayt) AS nayt, SUM(kaytot) AS kaytot FROM laskurit WHERE pv>=? GROUP BY sivu ORDER BY nayt DESC, kaytot DESC", raja) });
+      }
       if (p === "/api/hallinta/holvi" && this.env.HALLINTA && req.headers.get("x-avain") === this.env.HALLINTA) {
         // Ylläpidon salaisuusholvi (esim. mainostilien kirjautumisavaimet); ei koskaan julkisesti luettavissa.
         const d = await req.json(); const k = "holvi:" + String(d.nimi || "");
@@ -324,6 +331,7 @@ export class Faktapiste extends DurableObject {
       if (p === "/api/kutsulinkki" && m === "GET") return minä && minä.nimiOk ? json(this.omaKutsu(minä)) : virhe("Kirjaudu ensin.", 401);
       if (p === "/api/syote" && m === "GET") return json(this.syote(u, minä, lukija));
       if (p === "/api/nahty" && m === "POST") return json(this.nahty(lukija, await req.json().catch(() => ({}))));
+      if (p === "/api/laskuri" && m === "POST") return json(await this.laskuriTilasto(req, await req.json().catch(() => ({}))));
       if (p.startsWith("/api/kuva/") && m === "GET") return this.naytaKuva(+p.split("/")[3]);
       if (p === "/api/kuva" && m === "POST") return await this.lataaKuva(req, minä);
       if (p === "/api/video/kansi" && m === "POST") return await this.lataaKansi(req, minä, +u.searchParams.get("id"));
@@ -375,6 +383,17 @@ export class Faktapiste extends DurableObject {
     if (minä) return "k" + minä.id;
     const v = (req.headers.get("x-lukija") || "").replace(/[^a-f0-9]/g, "").slice(0, 32);
     return v.length === 32 ? "v" + v : null;
+  }
+  // Laskurisivujen seuranta: näyttö (n) ja käyttö (k). Sama IP lasketaan kerran päivässä per sivu ja laji.
+  async laskuriTilasto(req, d) {
+    const sivu = String(d.s || "").replace(/[^a-z0-9-]/g, "").slice(0, 60), laji = d.t === "k" ? "k" : "n";
+    if (!sivu) return { ok: false };
+    const ip = (await tiiviste((req.headers.get("cf-connecting-ip") || "") + "lask")).slice(0, 16);
+    if (!this.raja(`ls:${laji}:${sivu}:${ip}`, 1, 86400)) return { ok: true };
+    const pv = new Date().toISOString().slice(0, 10);
+    this.sql.exec(`INSERT INTO laskurit(sivu, pv, nayt, kaytot) VALUES(?,?,?,?) ON CONFLICT(sivu, pv) DO UPDATE SET ${laji === "k" ? "kaytot=kaytot+1" : "nayt=nayt+1"}`,
+      sivu, pv, laji === "n" ? 1 : 0, laji === "k" ? 1 : 0);
+    return { ok: true };
   }
   nahty(lukija, d) {
     if (!lukija) return { ok: false };
