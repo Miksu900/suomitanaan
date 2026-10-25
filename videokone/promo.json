@@ -2,15 +2,15 @@
   "koukku": "Kirjoitit hyvän postauksen.",
   "arvonta": true,
   "lauseet": [
-    "Kirjoitit hyvän postauksen, eikä kukaan nähnyt sitä.",
-    "Algoritmi päätti, ettet ole tarpeeksi kiinnostava.",
-    "Faktapisteessä jokainen postaus näytetään vähintään kolmellekymmenelle ihmiselle, vaikka sinulla ei olisi yhtään seuraajaa.",
-    "Täällä keskustellaan oikeilla nimillä, ja voit jakaa myös kuvia ja videoita.",
-    "Näet oman paikkakuntasi keskustelut ja säädät itse, mitä syötteessä näkyy.",
-    "Ja nyt jokainen kirjoitus on arpa: arvomme sadan euron lahjakortin joka kuukausi, ja isossa arvonnassa palkinto kasvaa jopa viiteensataan euroon, kun meitä on tuhat. Kutsu kaverisi, niin saat lisäarpoja molempiin arvontoihin. Lue säännöt sivuilta.",
-    "Suomalainen somepalvelu, nyt betaversiona. Liity ilmaiseksi ja kerro palautteesi: faktapiste piste fi."
+    "Kirjoitit hyvän postauksen. Kukaan ei nähnyt sitä.",
+    "Muualla somessa kone päättää, kuka näkee tekstisi.",
+    "Faktapisteessä jokainen postaus näytetään ainakin kolmellekymmenelle ihmiselle. Seuraajia ei tarvita.",
+    "Täällä kirjoitetaan omalla nimellä. Voit lisätä myös kuvia ja videoita.",
+    "Näet oman paikkakuntasi keskustelut. Sinä päätät, mitä näet. Ja syöte loppuu, kun olet nähnyt tärkeimmät.",
+    "Ja nyt jokainen kirjoitus on arpa. Mitä enemmän kirjoitat, sitä enemmän arpoja. Joka kuukausi arvotaan sadan euron lahjakortti. Isossa arvonnassa palkinto kasvaa jopa viiteensataan euroon, kun meitä on tuhat. Kun kutsut kaverin, saat kymmenen arpaa lisää. Lue säännöt sivulta.",
+    "Faktapiste on suomalainen ja ilmainen. Palvelu on vielä betaversio, joten kerro palautteesi. Liity nyt: faktapiste piste fi."
   ],
-  "kuvateksti": "Kirjoitit hyvän postauksen, eikä kukaan nähnyt sitä? Faktapisteessä jokainen postaus näytetään vähintään 30 ihmiselle, vaikka sinulla ei olisi yhtään seuraajaa. Oikeat nimet, oman paikkakunnan keskustelut, kuvat ja videot. Jokainen kirjoitus ja kommentti on arpa: arvomme 100 € K-ryhmän lahjakortin joka kuukausi. Isossa arvonnassa 1.2.2027 palkinto kasvaa käyttäjämäärän mukana: 100 €, 250 € tai 500 €, kun meitä on 1000. Kutsu kaverisi omalla kutsulinkilläsi, niin saat molempiin arvontoihin 10 lisäarpaa jokaisesta kaverista, joka liittyy ja kirjoittaa. Palvelu on betaversio, joten kaikki palaute on tervetullutta. Liity ilmaiseksi: faktapiste.fi (säännöt: faktapiste.fi/arvonta)",
+  "kuvateksti": "Kirjoitit hyvän postauksen, mutta kukaan ei nähnyt sitä? Faktapisteessä jokainen postaus näytetään ainakin 30 ihmiselle. Seuraajia ei tarvita. Kirjoitat omalla nimellä, voit lisätä kuvia ja videoita ja näet oman paikkakuntasi keskustelut. Sinä päätät, mitä näet. Jokainen kirjoitus ja kommentti on arpa. Joka kuukausi arvotaan 100 € K-ryhmän lahjakortti. Isossa arvonnassa 1.2.2027 palkinto on 100 €, 250 € tai 500 € sen mukaan, montako meitä on. Kun kutsut kaverin omalla linkilläsi, saat 10 arpaa lisää molempiin arvontoihin. Lue säännöt: faktapiste.fi/arvonta. Faktapiste on suomalainen ja ilmainen. Palvelu on betaversio, joten kerro palautteesi. Liity: faktapiste.fi",
   "hashtagit": [
     "faktapiste",
     "suomi",

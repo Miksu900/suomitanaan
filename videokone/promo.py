@@ -171,7 +171,7 @@ TEKSTI = "Tämä on minusta tärkeä asia, ja haluaisin kuulla muidenkin mielipi
 LUOKAT = ["Keskustelut", "Uutiset", "Paikalliset", "Huijausvaroitukset", "Päätökset"]
 TASOT = [2, 0, 2, 1, 1]
 def iso(s, koko=130, **k): return iso_teksti(s, koko=koko, **k)
-OTS = [iso("Kirjoitit hyvän postauksen.", 140), iso("Algoritmi päätti puolestasi.", 130), None, iso("Oikeat ihmiset, omat nimet", 120), iso("Oma paikkakunta", 120), None, None]
+OTS = [iso("Kirjoitit hyvän postauksen.", 140), iso("Kone päätti puolestasi.", 130), None, iso("Oikeat ihmiset, omat nimet", 120), iso("Oma paikkakunta", 120), None, None]
 IHMISET = [("Liisa Korhonen", "Ylivieskaan tarvitaan lisää iltavuoroja bussiliikenteeseen. Kuka muu on samaa mieltä?", "12 min", 41, 7),
            ("Jari Mäkinen", "Kokeilin eilen uutta kirjastoa. Ihan mahtava paikka lapsiperheille!", "35 min", 58, 12),
            ("Aino Lahtinen", "Miksi sähkön siirtohinta nousee taas? Onko jollain tietoa?", "1 t", 77, 9)]
@@ -250,7 +250,7 @@ def kohtaus(base, si, lt, gt):
         paste_c(base, text_img("kun meitä on 1000 – palkinto kasvaa", M8(46), WHITE), W / 2, 860, back(lt * 3 - 0.4))
         paste_c(base, pill("Jokainen kirjoitus = arpa", M9(56), NAVY, (255, 255, 255, 255), 40, 24), W / 2, 1040, back(lt * 3 - 0.7))
         paste_c(base, text_img("+ 100 € lahjakortti joka kuukausi", M8(46), WHITE), W / 2, 1160, back(lt * 3 - 0.95))
-        paste_c(base, pill("Kutsu kaveri = lisäarpoja molempiin", M9(42), NAVY, GOLD, 36, 20), W / 2, 1290, back(lt * 3 - 1.15))
+        paste_c(base, pill("Kutsu kaveri = +10 arpaa", M9(50), NAVY, GOLD, 36, 20), W / 2, 1290, back(lt * 3 - 1.15))
         paste_c(base, text_img("Lue säännöt: faktapiste.fi/arvonta", M8(42), WHITE), W / 2, 1420, back(lt * 3 - 1.3))
         return
     if si == 5:
