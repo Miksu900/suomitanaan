@@ -1,0 +1,31 @@
+name: Netvo-kelan ääni (ElevenLabs)
+# Luo Netvo-kelan puheen ElevenLabsilla (ääni valitaan syötteellä) ja lataa mp3 artifaktina.
+# Avain on GitHub-salaisuus ELEVENLABS_API_KEY. Ajetaan käsin workflow_dispatchilla.
+on:
+  workflow_dispatch:
+    inputs:
+      voice: { description: "ElevenLabs voice_id", required: true }
+      teksti: { description: "Puhuttava teksti", required: true }
+      nimi: { description: "Tiedoston nimi ilman päätettä", required: false, default: "netvo-aani" }
+jobs:
+  aani:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Luo ääni
+        env:
+          EL: ${{ secrets.ELEVENLABS_API_KEY }}
+          VOICE: ${{ inputs.voice }}
+          TEKSTI: ${{ inputs.teksti }}
+          NIMI: ${{ inputs.nimi }}
+        run: |
+          set -e
+          jq -n --arg t "$TEKSTI" '{text: $t, model_id: "eleven_multilingual_v2", voice_settings: {stability: 0.45, similarity_boost: 0.8, style: 0.35}}' > body.json
+          curl -sS -f -X POST "https://api.elevenlabs.io/v1/text-to-speech/$VOICE?output_format=mp3_44100_128" \
+            -H "xi-api-key: $EL" -H "content-type: application/json" -d @body.json -o "$NIMI.mp3"
+          ls -la "$NIMI.mp3"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: netvo-aani
+          path: "*.mp3"
+          retention-days: 7
