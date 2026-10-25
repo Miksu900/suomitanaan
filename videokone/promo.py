@@ -208,6 +208,27 @@ def tabit(lt):
 def kohtaus(base, si, lt, gt):
     dur = SC[si + 1] - SC[si]
     si = KOHT[si]  # lyhyessä versiossa lause voi käyttää minkä tahansa kohtauksen kuvaa
+    if si == 7:
+        # koukku: yksi sana voi olla 1000 euron arvoinen
+        paste_c(base, iso_teksti("TÄMÄ YKSI SANA", koko=118, vari=WHITE, vari2=WHITE), W / 2, 360, back(lt * 4))
+        paste_c(base, iso_teksti("VOI OLLA 1000\u00a0€", koko=118, vari=GOLD, vari2=GOLD), W / 2, 500, back(lt * 4 - 0.15) * (1 + 0.02 * math.sin(gt * 6)))
+        paste_c(base, iso_teksti("ARVOINEN", koko=118, vari=WHITE, vari2=WHITE), W / 2, 640, back(lt * 4 - 0.3))
+        paste_c(base, postaus("Liisa K.", "Totta.", 31, sydan=4, aika="1 min"), W / 2, 960, back(lt * 3 - 0.5))
+        if lt > 1.0: paste_c(base, pill("= 1 ARPA", M9(60), NAVY, GOLD + (255,), 44, 24), W / 2 + 250, 1160, back((lt - 1.0) * 4))
+        return
+    if si == 8:
+        # jokainen kirjoitus = arpa: kommentit liukuvat sisään ja arpalaskuri kasvaa
+        paste_c(base, iso_teksti("Jokainen kirjoitus = arpa", koko=96, vari=WHITE, vari2=GOLD), W / 2, 330, back(lt * 3))
+        kortit = [("Matti V.", "Totta."), ("Sanna L.", "Ylivieskaan tarvitaan lisää iltavuoroja."), ("Jari K.", "Hyvä pointti, olen samaa mieltä!")]
+        for k, (nimi, t_) in enumerate(kortit):
+            q = lt - 0.5 - k * 0.7
+            if q <= 0: continue
+            y = 620 + k * 290
+            paste_c(base, postaus(nimi, t_, 30 + k * 7, sydan=k + 2), W / 2 + (1 - back(q * 3)) * 1100, y, 0.8)
+            if q > 0.35: paste_c(base, pill("+1 arpa", M9(44), NAVY, GOLD + (255,), 30, 16), W / 2 + 300, y - 122, back((q - 0.35) * 4))
+        n = sum(1 for k in range(3) if lt - 0.85 - k * 0.7 > 0)
+        if n: paste_c(base, text_img(f"Arpoja: {n}  ·  ei ylärajaa", M8(48), GOLD), W / 2, 1420, back((lt - 0.85) * 3))
+        return
     if si == 0 and A.get("koukku500"):
         # koukku: raha heti ensimmäisessä kuvassa
         lahja = Image.new("RGBA", (260, 260), (0, 0, 0, 0)); dl = ImageDraw.Draw(lahja)
