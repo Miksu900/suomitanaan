@@ -82,6 +82,8 @@ jobs:
           echo "::notice title=Linkkitesti::$(curl -s -o /dev/null -w '%{http_code} %{redirect_url}' -H 'Sec-Fetch-Mode: navigate' -H 'Sec-Fetch-Dest: document' -H 'Accept: text/html' 'https://faktapiste.fi/api/vahvista?t=testi')"
           echo "::notice title=Sisäänluku::$(curl -sS -X POST -H "x-avain: $HALLINTA" $U/api/hallinta/sisaanluku | head -c 600)"
           echo "::notice title=Tila::$(curl -sS -X POST -H "x-avain: $HALLINTA" $U/api/hallinta/tila | head -c 600)"
+          echo "::notice title=Arvonta::$(curl -sS $U/api/arvonta | head -c 500)"
+          echo "::notice title=Kertakäyttö::$(curl -sS -X POST -H 'content-type: application/json' -d '{"email":"testi@yopmail.com"}' $U/api/kirjaudu | head -c 300)"
           echo "::notice title=Syöte::$(curl -sS "$U/api/syote?tab=suositut" | jq -c '[.postit[:6][] | {lahde, k: (.kortti.otsikko // .kortti.nyt // "")[:60]}]' | head -c 900)"
           if [ -n "${{ inputs.mm }}" ]; then echo "::notice title=MM::$(curl -sS -H "x-avain: $HALLINTA" "$U/api/hallinta/mm?u=$(jq -rn --arg q '${{ inputs.mm }}' '$q|@uri')" | head -c 3500)"; fi
           if [ -n "${{ inputs.fakta }}" ]; then echo "::notice title=Fakta::$(curl -sS -X POST -H "x-avain: $HALLINTA" -H 'content-type: application/json' -d "$(jq -n --arg q '${{ inputs.fakta }}' '{kysymys:$q}')" $U/api/hallinta/fakta | jq -c "{v: .kortti.vastaus, a: .kortti.aanestys.otsikko, l: .kortti.aanestys.lisaotsikko, r: .kortti.aanestys.ryhmat[:3], e: .virhe}" | head -c 2500)"; fi
