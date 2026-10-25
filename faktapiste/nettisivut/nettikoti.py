@@ -9,7 +9,7 @@ from .data import DEMOT
 esc = html.escape
 YHTEYS = "info@netvo.fi"
 
-HINTA_KK = 19
+HINTA_KK = 25
 SITOUTUS = "12 tai 24 kuukautta"
 SAKKO_KK = 2
 
