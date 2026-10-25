@@ -9,7 +9,7 @@ ROOT = pathlib.Path(__file__).parent / "public"
 SITE = os.environ.get("FAKTAPISTE_URL", "https://faktapiste.fi")
 PV = os.environ.get("PYKALAVAHTI_URL", "https://pykalavahti.fi")
 YHTEYS = "miika@eduskuntaseuranta.fi"
-VER = "49"
+VER = "50"
 esc = html.escape
 
 # avain, nimi, osoite, iskulause, kuvaus, merkki, poliittinen
@@ -106,6 +106,7 @@ runko = f"""<section class="fp-intro"><div class="w">
 <p class="beta">Beta</p>
 <h1>Täällä sinut <span class="hl">nähdään.</span></h1>
 <p class="lead">Suomalainen keskustelu, jossa jokainen postaus näytetään vähintään 30 ihmiselle, vaikka sinulla ei olisi yhtään seuraajaa. Sinä säädät syötteesi, ja se loppuu, kun olet nähnyt tärkeimmät.</p>
+<p class="jasenet" id="fp-jasenet" aria-live="polite"></p>
 </div></section>
 <div class="w fp-grid">
 <div class="fp-keski">

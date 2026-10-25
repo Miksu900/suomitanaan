@@ -337,7 +337,7 @@ export class Faktapiste extends DurableObject {
       if (p === "/api/mina" && minä) await this.jalki(req, minä.id);
       if (p === "/api/mina") return json({ kayttaja: minä ? { nimi: minä.nimi, nimiOk: minä.nimiOk, admin: minä.admin, salasana: !!minä.sala } : null,
         tilasto: minä && minä.admin ? { kayttajat: this.yksi("SELECT COUNT(*) AS n FROM kayttajat").n, nimelliset: this.yksi("SELECT COUNT(*) AS n FROM kayttajat WHERE nimi IS NOT NULL").n,
-          kirjoittajat: this.yksi("SELECT COUNT(DISTINCT kayttaja) AS n FROM postit WHERE kayttaja IS NOT NULL").n, lukijat7: this.yksi("SELECT COUNT(DISTINCT katsoja) AS n FROM nahdyt WHERE luotu>?", nyt() - 7 * 86400e3).n } : null, kirjautuminen: this.env.KIRJAUTUMINEN === "auki", video: !!this.env.VIDEOT, testi: this.env.KIRJAUTUMINEN === "testi" });
+          kirjoittajat: this.yksi("SELECT COUNT(DISTINCT kayttaja) AS n FROM postit WHERE kayttaja IS NOT NULL").n, lukijat7: this.yksi("SELECT COUNT(DISTINCT katsoja) AS n FROM nahdyt WHERE luotu>?", nyt() - 7 * 86400e3).n } : null, jasenia: this.kayttajia(), kirjautuminen: this.env.KIRJAUTUMINEN === "auki", video: !!this.env.VIDEOT, testi: this.env.KIRJAUTUMINEN === "testi" });
       if (p === "/api/kirjaudu" && m === "POST") return await this.kirjaudu(req);
       if (p === "/api/vahvista" && m === "GET") return await this.vahvista(u, req);
       if (p === "/api/ulos" && m === "POST") { const t = evaste(req, "fp_s"); if (t) this.sql.exec("DELETE FROM sessiot WHERE t=?", t); return json({ ok: true }, 200, { "set-cookie": "fp_s=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax" }); }

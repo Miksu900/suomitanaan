@@ -299,6 +299,7 @@
   function piirraKirjoitus() { KIRJ.innerHTML = kirjoitus(null); }
   function mina() {
     return api("mina").then(function (j) {
+      var JS = $("#fp-jasenet"); if (JS && j.jasenia) JS.innerHTML = '<i aria-hidden="true"></i>Faktapisteessä on nyt <b>' + j.jasenia + "</b> " + (j.jasenia === 1 ? "jäsen" : "jäsentä");
       tila.mina = j.kayttaja; tila.video = j.video === true; tila.tilasto = j.tilasto || null; tila.kirjautuminen = j.kirjautuminen === true;
       // Testivaihe: kirjautumisnappi näkyy vain osoitteella /?testi=1 avattuna (muistetaan selaimessa).
       var kq = (location.search.match(/[?&]kutsu=([a-f0-9]{6,20})/) || [])[1]; if (kq) tallenna("fp_kutsu", kq);
