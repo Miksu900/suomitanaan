@@ -54,6 +54,15 @@ def sivu(d, demo=True):
             f'<figure><p>&ldquo;{esc(a["teksti"])}&rdquo;</p><figcaption>— {esc(a["nimi"])}</figcaption></figure>'
             for a in d["arvostelut"]) + "</div></div></section>"
 
+    maksu = ""
+    if kauppa:
+        maksu = ('<section class="osio"><div class="w teksti" style="text-align:center"><h2>Verkkokauppa ja maksut</h2>'
+                 '<p style="max-width:58ch;margin:0 auto">Verkkokaupassa asiakas voi maksaa tilauksensa suoraan sivuilla. '
+                 'Pyydä maksupalvelun liittäminen kauppaasi itse, niin me integroimme sen. Maksupalvelun kulut ovat erikseen. '
+                 'Isommat verkkokaupat räätälöidään, pyydä tarjous.</p>'
+                 f'<p style="margin-top:20px"><a class="nappi" href="mailto:info@netvo.fi?subject=Netvo%20-%20maksupalvelun%20integrointi%20verkkokauppaan">Pyydä maksupalvelu</a></p>'
+                 '</div></section>')
+
     esittely = ""
     if d.get("esittely"):
         esittely = f'<section class="osio" id="meista"><div class="w kaksi"><div><h2>{esc(d.get("esittely_otsikko", "Meistä"))}</h2>' + \
@@ -151,6 +160,7 @@ footer.jalka{{background:#0c0c0e;color:#9a9aa0;text-align:center;padding:26px 16
 <section class="osio" id="palvelut"><div class="w"><h2>{esc(d.get("palvelut_otsikko", "Tuotteet" if kauppa else "Palvelut"))}</h2><div class="ruudut">{palvelut}</div></div></section>
 {esittely}
 {arvostelut}
+{maksu}
 <section class="osio" id="yhteys" style="padding:56px 0"><div class="w"><h2>Ota yhteyttä</h2><div class="yht-grid">
 <div>{yhteys_rivit}{ajat}</div>
 <form class="lomake" onsubmit="return false">
