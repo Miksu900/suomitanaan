@@ -59,6 +59,7 @@ def sivu(d, demo=True):
         maksu = ('<section class="osio"><div class="w teksti" style="text-align:center"><h2>Verkkokauppa ja maksut</h2>'
                  '<p style="max-width:58ch;margin:0 auto">Verkkokaupassa asiakas voi maksaa tilauksensa suoraan sivuilla. '
                  'Pyydä maksupalvelun liittäminen kauppaasi itse, niin me integroimme sen. Maksupalvelun kulut ovat erikseen. '
+                 'Ehdotamme sinulle sopivan palvelun, esimerkiksi Paytrail, Stripe tai Nexi. '
                  'Isommat verkkokaupat räätälöidään, pyydä tarjous.</p>'
                  f'<p style="margin-top:20px"><a class="nappi" href="mailto:info@netvo.fi?subject=Netvo%20-%20maksupalvelun%20integrointi%20verkkokauppaan">Pyydä maksupalvelu</a></p>'
                  '</div></section>')
