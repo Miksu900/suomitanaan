@@ -303,7 +303,7 @@ def kohtaus(base, si, lt, gt):
     paste_c(base, pill("faktapiste.fi", M9(84), NAVY, GOLD + (255,), 58, 32), W / 2, 850, back(lt * 3 - 0.45) * (1 + 0.035 * math.sin(gt * 5)))
     paste_c(base, text_img("Liity ilmaiseksi", M8(62), WHITE), W / 2, 1050, back(lt * 3 - 0.7))
     paste_c(base, text_img("Ei salasanaa. Kirjaudut sähköpostilinkillä.", M6(40), GREY), W / 2, 1150, back(lt * 3 - 0.95))
-    paste_c(base, pill("BETAVERSIO · kerro palautteesi", M9(40), NAVY, (255, 255, 255, 255), 30, 16), W / 2, 1260, back(lt * 3 - 1.15))
+    paste_c(base, pill("UUNITUORE BETAVERSIO · kerro palautteesi", M9(40), NAVY, (255, 255, 255, 255), 30, 16), W / 2, 1260, back(lt * 3 - 1.15))
 
 # ---------- renderöinti ----------
 PV = os.environ.get("PV")
