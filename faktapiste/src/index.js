@@ -30,7 +30,13 @@ const ARVONNAT = [
     // Palkinto kasvaa käyttäjämäärän mukaan (omalla nimellä rekisteröityneet, ei suljettuja tilejä), laskettu arvontahetkellä.
     tasot: [{ min: 0, summa: 100 }, { min: 250, summa: 250 }, { min: 1000, summa: 500 }], muuVero: 30 },
 ];
-const ARPA = { maxPv: 5, minPituus: 20, kutsuArvat: 5, kutsuMax: 10 };
+const ARPA = { minPituus: 20, vali: 60e3, kutsuArvat: 10, kutsuMax: 10 };
+// Suomen aikaa: päivämäärä (YYYY-MM-DD) ja päivän alku/loppu millisekunteina
+const fiPv = ms => new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Helsinki" }).format(new Date(ms));
+function fiPaiva(pv) {
+  const h = +new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Helsinki", hour: "2-digit", hourCycle: "h23" }).format(new Date(Date.parse(pv + "T12:00:00Z")));
+  const alku = Date.parse(pv + "T00:00:00Z") - (h - 12) * 3600e3; return [alku, alku + 86400e3 - 1];
+}
 // Väärinkäytösten esto: kertakäyttöiset sähköpostit eivät kelpaa, ja Gmailin pisteet/+-päätteet tulkitaan samaksi osoitteeksi.
 const KERTAKAYTTO = new Set(("10minutemail.com 10minutemail.net 20minutemail.com guerrillamail.com guerrillamail.net guerrillamail.org guerrillamailblock.com sharklasers.com grr.la " +
   "mailinator.com mailinator.net maildrop.cc yopmail.com yopmail.fr yopmail.net temp-mail.org temp-mail.io tempmail.com tempmail.net tempmailo.com tempr.email " +
@@ -214,7 +220,9 @@ export class Faktapiste extends DurableObject {
       CREATE TABLE IF NOT EXISTS seuraukset(seuraaja INTEGER, seurattava INTEGER, luotu INTEGER, PRIMARY KEY(seuraaja, seurattava));
       CREATE INDEX IF NOT EXISTS seuraukset_kohde ON seuraukset(seurattava);
       CREATE TABLE IF NOT EXISTS jaljet(kayttaja INTEGER, tyyppi TEXT, tunniste TEXT, luotu INTEGER, PRIMARY KEY(kayttaja, tyyppi, tunniste));
-      CREATE INDEX IF NOT EXISTS jaljet_t ON jaljet(tyyppi, tunniste);`);
+      CREATE INDEX IF NOT EXISTS jaljet_t ON jaljet(tyyppi, tunniste);
+      CREATE TABLE IF NOT EXISTS arpaepailyt(posti INTEGER PRIMARY KEY, kayttaja INTEGER, pv TEXT, syy TEXT, luotu INTEGER);
+      CREATE TABLE IF NOT EXISTS arpahylkays(id INTEGER PRIMARY KEY, kayttaja INTEGER, alku INTEGER, loppu INTEGER, kausi TEXT, syy TEXT, luotu INTEGER);`);
     // nimet eivät ole enää yksilöllisiä (oikeat nimet voivat toistua): taulu rakennetaan kerran uudelleen
     if ((this.sql.exec("SELECT v FROM asetukset WHERE k='skeema'").toArray()[0] || {}).v !== "2") {
       this.sql.exec(`CREATE TABLE IF NOT EXISTS kayttajat2(id INTEGER PRIMARY KEY, email TEXT UNIQUE, nimi TEXT, luotu INTEGER, esto INTEGER DEFAULT 0);
@@ -293,6 +301,7 @@ export class Faktapiste extends DurableObject {
         }
         return json(out);
       }
+      if (p === "/api/hallinta/arpahylkays" && this.env.HALLINTA && req.headers.get("x-avain") === this.env.HALLINTA) return json(await this.arpaHylkays(await req.json()));
       if (p === "/api/hallinta/arvonta" && this.env.HALLINTA && req.headers.get("x-avain") === this.env.HALLINTA) return json(await this.arvo(u.searchParams.get("pakota") === "1", u.searchParams.get("kausi") || "", +u.searchParams.get("hylkaa") || 0));
       if (p === "/api/hallinta/fakta" && this.env.HALLINTA && req.headers.get("x-avain") === this.env.HALLINTA) {
         const d = await req.json(); return await this.fakta({ id: 0 }, d);
@@ -547,14 +556,17 @@ export class Faktapiste extends DurableObject {
     return this.kuvaIdt(posti);
   }
   // ---- arvonta ----
-  // Arpa = oma kirjoitus tai kommentti (vähintään 20 merkkiä, ei poistettu), enintään 5 päivässä; samat tekstit lasketaan kerran.
   arvat(a) {
-    const l = this.kaikki(`SELECT x.kayttaja, k.nimi, k.email, SUM(MIN(x.n, ?)) AS arvat FROM
-      (SELECT kayttaja, date(luotu / 1000, 'unixepoch', '+3 hours') AS pv, COUNT(DISTINCT teksti) AS n FROM postit
-        WHERE kayttaja IS NOT NULL AND piilotettu=0 AND length(teksti) >= ? AND luotu BETWEEN ? AND ? GROUP BY kayttaja, pv) x
-      JOIN kayttajat k ON k.id=x.kayttaja WHERE k.esto=0 AND k.nimi IS NOT NULL GROUP BY x.kayttaja`, ARPA.maxPv, ARPA.minPituus, a.alku, a.loppu)
+    // 1 arpa jokaisesta kirjoituksesta tai kommentista (vähintään 20 merkkiä, ei piilotettu). Ei päivärajaa.
+    // Sama teksti lasketaan kerran, ja alle minuutin välein kirjoitetut viestit lasketaan yhdeksi.
+    // Ylläpitäjän hylkäämät päivät (arpahylkays.alku–loppu) ja kaudet (arpahylkays.kausi) eivät tuota arpoja.
+    const l = this.kaikki(`SELECT p.kayttaja, k.nimi, k.email, COUNT(DISTINCT p.teksti) AS arvat FROM postit p JOIN kayttajat k ON k.id=p.kayttaja
+      WHERE p.kayttaja IS NOT NULL AND p.piilotettu=0 AND length(p.teksti) >= ? AND p.luotu BETWEEN ? AND ? AND k.esto=0 AND k.nimi IS NOT NULL
+        AND NOT EXISTS (SELECT 1 FROM postit q WHERE q.kayttaja=p.kayttaja AND q.piilotettu=0 AND length(q.teksti) >= ? AND q.luotu < p.luotu AND q.luotu > p.luotu - ?)
+        AND NOT EXISTS (SELECT 1 FROM arpahylkays h WHERE h.kayttaja=p.kayttaja AND h.kausi IS NULL AND p.luotu BETWEEN h.alku AND h.loppu)
+      GROUP BY p.kayttaja`, ARPA.minPituus, a.alku, a.loppu, ARPA.minPituus, ARPA.vali)
       .filter(r => !onAdmin(r.email));
-    // Kutsubonus: 5 arpaa jokaisesta kaverista, joka liittyi kauden aikana kutsulinkillä ja kirjoitti kauden aikana (enintään 10 kaveria kaudessa).
+    // Kutsubonus: 10 arpaa jokaisesta kaverista, joka liittyi kauden aikana kutsulinkillä ja kirjoitti kauden aikana (enintään 10 kaveria kaudessa).
     const bonus = new Map(this.kaikki(`SELECT s.kutsuja, MIN(COUNT(DISTINCT s.kutsuttu), ?) AS n FROM suositukset s JOIN kayttajat k ON k.id=s.kutsuttu
       WHERE k.esto=0 AND k.nimi IS NOT NULL AND s.luotu BETWEEN ? AND ?
         AND EXISTS (SELECT 1 FROM postit p WHERE p.kayttaja=s.kutsuttu AND p.piilotettu=0 AND length(p.teksti) >= ? AND p.luotu BETWEEN ? AND ?)
@@ -568,7 +580,8 @@ export class Faktapiste extends DurableObject {
       const k = this.yksi("SELECT id, nimi, email, esto FROM kayttajat WHERE id=?", kid);
       if (k && !k.esto && k.nimi && !onAdmin(k.email)) l.push({ kayttaja: k.id, nimi: k.nimi, email: k.email, arvat: n * ARPA.kutsuArvat, kutsut: n });
     }
-    return l;
+    const kaudelta = new Set(this.kaikki("SELECT kayttaja FROM arpahylkays WHERE kausi=?", a.kausi).map(r => r.kayttaja));
+    return l.filter(r => !kaudelta.has(r.kayttaja) && r.arvat > 0);
   }
   omaKutsu(minä) {
     let r = this.yksi("SELECT koodi FROM omakutsu WHERE kayttaja=?", minä.id);
@@ -595,7 +608,7 @@ export class Faktapiste extends DurableObject {
         kayttajia: n, nyt: ta ? ta.summa : null, seuraava: seur ? { min: seur.min, summa: seur.summa } : null, tasot: a.tasot || null,
         omat: minä ? (l.find(r => r.kayttaja === minä.id) || { arvat: 0 }).arvat : null };
     });
-    return { arvonnat: kaynnissa, kaynnissa: kaynnissa.length > 0, maxPv: ARPA.maxPv, yllapitaja: !!(minä && minä.admin) };
+    return { arvonnat: kaynnissa, kaynnissa: kaynnissa.length > 0, kutsuArvat: ARPA.kutsuArvat, yllapitaja: !!(minä && minä.admin) };
   }
   // Arpoo kaikki päättyneet, arpomattomat kaudet (tai pakotettuna yhden kauden). Voittomahdollisuus on suhteessa arpojen määrään.
   // Ylläpidon tarkistuslista voittajasta: tilin ikä, kirjoitukset ja yhteiset laitteet/verkot muiden osallistujien tai kutsuttujen kanssa.
@@ -609,8 +622,12 @@ export class Faktapiste extends DurableObject {
     const kutsutut = new Set(this.kaikki("SELECT kutsuttu FROM suositukset WHERE kutsuja=?", v.kayttaja).map(r => r.kutsuttu));
     const kuvaa = ids => ids.map(id => (nimi.get(id) || "tili #" + id) + (kutsutut.has(id) ? " (kutsuttu)" : "")).slice(0, 6).join(", ");
     const laite = yhteiset("laite"), verkko = yhteiset("ip");
+    const ep = this.yksi("SELECT COUNT(*) AS n FROM arpaepailyt WHERE kayttaja=? AND luotu BETWEEN ? AND ?", v.kayttaja, a.alku, a.loppu).n;
+    const hy = this.yksi("SELECT COUNT(*) AS n FROM arpahylkays WHERE kayttaja=?", v.kayttaja).n;
     const varoitukset = [];
     if (pv < 7) varoitukset.push(`tili on vain ${pv} päivää vanha`);
+    if (ep) varoitukset.push(`${ep} roskaksi epäiltyä viestiä kaudella`);
+    if (hy) varoitukset.push(`${hy} aiempaa arpojen hylkäystä`);
     if (laite.length) varoitukset.push(`sama laite/selain kuin: ${kuvaa(laite)}`);
     if (verkko.filter(id => kutsutut.has(id)).length >= 2) varoitukset.push(`${verkko.filter(id => kutsutut.has(id)).length} kutsuttua samasta verkosta`);
     return `\n\n🔎 Tarkista ennen palkinnon antamista (tili #${v.kayttaja}):\n– tilin ikä ${pv} pv, ${n} arpaan kelpaavaa kirjoitusta kaudella, ${v.kutsut || 0} kutsuttua kaveria\n` +
@@ -740,7 +757,53 @@ export class Faktapiste extends DurableObject {
     if (videoPyynto) this.sql.exec("UPDATE videot SET posti=? WHERE id=? AND kayttaja=? AND posti IS NULL", id, videoPyynto, minä.id);
     if (lukija) this.sql.exec("INSERT OR IGNORE INTO nahdyt VALUES(?,?,?)", id, lukija, nyt()); // oma postaus ei kasvata lukijamäärää
     if (vanhempi) this.sql.exec("UPDATE postit SET vastaukset=vastaukset+1 WHERE id=?", vanhempi);
+    this.ctx.waitUntil(this.arpaTarkistus(id, minä, teksti));
     return json({ ok: true, id });
+  }
+  // Arvonnan roskaviestien tunnistus: tekoäly vain MERKITSEE epäilyttävän viestin ja ilmoittaa ylläpitäjälle Telegramiin.
+  // Arpoja ei poisteta automaattisesti; ylläpitäjä päättää (/api/hallinta/arpahylkays, GitHubin "Arpojen tarkistus").
+  async arpaTarkistus(id, minä, teksti) {
+    try {
+      const t = nyt();
+      if (teksti.length < ARPA.minPituus || onAdmin(minä.email) || !ARVONNAT.some(a => t >= a.alku && t <= a.loppu)) return;
+      const pv = fiPv(t), [alku] = fiPaiva(pv);
+      const aiemmat = this.kaikki("SELECT teksti FROM postit WHERE kayttaja=? AND id<>? AND luotu>=? ORDER BY id DESC LIMIT 6", minä.id, id, alku).map(r => "- " + r.teksti.slice(0, 200));
+      const v = jsonista(await claude(this.env,
+        `Faktapisteessä jokainen kirjoitus on arpa kuukausiarvonnassa. Arvioi, onko UUSI viesti selvästi pelkkää arpojen keräämistä varten tehtyä roskaa: merkityksetöntä täytettä, sanasalaattia, samaa asiaa toistavaa sarjapostausta, pelkkää "osallistun arvontaan" -tyyppistä tekstiä tai muualta kopioitua massaa. Lyhyt mutta aito kommentti, mielipide, kysymys tai kärkeväkin kannanotto EI ole roskaa. Jos olet epävarma, vastaa false. Vastaa vain JSON: {"roska":false} tai {"roska":true,"syy":"lyhyt syy suomeksi"}.`,
+        "UUSI viesti:\n" + teksti.slice(0, 800) + "\n\nSaman käyttäjän aiemmat viestit tänään:\n" + (aiemmat.join("\n") || "(ei muita)"), 120));
+      if (!v || v.roska !== true) return;
+      this.sql.exec("INSERT OR REPLACE INTO arpaepailyt VALUES(?,?,?,?,?)", id, minä.id, pv, String(v.syy || "").slice(0, 160), t);
+      const n = this.yksi("SELECT COUNT(*) AS n FROM arpaepailyt WHERE kayttaja=? AND pv=?", minä.id, pv).n;
+      if (![1, 5, 15, 40].includes(n)) return; // ei tulvaa: ilmoitus 1., 5., 15. ja 40. epäilystä päivässä
+      const kirj = this.yksi("SELECT COUNT(DISTINCT teksti) AS n FROM postit WHERE kayttaja=? AND piilotettu=0 AND length(teksti)>=? AND luotu>=?", minä.id, ARPA.minPituus, alku).n;
+      const k = this.yksi("SELECT luotu FROM kayttajat WHERE id=?", minä.id) || {};
+      const ika = Math.floor((t - (k.luotu || t)) / 86400e3);
+      const hy = this.yksi("SELECT COUNT(*) AS n FROM arpahylkays WHERE kayttaja=?", minä.id).n;
+      const kaudet = ARVONNAT.filter(a => t >= a.alku && t <= a.loppu).map(a => a.kausi).join(" tai ");
+      await telegram(this.env, `🚩 Mahdollista arpaspämmiä: ${minä.nimi} (tili #${minä.id}, tili ${ika} pv vanha)\n` +
+        `Tänään ${pv}: ${kirj} kirjoitusta, joista tekoäly epäilee ${n}. Aiempia hylkäyksiä: ${hy}.\n` +
+        `Syy: ${v.syy || "–"}\nViesti: "${teksti.slice(0, 220)}"\nhttps://faktapiste.fi/p/${id}\n\n` +
+        `Mitään ei ole poistettu. Tarkista käyttäjän viestit ja päätä itse. GitHubissa "Arpojen tarkistus":\n` +
+        `– päivän arvat pois: toiminto=paiva, kayttaja=${minä.id}, pv=${pv}\n– koko kauden arvat pois: toiminto=kausi, kayttaja=${minä.id}, kausi=${kaudet}\n– jos kaikki on kunnossa, älä tee mitään.`);
+    } catch {}
+  }
+  async arpaHylkays(d) {
+    const kid = +d.kayttaja, k = this.yksi("SELECT id, nimi FROM kayttajat WHERE id=?", kid);
+    if (!k) return { virhe: "Käyttäjää ei löytynyt." };
+    if (d.toiminto === "paiva") {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(d.pv || "")) return { virhe: "Anna päivä muodossa 2026-10-25." };
+      const [alku, loppu] = fiPaiva(d.pv);
+      this.sql.exec("INSERT INTO arpahylkays(kayttaja, alku, loppu, syy, luotu) VALUES(?,?,?,?,?)", kid, alku, loppu, "pv " + d.pv, nyt());
+    } else if (d.toiminto === "kausi") {
+      for (const kausi of String(d.kausi || "").split(/[\s,]+|\stai\s/).filter(x => ARVONNAT.some(a => a.kausi === x)))
+        this.sql.exec("INSERT INTO arpahylkays(kayttaja, kausi, syy, luotu) VALUES(?,?,?,?)", kid, kausi, "kausi " + kausi, nyt());
+    } else if (d.toiminto === "palauta") {
+      this.sql.exec("DELETE FROM arpahylkays WHERE kayttaja=?", kid);
+    } else return { virhe: "Toiminto: paiva, kausi tai palauta." };
+    const voimassa = this.kaikki("SELECT syy FROM arpahylkays WHERE kayttaja=?", kid).map(r => r.syy);
+    const arvat = ARVONNAT.filter(a => nyt() <= a.loppu + 30 * 86400e3).map(a => `${a.kausi}: ${(this.arvat(a).find(r => r.kayttaja === kid) || { arvat: 0 }).arvat}`).join(", ");
+    await telegram(this.env, `✅ Arpojen tarkistus: ${k.nimi} (#${kid}) – ${d.toiminto}.\nVoimassa olevat hylkäykset: ${voimassa.join(", ") || "ei"}\nArvat nyt: ${arvat}`);
+    return { ok: true, voimassa, arvat };
   }
   async tarkista(teksti) {
     if (/(https?:\/\/\S+.*){4,}/i.test(teksti)) return { ok: false, syy: "liikaa linkkejä." };

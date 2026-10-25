@@ -1,0 +1,21 @@
+name: Arpojen tarkistus
+# Ylläpitäjän päätös arpaspämmistä (Telegram-ilmoituksen "🚩 Mahdollista arpaspämmiä" jälkeen).
+# Mitään ei poisteta automaattisesti: tämä ajetaan vain, kun ylläpitäjä on tarkistanut tilanteen.
+on:
+  workflow_dispatch:
+    inputs:
+      toiminto: { description: "paiva = päivän arvat pois, kausi = koko kauden arvat pois, palauta = peru kaikki käyttäjän hylkäykset", type: choice, options: [paiva, kausi, palauta], default: paiva }
+      kayttaja: { description: "Tilin numero Telegram-viestistä (esim. 12)", required: true }
+      pv: { description: "Päivä (toiminto=paiva), esim. 2026-10-25", required: false, default: "" }
+      kausi: { description: "Kausi (toiminto=kausi), esim. 2026-11 tai suuri-2027-01 – voi antaa molemmat", required: false, default: "" }
+jobs:
+  tarkistus:
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          CF: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          D: ${{ toJSON(inputs) }}
+        run: |
+          HALLINTA=$(printf '%s' "$CF-faktapiste" | sha256sum | cut -c1-40)
+          R=$(curl -sS -X POST -H "x-avain: $HALLINTA" -H 'content-type: application/json' -d "$D" https://faktapiste.fi/api/hallinta/arpahylkays)
+          echo "::notice title=Tulos::$R"

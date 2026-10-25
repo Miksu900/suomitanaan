@@ -9,7 +9,7 @@ ROOT = pathlib.Path(__file__).parent / "public"
 SITE = os.environ.get("FAKTAPISTE_URL", "https://faktapiste.fi")
 PV = os.environ.get("PYKALAVAHTI_URL", "https://pykalavahti.fi")
 YHTEYS = "miika@eduskuntaseuranta.fi"
-VER = "41"
+VER = "42"
 esc = html.escape
 
 # avain, nimi, osoite, iskulause, kuvaus, merkki, poliittinen
@@ -183,13 +183,14 @@ ARVONTA_RUNKO = f"""<section class="teksti w">
 Käyttäjiksi lasketaan omalla nimellä rekisteröityneet tilit, joita ei ole suljettu. Ajantasainen käyttäjämäärä näkyy keskustelusivun arvontalaatikossa.</li>
 </ul>
 <h2>Säännöt</h2>
+<p class="pieni">Säännöt päivitetty 25.10.2026: arpojen päiväraja poistettiin ja kutsuarvat nostettiin 10 arpaan.</p>
 <ul class="lista">
 <li><b>Järjestäjä:</b> Faktapiste, ylläpitäjä Miika Koskela, Ylivieska. Yhteys: <span class="mono">{YHTEYS}</span></li>
 <li><b>Kuka voi osallistua:</b> 18 vuotta täyttäneet Suomessa asuvat Faktapisteen käyttäjät, jotka kirjoittavat omalla nimellään. Ylläpitäjä ei osallistu.</li>
-<li><b>Arvat:</b> jokainen oma kirjoitus ja kommentti on yksi arpa, kun siinä on vähintään 20 merkkiä. Päivässä kertyy enintään 5 arpaa. Sama teksti useaan kertaan lasketaan yhtenä. Sama arpa on mukana sekä kuukauden arvonnassa että isossa arvonnassa, kun se osuu niiden kauteen.</li>
-<li><b>Kutsuarvat:</b> jokaisella käyttäjällä on oma kutsulinkki (näkyy keskustelusivun arvontalaatikossa). Saat <b>5 lisäarpaa</b> jokaisesta kaverista, joka liittyy Faktapisteeseen linkkisi kautta arvontakauden aikana ja kirjoittaa kauden aikana vähintään yhden arpaan kelpaavan kirjoituksen tai kommentin. Kutsuarpoja voi saada enintään 10 kaverista kautta kohden. Omien tai keksittyjen tilien kutsuminen on kielletty, ja ylläpitäjä hylkää tällaiset arvat ja voi sulkea tilit. Kutsuarpoja ei anneta, jos kutsuttu tili on luotu samalla laitteella tai selaimella kuin kutsujan tili tai toisen kutsutun tili.</li>
+<li><b>Arvat:</b> jokainen oma kirjoitus ja kommentti on yksi arpa, kun siinä on vähintään 20 merkkiä. Arpojen määrää ei ole rajoitettu: mitä enemmän kirjoitat, sitä enemmän sinulla on arpoja. Sama teksti useaan kertaan lasketaan yhtenä, ja alle minuutin välein kirjoitetut viestit lasketaan yhdeksi arvaksi. Sama arpa on mukana sekä kuukauden arvonnassa että isossa arvonnassa, kun se osuu niiden kauteen.</li>
+<li><b>Kutsuarvat:</b> jokaisella käyttäjällä on oma kutsulinkki (näkyy keskustelusivun arvontalaatikossa). Saat <b>10 lisäarpaa</b> molempiin arvontoihin jokaisesta kaverista, joka liittyy Faktapisteeseen linkkisi kautta arvontakauden aikana ja kirjoittaa kauden aikana vähintään yhden arpaan kelpaavan kirjoituksen tai kommentin. Kutsuarpoja voi saada enintään 10 kaverista kautta kohden. Omien tai keksittyjen tilien kutsuminen on kielletty, ja ylläpitäjä hylkää tällaiset arvat ja voi sulkea tilit. Kutsuarpoja ei anneta, jos kutsuttu tili on luotu samalla laitteella tai selaimella kuin kutsujan tili tai toisen kutsutun tili.</li>
 <li><b>Yksi henkilö, yksi tili:</b> kukin saa osallistua vain yhdellä tilillä. Kertakäyttöisillä sähköpostiosoitteilla ei voi liittyä. Väärinkäytösten havaitsemiseksi Faktapiste tallentaa tunnisteet laitteesta ja verkosta salattuna tiivisteenä (<a href="/tietoa/#valetilit">tietosuoja</a>).</li>
-<li><b>Ei roskapostia:</b> poistetut tai sääntöjen vastaiset kirjoitukset eivät ole arpoja. Ylläpitäjä voi hylätä arvat, jos kirjoitukset ovat selvästi vain arpojen keräämistä varten tehtyä roskaa, ja sulkea tilin, joka rikkoo keskustelun sääntöjä.</li>
+<li><b>Ei roskapostia:</b> poistetut tai sääntöjen vastaiset kirjoitukset eivät ole arpoja. Jos kirjoitat pelkästään arpojen keräämiseksi merkityksetöntä, toistuvaa tai kopioitua tekstiä, menetät sen päivän kaikki arvat. Toistuvasta roskapostituksesta menetät koko arvontakauden arvat. Tekoäly merkitsee epäilyttävät viestit, mutta arpoja ei poisteta automaattisesti: ylläpitäjä tarkistaa tilanteen ja tekee päätöksen. Tavallinen keskustelu ja lyhyetkin aidot kommentit ovat aina sallittuja. Ylläpitäjä voi sulkea tilin, joka rikkoo keskustelun sääntöjä.</li>
 <li><b>Arvonta:</b> voittaja arvotaan sattumanvaraisesti tietokoneella. Jokaisen osallistujan voittomahdollisuus on suhteessa hänen arpojensa määrään. Sama henkilö voi voittaa useamman arvonnan.</li>
 <li><b>Voittajalle ilmoittaminen:</b> voittajalle ilmoitetaan sähköpostilla siihen osoitteeseen, jolla hän kirjautuu Faktapisteeseen. Voittajan etunimi julkaistaan Faktapisteessä. Jos voittaja ei vastaa 14 päivässä, voittaja arvotaan uudelleen.</li>
 <li><b>Voittajan tarkistus:</b> ylläpitäjä tarkistaa ennen palkinnon antamista, että voittaja on noudattanut sääntöjä. Voittajan on pyydettäessä osoitettava, että hänen nimensä Faktapisteessä on hänen oikea nimensä. Rahapalkinto maksetaan vain voittajan omissa nimissä olevalle pankkitilille. Jos voittaja on rikkonut sääntöjä (esimerkiksi useita tilejä tai valetilejä), voitto hylätään ja voittaja arvotaan uudelleen.</li>

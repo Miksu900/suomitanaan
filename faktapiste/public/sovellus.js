@@ -243,7 +243,7 @@
       var omat = j.arvonnat[0].omat, oma = j.yllapitaja ? "Ylläpitäjänä et osallistu." : omat === null ? "Kirjaudu ja kirjoita, niin olet mukana." : "Sinulla on nyt <b>" + omat + " " + (omat === 1 ? "arpa" : "arpaa") + "</b>.";
       var h = '<div class="arvonta"><span class="arv-ik" aria-hidden="true">🎁</span><div>';
       if (kk) h += "<b>Arvomme 100 € K-ryhmän lahjakortin " + esc(kk.arvontaPv.replace(/\.20\d\d$/, ".")) + "</b>";
-      h += "<p>Jokainen kirjoitus ja kommentti on arpa (enintään " + j.maxPv + " päivässä). " + oma + "</p>";
+      h += "<p>Jokainen kirjoitus ja kommentti on arpa, ja kaverin kutsusta saat " + (j.kutsuArvat || 10) + " lisäarpaa. " + oma + "</p>";
       if (iso) {
         var max = iso.tasot[iso.tasot.length - 1].min, pros = Math.min(100, 100 * iso.kayttajia / max);
         h += '<div class="iso-arv"><b>Iso arvonta ' + esc(iso.arvontaPv.replace(/\.20\d\d$/, ".")) + ": nyt " + iso.nyt + " €</b>" +
