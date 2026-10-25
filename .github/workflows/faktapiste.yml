@@ -71,6 +71,9 @@ jobs:
           jq -n --arg a "${{ secrets.ANTHROPIC_API_KEY }}" --arg b "${{ secrets.BREVO_API_KEY }}" --arg t "${{ secrets.TELEGRAM_BOT_TOKEN }}" --arg h "$HALLINTA" --arg ms "${{ secrets.MSADS_CLIENT_SECRET }}" \
             '{ANTHROPIC_API_KEY:$a, BREVO_API_KEY:$b, TELEGRAM_BOT_TOKEN:$t, TG_CHAT:"1893930799", HALLINTA:$h, MSADS_CLIENT_SECRET:$ms}' > /tmp/s.json
           npx --yes wrangler@3.99.0 secret bulk /tmp/s.json; rm /tmp/s.json
+          # Tyhjennä Cloudflaren välimuisti, jotta uudet sivut näkyvät heti (muuten vanha HTML voi jäädä reunavälimuistiin)
+          Z=$(curl -sS -H "Authorization: Bearer $CF" "$API/zones?name=faktapiste.fi" | jq -r '.result[0].id // empty')
+          if [ -n "$Z" ]; then P=$(curl -sS -X POST "$API/zones/$Z/purge_cache" -H "Authorization: Bearer $CF" -H "content-type: application/json" -d '{"purge_everything":true}'); echo "::notice title=Välimuisti::$(echo "$P" | jq -c '{success, errors}')"; fi
       - name: Savutesti
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
