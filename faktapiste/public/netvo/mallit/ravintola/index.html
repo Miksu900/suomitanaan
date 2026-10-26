@@ -29,10 +29,11 @@ header.top{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px so
 .osio{padding:56px 0}
 .osio h2{font-size:clamp(1.5rem,4vw,2rem);text-align:center;margin-bottom:1em}
 .ruudut{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
-.kortti{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px}
+.kortti{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;display:flex;flex-wrap:wrap;align-items:center;gap:0 12px}
+.kortti h3,.kortti p{flex-basis:100%}
 .kortti h3{font-size:1.15rem}.kortti p{color:var(--mute);margin:0 0 10px}
 .kortti .hinta{font-weight:800;color:var(--p);font-size:1.1rem}
-.kortti .osta{display:inline-block;margin-top:10px;background:var(--pehmea);color:var(--p2);font-weight:700;text-decoration:none;padding:8px 16px;border-radius:9px}
+.kortti .osta{display:inline-block;margin:10px 0 0 auto;background:var(--pehmea);color:var(--p2);font-weight:700;text-decoration:none;padding:8px 16px;border-radius:9px}
 .kaksi{display:grid;gap:36px;grid-template-columns:1fr 1fr;align-items:start}
 @media(max-width:720px){.kaksi{grid-template-columns:1fr}}
 .edut{list-style:none;padding:0;margin:0;display:grid;gap:12px}
@@ -71,7 +72,9 @@ footer.jalka{background:#0c0c0e;color:#9a9aa0;text-align:center;padding:26px 16p
 </div></section>
 <section class="osio" id="palvelut"><div class="w"><h2>Ruokalista</h2><div class="ruudut"><div class="kortti"><h3>Lounas ma–pe</h3><p>Vaihtuva lounas, sis. salaatin, leivän ja kahvin.</p><span class="hinta">12,90 €</span></div><div class="kortti"><h3>À la carte</h3><p>Lähialueen raaka-aineista valmistetut annokset.</p><span class="hinta">iltaisin</span></div><div class="kortti"><h3>Juhlat ja tilaukset</h3><p>Katamme juhlat jopa 60 hengelle.</p><span class="hinta">tarjouksesta</span></div><div class="kortti"><h3>Noutoruoka</h3><p>Koko lista myös mukaan otettuna.</p></div></div></div></section>
 <section class="osio" id="meista"><div class="w kaksi"><div><h2>Tarina pöydässä</h2><p>Ravintola Aitta tarjoaa rehellistä, itse tehtyä ruokaa lähialueen tuottajilta.</p><p>Keittiömme vaihtaa listaa sesongin mukaan, joten jokaisella käynnillä on jotain uutta maistettavaa.</p></div><ul class="edut"><li><span class="ik"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 10-10"/></svg></span>Lähiruokaa</li><li><span class="ik"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 10-10"/></svg></span>Pöytävaraus verkossa</li><li><span class="ik"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 10-10"/></svg></span>Juhlatilat 60 hengelle</li><li><span class="ik"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 10-10"/></svg></span>Noutoruoka koko listalta</li></ul></div></section>
+
 <section class="osio arv"><div class="w"><h2>Mitä asiakkaat sanovat</h2><div class="arvot"><figure><p>&ldquo;Paras lounas kaupungissa, ja henkilökunta on ihana.&rdquo;</p><figcaption>— Riikka</figcaption></figure><figure><p>&ldquo;Pidimme syntymäpäivät täällä. Ruoka ja palvelu huippua.&rdquo;</p><figcaption>— Mikko</figcaption></figure></div></div></section>
+
 <section class="osio" id="yhteys" style="padding:56px 0"><div class="w"><h2>Ota yhteyttä</h2><div class="yht-grid">
 <div><a class="yht-rivi" href="tel:081234567"><span class="ik"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h4l2 5-3 2a12 12 0 006 6l2-3 5 2v4a2 2 0 01-2 2A16 16 0 014 6a2 2 0 010-2z"/></svg></span>08 123 4567</a><a class="yht-rivi" href="mailto:varaukset@ravintolaaitta.fi"><span class="ik"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></span>varaukset@ravintolaaitta.fi</a><a class="yht-rivi" href="#"><span class="ik"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6-7-11a7 7 0 1114 0c0 5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span>Torikatu 5, 90100 Oulu</a><div class="aukiolo"><h3>Aukioloajat</h3><table><tr><td>Ma–Pe</td><td>11–21</td></tr><tr><td>La</td><td>13–22</td></tr><tr><td>Su</td><td>13–19</td></tr></table></div></div>
 <form class="lomake" onsubmit="return false">
@@ -82,4 +85,5 @@ footer.jalka{background:#0c0c0e;color:#9a9aa0;text-align:center;padding:26px 16p
 </form>
 </div></div></section>
 <footer class="jalka">© Ravintola Aitta · Torikatu 5, 90100 Oulu · Sivuston toteuttaa Netvo</footer>
+
 </body></html>

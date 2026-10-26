@@ -29,10 +29,11 @@ header.top{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px so
 .osio{padding:56px 0}
 .osio h2{font-size:clamp(1.5rem,4vw,2rem);text-align:center;margin-bottom:1em}
 .ruudut{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
-.kortti{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px}
+.kortti{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;display:flex;flex-wrap:wrap;align-items:center;gap:0 12px}
+.kortti h3,.kortti p{flex-basis:100%}
 .kortti h3{font-size:1.15rem}.kortti p{color:var(--mute);margin:0 0 10px}
 .kortti .hinta{font-weight:800;color:var(--p);font-size:1.1rem}
-.kortti .osta{display:inline-block;margin-top:10px;background:var(--pehmea);color:var(--p2);font-weight:700;text-decoration:none;padding:8px 16px;border-radius:9px}
+.kortti .osta{display:inline-block;margin:10px 0 0 auto;background:var(--pehmea);color:var(--p2);font-weight:700;text-decoration:none;padding:8px 16px;border-radius:9px}
 .kaksi{display:grid;gap:36px;grid-template-columns:1fr 1fr;align-items:start}
 @media(max-width:720px){.kaksi{grid-template-columns:1fr}}
 .edut{list-style:none;padding:0;margin:0;display:grid;gap:12px}
@@ -69,9 +70,11 @@ footer.jalka{background:#0c0c0e;color:#9a9aa0;text-align:center;padding:26px 16p
 <p>Kotimaista käsityötä: villasukat, lapaset ja myssyt. Tilaa verkosta, toimitus koko Suomeen.</p>
 <div class="toim"><a class="nappi" href="#yhteys">Tilaa nyt</a><a class="nappi2" href="#palvelut">Katso tuotteet</a></div>
 </div></section>
-<section class="osio" id="palvelut"><div class="w"><h2>Tuotteet</h2><div class="ruudut"><div class="kortti"><h3>Villasukat</h3><p>Lämpimät villasukat, valitse koko ja väri.</p><span class="hinta">24 €</span><a class="osta" href="#yhteys">Tilaa</a></div><div class="kortti"><h3>Lapaset</h3><p>Perinteiset tai kuviolliset lapaset.</p><span class="hinta">19 €</span><a class="osta" href="#yhteys">Tilaa</a></div><div class="kortti"><h3>Pipo</h3><p>Pehmeät merinovillapipot aikuisille ja lapsille.</p><span class="hinta">22 €</span><a class="osta" href="#yhteys">Tilaa</a></div><div class="kortti"><h3>Lahjapaketti</h3><p>Sukat ja lapaset lahjapakkauksessa.</p><span class="hinta">39 €</span><a class="osta" href="#yhteys">Tilaa</a></div></div></div></section>
+<section class="osio" id="palvelut"><div class="w"><h2>Tuotteet</h2><div class="ruudut"><div class="kortti"><h3>Villasukat</h3><p>Lämpimät villasukat, valitse koko ja väri.</p><span class="hinta">24 €</span><button type="button" class="osta" data-nimi="Villasukat" data-hinta="24 €">Lisää koriin</button></div><div class="kortti"><h3>Lapaset</h3><p>Perinteiset tai kuviolliset lapaset.</p><span class="hinta">19 €</span><button type="button" class="osta" data-nimi="Lapaset" data-hinta="19 €">Lisää koriin</button></div><div class="kortti"><h3>Pipo</h3><p>Pehmeät merinovillapipot aikuisille ja lapsille.</p><span class="hinta">22 €</span><button type="button" class="osta" data-nimi="Pipo" data-hinta="22 €">Lisää koriin</button></div><div class="kortti"><h3>Lahjapaketti</h3><p>Sukat ja lapaset lahjapakkauksessa.</p><span class="hinta">39 €</span><button type="button" class="osta" data-nimi="Lahjapaketti" data-hinta="39 €">Lisää koriin</button></div></div></div></section>
 <section class="osio" id="meista"><div class="w kaksi"><div><h2>Tehty rakkaudella</h2><p>Jokainen tuote on neulottu käsin kotimaisesta villasta. Ei kahta täysin samanlaista.</p><p>Tilaa verkkokaupasta, niin toimitamme tuotteet nopeasti postitse koko Suomeen.</p></div><ul class="edut"><li><span class="ik"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 10-10"/></svg></span>Käsintehtyjä</li><li><span class="ik"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 10-10"/></svg></span>Kotimaista villaa</li><li><span class="ik"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 10-10"/></svg></span>Toimitus koko Suomeen</li><li><span class="ik"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 10-10"/></svg></span>Lahjapakkaus saatavilla</li></ul></div></section>
+<section class="osio" id="kori"><div class="w kaksi"><div><h2>Ostoskori</h2><ul id="korilista" style="padding-left:18px;line-height:1.8"></ul><p id="kori-yht" style="font-weight:800;color:var(--p)">Kori on tyhjä</p></div><form class="lomake" id="tilaus"><input name="nimi" placeholder="Nimi" required><input name="sposti" type="email" placeholder="Sähköposti" required><input name="puh" placeholder="Puhelin"><input name="osoite" placeholder="Toimitusosoite" required><button type="submit">Lähetä tilaus</button><p style="color:#9a9aa0;font-size:.82rem;margin:0">Mallisivulla tilaus avaa sähköpostin. Maksua ei veloiteta.</p></form></div></div></section>
 <section class="osio arv"><div class="w"><h2>Mitä asiakkaat sanovat</h2><div class="arvot"><figure><p>&ldquo;Lämpimimmät sukat ikinä. Tilasin heti lisää lahjaksi.&rdquo;</p><figcaption>— Eeva</figcaption></figure><figure><p>&ldquo;Ihana laatu ja nopea toimitus. Suosittelen lämpimästi.&rdquo;</p><figcaption>— Sanna</figcaption></figure></div></div></section>
+<section class="osio"><div class="w teksti" style="text-align:center"><h2>Kauppa Käyntiin – 99 €/kk</h2><p style="max-width:58ch;margin:0 auto">Rakennamme kaupan niin, että voit liittää minkä tahansa suomalaisen maksupalvelun, etkä ole sidottu meihin. Maksupalvelun sopimuksen teet suoraan palveluntarjoajan kanssa, maksut menevät suoraan sinulle, ja maksupalvelun kulut maksat palveluntarjoajalle.</p><p style="max-width:58ch;margin:16px auto 0">Ylläpitoon kuuluu nopea hosting Suomessa, SSL, päivittäiset varmuuskopiot ja päivitykset. Tuki arkisin 9–21, vastaus 2 h. Sisältää 1 h pieniä muutoksia kuukaudessa ja yhden yhteyshenkilön.</p><p style="max-width:58ch;margin:16px auto 0">Isommat verkkokaupat räätälöidään, pyydä tarjous.</p><p style="margin-top:20px"><a class="nappi" href="mailto:info@netvo.fi?subject=Netvo%20-%20Kauppa%20K%C3%A4yntiin">Pyydä kauppa käyntiin</a></p></div></section>
 <section class="osio" id="yhteys" style="padding:56px 0"><div class="w"><h2>Ota yhteyttä</h2><div class="yht-grid">
 <div><a class="yht-rivi" href="tel:0504445566"><span class="ik"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h4l2 5-3 2a12 12 0 006 6l2-3 5 2v4a2 2 0 01-2 2A16 16 0 014 6a2 2 0 010-2z"/></svg></span>050 444 5566</a><a class="yht-rivi" href="mailto:myynti@villajalanka.fi"><span class="ik"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></span>myynti@villajalanka.fi</a><a class="yht-rivi" href="#"><span class="ik"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6-7-11a7 7 0 1114 0c0 5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span>Verkkokauppa, toimitus koko Suomeen</a><div class="aukiolo"><h3>Aukioloajat</h3><table><tr><td>Verkkokauppa</td><td>auki 24/7</td></tr><tr><td>Tilausten käsittely</td><td>ma–pe</td></tr><tr><td></td><td></td></tr></table></div></div>
 <form class="lomake" onsubmit="return false">
@@ -82,4 +85,21 @@ footer.jalka{background:#0c0c0e;color:#9a9aa0;text-align:center;padding:26px 16p
 </form>
 </div></div></section>
 <footer class="jalka">© Villa &amp; Lanka · Verkkokauppa, toimitus koko Suomeen · Sivuston toteuttaa Netvo</footer>
+<script>
+var KORI={};
+function eur(c){return (c/100).toFixed(2).replace('.',',')+' €';}
+function hintaCent(h){var m=(h||'').replace(/\s/g,'').replace(',','.').match(/[0-9.]+/);return m?Math.round(parseFloat(m[0])*100):0;}
+function paivita(){var l=document.getElementById('korilista');l.innerHTML='';var tot=0,n=0;
+ Object.keys(KORI).forEach(function(k){var r=KORI[k];if(r.maara<1)return;n++;tot+=r.hinta*r.maara;
+  var li=document.createElement('li');li.textContent=r.maara+' kpl '+r.nimi+' – '+eur(r.hinta*r.maara);l.appendChild(li);});
+ document.getElementById('kori-yht').textContent=n?'Yhteensä '+eur(tot):'Kori on tyhjä';return tot;}
+document.querySelectorAll('.osta[data-nimi]').forEach(function(b){b.addEventListener('click',function(){
+ var n=b.getAttribute('data-nimi');KORI[n]=KORI[n]||{nimi:n,hinta:hintaCent(b.getAttribute('data-hinta')),maara:0};KORI[n].maara++;paivita();
+ document.getElementById('kori').scrollIntoView({behavior:'smooth'});});});
+document.getElementById('tilaus').addEventListener('submit',function(e){e.preventDefault();var f=e.target;
+ var rivit=Object.keys(KORI).filter(function(k){return KORI[k].maara>0}).map(function(k){var r=KORI[k];return r.maara+' kpl '+r.nimi+' ('+eur(r.hinta*r.maara)+')';});
+ if(!rivit.length){document.getElementById('kori-yht').textContent='Lisää ensin tuotteita koriin';return;}
+ var body=['Tilaus:'].concat(rivit,['',document.getElementById('kori-yht').textContent,'','Nimi: '+f.nimi.value,'Sähköposti: '+f.sposti.value,'Puhelin: '+f.puh.value,'Osoite: '+f.osoite.value,'','Mallisivu: tilaus lähtee sähköpostina.']).join('\n');
+ location.href='mailto:info@netvo.fi?subject='+encodeURIComponent('Tilaus')+'&body='+encodeURIComponent(body);});
+</script>
 </body></html>

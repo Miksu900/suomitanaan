@@ -113,7 +113,6 @@ runko = f"""<section class="fp-intro"><div class="w">
 <div id="fp-paa">
 <div id="fp-asenna"></div>
 <div id="fp-opastus"></div>
-<div id="fp-arvonta"></div>
 <div id="fp-kirjoita"></div>
 <div class="tabit" id="fp-tabit" role="tablist" aria-label="Syöte"></div>
 <div class="saato" id="fp-saato" hidden></div>
@@ -200,7 +199,6 @@ Käyttäjiksi lasketaan omalla nimellä rekisteröityneet tilit, joita ei ole su
 </ul>
 <p><a class="nappi" href="/">Kirjoita keskusteluun →</a></p>
 </section>"""
-kirjoita("/arvonta/", sivu("/arvonta/", "Arvonta: jopa 1000 € | Faktapiste", "Faktapiste arpoo 1.12.2026 jopa 1000 euroa rahana tai lahjakorttina käyttäjämäärän mukaan. Säännöt ja ehdot.", ARVONTA_RUNKO))
 kirjoita("/tietoa/", sivu("/tietoa/", "Tietoa ja tietosuoja | Faktapiste", "Mikä Faktapiste on, kuka sitä ylläpitää, keskustelun säännöt, tietosuoja ja käyttöehdot.", runko))
 
 # ---- Yksityisyysvahti ----
@@ -350,7 +348,7 @@ kirjoita("/laskurit/", sivu("/laskurit/", "Laskurit – ilmaiset laskurit rahaan
 
 (ROOT / "robots.txt").write_text(f"User-agent: *\nAllow: /\nSitemap: {SITE}/sitemap.xml\n", encoding="utf-8")
 (ROOT / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
-    + "".join(f"<url><loc>{SITE}{p}</loc></url>" for p in ["/", "/palvelut/", "/tietoa/", "/yksityisyys/", "/arvonta/", "/laskurit/"] + [f"/laskurit/{l['slug']}/" for l in LASKURIT]) + "</urlset>", encoding="utf-8")
+    + "".join(f"<url><loc>{SITE}{p}</loc></url>" for p in ["/", "/palvelut/", "/tietoa/", "/yksityisyys/", "/laskurit/"] + [f"/laskurit/{l['slug']}/" for l in LASKURIT]) + "</urlset>", encoding="utf-8")
 # ---- Nettikoti: /nettikoti/ (oma brändi, esikatselu Faktapisteen alustalla) ----
 from nettisivut import rakenna_nettikoti
 _n = rakenna_nettikoti(ROOT)

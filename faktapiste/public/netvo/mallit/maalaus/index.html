@@ -29,10 +29,11 @@ header.top{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px so
 .osio{padding:56px 0}
 .osio h2{font-size:clamp(1.5rem,4vw,2rem);text-align:center;margin-bottom:1em}
 .ruudut{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
-.kortti{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px}
+.kortti{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;display:flex;flex-wrap:wrap;align-items:center;gap:0 12px}
+.kortti h3,.kortti p{flex-basis:100%}
 .kortti h3{font-size:1.15rem}.kortti p{color:var(--mute);margin:0 0 10px}
 .kortti .hinta{font-weight:800;color:var(--p);font-size:1.1rem}
-.kortti .osta{display:inline-block;margin-top:10px;background:var(--pehmea);color:var(--p2);font-weight:700;text-decoration:none;padding:8px 16px;border-radius:9px}
+.kortti .osta{display:inline-block;margin:10px 0 0 auto;background:var(--pehmea);color:var(--p2);font-weight:700;text-decoration:none;padding:8px 16px;border-radius:9px}
 .kaksi{display:grid;gap:36px;grid-template-columns:1fr 1fr;align-items:start}
 @media(max-width:720px){.kaksi{grid-template-columns:1fr}}
 .edut{list-style:none;padding:0;margin:0;display:grid;gap:12px}
@@ -71,7 +72,9 @@ footer.jalka{background:#0c0c0e;color:#9a9aa0;text-align:center;padding:26px 16p
 </div></section>
 <section class="osio" id="palvelut"><div class="w"><h2>Palvelut</h2><div class="ruudut"><div class="kortti"><h3>Sisämaalaus</h3><p>Seinät, katot ja listat puhtaaseen jälkeen.</p></div><div class="kortti"><h3>Ulkomaalaus</h3><p>Julkisivut ja terassit säänkestävin maalein.</p></div><div class="kortti"><h3>Tapetointi</h3><p>Perinteiset ja kuviotapetit asennettuna.</p></div><div class="kortti"><h3>Ruiskumaalaus</h3><p>Ovet ja kalusteet tasaiseen tehdasmaiseen pintaan.</p></div></div></div></section>
 <section class="osio" id="meista"><div class="w kaksi"><div><h2>Huolellista maalausta</h2><p>Teemme maalaukset huolella: pohjatyöt kunnolla, kalusteet suojataan ja jäljet siivotaan.</p><p>Autamme mielellämme myös sävyjen valinnassa, jotta lopputulos on juuri toiveidesi mukainen.</p></div><ul class="edut"><li><span class="ik"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 10-10"/></svg></span>Kalusteiden suojaus</li><li><span class="ik"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 10-10"/></svg></span>Siistit jäljet</li><li><span class="ik"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 10-10"/></svg></span>Apua sävyvalintaan</li><li><span class="ik"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 10-10"/></svg></span>Kotitalousvähennys hyödynnettävissä</li></ul></div></section>
+
 <section class="osio arv"><div class="w"><h2>Mitä asiakkaat sanovat</h2><div class="arvot"><figure><p>&ldquo;Koti näyttää uudelta. Tarkkaa ja siistiä työtä.&rdquo;</p><figcaption>— Heli</figcaption></figure><figure><p>&ldquo;Julkisivu maalattiin nopeasti ja siististi. Suosittelen.&rdquo;</p><figcaption>— Markku</figcaption></figure></div></div></section>
+
 <section class="osio" id="yhteys" style="padding:56px 0"><div class="w"><h2>Ota yhteyttä</h2><div class="yht-grid">
 <div><a class="yht-rivi" href="tel:0443210987"><span class="ik"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h4l2 5-3 2a12 12 0 006 6l2-3 5 2v4a2 2 0 01-2 2A16 16 0 014 6a2 2 0 010-2z"/></svg></span>044 321 0987</a><a class="yht-rivi" href="mailto:tarjous@maalausaho.fi"><span class="ik"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></span>tarjous@maalausaho.fi</a><a class="yht-rivi" href="#"><span class="ik"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6-7-11a7 7 0 1114 0c0 5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span>Maalaritie 1, 84100 Ylivieska</a><div class="aukiolo"><h3>Aukioloajat</h3><table><tr><td>Ma–Pe</td><td>7–16</td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr></table></div></div>
 <form class="lomake" onsubmit="return false">
@@ -82,4 +85,5 @@ footer.jalka{background:#0c0c0e;color:#9a9aa0;text-align:center;padding:26px 16p
 </form>
 </div></div></section>
 <footer class="jalka">© Maalaus Aho · Maalaritie 1, 84100 Ylivieska · Sivuston toteuttaa Netvo</footer>
+
 </body></html>
