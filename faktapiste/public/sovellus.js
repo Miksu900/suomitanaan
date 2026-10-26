@@ -356,7 +356,6 @@
       '<label>Salasana<input type="password" name="salasana" autocomplete="current-password" placeholder="Jätä tyhjäksi, jos olet uusi"></label>' +
       '<p class="pieni">Uusi käyttäjä tai unohtunut salasana? Jätä salasana tyhjäksi, niin lähetämme sähköpostiisi kirjautumislinkin. Sen jälkeen voit asettaa salasanan.</p>' +
       '<p class="pieni">Kirjautumalla hyväksyt <a href="/tietoa/#keskustelu">keskustelun säännöt ja tietosuojan</a>.</p>' +
-      '<p class="ehto">Kirjoitukset ja kommentit ovat mukana Faktapisteen arvonnoissa. Osallistumalla hyväksyt <a href="/arvonta/" target="_blank" rel="noopener">arvonnan säännöt</a>.</p>' +
       '<div class="rivi"><button type="button" class="nappi toissijainen" data-sulje>Peruuta</button><button class="nappi" value="laheta">Kirjaudu</button></div></form>';
     DLG.showModal();
   }
