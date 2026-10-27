@@ -11,6 +11,9 @@ body{margin:0;font:16px/1.65 -apple-system,"Segoe UI",Roboto,Helvetica,Arial,san
 a{color:var(--p)}
 h1,h2,h3{line-height:1.2;margin:0 0 .5em}
 header.top{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid var(--line)}
+.ylaoik{display:flex;align-items:center;gap:10px}.puh{color:var(--p);text-decoration:none;white-space:nowrap;font-size:1.02rem}.puh b{font-weight:800}
+@media(max-width:560px){.ylaoik .nappi{display:none}.puh{background:var(--p);color:#fff;padding:9px 14px;border-radius:999px}}
+.nappi.toissij{background:#fff;color:var(--p);border:2px solid var(--p)}
 .top .w{display:flex;align-items:center;justify-content:space-between;height:66px}
 .logo{font-weight:800;font-size:1.3rem;color:var(--p);text-decoration:none}
 .logo span{color:var(--vihrea)}
@@ -65,7 +68,7 @@ footer.jalka a{color:#cfd0d4}
 <body>
 <header class="top"><div class="w">
 <a class="logo" href="/">Net<span>vo</span></a>
-<a class="nappi" href="#yhteys">Ota yhteyttä</a>
+<span class="ylaoik"><a class="puh" href="tel:+358447777149" aria-label="Soita 044 777 7149">📞 <b>044 777 7149</b></a><a class="nappi" href="#yhteys">Ota yhteyttä</a></span>
 </div></header>
 <section class="osio"><div class="w teksti">
 <h1>Sopimusehdot</h1>
@@ -88,6 +91,8 @@ footer.jalka a{color:#cfd0d4}
 <p class="keskita"><a class="nappi" href="/">← Takaisin etusivulle</a></p>
 </div></section>
 <footer class="jalka"><p><b>Netvo</b> – valmiit nettisivut suomalaisille yrityksille.</p>
-<p>Yhteys: info@netvo.fi · <a href="/ehdot/">Sopimusehdot</a></p>
+<p style="font-size:1.05rem;color:#fff">Soita <a href="tel:+358447777149"><b>044 777 7149</b></a> (arkisin 9–21) · info@netvo.fi</p>
+<p><a href="/ehdot/">Sopimusehdot</a></p>
 <p>Netvo on osa Faktapisteen palveluita.</p></footer>
+<script src="https://kauppa.netvo.fi/tuki.js" defer></script>
 </body></html>
