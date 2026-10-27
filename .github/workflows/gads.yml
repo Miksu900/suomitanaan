@@ -7,6 +7,7 @@ on:
       koodi: { description: "Kertakäyttöinen kirjautumiskoodi (vaihda)", required: false, default: "" }
       asiakas: { description: "Asiakastunnus (kysely)", required: false, default: "456-672-2878" }
       kysely: { description: "GAQL-kysely", required: false, default: "" }
+      versio: { description: "API-versio (tyhjä = oletus)", required: false, default: "" }
 jobs:
   ajo:
     runs-on: ubuntu-latest
@@ -20,6 +21,7 @@ jobs:
           KOODI: ${{ inputs.koodi }}
           ASIAKAS: ${{ inputs.asiakas }}
           KYSELY: ${{ inputs.kysely }}
+          GADS_VER: ${{ inputs.versio || 'v24' }}
         run: |
           for k in $KOODI; do echo "::add-mask::$k"; done
           export HALLINTA=$(printf '%s' "$CF-faktapiste" | sha256sum | cut -c1-40)
