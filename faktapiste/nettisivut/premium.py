@@ -58,6 +58,10 @@ def villa(folder):
         "css": {"bg": "#f7f2ec", "card": "#fffdfa", "soft": "#efe6dc", "line": "#e6dbcf", "text": "#2a1a22", "muted": "#7a6b70", "acc": "#7a2a43", "acc2": "#c9a86a", "ink": "#fff",
                 "fh": '"Iowan Old Style","Palatino Linotype","Book Antiqua",Palatino,Georgia,serif', "fb": 'ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif', "r": "4px"},
         "cover": _svg(folder, "kansi", K.kansi_villa()),
+        "photos": {"hero": "photo-1742386676097-a2a55fcdcc64", "story": "photo-1597736091383-2976f665d932", "nl": "photo-1584992236310-6edddc08acff",
+                   "band": ["photo-1614587431569-caafde7537d3", "Talvi on pitkä. Villa on lämmin.", "Neulomme tuotteet pohjoisen talveen: tiivistä, kestävää ja lämmintä vielä märkänäkin."],
+                   "tiles": {"Sukat": "photo-1730448111621-c0524e75b0e8", "Lapaset": "photo-1730098016553-2844f370607d", "Pipot": "photo-1544967919-44c1ef2f9e7a",
+                             "Huivit": "photo-1491245257527-395e9c480145", "Lahjat": "photo-1707944145479-12755f0434d8", "Langat": "photo-1598871956222-26b66d6559fe"}},
         "nav": ["Sukat", "Lapaset", "Pipot", "Huivit", "Lahjat", "Langat"],
         "free": 6000, "products": P, "gift": 400, "sizeguide": True,
         "ship": [["Posti – pakettiautomaatti", 590, "1–3 arkipäivää"], ["Matkahuolto – lähellä-paketti", 590, "1–3 arkipäivää"], ["Posti – kotiinkuljetus", 990, "2–4 arkipäivää"]],
@@ -103,6 +107,10 @@ def leipomo(folder):
         "css": {"bg": "#faf5ec", "card": "#fffdf8", "soft": "#f1e7d6", "line": "#e9dcc6", "text": "#2b1d14", "muted": "#7d6c5c", "acc": "#8a4b22", "acc2": "#d8a23c", "ink": "#fff",
                 "fh": 'Georgia,"Iowan Old Style","Palatino Linotype",serif', "fb": 'ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif', "r": "18px"},
         "cover": _svg(folder, "kansi", K.kansi_leipomo()),
+        "photos": {"hero": "photo-1548228623-13e55dd16984", "story": "photo-1652283319196-9288add2d60c", "nl": "photo-1762754104628-cb53c14d79b7",
+                   "band": ["photo-1787648065226-67c905836b4f", "Jauhot Pohjanmaan pelloilta", "Ruis ja vehnä jauhetaan lähimyllyssä. Lyhyt matka pellolta uuniin maistuu leivässä."],
+                   "tiles": {"Leivät": "photo-1509440159596-0249088772ff", "Pullat": "photo-1609126979532-0f514232d1a8", "Suolaiset": "photo-1741768785646-956b38de4903",
+                             "Kakut": "photo-1650419424455-d0513aaf0dd6", "Gluteenittomat": "photo-1635627363683-25f5adc35eb5"}},
         "nav": ["Leivät", "Pullat", "Suolaiset", "Kakut", "Gluteenittomat"],
         "free": 3500, "products": P, "bakery": True,
         "ship": [["Nouto leipomosta", 0, "Leipurinkuja 2, Ylivieska"], ["Kotiinkuljetus", 490, "Ylivieska, Alavieska, Sievi, Nivala · ma–la"]],
@@ -183,6 +191,10 @@ section.s{padding:76px 0}.sh{display:flex;justify-content:space-between;align-it
 .revs{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}@media(max-width:860px){.revs{grid-template-columns:1fr}}.rev{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:26px}.rev p{font-family:var(--fh);font-size:1.18rem;line-height:1.45;margin:10px 0 16px}
 .faqw{display:grid;grid-template-columns:1fr 1.4fr;gap:40px}@media(max-width:760px){.faqw{grid-template-columns:1fr;gap:10px}}.faq details{border-bottom:1px solid var(--line)}.faq summary{cursor:pointer;list-style:none;padding:18px 0;font-weight:600;display:flex;justify-content:space-between}.faq summary::-webkit-details-marker{display:none}.faq summary:after{content:"+";font-size:1.4rem;font-weight:300}.faq details[open] summary:after{content:"–"}.faq details p{margin:0 0 18px;color:var(--muted)}
 .nl{background:var(--acc);color:var(--ink);border-radius:var(--r);padding:clamp(30px,6vw,60px);display:grid;grid-template-columns:1.2fr 1fr;gap:30px;align-items:center}@media(max-width:860px){.nl{grid-template-columns:1fr}}
+.band{position:relative;color:#fff;text-align:center;padding:clamp(90px,16vw,180px) 0;background:#222 var(--bimg) center/cover no-repeat;isolation:isolate}@media(min-width:900px) and (hover:hover){.band{background-attachment:fixed}}
+.band:before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.32),rgba(0,0,0,.6));z-index:-1}.band h2{color:#fff;font-size:clamp(2rem,5vw,3.6rem);text-wrap:balance;margin:0 auto 14px;max-width:18ch}.band p{max-width:52ch;margin:0 auto 26px;font-size:1.12rem;opacity:.92}
+.nl.ph{position:relative;isolation:isolate;overflow:hidden;background:var(--acc) var(--nimg) center/cover}.nl.ph:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,color-mix(in srgb,var(--acc) 92%,transparent),color-mix(in srgb,var(--acc) 55%,transparent));z-index:-1}
+.hero>img{animation:kb 22s ease-out both}@keyframes kb{from{transform:scale(1.08)}to{transform:scale(1)}}@media(prefers-reduced-motion:reduce){.hero>img{animation:none}}
 .nl>*{min-width:0}.nl form{display:flex;gap:8px;flex-wrap:wrap}.nl h2{overflow-wrap:anywhere}.nl input{flex:1;min-width:0;padding:15px 16px;border-radius:var(--r);border:0;font:inherit}.nl .btn{background:var(--text);color:var(--bg)}
 footer{background:var(--text);color:color-mix(in srgb,var(--bg) 80%,transparent);padding:60px 0 30px;margin-top:80px;font-size:.92rem}footer h4{font-family:var(--fh);font-weight:500;font-size:1.1rem;color:var(--bg);margin:0 0 12px}
 .fc{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:30px}@media(max-width:860px){.fc{grid-template-columns:1fr 1fr}}footer a{text-decoration:none}footer ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
@@ -357,6 +369,18 @@ def page(c):
     st = c["story"]
     hero = c["hero"]
     story_img = next((p.get("img") or p["colors"][0]["img"]) for p in P)
+    ph = c.get("photos") or {}
+    U = lambda i, w, h=None: f"https://images.unsplash.com/{i}?auto=format&fit=crop&w={w}{f'&h={h}' if h else ''}&q=72"
+    SS = lambda i, ws, ar=None: ", ".join(f"{U(i, w, int(w * ar) if ar else None)} {w}w" for w in ws)
+    if ph.get("tiles"):
+        tiles = [(n, U(ph["tiles"][n], 520, 650)) if n in ph["tiles"] else (n, im) for n, im in tiles]
+    hero_img = (f'<img src="{U(ph["hero"], 1600)}" srcset="{SS(ph["hero"], (800, 1200, 1600, 2200))}" sizes="100vw" alt="" fetchpriority="high">' if ph.get("hero") else f'<img src="{c["cover"]}" alt="">')
+    story_tag = (f'<img src="{U(ph["story"], 900, 900)}" srcset="{SS(ph["story"], (500, 900, 1300), 1)}" sizes="(max-width:860px) 100vw, 50vw" alt="" loading="lazy">' if ph.get("story") else f'<img src="{story_img}" alt="" loading="lazy">')
+    band = ""
+    if ph.get("band"):
+        bi, bh, bp = ph["band"]
+        band = f'<section class="band" style="--bimg:url({U(bi, 2000)})"><div class="w"><h2>{esc(bh)}</h2><p>{esc(bp)}</p><a class="btn light" href="#tuotteet">Tutustu tuotteisiin →</a></div></section>'
+    nl_style = f' style="--nimg:url({U(ph["nl"], 1600)})"' if ph.get("nl") else ""
     return f"""<!doctype html><html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>{esc(c['title'])}</title><meta name="description" content="{esc(c['meta'])}"><meta name="robots" content="noindex"><meta name="theme-color" content="{css['acc']}">
 <style>:root{{{root}}}{CSS}</style></head><body>
@@ -366,7 +390,7 @@ def page(c):
 <nav class="main" aria-label="Valikko">{''.join(f'<a href="#tuotteet" data-cat="{esc(n)}">{esc(n)}</a>' for n in cats)}<a href="#tarina">Meistä</a></nav></div>
 <a class="brand" href="#">{esc(c['name'])}<small>{esc(c['tagline'])}</small></a>
 <div class="tools"><button class="ic" data-search aria-label="Hae">{I['search']}</button><button class="ic hide-m" aria-label="Suosikit" onclick="document.getElementById('tuotteet').scrollIntoView()">{I['heart']}<b class="cnt" data-fc hidden>0</b></button><button class="ic" data-cart aria-label="Ostoskori">{I['bag']}<b class="cnt" data-cc hidden>0</b></button></div></div></header>
-<section class="hero"><img src="{c['cover']}" alt=""><div class="w"><div class="in"><span class="kick">{esc(hero['kicker'])}</span><h1>{esc(hero['h'])}</h1><p>{esc(hero['p'])}</p>
+<section class="hero">{hero_img}<div class="w"><div class="in"><span class="kick">{esc(hero['kicker'])}</span><h1>{esc(hero['h'])}</h1><p>{esc(hero['p'])}</p>
 <a class="btn light" href="#tuotteet">{esc(hero['cta'])} →</a>{' <span data-open-now style="margin-left:16px;color:#fff"></span>' if c.get('hours') else ''}</div></div></section>
 <div class="usp">{''.join(f'<div><b>{esc(a)}</b><span>{esc(b)}</span></div>' for a, b in c['usp'])}</div>
 <section class="s"><div class="w"><div class="sh"><div><span class="eyebrow">Kategoriat</span><h2>Löydä suosikkisi</h2></div></div>
@@ -375,17 +399,17 @@ def page(c):
 <div class="filters" id="chips"><button class="chip on" data-cat="Kaikki">Kaikki</button>{''.join(f'<button class="chip" data-cat="{esc(n)}">{esc(n)}</button>' for n in cats)}
 <label class="small muted" for="sort" style="margin-left:auto">Järjestä</label><select id="sort" style="margin-left:0"><option value="pop">Suosituimmat</option><option value="rate">Parhaiksi arvioidut</option><option value="low">Halvin ensin</option><option value="high">Kallein ensin</option></select></div>
 <div class="grid" id="grid"></div></div></section>
-<section class="s" id="tarina" style="background:var(--card);border-block:1px solid var(--line)"><div class="w story"><div class="pic"><img src="{story_img}" alt="" loading="lazy"></div><div><span class="eyebrow">Tarinamme</span><h2 style="font-size:clamp(1.8rem,4vw,2.8rem)">{esc(st['h'])}</h2>{''.join(f'<p class="muted" style="font-size:1.08rem">{esc(x)}</p>' for x in st['p'])}
+<section class="s" id="tarina" style="background:var(--card);border-block:1px solid var(--line)"><div class="w story"><div class="pic">{story_tag}</div><div><span class="eyebrow">Tarinamme</span><h2 style="font-size:clamp(1.8rem,4vw,2.8rem)">{esc(st['h'])}</h2>{''.join(f'<p class="muted" style="font-size:1.08rem">{esc(x)}</p>' for x in st['p'])}
 <div class="stats">{''.join(f'<div><b>{esc(a)}</b><span>{esc(b)}</span></div>' for a, b in st['stats'])}</div>{('<h3 style="margin-top:30px">Aukioloajat</h3><table class="hrs">' + ''.join(f'<tr><td>{esc(d)}</td><td>{f"{a}–{b}" if a else "suljettu"}</td></tr>' for d, a, b in c['hours']) + '</table><p data-open-now></p>') if c.get('hours') else ''}</div></div></section>
-<section class="s"><div class="w"><div class="sh"><div><span class="eyebrow">Asiakkaat sanovat</span><h2>4,9 / 5 tähteä</h2></div></div>
+{band}<section class="s"><div class="w"><div class="sh"><div><span class="eyebrow">Asiakkaat sanovat</span><h2>4,9 / 5 tähteä</h2></div></div>
 <div class="revs">{''.join(f'<div class="rev"><span class="stars">{"★" * r}</span><p>”{esc(t)}”</p><b>{esc(n)}</b><br><span class="small muted">Vahvistettu ostaja · {esc(pr)}</span></div>' for n, r, t, pr in c['reviews'])}</div></div></section>
 <section class="s" style="padding-top:0"><div class="w faqw"><div><span class="eyebrow">Apua</span><h2>Usein kysyttyä</h2><p class="muted">Etkö löytänyt vastausta? {esc(c['contact'][0])} · {esc(c['contact'][1])}</p></div>
 <div class="faq">{''.join(f'<details><summary>{esc(q)}</summary><p>{esc(a)}</p></details>' for q, a in c['faq'])}</div></div></section>
-<section class="s" style="padding-top:0"><div class="w"><div class="nl"><div><h2 style="color:var(--ink)">Liity kanta-asiakkaaksi – saat 10 %</h2><p style="opacity:.9;margin:0">Uutuudet ja tarjoukset ensimmäisenä. Ei roskapostia.</p></div>
+<section class="s" style="padding-top:0"><div class="w"><div class="nl{' ph' if nl_style else ''}"{nl_style}><div><h2 style="color:var(--ink)">Liity kanta-asiakkaaksi – saat 10 %</h2><p style="opacity:.9;margin:0">Uutuudet ja tarjoukset ensimmäisenä. Ei roskapostia.</p></div>
 <form onsubmit="event.preventDefault();this.innerHTML='<p style=&quot;margin:0;font-weight:700&quot;>Kiitos! Koodi TERVETULOA10 on matkalla sähköpostiisi.</p>'"><label class="sr" for="nle" style="position:absolute;left:-9999px">Sähköposti</label><input id="nle" type="email" required placeholder="sähköposti@esimerkki.fi"><button class="btn">Liity</button></form></div></div></section>
 <footer><div class="w"><div class="fc"><div><h4>{esc(c['name'])}</h4><p>{esc(c['meta'])}</p></div><div><h4>Kauppa</h4><ul>{''.join(f'<li><a href="#tuotteet" data-cat="{esc(n)}">{esc(n)}</a></li>' for n in cats)}</ul></div>
 <div><h4>Asiakaspalvelu</h4><ul><li>Toimitus ja palautus</li><li>Tilauksen seuranta</li><li>Usein kysytyt</li><li>Tietosuoja</li></ul></div><div><h4>Yhteys</h4><ul><li>{esc(c['contact'][0])}</li><li>{esc(c['contact'][1])}</li></ul></div></div>
-<div class="pays"><span>Verkkopankit</span><span>MobilePay</span><span>Visa</span><span>Mastercard</span><span>Apple Pay</span><span>Google Pay</span><span>Lasku</span><span style="margin-left:auto;border:0;font-weight:500">Toteutus: <a href="https://netvo.fi/" style="color:#ffd24a">Netvo – räätälöity verkkokauppa</a></span></div></div></footer>
+<div class="pays"><span>Verkkopankit</span><span>MobilePay</span><span>Visa</span><span>Mastercard</span><span>Apple Pay</span><span>Google Pay</span><span>Lasku</span>{'<span style="border:0;opacity:.7">Kuvat: Unsplash</span>' if ph else ''}<span style="margin-left:auto;border:0;font-weight:500">Toteutus: <a href="https://netvo.fi/" style="color:#ffd24a">Netvo – räätälöity verkkokauppa</a></span></div></div></footer>
 <div class="ov" id="cartov"><div class="bg"></div><aside class="drawer" role="dialog" aria-modal="true" aria-label="Ostoskori"><div class="dh"><h3>Ostoskori</h3><button class="ic" data-close aria-label="Sulje">{I['x']}</button></div><div class="db" id="cartb"></div><div class="df" id="cartf"></div></aside></div>
 <div class="ov" id="pov"><div class="bg"></div><div class="modal" role="dialog" aria-modal="true" aria-label="Tuote"><button class="ic x" data-close aria-label="Sulje">{I['x']}</button><div class="mg"><img id="pimg" alt=""></div><div class="mi" id="pinfo"></div></div></div>
 <div class="ov" id="coov"><div class="bg"></div><div class="co" role="dialog" aria-modal="true" aria-label="Kassa"><button class="ic x" data-close aria-label="Sulje" style="position:absolute;right:12px;top:12px;z-index:3">{I['x']}</button><div class="l" id="col"></div><div class="r" id="cor"></div></div></div>
