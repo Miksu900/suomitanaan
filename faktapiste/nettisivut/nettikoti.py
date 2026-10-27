@@ -8,6 +8,8 @@ from .data import DEMOT
 
 esc = html.escape
 YHTEYS = "info@netvo.fi"
+PUHELIN = "044 777 7149"
+PUHELIN_TEL = "+358447777149"
 
 HINTA_KK = 25
 SITOUTUS = "12 tai 24 kuukautta"
@@ -36,6 +38,9 @@ body{{margin:0;font:16px/1.65 -apple-system,"Segoe UI",Roboto,Helvetica,Arial,sa
 a{{color:var(--p)}}
 h1,h2,h3{{line-height:1.2;margin:0 0 .5em}}
 header.top{{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid var(--line)}}
+.ylaoik{{display:flex;align-items:center;gap:10px}}.puh{{color:var(--p);text-decoration:none;white-space:nowrap;font-size:1.02rem}}.puh b{{font-weight:800}}
+@media(max-width:560px){{.ylaoik .nappi{{display:none}}.puh{{background:var(--p);color:#fff;padding:9px 14px;border-radius:999px}}}}
+.nappi.toissij{{background:#fff;color:var(--p);border:2px solid var(--p)}}
 .top .w{{display:flex;align-items:center;justify-content:space-between;height:66px}}
 .logo{{font-weight:800;font-size:1.3rem;color:var(--p);text-decoration:none}}
 .logo span{{color:var(--vihrea)}}
@@ -90,12 +95,14 @@ footer.jalka a{{color:#cfd0d4}}
 <body>
 <header class="top"><div class="w">
 <a class="logo" href="/">Net<span>vo</span></a>
-<a class="nappi" href="#yhteys">Ota yhteyttä</a>
+<span class="ylaoik"><a class="puh" href="tel:{PUHELIN_TEL}" aria-label="Soita {PUHELIN}">📞 <b>{PUHELIN}</b></a><a class="nappi" href="#yhteys">Ota yhteyttä</a></span>
 </div></header>
 {runko}
 <footer class="jalka"><p><b>Netvo</b> – valmiit nettisivut suomalaisille yrityksille.</p>
-<p>Yhteys: {esc(YHTEYS)} · <a href="/ehdot/">Sopimusehdot</a></p>
+<p style="font-size:1.05rem;color:#fff">Soita <a href="tel:{PUHELIN_TEL}"><b>{PUHELIN}</b></a> (arkisin 9–21) · {esc(YHTEYS)}</p>
+<p><a href="/ehdot/">Sopimusehdot</a></p>
 <p>Netvo on osa Faktapisteen palveluita.</p></footer>
+<script src="https://kauppa.netvo.fi/tuki.js" defer></script>
 </body></html>"""
 
 
@@ -166,8 +173,8 @@ def etusivu():
 <section class="osio hinnoittelu" id="yhteys"><div class="w teksti" style="text-align:center">
 <h2>Hanki nettisivut yrityksellesi</h2>
 <p style="color:var(--mute);max-width:46ch;margin:0 auto 20px">Kerro lyhyesti yrityksestäsi, niin otamme yhteyttä ja kerromme lisää. Ei sitoumusta vielä tässä vaiheessa.</p>
-<a class="nappi iso" href="mailto:{esc(YHTEYS)}?subject=Netvo%20-%20nettisivut%20yritykselleni">Lähetä sähköposti</a>
-<p style="margin-top:16px;color:var(--mute)">tai sähköposti: <b>{esc(YHTEYS)}</b></p>
+<p style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:0"><a class="nappi iso" href="tel:{PUHELIN_TEL}">📞 Soita {PUHELIN}</a><a class="nappi iso toissij" href="mailto:{esc(YHTEYS)}?subject=Netvo%20-%20nettisivut%20yritykselleni">Lähetä sähköposti</a></p>
+<p style="margin-top:16px;color:var(--mute)">Puhelin <b>{PUHELIN}</b> arkisin 9–21 · sähköposti <b>{esc(YHTEYS)}</b> · voit kysyä myös chatissa oikeassa alakulmassa</p>
 </div></section>
 """
     return _sivu("Netvo – valmiit nettisivut yrityksellesi ilman pystytysmaksua",
