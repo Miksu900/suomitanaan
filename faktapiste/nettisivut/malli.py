@@ -56,7 +56,7 @@ def sivu(d, demo=True):
 
     maksu = ""
     if kauppa:
-        maksu = ('<section class="osio"><div class="w teksti" style="text-align:center"><h2>Kauppa Käyntiin – 99 €/kk</h2>'
+        maksu = ('<section class="osio"><div class="w teksti" style="text-align:center"><h2>Kauppa Käyntiin – alk. 99 €/kk</h2>'
                  '<p style="max-width:58ch;margin:0 auto">Rakennamme kaupan niin, että voit liittää minkä tahansa suomalaisen maksupalvelun, etkä ole sidottu meihin. '
                  'Maksupalvelun sopimuksen teet suoraan palveluntarjoajan kanssa, maksut menevät suoraan sinulle, ja maksupalvelun kulut maksat palveluntarjoajalle.</p>'
                  '<p style="max-width:58ch;margin:16px auto 0">Ylläpitoon kuuluu nopea ja turvallinen hosting, SSL, päivittäiset varmuuskopiot ja päivitykset. '

@@ -132,7 +132,7 @@ def etusivu():
 <a class="nappi iso" href="#yhteys">Aloita nyt</a>
 </div></div></section>
 
-<section class="osio"><div class="w teksti" style="text-align:center"><h2>Kauppa Käyntiin – 99 €/kk</h2>
+<section class="osio"><div class="w teksti" style="text-align:center"><h2>Kauppa Käyntiin – alk. 99 €/kk</h2>
 <p style="max-width:58ch;margin:0 auto">Rakennamme kaupan niin, että voit liittää minkä tahansa suomalaisen maksupalvelun, etkä ole sidottu meihin. Maksupalvelun sopimuksen teet suoraan palveluntarjoajan kanssa, maksut menevät suoraan sinulle, ja maksupalvelun kulut maksat palveluntarjoajalle.</p><p style="max-width:58ch;margin:16px auto 0">Ylläpitoon kuuluu nopea ja turvallinen hosting, SSL, päivittäiset varmuuskopiot ja päivitykset. Tuki arkisin 9–21, vastaus 2 h. Sisältää 1 h pieniä muutoksia kuukaudessa ja yhden yhteyshenkilön.</p><p style="max-width:58ch;margin:16px auto 0">Isommat verkkokaupat räätälöidään, pyydä tarjous.</p><p style="max-width:58ch;margin:16px auto 0;padding:14px 16px;border:1px dashed #c9c2b8;border-radius:12px">Haluatko tehdä kaupan itse? <strong>Netvo Kauppa 29 €/kk</strong> – valmis verkkokauppa-alusta, jossa lisäät tuotteet ja ulkoasun itse. Kokeile 14 päivää ilmaiseksi: <a href="https://kauppa.netvo.fi/" style="font-weight:700">kauppa.netvo.fi</a></p>
 <p style="margin-top:20px"><a class="nappi" href="mailto:{esc(YHTEYS)}?subject=Netvo%20-%20Kauppa%20K%C3%A4yntiin">Pyydä kauppa käyntiin</a></p>
 </div></section>
@@ -181,7 +181,7 @@ def ehtosivu():
 <h2>1. Palvelun sisältö</h2>
 <p>Nämä ehdot koskevat Netvon nettisivuja ja Kauppa Käyntiin -verkkokauppaa. Itse tehtävän Netvo Kauppa -alustan ehdot: <a href="https://kauppa.netvo.fi/ehdot">kauppa.netvo.fi/ehdot</a>. Netvo rakentaa Kuukausimaksu sisältää verkkotunnuksen, hostingin, varmuuskopiot, tietoturvan, yhteydenottolomakkeen ja pienet sisältömuutokset (kuten aukioloajat, hinnat ja yhteystiedot).</p>
 <h2>2. Hinta</h2>
-<p>Sivujen pystytys on maksuton. Kuukausihinnat (sis. alv): nettisivut {HINTA_KK} € ja Kauppa Käyntiin -verkkokauppa 99 € (me rakennamme ja ylläpidämme). Hinta kerrotaan selkeästi ennen sopimuksen tekoa, eikä piilokuluja ole. Laskutus kuukausittain laskulla; palvelun tuottaa ja laskuttaa Taksiliikenne Koskela Oy, palvelun nimi Netvo.</p>
+<p>Sivujen pystytys on maksuton. Kuukausihinnat (sis. alv): nettisivut {HINTA_KK} € ja Kauppa Käyntiin -verkkokauppa alkaen 99 € (me rakennamme ja ylläpidämme; isommat räätälöidyt kaupat tarjouksen mukaan). Hinta kerrotaan selkeästi ennen sopimuksen tekoa, eikä piilokuluja ole. Laskutus kuukausittain laskulla; palvelun tuottaa ja laskuttaa Taksiliikenne Koskela Oy, palvelun nimi Netvo.</p>
 <h2>3. Sitoutumisaika</h2>
 <p>Asiakas valitsee sitoutumisajaksi {SITOUTUS}. Sitoutumisajan jälkeen sopimus jatkuu samalla hinnalla toistaiseksi, kuukauden irtisanomisajalla. Hinta ei nouse automaattisesti sitoutumisajan päättyessä.</p>
 <h2>4. Palvelun keskeyttäminen kesken sitoutumisajan</h2>
