@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" width="800" height="1000">
+<defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f2e6d6"/><stop offset="1" stop-color="#e2cfb4"/></linearGradient>
+<radialGradient id="sh" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#000" stop-opacity=".28"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+<pattern id="knit" width="22" height="22" patternUnits="userSpaceOnUse"><path d="M0 0l11 11L22 0M0 11l11 11 11-11" fill="none" stroke="#fff" stroke-opacity=".16" stroke-width="3"/></pattern>
+<pattern id="dots" width="26" height="26" patternUnits="userSpaceOnUse"><circle cx="13" cy="13" r="1.6" fill="#000" fill-opacity=".05"/></pattern>
+<linearGradient id="gl" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".45" stop-color="#fff" stop-opacity=".18"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
+<rect width="800" height="1000" fill="url(#bg)"/><rect width="800" height="1000" fill="url(#dots)"/><ellipse cx="400" cy="800" rx="260" ry="34" fill="url(#sh)"/><path d="M150 620 c0 -180 500 -180 500 0 c0 90 -500 90 -500 0Z" fill="#c78b4a"/>
+<path d="M170 600 c40 -120 420 -120 460 0" fill="none" stroke="#e2b072" stroke-width="18" stroke-linecap="round" opacity=".7"/><circle cx="330" cy="560" r="8" fill="#f4ddb0"/><circle cx="460" cy="550" r="8" fill="#f4ddb0"/></svg>

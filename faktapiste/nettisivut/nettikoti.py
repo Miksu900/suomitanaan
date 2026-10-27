@@ -209,4 +209,7 @@ def rakenna_nettikoti(root):
         kansio = root / "netvo" / "mallit" / d["slug"]
         kansio.mkdir(parents=True, exist_ok=True)
         (kansio / "index.html").write_text(mallisivu(d), encoding="utf-8")
+    # Verkkokauppamallit: räätälöidyt, täysin toimivat mallikaupat (korvaavat yksinkertaiset)
+    from .premium import rakenna as rakenna_premium
+    rakenna_premium(root)
     return len(DEMOT)

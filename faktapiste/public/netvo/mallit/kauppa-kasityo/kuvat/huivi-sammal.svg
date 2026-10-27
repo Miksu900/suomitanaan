@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" width="800" height="1000">
+<defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#efe9e2"/><stop offset="1" stop-color="#ded3c6"/></linearGradient>
+<radialGradient id="sh" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#000" stop-opacity=".28"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+<pattern id="knit" width="22" height="22" patternUnits="userSpaceOnUse"><path d="M0 0l11 11L22 0M0 11l11 11 11-11" fill="none" stroke="#fff" stroke-opacity=".16" stroke-width="3"/></pattern>
+<pattern id="dots" width="26" height="26" patternUnits="userSpaceOnUse"><circle cx="13" cy="13" r="1.6" fill="#000" fill-opacity=".05"/></pattern>
+<linearGradient id="gl" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".45" stop-color="#fff" stop-opacity=".18"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
+<rect width="800" height="1000" fill="url(#bg)"/><rect width="800" height="1000" fill="url(#dots)"/><ellipse cx="400" cy="870" rx="300" ry="34" fill="url(#sh)"/>
+<path d="M210 200 c120 -60 260 -60 380 0 c40 120 30 230 -20 330 l-60 330 h-110 l20 -320 c-60 -10 -150 -30 -190 -80 c-50 -80 -60 -180 -20 -260Z" fill="#5f6b3a"/>
+<path d="M210 200 c120 -60 260 -60 380 0 c40 120 30 230 -20 330 l-60 330 h-110 l20 -320 c-60 -10 -150 -30 -190 -80 c-50 -80 -60 -180 -20 -260Z" fill="url(#knit)"/>
+<rect x="420" y="560" width="150" height="26" fill="#d9c7a7" transform="rotate(8 495 560)"/><rect x="420" y="640" width="150" height="26" fill="#d9c7a7" transform="rotate(8 495 640)"/><rect x="420" y="720" width="150" height="26" fill="#d9c7a7" transform="rotate(8 495 720)"/>
+<rect x="422" y="860" width="10" height="70" rx="5" fill="#4a532d"/><rect x="440" y="860" width="10" height="70" rx="5" fill="#4a532d"/><rect x="458" y="860" width="10" height="70" rx="5" fill="#4a532d"/><rect x="476" y="860" width="10" height="70" rx="5" fill="#4a532d"/><rect x="494" y="860" width="10" height="70" rx="5" fill="#4a532d"/><rect x="512" y="860" width="10" height="70" rx="5" fill="#4a532d"/><rect x="530" y="860" width="10" height="70" rx="5" fill="#4a532d"/>
+<path d="M260 230 c80 40 200 40 290 0" fill="none" stroke="#4a532d" stroke-width="14" opacity=".6"/></svg>
