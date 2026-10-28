@@ -63,10 +63,11 @@ OHJE = ("Olet Hankintavahti-palvelun toimittaja. Saat julkisen hankintailmoituks
 def claude(n):
     teksti = (f"Otsikko: {n.get('titleFi','')}\nHankintayksikkö: {n.get('organisationNameFi','')}\nLaji: {n.get('procurementTypeCode','')}\n"
               f"Arvioitu arvo: {n.get('estimatedValue') or 'ei ilmoitettu'}\nNUTS: {n.get('nutsCodes','')}\nKuvaus: {(n.get('descriptionFi') or '')[:3500]}")
-    d = json.dumps({"model": "claude-haiku-5-5", "max_tokens": 600, "system": OHJE, "messages": [{"role": "user", "content": teksti}]}).encode()
+    d = json.dumps({"model": "claude-haiku-5-5", "max_tokens": 900, "thinking": {"type": "disabled"}, "system": OHJE, "messages": [{"role": "user", "content": teksti}]}).encode()
     r = urllib.request.Request("https://api.anthropic.com/v1/messages", d, {"x-api-key": os.environ["ANTHROPIC_API_KEY"].strip(),
                                "anthropic-version": "2023-06-01", "content-type": "application/json"})
-    t = json.loads(urllib.request.urlopen(r, timeout=90).read())["content"][0]["text"]
+    vast = json.loads(urllib.request.urlopen(r, timeout=90).read())
+    t = "".join(c.get("text", "") for c in vast.get("content", []) if c.get("type") == "text")
     j = json.loads(t[t.index("{"):t.rindex("}") + 1])
     if j.get("maakunta") not in MAAKUNNAT: j["maakunta"] = ""
     if j.get("ala") not in ALAT: j["ala"] = "Muut"
