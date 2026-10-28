@@ -193,9 +193,27 @@ def subtitle(base, t):
         d.text((x, 1600), s_, font=f, fill=YEL if on else WHITE, stroke_width=8, stroke_fill=(0, 0, 0)); x += f.getlength(s_ + " ")
 
 # ---------- kohtaukset ----------
+def perusmalli(k):
+    w_, h_ = 560, 1000; c = Image.new("RGBA", (w_ + 44, h_ + 44), (0, 0, 0, 0)); d = ImageDraw.Draw(c)
+    d.rounded_rectangle((0, 0, w_ + 43, h_ + 43), radius=70, fill=(12, 14, 20, 255))
+    r = Image.new("RGBA", (w_, h_), (244, 244, 246, 255)); dr = ImageDraw.Draw(r)
+    dr.rectangle((0, 0, w_, 120), fill=(225, 226, 230)); dr.text((30, 44), "OMA KAUPPA", font=M9(36), fill=(150, 152, 160))
+    dr.rectangle((30, 160, w_ - 30, 420), fill=(215, 217, 222)); dr.line([(30, 160), (w_ - 30, 420)], fill=(200, 202, 208), width=4); dr.line([(w_ - 30, 160), (30, 420)], fill=(200, 202, 208), width=4)
+    for i in range(4):
+        x, y = 30 + (i % 2) * 260, 470 + (i // 2) * 260
+        dr.rectangle((x, y, x + 240, y + 160), fill=(220, 221, 226)); dr.rectangle((x, y + 180, x + 160, y + 200), fill=(210, 211, 216))
+    m = Image.new("L", (w_, h_), 0); ImageDraw.Draw(m).rounded_rectangle((0, 0, w_ - 1, h_ - 1), radius=50, fill=255)
+    c.paste(r, (22, 22), m); return c
 TOIMINNOT = ["Ostoskori ja kassa", "Toimitustavat", "Suomalaiset maksutavat", "Toimii puhelimella"]
 def kohtaus(base, si, lt, gt):
     dur = SC[si + 1] - SC[si]
+    if si == 0 and A.get("koukku"):  # koukku: harmaa perusmalli, joka näyttää samalta kuin kaikilla
+        paste_c(base, iso_teksti(A["koukku"], koko=118, vari=WHITE, vari2=YEL), W / 2, 380, back(lt * 3))
+        for k in range(3):
+            q = lt - 0.25 - k * 0.18
+            if q > 0: paste_c(base, perusmalli(k), W / 2 + (k - 1) * 300, 1000 + abs(k - 1) * 40, back(q * 3) * 0.62)
+        if lt > dur * 0.5: paste_c(base, pill("SAMA POHJA KUIN KAIKILLA", M9(50), WHITE, RED + (255,), 36, 22), W / 2, 1420, back((lt - dur * 0.5) * 4))
+        return
     if si == 0:  # koukku: leipomon etusivu isona, hidas zoom
         z = 1.22 + 0.05 * ease(lt / max(dur, 0.1))
         ruutu = LEIPOMO.crop((0, 0, 560, 1000)).resize((int(560 * z), int(1000 * z)))
