@@ -1,0 +1,27 @@
+name: Mallikauppojen kuvakaappaukset haaraan
+# Ottaa netvo.fi:n mallikaupoista koko sivun kuvat (valokuvineen) ja tallentaa ne haaraan "mallikuvat" videoeditointia varten.
+on: { workflow_dispatch: {} }
+permissions: { contents: write }
+jobs:
+  kuvat:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          pip install -q playwright pillow && python3 -m playwright install --with-deps chromium >/dev/null 2>&1
+          mkdir out && python3 - <<'PY'
+          from playwright.sync_api import sync_playwright
+          from PIL import Image
+          with sync_playwright() as p:
+              b = p.chromium.launch()
+              for slug in ["kauppa-leipomo", "kauppa-kasityo"]:
+                  pg = b.new_page(viewport={"width": 390, "height": 790}, device_scale_factor=2)
+                  pg.goto(f"https://netvo.fi/mallit/{slug}/?v=video", wait_until="networkidle")
+                  pg.evaluate("document.querySelectorAll('.demo').forEach(e=>e.remove());document.querySelectorAll('.hero>img').forEach(i=>i.style.animation='none');document.querySelectorAll('img[loading=lazy]').forEach(i=>i.loading='eager')")
+                  pg.evaluate("window.scrollTo(0, document.body.scrollHeight)"); pg.wait_for_timeout(1500); pg.evaluate("window.scrollTo(0,0)"); pg.wait_for_timeout(800)
+                  pg.screenshot(path=f"/tmp/{slug}.png", full_page=True)
+                  im = Image.open(f"/tmp/{slug}.png").convert("RGB"); im = im.resize((780, round(im.height * 780 / im.width)))
+                  im.save(f"out/{slug}-koko.jpg", quality=90); print(slug, im.size)
+              b.close()
+          PY
+          cd out && git init -q -b mallikuvat && git add -A && git -c user.name=bot -c user.email=bot@x commit -qm kuvat
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" mallikuvat
