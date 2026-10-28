@@ -1,4 +1,5 @@
 // taxikoskela.fi – staattiset sivut; www → juuriosoite, http-otsakkeet ja välimuisti.
+// Kyytitilaus tehdään sivulla tekstiviestinä asiakkaan omasta puhelimesta (sms:-linkki), joten palvelinpuolta ei tarvita.
 export default {
   async fetch(request, env) {
     const u = new URL(request.url);

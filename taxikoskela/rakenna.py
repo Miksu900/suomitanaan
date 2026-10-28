@@ -94,6 +94,14 @@ h1{font-size:clamp(2.4rem,6vw,4.4rem);line-height:1.03;margin:0 0 18px;letter-sp
 .cta{display:flex;flex-wrap:wrap;gap:12px;align-items:center}.big{font-size:1.25rem;padding:16px 26px}
 .ghost{color:var(--txt);text-decoration:none;font-weight:700;padding:15px 20px;border:1px solid var(--line);border-radius:999px}.ghost:hover{border-color:var(--mut)}
 .drv{margin:18px 0 0;color:var(--mut);font-size:1.15rem;line-height:1.9}.drv a{color:var(--txt);font-weight:700;text-decoration:none;white-space:nowrap}.drv b{color:var(--y)}
+.form{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:clamp(20px,4vw,34px);max-width:760px}
+.form .two{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:620px){.form .two{grid-template-columns:1fr}}
+.form label{display:block;font-weight:700;margin:0 0 6px;font-size:.95rem}.form .f{margin-bottom:14px}
+.form input,.form textarea,.form select{width:100%;padding:14px 15px;border-radius:12px;border:1px solid var(--line);background:#0f1115;color:var(--txt);font:inherit}
+.form input:focus,.form textarea:focus,.form select:focus{outline:2px solid var(--y);border-color:transparent}
+.form .when{display:flex;gap:10px;flex-wrap:wrap}.form .when label{display:flex;align-items:center;gap:8px;font-weight:600;border:1px solid var(--line);border-radius:999px;padding:10px 16px;cursor:pointer;margin:0}
+.form .when input{width:auto;accent-color:var(--y)}.form button{border:0;cursor:pointer;font:inherit}.form .err{color:#ff8a8a;min-height:1.2em;margin:4px 0 10px;font-weight:600}
+.form .note{color:var(--mut);font-size:.88rem;margin:14px 0 0}.ok{background:rgba(46,204,113,.12);border:1px solid rgba(46,204,113,.4);border-radius:14px;padding:16px;margin-top:14px;display:none}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px}.chips span{font-size:.85rem;color:var(--mut);border:1px solid var(--line);padding:6px 12px;border-radius:999px}
 .map{background:var(--bg2);border:1px solid var(--line);border-radius:22px;padding:18px;box-shadow:0 30px 80px rgba(0,0,0,.45)}
 .map svg{display:block;width:100%;height:auto}
@@ -192,6 +200,37 @@ def layout(title, desc, path, body, city=None):
 </body></html>"""
 
 
+def lomake():
+    nums = json.dumps([t for _, _, t in KULJETTAJAT])
+    nimet = " ja ".join(n for n, _, _ in KULJETTAJAT)
+    return f"""<section class="alt" id="tilaa" style="scroll-margin-top:70px"><div class="w"><h2>Tilaa kyyti viestillä</h2>
+<p class="sub">Täytä tiedot ja paina <b>Tilaa kyyti</b>. Puhelimesi viestisovellus aukeaa valmiilla tekstiviestillä {esc(nimet)}lle – paina siellä vielä <b>Lähetä</b>. Kuljettaja vahvistaa kyydin soittamalla tai viestillä.</p>
+<form class="form" id="tf" novalidate>
+<div class="two"><div class="f"><label for="t-nimi">Nimi *</label><input id="t-nimi" autocomplete="name" maxlength="60" required placeholder="Kuka tilaa"></div>
+<div class="f"><label for="t-puh">Puhelinnumero *</label><input id="t-puh" type="tel" autocomplete="tel" maxlength="20" required placeholder="040 123 4567"></div></div>
+<div class="f"><label for="t-mista">Mistä haetaan *</label><input id="t-mista" autocomplete="street-address" maxlength="120" required placeholder="Esim. Ylivieskan rautatieasema tai Katu 1, Kalajoki"></div>
+<div class="f"><label for="t-minne">Minne mennään</label><input id="t-minne" maxlength="120" placeholder="Esim. Hiekkasärkät"></div>
+<div class="f"><label>Milloin</label><div class="when"><label><input type="radio" name="t-kun" value="heti" checked> Heti</label><label><input type="radio" name="t-kun" value="aika"> Tiettyyn aikaan</label></div>
+<input id="t-aika" type="datetime-local" style="display:none;margin-top:10px" aria-label="Noutoaika"></div>
+<div class="f"><label for="t-lisa">Lisätietoja</label><input id="t-lisa" maxlength="140" placeholder="Esim. 3 henkilöä, matkalaukkuja, juna saapuu 18.05"></div>
+<p class="err" id="t-err" role="alert"></p>
+<button class="call big" type="submit">{PHONE_SVG}Tilaa kyyti</button>
+<div class="ok" id="t-ok" role="status"></div>
+<p class="note">Viesti lähtee omasta puhelimestasi tavallisena tekstiviestinä (operaattorisi hinnoittelun mukaan). Tietojasi käytetään vain kyydin hoitamiseen. Kiireessä soita: {' / '.join(f'<a href="tel:{t}">{esc(n)} {esc(p)}</a>' for n, p, t in KULJETTAJAT)}.</p>
+</form></div></section>
+<script>(function(){{var N={nums},f=document.getElementById('tf'),e=document.getElementById('t-err'),ok=document.getElementById('t-ok'),a=document.getElementById('t-aika');
+f.addEventListener('change',function(x){{if(x.target.name==='t-kun')a.style.display=x.target.value==='aika'?'block':'none'}});
+function v(i){{return document.getElementById(i).value.trim()}}
+f.addEventListener('submit',function(x){{x.preventDefault();e.textContent='';var nimi=v('t-nimi'),puh=v('t-puh'),mista=v('t-mista');
+if(!nimi||puh.replace(/\\D/g,'').length<7||!mista){{e.textContent='Täytä nimi, puhelinnumero ja mistä haetaan.';return}}
+var kun='Heti';if(f.querySelector('input[name=t-kun]:checked').value==='aika'){{if(!a.value){{e.textContent='Valitse noutoaika.';return}}var d=new Date(a.value);kun=d.toLocaleDateString('fi-FI',{{weekday:'short',day:'numeric',month:'numeric'}})+' klo '+d.toLocaleTimeString('fi-FI',{{hour:'2-digit',minute:'2-digit'}})}}
+var t='KYYTITILAUS (taxikoskela.fi)\\nNimi: '+nimi+'\\nPuh: '+puh+'\\nMistä: '+mista+(v('t-minne')?'\\nMinne: '+v('t-minne'):'')+'\\nMilloin: '+kun+(v('t-lisa')?'\\nLisätiedot: '+v('t-lisa'):'');
+var ios=/iPad|iPhone|iPod/.test(navigator.userAgent),body=encodeURIComponent(t);
+var url=ios?'sms:/open?addresses='+N.join(',')+'&body='+body:'sms:'+N.join(',')+'?body='+body;
+ok.style.display='block';ok.innerHTML='<b>Viestisovellus avautuu.</b> Paina siellä <b>Lähetä</b>, niin tilaus tulee kuljettajalle. Jos viestisovellus ei auennut (esim. tietokoneella), soita: '+{json.dumps(' / '.join(f'<a href="tel:{t}">{n} {p}</a>' for n, p, t in KULJETTAJAT))}+'.';
+location.href=url}});}})();</script>"""
+
+
 def etusivu():
     alue_kortit = "".join(f'<a class="area" href="/taksi-{k}/"><b>Taksi {esc(c["nimi"])}</b><p>{esc(c["ingressi"][:150].rsplit(" ", 1)[0])}…</p><span>Lue lisää →</span></a>' for k, c in KAUPUNGIT.items())
     palvelut = "".join(f'<div class="card"><div class="ic">{ICONS[t]}</div><h3>{esc(t)}</h3><p>{esc(p)}</p></div>' for t, p in PALVELUT)
@@ -200,10 +239,11 @@ def etusivu():
 <div class="kick"><b></b>Ylivieska · Alavieska · Kalajoki</div>
 <h1>{NIMI} – <em>taksi Ylivieska ja Kalajoki</em></h1>
 <p class="lead">Paikallinen taksi Ylivieskan ja Kalajoen välillä. Asemakyydit, Hiekkasärkät, kauppa- ja lääkärimatkat sekä ennakkotilaukset – yhdellä puhelulla.</p>
-<div class="cta">{call('call big', 'Tilaa taksi ' + PUH)}<a class="ghost" href="#alueet">Alueet</a></div>
+<div class="cta">{call('call big', 'Soita ' + PUH)}<a class="ghost" href="#tilaa">Tilaa kyyti viestillä</a></div>
 <p class="drv">{'<br>'.join(f'<a href="tel:{t}">{esc(n)} · {esc(p)}</a>' for n, p, t in KULJETTAJAT)}<br><b>Myös illat ja yöt</b></p>
 <div class="chips"><span>Ylivieskan rautatieasema</span><span>Kalajoen Hiekkasärkät</span><span>Himanka</span><span>Alavieska</span><span>Rautio</span></div>
 </div><div class="map">{MAP_SVG}</div></div></section>
+{lomake()}
 <section id="palvelut"><div class="w"><h2>Taksipalvelut Ylivieska–Kalajoki-alueella</h2><p class="sub">Ajamme valtatien 27 varrella Ylivieskasta Alavieskan kautta Kalajoelle ja Hiekkasärkille – ja kaikkialla niiden välillä.</p><div class="cards">{palvelut}</div></div></section>
 <section class="alt" id="alueet"><div class="w"><h2>Alueet</h2><p class="sub">Valitse paikkakunta, niin näet tarkemmin, minne ajamme.</p><div class="areas">{alue_kortit}</div></div></section>
 <section><div class="w"><h2>Näin tilaat taksin</h2><p class="sub">Nopein tapa on soittaa. Ennakkotilaukset onnistuvat samasta numerosta.</p>
@@ -221,7 +261,7 @@ def kaupunkisivu(k, c):
     body = f"""<section class="hero"><div class="w g"><div>
 <div class="crumb"><a href="/">{NIMI}</a> › Taksi {esc(c['nimi'])}</div>
 <h1>Taksi <em>{esc(c['nimi'])}</em></h1><p class="lead">{esc(c['ingressi'])}</p>
-<div class="cta">{call('call big', 'Tilaa taksi ' + PUH)}</div></div><div class="map">{MAP_SVG}</div></div></section>
+<div class="cta">{call('call big', 'Soita ' + PUH)}<a class="ghost" href="/#tilaa">Tilaa kyyti viestillä</a></div></div><div class="map">{MAP_SVG}</div></div></section>
 <section><div class="w"><h2>Minne ajamme {esc(c['ines'])}</h2>
 <ul class="place">{''.join(f'<li>{esc(p)}</li>' for p in c['paikat'])}</ul>
 {''.join(f'<p class="sub" style="margin-bottom:14px">{esc(t)}</p>' for t in c['teksti'])}{hs}</div></section>
