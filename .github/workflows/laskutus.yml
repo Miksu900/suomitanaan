@@ -1,0 +1,28 @@
+name: Netvo laskutusyhteenveto
+# Joka kuun 1. päivä: Netvo Kaupan laskulla maksavat kaupat + muutokset + omat asiakkaat + verkkotunnusten uusimiset → Telegram (teksti + CSV).
+on:
+  schedule:
+    - cron: "23 6 1 * *"
+  workflow_dispatch:
+jobs:
+  raportti:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Tiedot Netvo Kaupasta
+        working-directory: laskutus
+        run: |
+          export CLOUDFLARE_ACCOUNT_ID=$(curl -sS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" https://api.cloudflare.com/client/v4/accounts | jq -r '.result[0].id')
+          q() { npx --yes wrangler@4.152.0 d1 execute netvo-kauppa-data --remote --json --command "$1" > "$2" || echo "::warning title=D1::$2 epäonnistui"; }
+          q "SELECT s.id, s.name, s.slug, s.billing_company, s.billing_business_id, s.billing_contact, s.billing_email, s.billing_phone, s.billing_address, s.einvoice_address, s.einvoice_operator, s.commitment_months, s.billing_starts_at, s.commitment_ends_at, s.cancel_requested_at, (SELECT group_concat(addon) FROM shop_addons a WHERE a.shop_id = s.id AND a.active = 1) AS addons FROM shops s WHERE s.plan = 'kauppa' AND s.subscription_status = 'invoice' ORDER BY s.billing_starts_at" kaupat.json
+          q "SELECT e.created_at, s.name, s.billing_company, e.kind, e.detail, e.monthly_cents FROM billing_events e JOIN shops s ON s.id = e.shop_id WHERE e.created_at >= date('now','start of month','-1 month') AND e.created_at < date('now','start of month') ORDER BY e.id" muutokset.json
+      - name: Lähetä Telegramiin
+        working-directory: laskutus
+        env:
+          TG: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TG_CHAT: "1893930799"
+        run: python3 raportti.py
