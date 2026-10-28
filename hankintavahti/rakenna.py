@@ -46,7 +46,7 @@ def hae():
         d = json.loads(urllib.request.urlopen(r, timeout=60).read())
         out += d["value"]; skip += 100
         if len(d["value"]) < 100 or skip >= 3000: break
-    print("haettu", len(out), "voimassa olevaa ilmoitusta")
+    print(f"::notice title=Hilma::haettu {len(out)} voimassa olevaa ilmoitusta (rajapinta kertoo {d.get('@odata.count')})")
     return out
 
 # ---------- 2. tiivistelmät ----------
@@ -83,18 +83,22 @@ def tiivista(ilm):
                                       "pienyritys": ["sopii", "ehka", "iso"][n["noticeId"] % 3], "perustelu": ""}
     else:
         print("tiivistetään", len(uudet), "uutta")
-        with cf.ThreadPoolExecutor(8) as ex:
+        with cf.ThreadPoolExecutor(4) as ex:
             for n, res in zip(uudet, ex.map(lambda n: _turva(claude, n), uudet)):
                 if res: tv[str(n["noticeId"])] = res
+    print(f"::notice title=Tiivistelmät::uusia {len(uudet)}, virheitä {len(VIRHEET)}" + (" – esim. " + VIRHEET[0][:300] if VIRHEET else ""))
     voimassa = {str(n["noticeId"]) for n in ilm}
     tv = {k: v for k, v in tv.items() if k in voimassa}  # vanhentuneet pois
     json.dump(tv, open(p, "w"), ensure_ascii=False, indent=0, sort_keys=True)
     return tv
+VIRHEET = []
 def _turva(f, n):
-    for _ in range(3):
+    import time
+    for i in range(6):
         try: return f(n)
-        except Exception as e: err = e
-    print("virhe", n["noticeId"], err); return None
+        except Exception as e:
+            err = e; time.sleep(min(60, 5 * 2 ** i))
+    VIRHEET.append(f"{n['noticeId']}: {err}"); return None
 
 # ---------- 3. sivut ----------
 def e(s): return html.escape(str(s or ""), quote=True)
@@ -249,7 +253,7 @@ def rakenna(ilm, tv):
     (PUB / "404.html").write_text(kehys(f"Sivua ei löydy | {NIMI}", "Sivua ei löydy", "/404", '<article class="yks"><h1>Sivua ei löytynyt</h1><p>Hankinta on ehkä jo päättynyt. <a href="/">Katso avoimet hankinnat</a>.</p></article>'))
     (PUB / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + "".join(f"<url><loc>{SIVU}{u}</loc></url>" for u in urls) + "</urlset>")
     (PUB / "robots.txt").write_text(f"User-agent: *\nAllow: /\nSitemap: {SIVU}/sitemap.xml\n")
-    print("sivuja", len(urls), "| sopii pienyritykselle", sopii)
+    print(f"::notice title=Sivut::{len(urls)} sivua, {len(ilm)} hankintaa, sopii pienyritykselle {sopii}")
 
 if __name__ == "__main__":
     ilm = hae(); tv = tiivista(ilm); rakenna(ilm, tv)
