@@ -82,22 +82,34 @@ def tiivista(ilm):
                                       "maakunta": MAAKUNNAT[n["noticeId"] % 19], "ala": ALAT[n["noticeId"] % 14],
                                       "pienyritys": ["sopii", "ehka", "iso"][n["noticeId"] % 3], "perustelu": ""}
     else:
-        print("tiivistetään", len(uudet), "uutta")
-        with cf.ThreadPoolExecutor(4) as ex:
+        import time
+        uudet.sort(key=lambda n: n["datePublished"], reverse=True)
+        uudet = uudet[:int(os.environ.get("MAX_UUSIA", "400"))]  # yhden ajon katto; loput seuraavassa ajossa
+        print("tiivistetään", len(uudet), "uutta"); alku = time.time(); perakkain = 0
+        with cf.ThreadPoolExecutor(3) as ex:
             for n, res in zip(uudet, ex.map(lambda n: _turva(claude, n), uudet)):
-                if res: tv[str(n["noticeId"])] = res
+                if res: tv[str(n["noticeId"])] = res; perakkain = 0
+                else: perakkain += 1
+                if perakkain >= 8 or time.time() - alku > 1500:
+                    STOP[0] = True
+        json.dump(tv, open(p, "w"), ensure_ascii=False, indent=0, sort_keys=True)
     print(f"::notice title=Tiivistelmät::uusia {len(uudet)}, virheitä {len(VIRHEET)}" + (" – esim. " + VIRHEET[0][:300] if VIRHEET else ""))
     voimassa = {str(n["noticeId"]) for n in ilm}
     tv = {k: v for k, v in tv.items() if k in voimassa}  # vanhentuneet pois
     json.dump(tv, open(p, "w"), ensure_ascii=False, indent=0, sort_keys=True)
     return tv
-VIRHEET = []
+VIRHEET = []; STOP = [False]
 def _turva(f, n):
-    import time
-    for i in range(6):
+    import time, urllib.error
+    if STOP[0]: return None
+    for i in range(4):
         try: return f(n)
+        except urllib.error.HTTPError as e:
+            err = f"HTTP {e.code}: {e.read()[:200]!r}"
+            if e.code not in (429, 500, 502, 503, 529): break
+            time.sleep(min(40, 5 * 2 ** i))
         except Exception as e:
-            err = e; time.sleep(min(60, 5 * 2 ** i))
+            err = repr(e)[:200]; time.sleep(3)
     VIRHEET.append(f"{n['noticeId']}: {err}"); return None
 
 # ---------- 3. sivut ----------
