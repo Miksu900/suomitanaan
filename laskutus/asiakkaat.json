@@ -6,7 +6,8 @@
       "ytunnus": "3312391-2",
       "palvelu": "Taksi Koskela – nettisivut taxikoskela.fi ja ylläpito",
       "kk_hinta_eur": 19.0,
-      "huom": "Erikoishinta 19 €/kk (sis. alv). Verkkotunnuksen 1. vuosi sisältyy palveluun."
+      "huom": "Erikoishinta 19 €/kk (sis. alv), laskutus alkaa marraskuusta 2026. Verkkotunnuksen 1. vuosi sisältyy palveluun.",
+      "laskutus_alkaa": "2026-11-01"
     }
   ],
   "verkkotunnukset": [
