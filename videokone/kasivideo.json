@@ -1,22 +1,25 @@
 {
   "tyyppi": "huijaus",
-  "merkki": "UUTINEN",
-  "vinkkiotsikko": "ENNEN KUIN LAHJOITAT",
-  "osoite": "keraysvahti.fi",
-  "koukku": "Hyvä tarkoitus ei aina toteudu.",
+  "merkki": "EU-UUTINEN",
+  "brandi": "FAKTAPISTE",
+  "osoite": "faktapiste.fi",
+  "koroste": [40, 110, 255],
+  "vinkkiotsikko": "EHDOTUS SISÄLTÄÄ",
+  "koukku": "Frontexiin 30 tuhatta rajavartijaa?",
+  "loppurivi": "Mitä mieltä sinä olet?",
   "data": {
-    "otsikko": "Puolet Vaasan SPR:n kirppikselle lahjoitetuista tekstiileistä päätyy kaatopaikalle",
-    "media": "Yle",
-    "url": "https://yle.fi/a/74-20252948"
+    "otsikko": "EU-komissio haluaa vahvistaa Frontexia: 30 000 rajavartijaa ja palautuskeskus",
+    "media": "STT",
+    "url": "https://www.sttinfo.fi/tiedote/72449597/komissio-ehdottaa-frontexin-vahvistamista-vahvistetaan-rajavalvontaa-ja-palautuksia-ja-tehostetaan-kriisinhallintaa?lang=fi"
   },
   "lauseet": [
-    "Hyvä tarkoitus ei aina toteudu.",
-    "Ylen mukaan puolet Vaasan SPR:n kirppikselle lahjoitetuista tekstiileistä päätyy kaatopaikalle.",
-    "Tavaralahjoituksen kohtaloa on vaikea tarkistaa, mutta rahalahjoituksesta voit tarkistaa, onko keräyksellä poliisin lupa.",
-    "Ja voit varmistaa, että tilinumero kuuluu oikeasti järjestölle.",
-    "Tarkista ennen kuin lahjoitat: keräysvahti piste fi."
+    "EU-komissio haluaa Frontexiin jopa kolmekymmentätuhatta rajavartijaa.",
+    "Komission varapuheenjohtaja Henna Virkkunen esitteli tiistaina ehdotuksen, jolla EU:n ulkorajoja vahvistetaan.",
+    "Uusi keskus koordinoisi palautuksia, ja nopean toiminnan joukko lähtisi liikkeelle kriiseissä.",
+    "Laittomat rajanylitykset ovat jo yli puolittuneet kahdessa vuodessa.",
+    "Nyt päätös on parlamentin ja jäsenmaiden käsissä. Mitä mieltä sinä olet? Faktapiste piste fi."
   ],
-  "vinkit": ["Tarkista keräyksen lupa", "Vertaa tilinumeroa"],
-  "kuvateksti": "Hyvä tarkoitus ei aina toteudu: Ylen mukaan puolet Vaasan SPR:n kirppikselle lahjoitetuista tekstiileistä päätyy kaatopaikalle. Rahalahjoituksesta voit sentään tarkistaa, onko keräyksellä poliisin lupa ja kuuluuko tilinumero järjestölle. Tarkista ilmaiseksi: keraysvahti.fi",
-  "hashtagit": ["keräysvahti", "lahjoitus", "hyväntekeväisyys", "kierrätys", "suomi", "fyp"]
+  "vinkit": ["30 000 rajavartijaa", "Palautuskeskus + pikajoukko"],
+  "kuvateksti": "EU-komissio ehdottaa Frontexin vahvistamista: pysyvään joukkoon vähitellen 30 000 rajavartijaa, uusi palautusten koordinointikeskus ja nopean toiminnan joukko kriiseihin. Laittomat rajanylitykset ovat komission mukaan yli puolittuneet kahdessa vuodessa. Kriitikot ovat huolissaan valvonnan laajenemisesta ja perusoikeuksista. Päätös on nyt parlamentin ja jäsenmaiden käsissä. Lähde: STT / Euroopan komissio. faktapiste.fi",
+  "hashtagit": ["faktapiste", "eu", "frontex", "rajaturvallisuus", "suomi", "fyp"]
 }

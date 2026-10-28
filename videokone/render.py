@@ -113,11 +113,13 @@ def glow(r, col, a):
     ImageDraw.Draw(g).ellipse((q, q, r * 2 - q, r * 2 - q), fill=col + (a,))
     return g.filter(ImageFilter.GaussianBlur(r // 4))
 KOROSTE = {"korjaus": (150, 90, 230), "huijaus": (230, 70, 70), "eduskunta": (40, 110, 255), "uutinen": (245, 197, 66)}[TYYPPI]
+if A.get("koroste"): KOROSTE = tuple(A["koroste"])
 G1, G2, G3 = glow(420, (40, 80, 180), 100), glow(360, KOROSTE, 45), glow(300, (100, 140, 220), 45)
 rng = np.random.default_rng(3); grain = [Image.fromarray(rng.integers(0, 22, (H // 2, W // 2), dtype=np.uint8)).resize((W, H)).convert("L") for _ in range(4)]
 
 BRAND = {"korjaus": ("KORJAUSVAHTI", "nytpuhutaan.fi/muutokset"), "huijaus": ("KERÄYSVAHTI", "keraysvahti.fi/huijaukset"), "eduskunta": ("EDUSKUNTASEURANTA", "eduskuntaseuranta.fi"), "uutinen": ("SUOMI TÄNÄÄN", "suomitanaan.fi")}[TYYPPI]
 if A.get("osoite"): BRAND = (BRAND[0], A["osoite"])
+if A.get("brandi"): BRAND = (A["brandi"], BRAND[1])
 TAG = pill(BRAND[0], M9(34), NAVY, GOLD + (255,))
 LAHDE = pill("Faktapiste · " + BRAND[1], M6(26), (225, 232, 245), (0, 0, 0, 130), 22, 10)
 
@@ -201,7 +203,7 @@ def kohtaus(base, si, lt, gt):
     if si == 4:
         paste_c(base, text_img(BRAND[0], ANTON(130), GOLD), W / 2, 600, back(lt * 3))
         paste_c(base, pill(BRAND[1], M9(56), NAVY, GOLD + (255,), 40, 24), W / 2, 800, back(lt * 3 - 0.3) * (1 + 0.03 * math.sin(gt * 5)))
-        paste_c(base, text_img("Osa Faktapistettä", M8(48), GREY), W / 2, 960, back(lt * 3 - 0.6))
+        paste_c(base, text_img(A.get("loppurivi") or "Osa Faktapistettä", M8(48), GREY), W / 2, 960, back(lt * 3 - 0.6))
         return
     if TYYPPI == "korjaus":
         if si == 1:
