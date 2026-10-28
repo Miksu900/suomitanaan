@@ -90,7 +90,8 @@ def ruksi(d, x, y, s, col):  # vihreä pallo + väkänen
     d.line([(x + s * 0.26, y + s * 0.52), (x + s * 0.43, y + s * 0.69), (x + s * 0.75, y + s * 0.33)], fill=WHITE, width=max(4, s // 8), joint="curve")
 
 # ---------- puhelinkehys mallisivuille ----------
-MALLIT = [Image.open(HERE / "netvo-kuvat" / f"{m}.jpg").convert("RGBA") for m in ["parturi", "putki", "ravintola", "siivous", "kauppa-leipomo"]]
+_MJ = os.environ.get("MALLIT", "kauppa-leipomo,kauppa-kasityo,parturi,ravintola").split(",")
+MALLIT = [Image.open(HERE / "netvo-kuvat" / f"{m}.jpg").convert("RGBA") for m in _MJ if (HERE / "netvo-kuvat" / f"{m}.jpg").exists()]
 PW, PH = 560, 1100
 def puhelin(lt, dur):
     c = Image.new("RGBA", (PW + 44, PH + 44), (0, 0, 0, 0)); d = ImageDraw.Draw(c)
