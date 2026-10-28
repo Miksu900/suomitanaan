@@ -1,30 +1,61 @@
 name: Hankintavahti
-# Hakee Hilmasta (avoin rajapinta, CC BY 4.0) uudet hankintailmoitukset. Toiminto "testi" tarkistaa avaimen ja tallentaa näytteen haaraan hv-data.
+# Joka yö: Hilman voimassa olevat hankintailmoitukset -> Claude-tiivistelmät (talletetaan data/) -> staattiset sivut Cloudflare Workeriin.
 on:
+  schedule: [{ cron: "17 2 * * *" }]
+  push:
+    branches: [main]
+    paths: ["hankintavahti/rakenna.py", "hankintavahti/src/**", ".github/workflows/hankintavahti.yml"]
   workflow_dispatch:
-    inputs:
-      toiminto: { description: "testi", required: true, default: "testi" }
-      paivat: { description: "Montako päivää taaksepäin", required: false, default: "7" }
 permissions: { contents: write }
+concurrency: { group: hankintavahti, cancel-in-progress: false }
 jobs:
   aja:
     runs-on: ubuntu-latest
     env:
-      KEY: ${{ secrets.HILMA_API_KEY }}
+      CF: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      API: https://api.cloudflare.com/client/v4
     steps:
-      - name: Testihaku
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Domainin tila
+        id: cf
+        run: |
+          h=(-sS -H "Authorization: Bearer $CF")
+          echo "account=$(curl "${h[@]}" "$API/accounts" | jq -r '.result[0].id')" >> $GITHUB_OUTPUT
+          T=$(curl "${h[@]}" "$API/zones?name=hankintavahti.fi" | jq -r '.result[0].status // "puuttuu"'); echo "tila=$T" >> $GITHUB_OUTPUT
+          echo "::notice title=hankintavahti.fi Cloudflaressa::$T"
+          (sudo apt-get install -y -qq whois >/dev/null 2>&1 && echo "::notice title=whois hankintavahti.fi::$(whois hankintavahti.fi 2>&1 | grep -iE 'status|not found|domain not|available|expires' | head -3 | tr '\n' ' ')") || true
+      - name: Hae, tiivistä ja rakenna
+        env:
+          HILMA_API_KEY: ${{ secrets.HILMA_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python3 hankintavahti/rakenna.py
+      - name: Tallenna tiivistelmät
+        run: |
+          git config user.name "hankintavahti-bot"; git config user.email "bot@users.noreply.github.com"
+          git add hankintavahti/data/tiivistelmat.json
+          git diff --cached --quiet || (git commit -qm "Hankintavahti: tiivistelmät $(date -u +%F)" && git pull -q --rebase && git push -q)
+      - name: Julkaise
+        working-directory: hankintavahti
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ steps.cf.outputs.account }}
         run: |
           set -e
-          [ -n "$KEY" ] || { echo "::error::HILMA_API_KEY puuttuu"; exit 1; }
-          C=$(date -u -d "-${{ inputs.paivat }} days" +%Y-%m-%dT%H:%M:%SZ)
-          mkdir out
-          jq -n --arg c "$C" '{search:"*", top:100, count:true, orderby:"datePublished desc", searchMode:"any", queryType:"simple",
-            filter:("datePublished ge " + $c + " and mainType eq '"'"'ContractNotices'"'"'"),
-            select:"noticeId,titleFi,organisationNameFi,organisationNationalRegistrationNumber,cpvCodes,nutsCodes,datePublished,expirationDate,estimatedValue,procedureType,procurementTypeCode,mainType,eFormsId,procurementDocumentsUrl,descriptionFi"}' > body.json
-          code=$(curl -sS -o out/naytte.json -w "%{http_code}" -X POST https://api.hankintailmoitukset.fi/avp/eformnotices/docs/search \
-            -H "Ocp-Apim-Subscription-Key: $KEY" -H "Content-Type: application/json" -d @body.json)
-          echo "::notice title=HTTP::$code"
-          [ "$code" = 200 ] || { head -c 500 out/naytte.json; exit 1; }
-          echo "::notice title=Tulos::$(jq -r '"yhteensä " + (."@odata.count"|tostring) + " ilmoitusta, näytteessä " + (.value|length|tostring)' out/naytte.json)"
-          cd out && git init -q -b hv-data && git add -A && git -c user.name=bot -c user.email=bot@x commit -qm naytte
-          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" hv-data
+          {
+            echo 'name = "hankintavahti"'
+            echo 'main = "src/index.js"'
+            echo 'compatibility_date = "2026-09-01"'
+            echo 'workers_dev = true'
+            if [ "${{ steps.cf.outputs.tila }}" = "active" ]; then
+              echo 'routes = [ { pattern = "hankintavahti.fi", custom_domain = true }, { pattern = "www.hankintavahti.fi", custom_domain = true } ]'
+            fi
+            echo '[assets]'
+            echo 'directory = "./public"'
+            echo 'binding = "ASSETS"'
+            echo 'run_worker_first = true'
+            echo 'not_found_handling = "404-page"'
+          } > wrangler.toml
+          npx --yes wrangler@4.152.0 deploy | tee deploy.log
+          echo "::notice title=Osoite::$(grep -oE 'https://[a-z0-9.-]+workers.dev' deploy.log | head -1)"
