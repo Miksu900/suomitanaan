@@ -288,9 +288,9 @@ def yhteystiedot():
     kulj = "".join(f'<div class="card"><h3>{esc(n)}</h3><p>Taksitilaukset – myös illat ja yöt</p><p style="margin-top:14px">{call("call", p)}</p></div>'.replace(f'href="tel:{PUH_TEL}"', f'href="tel:{t}"') for n, p, t in KULJETTAJAT)
     on, op, ot = OMISTAJA
     body = f"""<section class="hero"><div class="w"><div class="crumb"><a href="/">{NIMI}</a> › Yhteystiedot</div>
-<h1>Yhteystiedot</h1><p class="lead">Taksin tilaat nopeimmin soittamalla kuljettajalle. Yritysasioissa ja päiväajan kysymyksissä voit olla yhteydessä omistajaan.</p></div></section>
+<h1>Yhteystiedot</h1><p class="lead">Taksin tilaat nopeimmin soittamalla kuljettajalle. Yritysasioissa voit olla yhteydessä omistajaan arkisin ma–pe klo 8–16.</p></div></section>
 <section style="padding-top:0"><div class="w"><h2>Tilaa taksi</h2><div class="cards">{kulj}</div></div></section>
-<section class="alt"><div class="w"><h2>Omistaja</h2><div class="cards"><div class="card"><h3>{esc(on)}</h3><p>Omistaja, {esc(YRITYS)}. Yritysasiat, laskutus ja päiväajan kysymykset.</p><p style="margin-top:14px"><a class="ghost" href="tel:{ot}">{esc(op)}</a></p></div>
+<section class="alt"><div class="w"><h2>Omistaja</h2><div class="cards"><div class="card"><h3>{esc(on)}</h3><p>Omistaja, {esc(YRITYS)}. Yritysasiat ja laskutus.</p><p style="margin-top:8px;color:var(--txt)"><b>Tavoitettavissa ma–pe klo 8–16</b></p><p style="margin-top:14px"><a class="ghost" href="tel:{ot}">{esc(op)}</a></p></div>
 <div class="card"><h3>Yritystiedot</h3><p>{esc(YRITYS)}<br>Y-tunnus {YTUNNUS}<br>Toiminta-alue: Ylivieska, Alavieska, Kalajoki</p></div></div></div></section>"""
     return layout(f"Yhteystiedot – {NIMI} | Taksi Ylivieska ja Kalajoki", f"{NIMI} yhteystiedot: taksitilaukset {PUH}. Ylivieska, Alavieska ja Kalajoki.", "/yhteystiedot/", body)
 
