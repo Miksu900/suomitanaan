@@ -1,0 +1,25 @@
+name: Artefakti esikatseluun
+# Hakee aiemman ajon artefaktin ja tallentaa sen haaraan "esikatselu", jotta sen voi noutaa gitillä.
+on:
+  workflow_dispatch:
+    inputs:
+      run_id: { description: "Actions-ajon id", required: true }
+      nimi: { description: "Artefaktin nimi", required: true, default: "netvo-video" }
+permissions:
+  contents: write
+  actions: read
+jobs:
+  hae:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Lataa ja tallenna
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          mkdir a && cd a
+          gh run download "${{ inputs.run_id }}" -R "${{ github.repository }}" -n "${{ inputs.nimi }}"
+          ls -la
+          git init -q -b esikatselu && git config user.name actions && git config user.email actions@github.com
+          git add -A && git commit -qm "esikatselu ${{ inputs.run_id }}"
+          git push -f "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" esikatselu
