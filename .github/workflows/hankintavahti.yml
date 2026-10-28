@@ -23,10 +23,8 @@ jobs:
         run: |
           h=(-sS -H "Authorization: Bearer $CF")
           echo "account=$(curl "${h[@]}" "$API/accounts" | jq -r '.result[0].id')" >> $GITHUB_OUTPUT
-          T=$(curl "${h[@]}" "$API/zones?name=hankintavahti.fi" | jq -r '.result[0].status // "puuttuu"'); echo "tila=$T" >> $GITHUB_OUTPUT
-          echo "::notice title=hankintavahti.fi Cloudflaressa::$T"
-          sudo apt-get install -y -qq whois >/dev/null 2>&1 || true
-          for d in hankintavahti.com hankitavahti.com; do echo "::notice title=whois $d::$(whois $d 2>&1 | grep -iE 'No match|Creation Date|Registrar:|Name Server' | head -5 | tr '\n' ' ')"; done
+          T=$(curl "${h[@]}" "$API/zones?name=hankintavahti.com" | jq -r '.result[0].status // "puuttuu"'); echo "tila=$T" >> $GITHUB_OUTPUT
+          echo "::notice title=hankintavahti.com Cloudflaressa::$T"
       - name: Hae, tiivistä ja rakenna
         env:
           HILMA_API_KEY: ${{ secrets.HILMA_API_KEY }}
@@ -50,7 +48,7 @@ jobs:
             echo 'compatibility_date = "2026-09-01"'
             echo 'workers_dev = true'
             if [ "${{ steps.cf.outputs.tila }}" = "active" ]; then
-              echo 'routes = [ { pattern = "hankintavahti.fi", custom_domain = true }, { pattern = "www.hankintavahti.fi", custom_domain = true } ]'
+              echo 'routes = [ { pattern = "hankintavahti.com", custom_domain = true }, { pattern = "www.hankintavahti.com", custom_domain = true } ]'
             fi
             echo '[assets]'
             echo 'directory = "./public"'

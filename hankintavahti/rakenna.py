@@ -14,7 +14,7 @@ import json, os, re, html, datetime as dt, urllib.request, pathlib, concurrent.f
 HERE = pathlib.Path(__file__).parent
 PUB = pathlib.Path(os.environ.get("PUB_DIR", HERE / "public"))
 DATA = pathlib.Path(os.environ.get("DATA_DIR", HERE / "data"))
-SIVU = "https://hankintavahti.fi"
+SIVU = "https://hankintavahti.com"
 NIMI = "Hankintavahti"
 NYT = dt.datetime.now(dt.timezone.utc)
 

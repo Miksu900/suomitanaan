@@ -1,8 +1,8 @@
-// hankintavahti.fi – staattiset sivut; www → juuriosoite, http-otsakkeet ja välimuisti.
+// hankintavahti.com – staattiset sivut; www → juuriosoite, http-otsakkeet ja välimuisti.
 export default {
   async fetch(request, env) {
     const u = new URL(request.url);
-    if (u.hostname === 'www.hankintavahti.fi') return Response.redirect('https://hankintavahti.fi' + u.pathname + u.search, 301);
+    if (u.hostname === 'www.hankintavahti.com') return Response.redirect('https://hankintavahti.com' + u.pathname + u.search, 301);
     const res = await env.ASSETS.fetch(request);
     const h = new Headers(res.headers);
     h.set('x-content-type-options', 'nosniff');
