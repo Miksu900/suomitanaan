@@ -8,13 +8,14 @@ on:
   workflow_dispatch:
     inputs:
       tempo: { description: "Puheen nopeutus", required: false, default: "1.05" }
+      aani: { description: "ElevenLabs voice_id (oletus Christoffer; Brian = nPczCjzI2devNBz1zQrb)", required: false, default: "3OArekHEkHv5XvmZirVD" }
 concurrency: { group: netvo-video, cancel-in-progress: true }
 jobs:
   video:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      VOICE: 3OArekHEkHv5XvmZirVD
+      VOICE: ${{ inputs.aani || '3OArekHEkHv5XvmZirVD' }}
       TEMPO: ${{ inputs.tempo || '1.05' }}
     steps:
       - uses: actions/checkout@v4
