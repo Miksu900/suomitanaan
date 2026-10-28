@@ -1,10 +1,22 @@
 {
   "_ohje": "Netvon omat asiakkaat, joita ei ole Netvo Kaupan tietokannassa, sekä verkkotunnukset. Päivitä tätä, kun asiakkaita tulee lisää. Raportti lähtee joka kuun 1. päivä Telegramiin.",
   "palvelut": [
-    {"asiakas": "Koskelan Autopalvelu Oy", "ytunnus": "3312391-2", "palvelu": "Taksi Koskela – nettisivut taxikoskela.fi ja ylläpito", "kk_hinta_eur": null,
-     "huom": "Ensimmäinen vuosi Netvon palveluna (verkkotunnus ostettu 28.10.2026). Hinta sovitaan ennen 28.10.2027."}
+    {
+      "asiakas": "Koskelan Autopalvelu Oy",
+      "ytunnus": "3312391-2",
+      "palvelu": "Taksi Koskela – nettisivut taxikoskela.fi ja ylläpito",
+      "kk_hinta_eur": 19.0,
+      "huom": "Erikoishinta 19 €/kk (sis. alv). Verkkotunnuksen 1. vuosi sisältyy palveluun."
+    }
   ],
   "verkkotunnukset": [
-    {"nimi": "taxikoskela.fi", "uusiutuu": "2027-10-28", "hinta": "20,90 € + alv / vuosi", "rekisteri": "Domainhotelli", "haltija": "Koskelan Autopalvelu Oy", "maksaja": "Taksiliikenne Koskela Oy"}
+    {
+      "nimi": "taxikoskela.fi",
+      "uusiutuu": "2027-10-28",
+      "hinta": "20,90 € + alv / vuosi",
+      "rekisteri": "Domainhotelli",
+      "haltija": "Koskelan Autopalvelu Oy",
+      "maksaja": "Taksiliikenne Koskela Oy"
+    }
   ]
 }
