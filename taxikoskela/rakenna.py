@@ -13,7 +13,7 @@ NIMI = "Taksi Koskela"
 YRITYS = "Koskelan Autopalvelu Oy"
 YTUNNUS = "3312391-2"
 # Tilausnumerot etusivulla (yökyydit): kuljettajat. Lisää veli tähän listaan: ("Nimi", "04x xxx xxxx", "+3584xxxxxxxx")
-KULJETTAJAT = [("Miika", "044 777 7149", "+358447777149")]
+KULJETTAJAT = [("Markus", "040 663 9916", "+358406639916"), ("Miika", "044 777 7149", "+358447777149")]
 PUH, PUH_TEL = KULJETTAJAT[0][1], KULJETTAJAT[0][2]  # päänumero (soittopainikkeet, Google-tiedot)
 # Omistaja: vain Yhteystiedot-sivulla (ei etusivulla, ettei yökyytejä soiteta hänelle)
 OMISTAJA = ("Eero Koskela", "040 632 7786", "+358406327786")
