@@ -121,13 +121,14 @@ h2{font-size:clamp(1.8rem,4vw,2.7rem);line-height:1.1;margin:0 0 14px;letter-spa
 details{border-bottom:1px solid var(--line);padding:6px 0}summary{cursor:pointer;font-weight:700;padding:14px 0;list-style:none}summary::-webkit-details-marker{display:none}
 summary:before{content:"+";color:var(--y);font-weight:900;margin-right:10px}details[open] summary:before{content:"–"}details p{color:var(--mut);margin:0 0 14px}
 .band{text-align:center;background:linear-gradient(135deg,#ffc400,#ffdb4d);color:#111;border-radius:26px;padding:clamp(36px,6vw,64px) 24px}
-.band h2{color:#111}.band p{margin:0 0 22px;font-size:1.1rem}.band .call{background:#111;color:var(--y);box-shadow:none}
+.band h2{color:#111}.band p{margin:0 0 22px;font-size:1.1rem}.band .call{background:#111;color:var(--y);box-shadow:none}.band .call.sms2{background:transparent;color:#111;border:2px solid #111}
 .place{columns:2;gap:24px;padding:0;margin:0 0 10px;list-style:none}.place li{padding:6px 0 6px 22px;position:relative;color:var(--txt)}.place li:before{content:"";position:absolute;left:0;top:15px;width:8px;height:8px;border-radius:2px;background:var(--y)}
 @media(max-width:560px){.place{columns:1}}
 .crumb{font-size:.9rem;color:var(--mut);margin-bottom:12px}.crumb a{color:var(--mut)}
 footer{padding:40px 0 110px;color:var(--mut);font-size:.92rem;border-top:1px solid var(--line)}.fc{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:24px}
 footer h4{color:var(--txt);margin:0 0 10px}footer ul{list-style:none;padding:0;margin:0}footer li{padding:3px 0}footer a{color:var(--mut)}
-.float{position:fixed;left:16px;right:16px;bottom:14px;z-index:30;display:none;justify-content:center}.float .call{width:100%;justify-content:center;font-size:1.15rem;padding:16px}
+.call.sms{background:transparent;color:var(--y);border:2px solid var(--y);box-shadow:none}.call.sms:hover{background:rgba(255,196,0,.1)}
+.float{position:fixed;left:12px;right:12px;bottom:12px;z-index:30;display:none;gap:10px}.float .call{flex:1;justify-content:center;font-size:1.1rem;padding:15px}.float .call.sms{background:#111;border-color:var(--y)}
 @media(max-width:820px){.float{display:flex}}"""
 
 PHONE_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1z"/></svg>'
@@ -157,6 +158,16 @@ MAP_SVG = """<svg viewBox="0 0 520 360" role="img" aria-label="Kartta: Kalajoki 
 <g transform="translate(300 290)"><rect x="-120" y="-26" width="240" height="52" rx="26" fill="#1d212a" stroke="#2a2f3a"/>
 <text x="0" y="6" text-anchor="middle" fill="#f2f3f5" font-family="system-ui" font-size="15" font-weight="700">Vt 27 · noin 50 km</text></g>
 </svg>"""
+
+
+SMS_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.4A8 8 0 1 1 21 12z"/></svg>'
+SMS_POHJA = "Hei, tilaan taksin.\nMistä: \nMinne: \nMilloin: \nNimi: "
+
+
+def sms(cls="call sms", label="Lähetä viesti"):
+    from urllib.parse import quote
+    nums = ",".join(t for _, _, t in KULJETTAJAT)
+    return f'<a class="{cls}" data-sms href="sms:{nums}?body={quote(SMS_POHJA)}">{SMS_SVG}{esc(label)}</a>'
 
 
 def call(cls="call", label=None):
@@ -196,7 +207,8 @@ def layout(title, desc, path, body, city=None):
 <div><h4>Alueet</h4><ul>{''.join(f'<li><a href="/taksi-{k}/">Taksi {esc(c["nimi"])}</a></li>' for k, c in KAUPUNGIT.items())}<li><a href="/taksi-kalajoki/#hiekkasarkat">Taksi Hiekkasärkät</a></li></ul></div>
 <div><h4>Yritys</h4><ul><li>{YRITYS}</li><li>Y-tunnus {YTUNNUS}</li>{''.join(f'<li>Tilaukset: <a href="tel:{t}">{esc(n)} {esc(p)}</a></li>' for n, p, t in KULJETTAJAT)}<li><a href="/yhteystiedot/">Kaikki yhteystiedot</a></li></ul></div></div>
 <div class="w" style="margin-top:24px;font-size:.82rem;opacity:.7">© {datetime.date.today().year} {YRITYS} · Sivut: <a href="https://netvo.fi/">Netvo</a></div></footer>
-<div class="float">{call('call', 'Soita taksi · ' + PUH)}</div>
+<div class="float">{call('call', 'Soita')}{sms('call sms', 'Viesti')}</div>
+<script>if(/iPad|iPhone|iPod/.test(navigator.userAgent))document.querySelectorAll('a[data-sms]').forEach(function(a){{a.href=a.href.replace(/^sms:([^?]*)\\?body=/,'sms:/open?addresses=$1&body=')}})</script>
 </body></html>"""
 
 
@@ -239,7 +251,8 @@ def etusivu():
 <div class="kick"><b></b>Ylivieska · Alavieska · Kalajoki</div>
 <h1>{NIMI} – <em>taksi Ylivieska ja Kalajoki</em></h1>
 <p class="lead">Paikallinen taksi Ylivieskan ja Kalajoen välillä. Asemakyydit, Hiekkasärkät, kauppa- ja lääkärimatkat sekä ennakkotilaukset – yhdellä puhelulla.</p>
-<div class="cta">{call('call big', 'Soita ' + PUH)}<a class="ghost" href="#tilaa">Tilaa kyyti viestillä</a></div>
+<div class="cta">{call('call big', 'Soita ' + PUH)}{sms('call big sms')}</div>
+<p style="margin:12px 0 0"><a href="#tilaa" style="color:var(--mut)">tai täytä tilauslomake →</a></p>
 <p class="drv">{'<br>'.join(f'<a href="tel:{t}">{esc(n)} · {esc(p)}</a>' for n, p, t in KULJETTAJAT)}<br><b>Myös illat ja yöt</b></p>
 <div class="chips"><span>Ylivieskan rautatieasema</span><span>Kalajoen Hiekkasärkät</span><span>Himanka</span><span>Alavieska</span><span>Rautio</span></div>
 </div><div class="map">{MAP_SVG}</div></div></section>
@@ -249,7 +262,7 @@ def etusivu():
 <section><div class="w"><h2>Näin tilaat taksin</h2><p class="sub">Nopein tapa on soittaa. Ennakkotilaukset onnistuvat samasta numerosta.</p>
 <div class="steps"><div class="step"><h3>Soita</h3><p>{'<br>'.join(f'<a href="tel:{t}">{esc(n)} {esc(p)}</a>' for n, p, t in KULJETTAJAT)}</p></div><div class="step"><h3>Kerro matka</h3><p>Noutopaikka, aika ja määränpää – esimerkiksi juna, Hiekkasärkät tai koti.</p></div><div class="step"><h3>Taksi tulee</h3><p>Auto on paikalla sovittuna aikana.</p></div></div></div></section>
 <section class="alt" id="ukk"><div class="w" style="max-width:820px"><h2>Usein kysyttyä</h2>{ukk}</div></section>
-<section><div class="w"><div class="band"><h2>Tarvitsetko taksin nyt?</h2><p>Ylivieska, Alavieska, Kalajoki ja Hiekkasärkät.</p>{call('call big', 'Soita ' + PUH)}</div></div></section>"""
+<section><div class="w"><div class="band"><h2>Tarvitsetko taksin nyt?</h2><p>Ylivieska, Alavieska, Kalajoki ja Hiekkasärkät.</p><div class="cta" style="justify-content:center">{call('call big', 'Soita ' + PUH)}{sms('call big sms2')}</div></div></div></section>"""
     return layout(f"{NIMI} – Taksi Ylivieska ja Kalajoki | Tilaa: {PUH}",
                   f"Paikallinen taksi Ylivieskassa, Alavieskassa ja Kalajoella: asemakyydit, Hiekkasärkät, ennakkotilaukset. Tilaa {NIMI}: {PUH}.", "/", body)
 
@@ -261,7 +274,7 @@ def kaupunkisivu(k, c):
     body = f"""<section class="hero"><div class="w g"><div>
 <div class="crumb"><a href="/">{NIMI}</a> › Taksi {esc(c['nimi'])}</div>
 <h1>Taksi <em>{esc(c['nimi'])}</em></h1><p class="lead">{esc(c['ingressi'])}</p>
-<div class="cta">{call('call big', 'Soita ' + PUH)}<a class="ghost" href="/#tilaa">Tilaa kyyti viestillä</a></div></div><div class="map">{MAP_SVG}</div></div></section>
+<div class="cta">{call('call big', 'Soita ' + PUH)}{sms('call big sms')}</div></div><div class="map">{MAP_SVG}</div></div></section>
 <section><div class="w"><h2>Minne ajamme {esc(c['ines'])}</h2>
 <ul class="place">{''.join(f'<li>{esc(p)}</li>' for p in c['paikat'])}</ul>
 {''.join(f'<p class="sub" style="margin-bottom:14px">{esc(t)}</p>' for t in c['teksti'])}{hs}</div></section>
