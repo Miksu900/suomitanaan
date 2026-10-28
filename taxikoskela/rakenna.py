@@ -93,7 +93,7 @@ h1{font-size:clamp(2.4rem,6vw,4.4rem);line-height:1.03;margin:0 0 18px;letter-sp
 .lead{font-size:clamp(1.05rem,2vw,1.25rem);color:var(--mut);max-width:40ch;margin:0 0 28px}
 .cta{display:flex;flex-wrap:wrap;gap:12px;align-items:center}.big{font-size:1.25rem;padding:16px 26px}
 .ghost{color:var(--txt);text-decoration:none;font-weight:700;padding:15px 20px;border:1px solid var(--line);border-radius:999px}.ghost:hover{border-color:var(--mut)}
-.drv{margin:16px 0 0;color:var(--mut)}.drv a{color:var(--txt);font-weight:700;text-decoration:none;white-space:nowrap}.drv b{color:var(--y)}
+.drv{margin:18px 0 0;color:var(--mut);font-size:1.15rem;line-height:1.9}.drv a{color:var(--txt);font-weight:700;text-decoration:none;white-space:nowrap}.drv b{color:var(--y)}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px}.chips span{font-size:.85rem;color:var(--mut);border:1px solid var(--line);padding:6px 12px;border-radius:999px}
 .map{background:var(--bg2);border:1px solid var(--line);border-radius:22px;padding:18px;box-shadow:0 30px 80px rgba(0,0,0,.45)}
 .map svg{display:block;width:100%;height:auto}
@@ -201,7 +201,7 @@ def etusivu():
 <h1>{NIMI} – <em>taksi Ylivieska ja Kalajoki</em></h1>
 <p class="lead">Paikallinen taksi Ylivieskan ja Kalajoen välillä. Asemakyydit, Hiekkasärkät, kauppa- ja lääkärimatkat sekä ennakkotilaukset – yhdellä puhelulla.</p>
 <div class="cta">{call('call big', 'Tilaa taksi ' + PUH)}<a class="ghost" href="#alueet">Alueet</a></div>
-<p class="drv">{' · '.join(f'<a href="tel:{t}">{esc(n)} {esc(p)}</a>' for n, p, t in KULJETTAJAT)} – <b>myös illat ja yöt</b></p>
+<p class="drv">{'<br>'.join(f'<a href="tel:{t}">{esc(n)} · {esc(p)}</a>' for n, p, t in KULJETTAJAT)}<br><b>Myös illat ja yöt</b></p>
 <div class="chips"><span>Ylivieskan rautatieasema</span><span>Kalajoen Hiekkasärkät</span><span>Himanka</span><span>Alavieska</span><span>Rautio</span></div>
 </div><div class="map">{MAP_SVG}</div></div></section>
 <section id="palvelut"><div class="w"><h2>Taksipalvelut Ylivieska–Kalajoki-alueella</h2><p class="sub">Ajamme valtatien 27 varrella Ylivieskasta Alavieskan kautta Kalajoelle ja Hiekkasärkille – ja kaikkialla niiden välillä.</p><div class="cards">{palvelut}</div></div></section>
