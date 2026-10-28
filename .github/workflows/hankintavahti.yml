@@ -25,7 +25,8 @@ jobs:
           echo "account=$(curl "${h[@]}" "$API/accounts" | jq -r '.result[0].id')" >> $GITHUB_OUTPUT
           T=$(curl "${h[@]}" "$API/zones?name=hankintavahti.fi" | jq -r '.result[0].status // "puuttuu"'); echo "tila=$T" >> $GITHUB_OUTPUT
           echo "::notice title=hankintavahti.fi Cloudflaressa::$T"
-          (sudo apt-get install -y -qq whois >/dev/null 2>&1 && echo "::notice title=whois hankintavahti.fi::$(whois hankintavahti.fi 2>&1 | grep -iE 'status|not found|domain not|available|expires' | head -3 | tr '\n' ' ')") || true
+          sudo apt-get install -y -qq whois >/dev/null 2>&1 || true
+          for d in hankintavahti.com hankitavahti.com; do echo "::notice title=whois $d::$(whois $d 2>&1 | grep -iE 'No match|Creation Date|Registrar:|Name Server' | head -5 | tr '\n' ' ')"; done
       - name: Hae, tiivistä ja rakenna
         env:
           HILMA_API_KEY: ${{ secrets.HILMA_API_KEY }}
