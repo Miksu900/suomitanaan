@@ -230,8 +230,29 @@ def favicon():
     return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#ffc400"/><text x="32" y="40" text-anchor="middle" font-family="Arial,sans-serif" font-weight="900" font-size="20" fill="#111">TAXI</text></svg>'
 
 
+def og_kuva(path):
+    try:
+        from PIL import Image, ImageDraw, ImageFont
+    except ImportError:
+        return
+    def f(size, bold=True):
+        for fp in ("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf" if bold else "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",):
+            try:
+                return ImageFont.truetype(fp, size)
+            except OSError:
+                pass
+        return ImageFont.load_default()
+    im = Image.new("RGB", (1200, 630), "#0f1115"); d = ImageDraw.Draw(im)
+    d.rounded_rectangle((80, 90, 230, 190), 20, fill="#ffc400"); d.text((155, 140), "TAXI", font=f(44), fill="#111", anchor="mm")
+    d.text((80, 250), NIMI, font=f(92), fill="#f2f3f5")
+    d.text((80, 370), "Ylivieska · Alavieska · Kalajoki", font=f(44, False), fill="#ffc400")
+    d.rounded_rectangle((80, 470, 640, 550), 40, fill="#ffc400"); d.text((360, 510), f"Soita {PUH}", font=f(38), fill="#111", anchor="mm")
+    im.save(path)
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
+    og_kuva(OUT / "og.png")
     (OUT / "index.html").write_text(etusivu(), encoding="utf-8")
     for k, c in KAUPUNGIT.items():
         d = OUT / f"taksi-{k}"; d.mkdir(exist_ok=True)
