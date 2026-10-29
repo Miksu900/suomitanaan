@@ -1,0 +1,12 @@
+name: kauppiastesti
+on: { workflow_dispatch: { inputs: { viesti: { required: true } } } }
+jobs:
+  t:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          jq -n --arg v "${{ inputs.viesti }}" '{kauppa:"kauppa-leipomo",viesti:$v}' > b.json
+          T0=$(date +%s.%N)
+          curl -sS -X POST https://netvo.fi/api/kauppias -H 'content-type: application/json' -d @b.json -o o.json
+          T1=$(date +%s.%N)
+          echo "::notice::aika $(echo "$T1-$T0"|bc) s | $(jq -c '{vastaus,lisaa,nayta,avaa,kassalle,aani:((.aani//"")|length)}' o.json)"
