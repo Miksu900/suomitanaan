@@ -30,7 +30,7 @@ def _demokortti(d):
     merkki = "Räätälöity verkkokauppa" if kauppa else d["ala"]
     return f"""<a class="malli" href="/mallit/{d['slug']}/" target="_blank" rel="noopener">
 <span class="mk"><img src="{UK(kuva, 700, 520)}" srcset="{SSK(kuva, (400, 700, 1000), .74)}" sizes="(max-width:700px) 90vw, 33vw" alt="" loading="lazy"><em>{esc(merkki)}</em></span>
-<span class="mt"><b>{esc(d['nimi'])}</b><span>{esc(d.get('slogan',''))}</span><i>Avaa malli →</i></span></a>"""
+<span class="mt"><b>{esc(d['nimi'])}</b><span>{esc(d.get('slogan',''))}</span><i>Avaa esimerkki →</i></span></a>"""
 
 
 def _sivu(otsikko, kuvaus, runko):
@@ -162,9 +162,9 @@ def etusivu():
 
 <section class="osio" id="hinnat"><div class="w"><div class="ots keski ilm" style="text-align:center"><span class="eb">Hinnat</span><h2>Kaksi selkeää hintaa</h2><p>Rakentaminen 0 € ja kaikki muutokset hintaan sisältyen. Ei sitoutumista, ei lisämaksuja. Hinnat sisältävät alv:n.</p></div>
 <div class="hinnat">
-<div class="hk paras ilm"><span class="tag">Nettisivut</span><h3>Nettisivut</h3><p class="m">Rakentaminen 0 € – yli 1000 €:n arvosta.</p><div class="h">{HINTA_KK} €<small> / kk</small></div>
+<div class="hk paras ilm"><span class="tag">Suosituin</span><h3>Nettisivut</h3><p class="m">Rakentaminen 0 € – yli 1000 €:n arvosta.</p><div class="h">{HINTA_KK} €<small> / kk</small></div>
 <ul><li>Räätälöity suunnittelu, ei valmispohjia</li><li>Tekstit kirjoitettuna puolestasi</li><li>Verkko-osoite, hosting ja tietoturva</li><li>Varmuuskopiot ja päivitykset</li><li>Kaikki muutokset hintaan sisältyen</li><li>Soitto- ja yhteydenottonapit</li><li>Lopeta milloin tahansa</li></ul><a class="nappi" href="#yhteys">Pyydä sivut</a></div>
-<div class="hk ilm"><span class="tag">Verkkokauppa</span><h3>Verkkokauppa</h3><p class="m">Rakentaminen 0 € – jopa 1500 €:n arvosta.</p><div class="h">{KAUPPA_KK} €<small> / kk</small></div>
+<div class="hk ilm"><span class="tag">Myy verkossa</span><h3>Verkkokauppa</h3><p class="m">Rakentaminen 0 € – jopa 1500 €:n arvosta.</p><div class="h">{KAUPPA_KK} €<small> / kk</small></div>
 <ul><li>Räätälöity kauppa, ei valmispohjia</li><li>Tuotteet, ostoskori ja kassa</li><li>Suomalaiset maksutavat, rahat suoraan sinulle</li><li>Toimitustavat ja tilausten hallinta</li><li>Kaikki muutokset hintaan sisältyen</li><li>Tuki arkisin 9–21</li><li>Lopeta milloin tahansa</li></ul><a class="nappi toissij" href="#yhteys">Pyydä kauppa</a></div>
 </div><p class="ilm" style="text-align:center;color:var(--mute);font-size:.9rem;margin-top:18px">Verkkokaupassa maksupalvelu (esim. Paytrail tai MobilePay) veloittaa omat kulunsa suoraan.</p></div></section>
 

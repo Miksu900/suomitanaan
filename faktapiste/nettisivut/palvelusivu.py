@@ -204,7 +204,7 @@ def sivu(d, demo=True):
 <section class="s alt" id="yhteys"><div class="w"><span class="eb">Yhteystiedot</span><h2 class="ilm">{esc(d.get("cta", "Ota yhteyttä"))}</h2>
 <div class="yht"><div class="kortti ilm"><a class="yrivi" href="mailto:{esc(d.get("sposti", ""))}">{ik("posti")}{esc(d.get("sposti", ""))}</a>
 <div class="yrivi">{ik("paikka")}{esc(d.get("osoite", ""))}</div>{('<h3 style="margin-top:22px;font-size:1.3rem">Aukioloajat</h3><table class="ajat">' + ajat + '</table>') if ajat else ''}</div>
-<form class="lom kortti ilm" onsubmit="event.preventDefault();this.innerHTML='<h3>Kiitos viestistä!</h3><p class=&quot;pieni&quot;>Mallisivulla viestiä ei lähetetä. Oikealla sivulla se tulee suoraan sähköpostiisi.</p>'">
+<form class="lom kortti ilm" onsubmit="event.preventDefault();this.innerHTML='<h3>Kiitos viestistä!</h3><p class=&quot;pieni&quot;>Esimerkkisivulla viestiä ei lähetetä. Oikealla sivulla se tulee suoraan sähköpostiisi.</p>'">
 <h3 style="font-size:1.3rem">Lähetä viesti</h3><input placeholder="Nimesi" required><input placeholder="Puhelin tai sähköposti" required><textarea rows="4" placeholder="Mitä voimme tehdä puolestasi?"></textarea>
 <button class="btn" type="submit">Lähetä →</button><p class="pieni">Vastaamme yleensä saman päivän aikana.</p></form></div></div></section>
 <footer><div class="w"><div><b>{esc(nimi)}</b><br>{esc(d.get("osoite", ""))}<br>{esc(d.get("sposti", ""))}</div>

@@ -53,7 +53,7 @@ def html(k):
 <div class="kp" id="kp" role="dialog" aria-label="Puhu {r.lower()}lle"><div class="kp-h"><span class="av">{a}</span><div><b>{r} {n}</b><span>🤖 Tekoälyavustaja · vastaa ääneen</span></div><button data-kpx aria-label="Sulje">×</button></div>
 <div class="kp-log" id="kplog" aria-live="polite"></div>
 <div class="kp-chips" id="kpchips">{''.join(f'<button>{esc(c)}</button>' for c in k["vinkit"])}</div>
-<div class="kp-note">Mallisivulla kuuluu valmis tekoälyääni. Omassa kaupassasi avustaja puhuu <b>sinun omalla äänelläsi</b>.</div>
+<div class="kp-note">Esimerkkikaupassa kuuluu valmis tekoälyääni. Omassa kaupassasi avustaja puhuu <b>sinun omalla äänelläsi</b>.</div>
 <div class="kp-f"><button class="kp-mic" id="kpmic" aria-label="Puhu">{mic}</button><form id="kpform"><input id="kpin" placeholder="Puhu tai kirjoita…" autocomplete="off" maxlength="300"><button aria-label="Lähetä">➤</button></form></div></div>"""
     return intro, pane
 
