@@ -169,7 +169,7 @@ nav.main{display:flex;gap:4px}nav.main a{text-decoration:none;padding:8px 10px;f
 section.s{padding:76px 0}.sh{display:flex;justify-content:space-between;align-items:end;gap:20px;flex-wrap:wrap;margin-bottom:26px}.sh h2{font-size:clamp(1.8rem,4vw,2.8rem);margin:0}
 .eyebrow{font-size:.74rem;letter-spacing:.24em;text-transform:uppercase;color:var(--acc);font-weight:700;margin-bottom:10px;display:block}
 /* category tiles */
-.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px}.tile{position:relative;aspect-ratio:4/5;border-radius:var(--r);overflow:hidden;text-decoration:none;color:#fff;background:var(--soft);cursor:pointer;border:0;padding:0}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px}@media(max-width:560px){.tiles{grid-template-columns:1fr 1fr;gap:10px}.tile span{font-size:1.1rem;left:12px;bottom:10px}}.tile{position:relative;aspect-ratio:4/5;border-radius:var(--r);overflow:hidden;text-decoration:none;color:#fff;background:var(--soft);cursor:pointer;border:0;padding:0}
 .tile img{width:100%;height:100%;object-fit:cover;transition:transform .8s cubic-bezier(.2,.7,.2,1)}.tile:hover img{transform:scale(1.06)}.tile span{position:absolute;left:14px;bottom:12px;font-family:var(--fh);font-size:1.3rem;text-shadow:0 2px 12px rgba(0,0,0,.4)}
 .tile:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,rgba(0,0,0,.45))}.tile span{z-index:1}
 /* filters */

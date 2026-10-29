@@ -31,6 +31,18 @@ VARIT = {
     "purppura": ("#5b3a9c", "#432b74", "#f6f4f9", "#e7e1f1"),
 }
 
+# Jokainen esimerkki omalla ilmeellään (fontit, hero-asettelu, kulmat, tumma/vaalea) – ei yhtä pohjaa.
+TYYLIT = {  # slug: (otsikkofontti, leipäfontti, google-fonts-perhe, otsikon paino, kirjainväli, text-transform, kulmat, hero, tumma)
+    "parturi":      ("'Playfair Display',Georgia,serif", "Inter,system-ui,sans-serif", "Playfair+Display:ital,wght@0,500;0,700;1,500&family=Inter:wght@400;500;600", 500, "-.01em", "none", "4px", "keski", True),
+    "putki":        ("Manrope,system-ui,sans-serif", "Manrope,system-ui,sans-serif", "Manrope:wght@400;500;600;800", 800, "-.03em", "none", "16px", "jaettu", False),
+    "siivous":      ("'DM Serif Display',Georgia,serif", "'DM Sans',system-ui,sans-serif", "DM+Serif+Display&family=DM+Sans:wght@400;500;600", 400, "-.01em", "none", "28px", "kaari", False),
+    "remontti":     ("'Archivo Black',Impact,sans-serif", "Archivo,system-ui,sans-serif", "Archivo+Black&family=Archivo:wght@400;500;600", 400, "-.01em", "uppercase", "0px", "full", False),
+    "ravintola":    ("'Cormorant Garamond',Georgia,serif", "Karla,system-ui,sans-serif", "Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Karla:wght@400;500;600", 600, "0", "none", "6px", "keski", True),
+    "hyvinvointi":  ("'Cormorant Garamond',Georgia,serif", "Jost,system-ui,sans-serif", "Cormorant+Garamond:ital,wght@0,500;1,500&family=Jost:wght@400;500", 500, "0", "none", "32px", "kaari", False),
+    "autokorjaamo": ("'Space Grotesk',system-ui,sans-serif", "'Space Grotesk',system-ui,sans-serif", "Space+Grotesk:wght@400;500;700", 700, "-.03em", "none", "8px", "full", True),
+    "maalaus":      ("Fraunces,Georgia,serif", "Inter,system-ui,sans-serif", "Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,500&family=Inter:wght@400;500;600", 500, "-.015em", "none", "22px", "jaettu", False),
+}
+
 IK = {
     "puh": '<path d="M4 4h4l2 5-3 2a12 12 0 006 6l2-3 5 2v4a2 2 0 01-2 2A16 16 0 014 6a2 2 0 010-2z"/>',
     "posti": '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
@@ -42,15 +54,15 @@ def ik(n): return f'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 
 CSS = """
 *{box-sizing:border-box}html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:#1c1a17;font:16.5px/1.65 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+body{margin:0;background:var(--bg);color:#1c1a17;font:16.5px/1.65 var(--fb);-webkit-font-smoothing:antialiased}
 img{display:block;max-width:100%}a{color:inherit}
-h1,h2,h3{font-family:Fraunces,Georgia,"Times New Roman",serif;font-weight:500;letter-spacing:-.015em;line-height:1.1;margin:0 0 .45em}
+h1,h2,h3{font-family:var(--fh);font-weight:var(--hw);letter-spacing:var(--ls);line-height:1.08;margin:0 0 .45em;text-transform:var(--tt)}
 .w{max-width:1120px;margin:0 auto;padding:0 22px}
 .demo{background:#15171a;color:#e9e9ea;font-size:.84rem;text-align:center;padding:8px 14px}.demo a{color:#ffd24a;font-weight:700}
 header.top{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.86);backdrop-filter:saturate(1.4) blur(12px);-webkit-backdrop-filter:saturate(1.4) blur(12px);border-bottom:1px solid rgba(0,0,0,.06)}
 .bar{display:flex;align-items:center;justify-content:space-between;height:68px}
-.logo{font-family:Fraunces,Georgia,serif;font-size:1.45rem;text-decoration:none;letter-spacing:-.01em}
-.logo small{display:block;font-family:Inter,system-ui,sans-serif;font-size:.6rem;letter-spacing:.28em;text-transform:uppercase;color:#7a746b;margin-top:-3px}
+.logo{font-family:var(--fh);font-size:1.45rem;text-decoration:none;letter-spacing:-.01em}
+.logo small{display:block;font-family:var(--fb);font-size:.6rem;letter-spacing:.28em;text-transform:uppercase;color:#7a746b;margin-top:-3px}
 nav.m{display:flex;gap:22px;align-items:center;font-size:.95rem}nav.m a{text-decoration:none;color:#3a362f}nav.m a:hover{color:var(--a)}
 .btn{display:inline-flex;align-items:center;gap:8px;background:var(--a);color:#fff;text-decoration:none;font-weight:600;padding:13px 22px;border-radius:999px;border:0;cursor:pointer;font-size:1rem;transition:background .15s,transform .15s}
 .btn:hover{background:var(--a2);transform:translateY(-1px)}.btn svg{width:18px;height:18px}
@@ -79,36 +91,59 @@ nav.m{display:flex;gap:22px;align-items:center;font-size:.95rem}nav.m a{text-dec
 @media(max-width:860px){.pal{grid-template-columns:1fr;gap:30px}}
 .lista{border-top:1px solid rgba(0,0,0,.12)}
 .rivi{display:grid;grid-template-columns:1fr auto;gap:4px 18px;padding:20px 0;border-bottom:1px solid rgba(0,0,0,.12)}
-.rivi h3{font-size:1.3rem;margin:0}.rivi .h{font-family:Fraunces,Georgia,serif;font-size:1.25rem;color:var(--a);white-space:nowrap}
+.rivi h3{font-size:1.3rem;margin:0}.rivi .h{font-family:var(--fh);font-size:1.25rem;color:var(--a);white-space:nowrap}
 .rivi p{grid-column:1/-1;margin:0;color:#6a645a}
-.pal .kuva{position:sticky;top:96px;border-radius:22px;overflow:hidden;aspect-ratio:4/5;box-shadow:0 30px 60px -30px rgba(0,0,0,.35)}
+.pal .kuva{position:sticky;top:96px;border-radius:var(--r);overflow:hidden;aspect-ratio:4/5;box-shadow:0 30px 60px -30px rgba(0,0,0,.35)}
 .pal .kuva img{width:100%;height:100%;object-fit:cover}
 .gal{display:grid;grid-template-columns:2fr 1fr;grid-template-rows:1fr 1fr;gap:14px;height:min(70vw,560px);margin-top:34px}
-.gal img{width:100%;height:100%;object-fit:cover;border-radius:18px}.gal img:first-child{grid-row:1/3}
+.gal img{width:100%;height:100%;object-fit:cover;border-radius:calc(var(--r) * .85)}.gal img:first-child{grid-row:1/3}
 @media(max-width:640px){.gal{height:auto;grid-template-columns:1fr 1fr;grid-template-rows:auto}.gal img{aspect-ratio:1}.gal img:first-child{grid-column:1/-1;grid-row:auto;aspect-ratio:4/3}}
 .meista{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
 @media(max-width:860px){.meista{grid-template-columns:1fr;gap:28px}}
 .edut{list-style:none;padding:0;margin:22px 0 0;display:grid;gap:12px}
 .edut li{display:flex;gap:12px;align-items:center;font-weight:500}.edut span{width:30px;height:30px;border-radius:50%;background:var(--soft);color:var(--a);display:grid;place-items:center;flex:none}.edut svg{width:16px;height:16px}
-.luku{display:flex;gap:34px;margin-top:28px}.luku b{display:block;font-family:Fraunces,Georgia,serif;font-size:2.4rem;font-weight:500;color:var(--a);line-height:1}.luku span{color:#6a645a;font-size:.9rem}
+.luku{display:flex;gap:34px;margin-top:28px}.luku b{display:block;font-family:var(--fh);font-size:2.4rem;font-weight:500;color:var(--a);line-height:1}.luku span{color:#6a645a;font-size:.9rem}
 .arvot{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin-top:30px}
-.arvo{background:#fff;border-radius:20px;padding:30px;box-shadow:0 1px 0 rgba(0,0,0,.04),0 20px 40px -28px rgba(0,0,0,.25)}
-.arvo .t{color:#e3a72f;letter-spacing:2px}.arvo p{font-family:Fraunces,Georgia,serif;font-size:1.22rem;line-height:1.45;margin:12px 0 16px}.arvo b{font-size:.92rem}
+.arvo{background:#fff;border-radius:var(--r);padding:30px;box-shadow:0 1px 0 rgba(0,0,0,.04),0 20px 40px -28px rgba(0,0,0,.25)}
+.arvo .t{color:#e3a72f;letter-spacing:2px}.arvo p{font-family:var(--fh);font-size:1.22rem;line-height:1.45;margin:12px 0 16px}.arvo b{font-size:.92rem}
 .yht{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:30px}
 @media(max-width:860px){.yht{grid-template-columns:1fr}}
-.kortti{background:#fff;border-radius:22px;padding:30px;box-shadow:0 20px 40px -30px rgba(0,0,0,.3)}
+.kortti{background:#fff;border-radius:var(--r);padding:30px;box-shadow:0 20px 40px -30px rgba(0,0,0,.3)}
 .yrivi{display:flex;gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid rgba(0,0,0,.08);text-decoration:none;font-weight:500;font-size:1.05rem}
 .yrivi svg{width:22px;height:22px;color:var(--a);flex:none}.yrivi:last-of-type{border:0}
 .ajat{width:100%;border-collapse:collapse;margin-top:6px}.ajat td{padding:10px 0;border-bottom:1px solid rgba(0,0,0,.08)}.ajat td:last-child{text-align:right;font-weight:600}
 .ajat tr.tanaan td{color:var(--a);font-weight:700}
 form.lom{display:grid;gap:12px}
-form.lom input,form.lom textarea{width:100%;font:inherit;padding:14px 16px;border-radius:14px;border:1px solid rgba(0,0,0,.14);background:var(--bg)}
+form.lom input,form.lom textarea{width:100%;font:inherit;padding:14px 16px;border-radius:calc(var(--r) * .6);border:1px solid rgba(0,0,0,.14);background:var(--bg)}
 form.lom input:focus,form.lom textarea:focus{outline:2px solid var(--a);border-color:transparent}
 .pieni{color:#8a8378;font-size:.82rem;margin:0}
 footer{background:#141210;color:#a49d92;padding:46px 0 110px;font-size:.92rem}
-footer .w{display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between}footer b{color:#fff;font-family:Fraunces,Georgia,serif;font-weight:500;font-size:1.3rem}
+footer .w{display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between}footer b{color:#fff;font-family:var(--fh);font-weight:500;font-size:1.3rem}
 footer a{color:#e8e2d6}
 .ilm{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease}.ilm.nak{opacity:1;transform:none}
+
+/* --- hero-muunnelmat --- */
+.hero.keski{align-items:center;text-align:center}.hero.keski .w{padding-bottom:90px;padding-top:110px}.hero.keski h1,.hero.keski p{margin-left:auto;margin-right:auto}.hero.keski h1{max-width:18ch;font-size:clamp(2.7rem,8vw,5.6rem)}.hero.keski .toim{justify-content:center}
+.hero.keski::after{background:linear-gradient(180deg,rgba(0,0,0,.45),rgba(0,0,0,.55))}
+.hj{padding:56px 0 70px}.hj .w{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
+.hj h1{font-size:clamp(2.5rem,6.4vw,4.6rem);max-width:14ch}.hj p.l{font-size:1.15rem;color:var(--mu);max-width:44ch;margin:0 0 26px}
+.hj .kick{color:var(--a);font-weight:600}.hj .toim{display:flex;gap:12px;flex-wrap:wrap}
+.hj .btn.ghost{color:var(--tx);box-shadow:inset 0 0 0 1.5px var(--li2)}
+.hj figure{margin:0;position:relative}.hj figure img{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:var(--r);box-shadow:0 40px 80px -40px rgba(0,0,0,.5)}
+.hj.kaari figure img{border-radius:999px 999px var(--r) var(--r);aspect-ratio:3/4}
+.hj .auki{background:var(--soft);color:var(--tx)}
+@media(max-width:860px){.hj .w{grid-template-columns:1fr;gap:30px}.hj figure img{aspect-ratio:4/3}.hj.kaari figure img{aspect-ratio:4/5;max-height:70vh}}
+/* --- tumma tyyli --- */
+body.tumma{background:#121110;color:#ece6dc}
+body.tumma header.top{background:rgba(18,17,16,.86);border-color:rgba(255,255,255,.08)}
+body.tumma nav.m a{color:#d6cfc3}body.tumma .logo small{color:#9a9287}
+body.tumma .trust{background:#171513;border-color:rgba(255,255,255,.07)}
+body.tumma .s.alt{background:#191715}body.tumma .lead,body.tumma .rivi p,body.tumma .luku span{color:#a8a095}
+body.tumma .lista,body.tumma .rivi{border-color:rgba(255,255,255,.12)}
+body.tumma .arvo,body.tumma .kortti{background:#1e1c19;box-shadow:none;border:1px solid rgba(255,255,255,.07)}
+body.tumma .edut span{background:#23201c}
+body.tumma form.lom input,body.tumma form.lom textarea{background:#141210;color:#ece6dc;border-color:rgba(255,255,255,.14)}
+body.tumma .yrivi,body.tumma .ajat td{border-color:rgba(255,255,255,.1)}
 @media(prefers-reduced-motion:reduce){.hero img{animation:none}.ilm{opacity:1;transform:none}}
 """
 
@@ -126,6 +161,7 @@ def sivu(d, demo=True):
     a, a2, bg, soft = VARIT.get(d.get("teema", "sininen"), VARIT["sininen"])
     hero, gal = KUVAT.get(d["slug"], KUVAT["putki"])
     nimi = d["nimi"]
+    fh, fb, gf, hw, ls, tt, r, hv, tumma = TYYLIT.get(d["slug"], TYYLIT["maalaus"])
     kaupunki = (d.get("osoite", "").split()[-1] if d.get("osoite") else "")
     tel = "tel:" + d.get("puhelin", "").replace(" ", "")
     edut = d.get("edut", [])[:4]
@@ -135,21 +171,26 @@ def sivu(d, demo=True):
     arvot = "".join(f'<figure class="arvo ilm" style="margin:0"><div class="t">★★★★★</div><p>”{esc(x["teksti"])}”</p><b>{esc(x["nimi"])}</b></figure>' for x in d.get("arvostelut", []))
     ajat_rivit = [(p, t) for p, t in d.get("aukiolo", []) if p]
     ajat = "".join(f"<tr><td>{esc(p)}</td><td>{esc(t)}</td></tr>" for p, t in ajat_rivit)
+    kick = esc(d.get("ala", "")) + (" · " + esc(kaupunki) if kaupunki else "")
+    toim = f'<div class="toim"><a class="btn" href="#yhteys">{esc(d.get("cta", "Ota yhteyttä"))} →</a><a class="btn ghost" href="{tel}">{ik("puh")}{esc(d.get("puhelin", ""))}</a></div><div class="auki" data-auki><i></i><span>Avoinna</span></div>'
+    if hv in ("jaettu", "kaari"):
+        hero_html = (f'<section class="hj {hv}"><div class="w"><div><span class="kick">{kick}</span><h1>{esc(d.get("slogan", nimi))}</h1><p class="l">{esc(d.get("lupaus", ""))}</p>{toim}</div>'
+                     f'<figure><img src="{U(hero, 1100, 1375)}" srcset="{SS(hero, (600, 1100, 1500), 1.25)}" sizes="(max-width:860px) 100vw, 46vw" alt="" fetchpriority="high"></figure></div></section>')
+    else:
+        hero_html = (f'<section class="hero{" keski" if hv == "keski" else ""}"><img src="{U(hero, 1600)}" srcset="{SS(hero, (800, 1200, 1600, 2200))}" sizes="100vw" alt="" fetchpriority="high">'
+                     f'<div class="w"><span class="kick">{kick}</span><h1>{esc(d.get("slogan", nimi))}</h1><p>{esc(d.get("lupaus", ""))}</p>{toim}</div></section>')
     demo_html = ('<div class="demo">Tämä on Netvon <b>esimerkkisivu</b>. Jokainen sivu räätälöidään asiakkaan tarpeen mukaan – ei valmispohjia. '
                  '<a href="/">Rakentaminen 0 € →</a></div>') if demo else ""
     return f"""<!doctype html><html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>{esc(nimi)} – {esc(d.get("ala", ""))} {esc(kaupunki)}</title><meta name="description" content="{esc(d.get("meta", nimi))}"><meta name="robots" content="noindex"><meta name="theme-color" content="{a}">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family={gf}&display=swap" rel="stylesheet">
 <link rel="preload" as="image" href="{U(hero, 1200)}">
-<style>:root{{--a:{a};--a2:{a2};--bg:{bg};--soft:{soft}}}{CSS}</style></head><body>
+<style>:root{{--a:{a};--a2:{a2};--bg:{bg};--soft:{soft};--fh:{fh};--fb:{fb};--hw:{hw};--ls:{ls};--tt:{tt};--r:{r};--tx:{"#ece6dc" if tumma else "#1c1a17"};--mu:{"#a8a095" if tumma else "#5d574e"};--li2:{"rgba(255,255,255,.35)" if tumma else "rgba(0,0,0,.25)"}}}{CSS}</style></head><body class="{"tumma" if tumma else ""}">
 {demo_html}
 <header class="top"><div class="w bar"><a class="logo" href="#">{esc(nimi)}<small>{esc(d.get("ala", ""))}</small></a>
 <nav class="m"><a href="#palvelut">Palvelut</a><a href="#meista">Meistä</a><a href="#yhteys">Yhteys</a></nav></div></header>
-<section class="hero"><img src="{U(hero, 1600)}" srcset="{SS(hero, (800, 1200, 1600, 2200))}" sizes="100vw" alt="" fetchpriority="high">
-<div class="w"><span class="kick">{esc(d.get("ala", ""))}{" · " + esc(kaupunki) if kaupunki else ""}</span><h1>{esc(d.get("slogan", nimi))}</h1><p>{esc(d.get("lupaus", ""))}</p>
-<div class="toim"><a class="btn" href="#yhteys">{esc(d.get("cta", "Ota yhteyttä"))} →</a><a class="btn ghost" href="{tel}">{ik("puh")}{esc(d.get("puhelin", ""))}</a></div>
-<div class="auki" data-auki><i></i><span>Avoinna</span></div></div></section>
+{hero_html}
 <div class="trust"><div class="w">{''.join(f'<div>{ik("ok")}{esc(e)}</div>' for e in edut)}</div></div>
 <section class="s" id="palvelut"><div class="w"><span class="eb">{esc(d.get("palvelut_otsikko", "Palvelut"))}</span><h2 class="ilm">Mitä teemme</h2>
 <div class="pal"><div class="lista ilm">{palvelut}</div><div class="kuva ilm"><img src="{U(gal[0], 900, 1125)}" srcset="{SS(gal[0], (500, 900, 1300), 1.25)}" sizes="(max-width:860px) 100vw, 45vw" alt="" loading="lazy"></div></div></div></section>
