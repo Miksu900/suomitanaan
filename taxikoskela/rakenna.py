@@ -3,6 +3,9 @@ Rakentaa staattiset sivut kansioon taxikoskela/public: python3 taxikoskela/raken
 Haltija: Koskelan Autopalvelu Oy (Y-tunnus 3312391-2). Ylläpito: Netvo.
 """
 import json, pathlib, html, datetime
+import sys as _sys
+_sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parent.parent / 'scripts'))
+from tietosuoja import seloste
 
 ROOT = pathlib.Path(__file__).resolve().parent
 OUT = ROOT / "public"
@@ -205,7 +208,7 @@ def layout(title, desc, path, body, city=None):
 <main>{body}</main>
 <footer><div class="w fc"><div><h4>{NIMI}</h4><p>Paikallinen taksi Ylivieskassa, Alavieskassa ja Kalajoella.</p></div>
 <div><h4>Alueet</h4><ul>{''.join(f'<li><a href="/taksi-{k}/">Taksi {esc(c["nimi"])}</a></li>' for k, c in KAUPUNGIT.items())}<li><a href="/taksi-kalajoki/#hiekkasarkat">Taksi Hiekkasärkät</a></li></ul></div>
-<div><h4>Yritys</h4><ul><li>{YRITYS}</li><li>Y-tunnus {YTUNNUS}</li><li><a href="/yhteystiedot/">Yhteystiedot</a></li></ul></div></div>
+<div><h4>Yritys</h4><ul><li>{YRITYS}</li><li>Y-tunnus {YTUNNUS}</li><li><a href="/yhteystiedot/">Yhteystiedot</a></li><li><a href="/tietosuoja/">Tietosuoja</a></li></ul></div></div>
 <div class="w" style="margin-top:24px;font-size:.82rem;opacity:.7">© {datetime.date.today().year} {YRITYS} · Sivut: <a href="https://netvo.fi/">Netvo</a></div></footer>
 <script>if(/iPad|iPhone|iPod/.test(navigator.userAgent))document.querySelectorAll('a[data-sms]').forEach(function(a){{a.href=a.href.replace(/^sms:([^?]*)\\?body=/,'sms:/open?addresses=$1&body=')}})</script>
 </body></html>"""
@@ -325,6 +328,16 @@ def main():
         (d / "index.html").write_text(kaupunkisivu(k, c), encoding="utf-8")
     (OUT / "yhteystiedot").mkdir(exist_ok=True)
     (OUT / "yhteystiedot" / "index.html").write_text(yhteystiedot(), encoding="utf-8")
+    ts = seloste(palvelu=f"{NIMI} (taxikoskela.fi)", rekisterinpitaja=f"{YRITYS} (Y-tunnus {YTUNNUS})", yhteys="",
+        tiedot=[("Kyytitilaukset", "kun tilaat kyydin puhelimella tai tilauslomakkeella, käsittelemme nimesi, puhelinnumerosi, nouto- ja määränpään, ajankohdan ja lisätiedot. Lomake ei lähetä tietoja palvelimelle, vaan avaa puhelimesi viestisovelluksen valmiilla tekstiviestillä kuljettajalle."),
+                ("Tekniset lokitiedot", "kun avaat sivun, palvelin käsittelee laitteesi IP-osoitteen ja selaimen tiedot sivuston toimittamiseksi ja tietoturvaa varten.")],
+        tarkoitus="Tilaustietoja käsitellään kyydin järjestämiseksi ja laskuttamiseksi (sopimus) sekä kirjanpitolain velvoitteiden täyttämiseksi (lakisääteinen velvoite). Lokitietoja käsitellään sivuston toimivuuden ja tietoturvan vuoksi (oikeutettu etu).",
+        kasittelijat=[("Cloudflare, Inc.", "sivuston palvelin ja tietoturva"), ("Puhelinoperaattorit", "tekstiviestien ja puheluiden välitys")],
+        sailytys="Tilausviestit säilytetään kuljettajan puhelimessa vain niin kauan kuin kyydin hoitaminen ja laskutus vaativat. Kirjanpitoon liittyvät tiedot säilytetään kirjanpitolain mukaisen ajan.",
+        evasteet="Sivusto ei käytä evästeitä eikä kävijäseurantaa.")
+    ts = ts.replace('Yhteydenotot tietosuoja-asioissa: <a href="mailto:"></a>', f'Yhteydenotot tietosuoja-asioissa: {OMISTAJA[0]}, puh. <a href="tel:{OMISTAJA[2]}">{OMISTAJA[1]}</a>').replace('Pyynnöt voi lähettää sähköpostilla yllä olevaan osoitteeseen', 'Pyynnöt voi esittää yllä olevaan numeroon')
+    (OUT / "tietosuoja").mkdir(exist_ok=True)
+    (OUT / "tietosuoja" / "index.html").write_text(layout(f"Tietosuojaseloste – {NIMI}", f"{NIMI}: tietosuojaseloste.", "/tietosuoja/", f'<section><div class="w" style="max-width:820px">{ts}</div></section>'), encoding="utf-8")
     (OUT / "favicon.svg").write_text(favicon(), encoding="utf-8")
     today = datetime.date.today().isoformat()
     urls = ["/"] + [f"/taksi-{k}/" for k in KAUPUNGIT] + ["/yhteystiedot/"]

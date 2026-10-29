@@ -2,14 +2,16 @@
 
 Malli (29.10.2026): rakentaminen 0 € (jopa 1500 € arvosta), vain kuukausimaksu, ei sitoutumista, domain lunastettavissa 99 €.
 """
-import html, pathlib
+import html, pathlib, sys
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "scripts"))
+from tietosuoja import seloste
 from .malli import sivu as mallisivu
 from .palvelusivu import sivu as palvelusivu, KUVAT, U as UK, SS as SSK
 from .data import DEMOT
 
 esc = html.escape
 YHTEYS = "info@netvo.fi"
-SEURANTA = "<script async src=\"https://www.googletagmanager.com/gtag/js?id=AW-18515756006\"></script>\n<script>(function(){window.dataLayer=window.dataLayer||[];window.gtag=window.gtag||function(){dataLayer.push(arguments)};\nvar K='nv_suostumus',c=null;try{c=localStorage.getItem(K)}catch(e){}var g=c==='ok'?'granted':'denied';\ngtag('consent','default',{ad_storage:g,ad_user_data:g,ad_personalization:g,analytics_storage:'denied',wait_for_update:500});\ngtag('js',new Date());gtag('config','AW-18515756006');\nvar L={soitto:'AW-18515756006/aUOJCILR-q0dEOaHgP1E',viesti:'AW-18515756006/7tTECIXR-q0dEOaHgP1E',rekisteroityminen:'AW-18515756006/o5SECIjR-q0dEOaHgP1E'},tehty={};\nwindow.nvKonversio=function(k){if(!L[k]||tehty[k])return;tehty[k]=1;gtag('event','conversion',{send_to:L[k]})};\ndocument.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[href]');if(!a)return;var h=a.getAttribute('href');if(/^tel:/.test(h))nvKonversio('soitto');else if(/^mailto:/.test(h))nvKonversio('viesti')},true);\n\nif(c)return;function nayta(){var d=document.createElement('div');d.id='nv-ev';d.setAttribute('role','dialog');d.setAttribute('aria-label','Evästeet');\nd.innerHTML='<p>Käytämme evästeitä mainonnan tehon mittaamiseen. Voit hyväksyä ne tai jatkaa ilman.</p><div><button type=\"button\" data-v=\"ei\">Vain välttämättömät</button><button type=\"button\" data-v=\"ok\" class=\"ok\">Hyväksy</button></div>';\nvar s=document.createElement('style');s.textContent='#nv-ev{position:fixed;left:12px;right:12px;bottom:88px;z-index:2147483647;max-width:560px;margin:0 auto;background:#18211c;color:#fff;border-radius:18px;padding:16px 18px;box-shadow:0 20px 50px -15px rgba(0,0,0,.5);font:15px/1.45 Inter,system-ui,sans-serif;display:flex;gap:14px;align-items:center;flex-wrap:wrap}#nv-ev p{margin:0;flex:1 1 240px}#nv-ev div{display:flex;gap:8px}#nv-ev button{border:1.5px solid rgba(255,255,255,.5);background:transparent;color:#fff;border-radius:999px;padding:9px 14px;font:600 14px Inter,system-ui,sans-serif;cursor:pointer}#nv-ev button.ok{background:#fff;color:#18211c;border-color:#fff}';\ndocument.head.appendChild(s);document.body.appendChild(d);\nd.addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;var v=b.dataset.v;try{localStorage.setItem(K,v)}catch(x){}if(v==='ok')gtag('consent','update',{ad_storage:'granted',ad_user_data:'granted',ad_personalization:'granted'});d.remove()})}\nif(document.body)nayta();else document.addEventListener('DOMContentLoaded',nayta)})();</script>\n"
+SEURANTA = "<script async src=\"https://www.googletagmanager.com/gtag/js?id=AW-18515756006\"></script>\n<script>(function(){window.dataLayer=window.dataLayer||[];window.gtag=window.gtag||function(){dataLayer.push(arguments)};\nvar K='nv_suostumus',c=null;try{c=localStorage.getItem(K)}catch(e){}var g=c==='ok'?'granted':'denied';\ngtag('consent','default',{ad_storage:g,ad_user_data:g,ad_personalization:g,analytics_storage:'denied',wait_for_update:500});\ngtag('js',new Date());gtag('config','AW-18515756006');\nvar L={soitto:'AW-18515756006/aUOJCILR-q0dEOaHgP1E',viesti:'AW-18515756006/7tTECIXR-q0dEOaHgP1E',rekisteroityminen:'AW-18515756006/o5SECIjR-q0dEOaHgP1E'},tehty={};\nwindow.nvKonversio=function(k){if(!L[k]||tehty[k])return;tehty[k]=1;gtag('event','conversion',{send_to:L[k]})};\ndocument.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[href]');if(!a)return;var h=a.getAttribute('href');if(/^tel:/.test(h))nvKonversio('soitto');else if(/^mailto:/.test(h))nvKonversio('viesti')},true);\n\nif(c)return;function nayta(){var d=document.createElement('div');d.id='nv-ev';d.setAttribute('role','dialog');d.setAttribute('aria-label','Evästeet');\nd.innerHTML='<p>Käytämme evästeitä mainonnan tehon mittaamiseen. Voit hyväksyä ne tai jatkaa ilman. <a href=\"https://netvo.fi/tietosuoja/\" style=\"color:#9fe3b5\">Lue lisää</a></p><div><button type=\"button\" data-v=\"ei\">Vain välttämättömät</button><button type=\"button\" data-v=\"ok\" class=\"ok\">Hyväksy</button></div>';\nvar s=document.createElement('style');s.textContent='#nv-ev{position:fixed;left:12px;right:12px;bottom:88px;z-index:2147483647;max-width:560px;margin:0 auto;background:#18211c;color:#fff;border-radius:18px;padding:16px 18px;box-shadow:0 20px 50px -15px rgba(0,0,0,.5);font:15px/1.45 Inter,system-ui,sans-serif;display:flex;gap:14px;align-items:center;flex-wrap:wrap}#nv-ev p{margin:0;flex:1 1 240px}#nv-ev div{display:flex;gap:8px}#nv-ev button{border:1.5px solid rgba(255,255,255,.5);background:transparent;color:#fff;border-radius:999px;padding:9px 14px;font:600 14px Inter,system-ui,sans-serif;cursor:pointer}#nv-ev button.ok{background:#fff;color:#18211c;border-color:#fff}';\ndocument.head.appendChild(s);document.body.appendChild(d);\nd.addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;var v=b.dataset.v;try{localStorage.setItem(K,v)}catch(x){}if(v==='ok')gtag('consent','update',{ad_storage:'granted',ad_user_data:'granted',ad_personalization:'granted'});d.remove()})}\nif(document.body)nayta();else document.addEventListener('DOMContentLoaded',nayta)})();</script>\n"
 PUHELIN = "044 777 7149"
 PUHELIN_TEL = "+358447777149"
 
@@ -128,7 +130,7 @@ footer.jalka{{background:#0f1014;color:#9a9ca3;text-align:center;padding:40px 16
 <footer class="jalka"><p style="font-family:Fraunces,Georgia,serif;font-size:1.5rem;color:#fff;margin:0 0 8px">Net<span style="color:#4ade80">vo</span></p>
 <p>Nettisivut ja verkkokaupat suomalaisille pienyrityksille.</p>
 <p style="font-size:1.05rem;color:#fff">{esc(YHTEYS)}</p>
-<p><a href="/ehdot/">Sopimusehdot</a> · Kuvat: Unsplash · Netvo on osa Faktapisteen palveluita.</p></footer>
+<p><a href="/ehdot/">Sopimusehdot</a> · <a href="/tietosuoja/">Tietosuoja</a> · Kuvat: Unsplash · Netvo on osa Faktapisteen palveluita.</p></footer>
 <script>(function(){{var o=new IntersectionObserver(function(es){{es.forEach(function(e){{if(e.isIntersecting){{e.target.classList.add('nak');o.unobserve(e.target)}}}})}},{{threshold:.1}});document.querySelectorAll('.ilm').forEach(function(x){{o.observe(x)}});setTimeout(function(){{document.querySelectorAll('.ilm').forEach(function(x){{x.classList.add('nak')}})}},2500)}})();</script>
 <script src="https://kauppa.netvo.fi/tuki.js" defer></script>{SEURANTA}
 </body></html>"""
@@ -224,6 +226,22 @@ def ehtosivu():
     return _sivu("Sopimusehdot – Netvo", "Netvo-palvelun selkeät ja reilut sopimusehdot: rakentaminen 0 €, kuukausihinta, ei sitoutumista.", runko)
 
 
+def tietosuojasivu():
+    ts = seloste(palvelu="Netvo (netvo.fi)", rekisterinpitaja="Taksiliikenne Koskela Oy (Y-tunnus 3425681-3), palvelun nimi Netvo", yhteys=YHTEYS,
+        tiedot=[("Yhteydenotot", "kun soitat, lähetät sähköpostia tai viestin, käsittelemme nimesi, yhteystietosi ja viestisi sisällön."),
+                ("Asiakkuus", "asiakkaista käsittelemme yrityksen ja yhteyshenkilön tiedot, laskutustiedot sekä sivujen sisällön, jonka asiakas toimittaa."),
+                ("Chat", "Kysy meiltä -chattiin kirjoittamasi viesti välitetään tekoälypalvelulle vastauksen muodostamista varten. Keskusteluja ei tallenneta palvelimellemme; laskemme vain viestien määrän."),
+                ("Mainonnan mittaus", "Google Ads -tagi kirjaa, jos mainoksen kautta tullut kävijä painaa puhelin- tai sähköpostilinkkiä tai lähettää chat-viestin. Evästeitä käytetään tähän vain, jos hyväksyt ne."),
+                ("Esimerkkisivut", "esimerkkikauppojen ostoskori tallentuu vain selaimeesi. Puhuva kauppias -esimerkissä puheesi muutetaan tekstiksi selaimessa, ja kysymys välitetään tekoälypalveluille vastauksen ja puheen tuottamiseksi. Niitä ei tallenneta."),
+                ("Tekniset lokitiedot", "palvelin käsittelee laitteesi IP-osoitteen ja selaimen tiedot sivuston toimittamiseksi ja tietoturvaa varten.")],
+        tarkoitus="Tietoja käsitellään yhteydenottoihin vastaamiseen, asiakassuhteen hoitamiseen ja laskutukseen (sopimus ja sopimusta edeltävät toimet), kirjanpitolain velvoitteisiin (lakisääteinen velvoite), sivuston toimivuuteen ja tietoturvaan (oikeutettu etu) sekä mainonnan mittaamiseen (suostumus).",
+        kasittelijat=[("Cloudflare, Inc.", "palvelimet ja tietoturva"), ("Anthropic PBC", "chatin ja Puhuvan kauppiaan tekoälyvastaukset"), ("ElevenLabs", "Puhuvan kauppiaan puhe"),
+                      ("Google LLC", "Google Ads -mainonnan mittaus ja Google Fonts -kirjasimet"), ("Google Workspace / Gmail", "sähköpostiviestintä"), ("Kirjanpitäjä", "kirjanpito ja laskutusaineisto")],
+        sailytys="Yhteydenotot säilytetään niin kauan kuin asian hoitaminen vaatii, enintään kaksi vuotta. Asiakkuuden tiedot säilytetään asiakkuuden ajan ja kirjanpitoaineisto kirjanpitolain mukaisen ajan (yleensä 6–10 vuotta). Mainonnan mittaustiedot säilyvät Googlen asetusten mukaisesti.",
+        evasteet="Mainonnan mittauksen evästeet otetaan käyttöön vain, jos hyväksyt ne sivun alareunan ilmoituksesta. Valintasi tallentuu selaimeesi, ja voit muuttaa sitä tyhjentämällä sivuston tallennetut tiedot. Ilman hyväksyntää Google saa vain evästeettömän, yksilöimättömän tiedon käynnistä.")
+    return _sivu("Tietosuojaseloste – Netvo", "Netvon tietosuojaseloste: mitä tietoja käsitellään ja miksi.", f'<section class="osio"><div class="w teksti">{ts}</div></section>')
+
+
 def rakenna_nettikoti(root):
     """Kirjoittaa Netvo-sivut kansioon <root>/netvo/."""
     root = pathlib.Path(root)
@@ -231,6 +249,8 @@ def rakenna_nettikoti(root):
     (root / "netvo" / "index.html").write_text(etusivu(), encoding="utf-8")
     (root / "netvo" / "ehdot").mkdir(exist_ok=True)
     (root / "netvo" / "ehdot" / "index.html").write_text(ehtosivu(), encoding="utf-8")
+    (root / "netvo" / "tietosuoja").mkdir(exist_ok=True)
+    (root / "netvo" / "tietosuoja" / "index.html").write_text(tietosuojasivu(), encoding="utf-8")
     for d in DEMOT:
         kansio = root / "netvo" / "mallit" / d["slug"]
         kansio.mkdir(parents=True, exist_ok=True)

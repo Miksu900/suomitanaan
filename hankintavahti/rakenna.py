@@ -9,7 +9,9 @@ Vaiheet:
 Aja:  HILMA_API_KEY=... ANTHROPIC_API_KEY=... python3 hankintavahti/rakenna.py
       TESTI=naytte.json python3 hankintavahti/rakenna.py   (paikallinen testi ilman avaimia)
 """
-import json, os, re, html, datetime as dt, urllib.request, pathlib, concurrent.futures as cf, unicodedata
+import json, os, re, html, datetime as dt, urllib.request, pathlib, concurrent.futures as cf, unicodedata, sys
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / 'scripts'))
+from tietosuoja import seloste
 
 HERE = pathlib.Path(__file__).parent
 PUB = pathlib.Path(os.environ.get("PUB_DIR", HERE / "public"))
@@ -189,7 +191,7 @@ def kehys(otsikko, kuvaus, polku, sisalto, ld=None):
 <style>{CSS}</style>{f'<script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>' if ld else ''}</head><body>
 <header class="top"><div class="wrap"><a class="logo" href="/"><i>H</i>{NIMI}</a><nav><a href="/">Hankinnat</a><a class="n2" href="/#alueet">Alueet</a><a href="/tietoa/">Tietoa</a></nav></div></header>
 <main class="wrap">{sisalto}</main>
-<footer><div class="wrap">{NIMI} kokoaa julkiset tarjouspyynnöt selkokielellä pienyrittäjille. Ilmoitusten tiedot: <a href="https://www.hankintailmoitukset.fi/">Hilma – hankintailmoitukset.fi</a> (Hansel Oy), lisenssi CC BY 4.0. Tiivistelmät on tehty tekoälyllä – tarkista aina alkuperäinen tarjouspyyntö ennen tarjouksen jättämistä. · <a href="/tietoa/">Tietoa palvelusta</a></div></footer>
+<footer><div class="wrap">{NIMI} kokoaa julkiset tarjouspyynnöt selkokielellä pienyrittäjille. Ilmoitusten tiedot: <a href="https://www.hankintailmoitukset.fi/">Hilma – hankintailmoitukset.fi</a> (Hansel Oy), lisenssi CC BY 4.0. Tiivistelmät on tehty tekoälyllä – tarkista aina alkuperäinen tarjouspyyntö ennen tarjouksen jättämistä. · <a href="/tietoa/">Tietoa palvelusta</a> · <a href="/tietosuoja/">Tietosuoja</a></div></footer>
 </body></html>"""
 
 def lyhyt(x, n=150):
@@ -300,6 +302,15 @@ def rakenna(ilm, tv):
               '<h2>Tietolähde</h2><p>Ilmoitusten tiedot ovat peräisin julkisten hankintojen ilmoituskanava Hilmasta (hankintailmoitukset.fi, Hansel Oy), lisenssi CC BY 4.0. Tiivistelmät ja luokittelu on tehty tekoälyllä, ja ne voivat sisältää virheitä. Tarkista aina alkuperäinen tarjouspyyntö.</p>'
               '<h2>Ylläpitäjä</h2><p>Palvelun tuottaa Taksiliikenne Koskela Oy (Y-tunnus 3425681-3). Yhteys: info@netvo.fi.</p></article>')
     kirjoita("/tietoa/", kehys(f"Tietoa | {NIMI}", f"Mikä {NIMI} on ja mistä tiedot tulevat.", "/tietoa/", tietoa)); urls.append("/tietoa/")
+    ts = seloste(palvelu=f"{NIMI} (hankintavahti.com)", rekisterinpitaja="Taksiliikenne Koskela Oy (Y-tunnus 3425681-3), palvelun nimi Hankintavahti", yhteys="info@netvo.fi",
+        tiedot=[("Tekniset lokitiedot", "kun avaat sivun, palvelin käsittelee laitteesi IP-osoitteen, selaimen tiedot ja pyydetyn sivun. Tietoja käytetään vain sivuston toimittamiseen ja tietoturvaan."),
+                ("Ei rekisteröitymistä", "palvelua käytetään ilman kirjautumista. Emme kerää nimeä, sähköpostia tai muita yhteystietoja, ellet itse lähetä meille sähköpostia."),
+                ("Sähköpostit", "jos otat yhteyttä sähköpostilla, käsittelemme viestisi ja yhteystietosi vastataksemme sinulle.")],
+        tarkoitus="Tietoja käsitellään sivuston teknistä toimittamista ja tietoturvaa varten sekä yhteydenottoihin vastaamiseksi. Peruste on oikeutettu etu (palvelun toimivuus ja turvallisuus) ja yhteydenotoissa oma pyyntösi.",
+        kasittelijat=[("Cloudflare, Inc.", "sivuston palvelin ja tietoturva"), ("Google LLC (Google Fonts)", "kirjasintiedostot ladataan Googlen palvelimelta, jolloin laitteesi IP-osoite välittyy Googlelle")],
+        sailytys="Tekniset lokitiedot poistuvat palveluntarjoajan järjestelmistä lyhyen ajan kuluessa. Sähköpostit säilytetään niin kauan kuin asian hoitaminen vaatii.",
+        evasteet="Sivusto ei käytä seuranta- tai mainosevästeitä eikä kävijäanalytiikkaa.")
+    kirjoita("/tietosuoja/", kehys(f"Tietosuojaseloste | {NIMI}", f"{NIMI}n tietosuojaseloste.", "/tietosuoja/", f'<div class="yks">{ts}</div>')); urls.append("/tietosuoja/")
     (PUB / "404.html").write_text(kehys(f"Sivua ei löydy | {NIMI}", "Sivua ei löydy", "/404", '<article class="yks"><h1>Sivua ei löytynyt</h1><p>Hankinta on ehkä jo päättynyt. <a href="/">Katso avoimet hankinnat</a>.</p></article>'))
     (PUB / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + "".join(f"<url><loc>{SIVU}{u}</loc></url>" for u in urls) + "</urlset>")
     (PUB / "robots.txt").write_text(f"User-agent: *\nAllow: /\nSitemap: {SIVU}/sitemap.xml\n")

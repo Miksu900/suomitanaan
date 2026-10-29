@@ -1,89 +1,130 @@
-<!doctype html>
-<html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Rakennus Mäkelä – Remontti alusta loppuun yhdellä sopimuksella</title>
-<meta name="description" content="Rakennus Mäkelä – kylpyhuone- ja keittiöremontit avaimet käteen. Takuu ja kotitalousvähennys.">
-<meta name="robots" content="noindex">
-<style>
-:root{--p:#d9631a;--p2:#a84a11;--pehmea:#fcefe4;--ink:#1b1b1f;--mute:#5c6066;--line:#e4e4e8;--bg:#fff}
-*{box-sizing:border-box}
-body{margin:0;font:16px/1.65 -apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg)}
-.w{max-width:1040px;margin:0 auto;padding:0 20px}
-a{color:var(--p)}
-h1,h2,h3{line-height:1.2;margin:0 0 .5em}
-.demopalkki{background:#111;color:#fff;text-align:center;padding:9px 16px;font-size:.9rem}
-.demopalkki a{color:#ffd24a;font-weight:600;white-space:nowrap}
-header.top{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid var(--line)}
-.top .w{display:flex;align-items:center;justify-content:space-between;height:66px}
-.logo{font-weight:800;font-size:1.25rem;color:var(--p);text-decoration:none;letter-spacing:-.01em}
-.top nav{display:flex;gap:4px;align-items:center}
-.top nav a{color:var(--ink);text-decoration:none;font-weight:600;font-size:.95rem;padding:8px 10px;border-radius:8px}
-.top nav a.nappi{color:#fff}
-@media(max-width:680px){.top nav a:not(.nappi){display:none}}
-.nappi{background:var(--p);color:#fff;text-decoration:none;font-weight:700;padding:11px 20px;border-radius:10px;display:inline-block}
-.nappi:hover{background:var(--p2)}
-.nappi2{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.7);text-decoration:none;font-weight:700;padding:11px 20px;border-radius:10px;display:inline-block}
-.hero{background:linear-gradient(135deg,var(--p),var(--p2));color:#fff;padding:72px 0}
-.hero h1{font-size:clamp(2rem,6vw,3.3rem);margin-bottom:.3em}
-.hero p{font-size:1.2rem;opacity:.95;max-width:30ch;margin:0 0 1.6em}
-.hero .toim{display:flex;gap:12px;flex-wrap:wrap}
-.osio{padding:56px 0}
-.osio h2{font-size:clamp(1.5rem,4vw,2rem);text-align:center;margin-bottom:1em}
-.ruudut{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
-.kortti{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;display:flex;flex-wrap:wrap;align-items:center;gap:0 12px}
-.kortti h3,.kortti p{flex-basis:100%}
-.kortti h3{font-size:1.15rem}.kortti p{color:var(--mute);margin:0 0 10px}
-.kortti .hinta{font-weight:800;color:var(--p);font-size:1.1rem}
-.kortti .osta{display:inline-block;margin:10px 0 0 auto;background:var(--pehmea);color:var(--p2);font-weight:700;text-decoration:none;padding:8px 16px;border-radius:9px}
-.kaksi{display:grid;gap:36px;grid-template-columns:1fr 1fr;align-items:start}
-@media(max-width:720px){.kaksi{grid-template-columns:1fr}}
-.edut{list-style:none;padding:0;margin:0;display:grid;gap:12px}
-.edut li{display:flex;gap:12px;align-items:flex-start;font-weight:600}
-.edut .ik,.yht-rivi .ik{width:26px;height:26px;flex:none;color:var(--p)}
-.edut .ik svg,.yht-rivi .ik svg{width:100%;height:100%}
-.arv{background:var(--pehmea)}
-.arvot{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
-.arvot figure{margin:0;background:#fff;border-radius:16px;padding:22px;box-shadow:0 2px 10px rgba(0,0,0,.05)}
-.arvot p{font-size:1.05rem}.arvot figcaption{color:var(--mute);font-weight:700;margin-top:10px}
-#yhteys{background:var(--ink);color:#fff}
-#yhteys h2{color:#fff}
-.yht-grid{display:grid;gap:30px;grid-template-columns:1fr 1fr}
-@media(max-width:720px){.yht-grid{grid-template-columns:1fr}}
-.yht-rivi{display:flex;gap:12px;align-items:center;color:#fff;text-decoration:none;padding:10px 0;font-weight:600;border-bottom:1px solid rgba(255,255,255,.15)}
-.yht-rivi .ik{color:#fff}
-.aukiolo table{width:100%;border-collapse:collapse;margin-top:8px}
-.aukiolo td{padding:7px 0;border-bottom:1px solid rgba(255,255,255,.15);color:#dcdce0}
-.aukiolo td:last-child{text-align:right;font-weight:700;color:#fff}
-footer.jalka{background:#0c0c0e;color:#9a9aa0;text-align:center;padding:26px 16px;font-size:.88rem}
-.lomake{display:grid;gap:12px}
-.lomake input,.lomake textarea{width:100%;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#fff;font:inherit}
-.lomake input::placeholder,.lomake textarea::placeholder{color:#aaa}
-.lomake button{background:var(--p);color:#fff;border:0;font:700 1rem inherit;padding:13px;border-radius:10px;cursor:pointer}
-</style></head>
-<body>
-<div class="demopalkki">Tämä on <b>mallisivu</b>. Oma sivustosi näyttää tältä sisällölläsi ja väreilläsi. <a href="/">Katso hinta ja ehdot →</a></div>
-<header class="top"><div class="w">
-<a class="logo" href="#">Rakennus Mäkelä</a>
-<nav><a href="#palvelut">Palvelut</a><a href="#meista">Meistä</a><a href="#yhteys">Yhteys</a><a class="nappi" href="tel:0456789012">Soita</a></nav>
-</div></header>
-<section class="hero"><div class="w">
-<h1>Remontti alusta loppuun yhdellä sopimuksella</h1>
-<p>Kylpyhuoneet, keittiöt ja pintaremontit avaimet käteen. Yksi vastuuhenkilö, selkeä aikataulu ja takuu.</p>
-<div class="toim"><a class="nappi" href="#yhteys">Pyydä tarjous</a><a class="nappi2" href="#palvelut">Katso palvelut</a></div>
-</div></section>
-<section class="osio" id="palvelut"><div class="w"><h2>Palvelut</h2><div class="ruudut"><div class="kortti"><h3>Kylpyhuoneremontti</h3><p>Vedeneristys sertifioidusti, laatoitus ja kalusteet.</p></div><div class="kortti"><h3>Keittiöremontti</h3><p>Kaapistot, tasot ja kodinkoneet asennettuna.</p></div><div class="kortti"><h3>Pintaremontit</h3><p>Maalaus, tapetointi ja lattiat nopeasti ja siististi.</p></div><div class="kortti"><h3>Terassit ja piharakennukset</h3><p>Terassit, katokset ja varastot mittatilaustyönä.</p></div></div></div></section>
-<section class="osio" id="meista"><div class="w kaksi"><div><h2>Yksi tekijä, ei stressiä</h2><p>Hoidamme koko remontin yhdellä sopimuksella: suunnittelun, luvat, työt ja loppusiivouksen.</p><p>Saat alusta asti saman vastuuhenkilön, joka pitää sinut ajan tasalla ja aikataulussa.</p></div><ul class="edut"><li><span class="ik"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 10-10"/></svg></span>Avaimet käteen</li><li><span class="ik"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 10-10"/></svg></span>Vedeneristyssertifikaatti</li><li><span class="ik"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 10-10"/></svg></span>Takuu töille</li><li><span class="ik"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 10-10"/></svg></span>Kotitalousvähennys hyödynnettävissä</li></ul></div></section>
+<!doctype html><html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Rakennus Mäkelä – Rakennus ja remontti Ylivieska</title><meta name="description" content="Rakennus Mäkelä – kylpyhuone- ja keittiöremontit avaimet käteen. Takuu ja kotitalousvähennys."><meta name="robots" content="noindex"><meta name="theme-color" content="#c25a1c">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preload" as="image" href="https://images.unsplash.com/photo-1505798577917-a65157d3320a?auto=format&fit=crop&w=1200&q=72">
+<style>:root{--a:#c25a1c;--a2:#994513;--bg:#f7f3ee;--soft:#efe2d4;--fh:'Archivo Black',Impact,sans-serif;--fb:Archivo,system-ui,sans-serif;--hw:400;--ls:-.01em;--tt:uppercase;--r:0px;--tx:#1c1a17;--mu:#5d574e;--li2:rgba(0,0,0,.25)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:#1c1a17;font:16.5px/1.65 var(--fb);-webkit-font-smoothing:antialiased}
+img{display:block;max-width:100%}a{color:inherit}
+h1,h2,h3{font-family:var(--fh);font-weight:var(--hw);letter-spacing:var(--ls);line-height:1.08;margin:0 0 .45em;text-transform:var(--tt)}
+.w{max-width:1120px;margin:0 auto;padding:0 22px}
+.demo{background:#15171a;color:#e9e9ea;font-size:.84rem;text-align:center;padding:8px 14px}.demo a{color:#ffd24a;font-weight:700}
+header.top{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.86);backdrop-filter:saturate(1.4) blur(12px);-webkit-backdrop-filter:saturate(1.4) blur(12px);border-bottom:1px solid rgba(0,0,0,.06)}
+.bar{display:flex;align-items:center;justify-content:space-between;height:68px}
+.logo{font-family:var(--fh);font-size:1.45rem;text-decoration:none;letter-spacing:-.01em}
+.logo small{display:block;font-family:var(--fb);font-size:.6rem;letter-spacing:.28em;text-transform:uppercase;color:#7a746b;margin-top:-3px}
+nav.m{display:flex;gap:22px;align-items:center;font-size:.95rem}nav.m a{text-decoration:none;color:#3a362f}nav.m a:hover{color:var(--a)}
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--a);color:#fff;text-decoration:none;font-weight:600;padding:13px 22px;border-radius:999px;border:0;cursor:pointer;font-size:1rem;transition:background .15s,transform .15s}
+.btn:hover{background:var(--a2);transform:translateY(-1px)}.btn svg{width:18px;height:18px}
+.btn.light{background:#fff;color:#1c1a17}.btn.ghost{background:transparent;color:#fff;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.75)}
+@media(max-width:760px){nav.m a:not(.btn){display:none}}
+.hero{position:relative;min-height:min(86vh,760px);display:flex;align-items:flex-end;color:#fff;overflow:hidden}
+.hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;animation:kb 18s ease-out both}
+@keyframes kb{from{transform:scale(1.08)}to{transform:scale(1)}}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05) 0%,rgba(0,0,0,.25) 45%,rgba(0,0,0,.72) 100%)}
+.hero .w{position:relative;z-index:1;padding-bottom:64px;padding-top:120px}
+.kick{display:inline-block;font-size:.78rem;letter-spacing:.24em;text-transform:uppercase;opacity:.92;margin-bottom:14px}
+.hero h1{font-size:clamp(2.5rem,7vw,4.8rem);max-width:15ch}
+.hero p{font-size:clamp(1.05rem,2vw,1.25rem);max-width:46ch;opacity:.95;margin:0 0 26px}
+.hero .toim{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.auki{display:inline-flex;align-items:center;gap:8px;font-size:.92rem;background:rgba(0,0,0,.35);padding:7px 13px;border-radius:999px;margin-top:18px}
+.auki i{width:9px;height:9px;border-radius:50%;background:#ccc;display:inline-block}.auki.on i{background:#4ade80;box-shadow:0 0 0 4px rgba(74,222,128,.25)}
+.trust{background:#fff;border-bottom:1px solid rgba(0,0,0,.06)}
+.trust .w{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding-top:22px;padding-bottom:22px}
+.trust div{display:flex;gap:10px;align-items:center;font-size:.95rem;font-weight:500}.trust svg{width:22px;height:22px;color:var(--a);flex:none}
+@media(max-width:760px){.trust .w{grid-template-columns:1fr 1fr}}
+.s{padding:84px 0}.s.alt{background:var(--soft)}
+.eb{font-size:.76rem;letter-spacing:.24em;text-transform:uppercase;color:var(--a);font-weight:600;display:block;margin-bottom:10px}
+.s h2{font-size:clamp(2rem,4.4vw,3rem)}
+.lead{color:#5d574e;max-width:56ch;font-size:1.08rem}
+.pal{display:grid;grid-template-columns:1.1fr .9fr;gap:56px;align-items:start;margin-top:30px}
+@media(max-width:860px){.pal{grid-template-columns:1fr;gap:30px}}
+.lista{border-top:1px solid rgba(0,0,0,.12)}
+.rivi{display:grid;grid-template-columns:1fr auto;gap:4px 18px;padding:20px 0;border-bottom:1px solid rgba(0,0,0,.12)}
+.rivi h3{font-size:1.3rem;margin:0}.rivi .h{font-family:var(--fh);font-size:1.25rem;color:var(--a);white-space:nowrap}
+.rivi p{grid-column:1/-1;margin:0;color:#6a645a}
+.pal .kuva{position:sticky;top:96px;border-radius:var(--r);overflow:hidden;aspect-ratio:4/5;box-shadow:0 30px 60px -30px rgba(0,0,0,.35)}
+.pal .kuva img{width:100%;height:100%;object-fit:cover}
+.gal{display:grid;grid-template-columns:2fr 1fr;grid-template-rows:1fr 1fr;gap:14px;height:min(70vw,560px);margin-top:34px}
+.gal img{width:100%;height:100%;object-fit:cover;border-radius:calc(var(--r) * .85)}.gal img:first-child{grid-row:1/3}
+@media(max-width:640px){.gal{height:auto;grid-template-columns:1fr 1fr;grid-template-rows:auto}.gal img{aspect-ratio:1}.gal img:first-child{grid-column:1/-1;grid-row:auto;aspect-ratio:4/3}}
+.meista{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
+@media(max-width:860px){.meista{grid-template-columns:1fr;gap:28px}}
+.edut{list-style:none;padding:0;margin:22px 0 0;display:grid;gap:12px}
+.edut li{display:flex;gap:12px;align-items:center;font-weight:500}.edut span{width:30px;height:30px;border-radius:50%;background:var(--soft);color:var(--a);display:grid;place-items:center;flex:none}.edut svg{width:16px;height:16px}
+.luku{display:flex;gap:34px;margin-top:28px}.luku b{display:block;font-family:var(--fh);font-size:2.4rem;font-weight:500;color:var(--a);line-height:1}.luku span{color:#6a645a;font-size:.9rem}
+.arvot{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin-top:30px}
+.arvo{background:#fff;border-radius:var(--r);padding:30px;box-shadow:0 1px 0 rgba(0,0,0,.04),0 20px 40px -28px rgba(0,0,0,.25)}
+.arvo .t{color:#e3a72f;letter-spacing:2px}.arvo p{font-family:var(--fh);font-size:1.22rem;line-height:1.45;margin:12px 0 16px}.arvo b{font-size:.92rem}
+.yht{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:30px}
+@media(max-width:860px){.yht{grid-template-columns:1fr}}
+.kortti{background:#fff;border-radius:var(--r);padding:30px;box-shadow:0 20px 40px -30px rgba(0,0,0,.3)}
+.yrivi{display:flex;gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid rgba(0,0,0,.08);text-decoration:none;font-weight:500;font-size:1.05rem}
+.yrivi svg{width:22px;height:22px;color:var(--a);flex:none}.yrivi:last-of-type{border:0}
+.ajat{width:100%;border-collapse:collapse;margin-top:6px}.ajat td{padding:10px 0;border-bottom:1px solid rgba(0,0,0,.08)}.ajat td:last-child{text-align:right;font-weight:600}
+.ajat tr.tanaan td{color:var(--a);font-weight:700}
+form.lom{display:grid;gap:12px}
+form.lom input,form.lom textarea{width:100%;font:inherit;padding:14px 16px;border-radius:calc(var(--r) * .6);border:1px solid rgba(0,0,0,.14);background:var(--bg)}
+form.lom input:focus,form.lom textarea:focus{outline:2px solid var(--a);border-color:transparent}
+.pieni{color:#8a8378;font-size:.82rem;margin:0}
+footer{background:#141210;color:#a49d92;padding:46px 0 110px;font-size:.92rem}
+footer .w{display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between}footer b{color:#fff;font-family:var(--fh);font-weight:500;font-size:1.3rem}
+footer a{color:#e8e2d6}
+.ilm{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease}.ilm.nak{opacity:1;transform:none}
 
-<section class="osio arv"><div class="w"><h2>Mitä asiakkaat sanovat</h2><div class="arvot"><figure><p>&ldquo;Kylpyhuone valmistui aikataulussa ja budjetissa. Harvinaista nykyään.&rdquo;</p><figcaption>— Timo</figcaption></figure><figure><p>&ldquo;Siistiä jälkeä ja rehellinen tekijä. Suosittelen.&rdquo;</p><figcaption>— Sari</figcaption></figure></div></div></section>
+/* --- hero-muunnelmat --- */
+.hero.keski{align-items:center;text-align:center}.hero.keski .w{padding-bottom:90px;padding-top:110px}.hero.keski h1,.hero.keski p{margin-left:auto;margin-right:auto}.hero.keski h1{max-width:18ch;font-size:clamp(2.7rem,8vw,5.6rem)}.hero.keski .toim{justify-content:center}
+.hero.keski::after{background:linear-gradient(180deg,rgba(0,0,0,.45),rgba(0,0,0,.55))}
+.hj{padding:56px 0 70px}.hj .w{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
+.hj h1{font-size:clamp(2.5rem,6.4vw,4.6rem);max-width:14ch}.hj p.l{font-size:1.15rem;color:var(--mu);max-width:44ch;margin:0 0 26px}
+.hj .kick{color:var(--a);font-weight:600}.hj .toim{display:flex;gap:12px;flex-wrap:wrap}
+.hj .btn.ghost{color:var(--tx);box-shadow:inset 0 0 0 1.5px var(--li2)}
+.hj figure{margin:0;position:relative}.hj figure img{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:var(--r);box-shadow:0 40px 80px -40px rgba(0,0,0,.5)}
+.hj.kaari figure img{border-radius:999px 999px var(--r) var(--r);aspect-ratio:3/4}
+.hj .auki{background:var(--soft);color:var(--tx)}
+@media(max-width:860px){.hj .w{grid-template-columns:1fr;gap:30px}.hj figure img{aspect-ratio:4/3}.hj.kaari figure img{aspect-ratio:4/5;max-height:70vh}}
+.s-remontti .hero h1{font-size:clamp(2rem,5.6vw,3.9rem);max-width:17ch;line-height:1.02}
+/* --- tumma tyyli --- */
+body.tumma{background:#121110;color:#ece6dc}
+body.tumma header.top{background:rgba(18,17,16,.86);border-color:rgba(255,255,255,.08)}
+body.tumma nav.m a{color:#d6cfc3}body.tumma .logo small{color:#9a9287}
+body.tumma .trust{background:#171513;border-color:rgba(255,255,255,.07)}
+body.tumma .s.alt{background:#191715}body.tumma .lead,body.tumma .rivi p,body.tumma .luku span{color:#a8a095}
+body.tumma .lista,body.tumma .rivi{border-color:rgba(255,255,255,.12)}
+body.tumma .arvo,body.tumma .kortti{background:#1e1c19;box-shadow:none;border:1px solid rgba(255,255,255,.07)}
+body.tumma .edut span{background:#23201c}
+body.tumma form.lom input,body.tumma form.lom textarea{background:#141210;color:#ece6dc;border-color:rgba(255,255,255,.14)}
+body.tumma .yrivi,body.tumma .ajat td{border-color:rgba(255,255,255,.1)}
+@media(prefers-reduced-motion:reduce){.hero img{animation:none}.ilm{opacity:1;transform:none}}
+</style></head><body class="s-remontti">
+<div class="demo">Tämä on Netvon <b>esimerkkisivu</b>. Jokainen sivu räätälöidään asiakkaan tarpeen mukaan – ei valmispohjia. <a href="/">Rakentaminen 0 € →</a></div>
+<header class="top"><div class="w bar"><a class="logo" href="#">Rakennus Mäkelä<small>Rakennus ja remontti</small></a>
+<nav class="m"><a href="#palvelut">Palvelut</a><a href="#meista">Meistä</a><a href="#yhteys">Yhteys</a></nav></div></header>
+<section class="hero"><img src="https://images.unsplash.com/photo-1505798577917-a65157d3320a?auto=format&fit=crop&w=1600&q=72" srcset="https://images.unsplash.com/photo-1505798577917-a65157d3320a?auto=format&fit=crop&w=800&q=72 800w, https://images.unsplash.com/photo-1505798577917-a65157d3320a?auto=format&fit=crop&w=1200&q=72 1200w, https://images.unsplash.com/photo-1505798577917-a65157d3320a?auto=format&fit=crop&w=1600&q=72 1600w, https://images.unsplash.com/photo-1505798577917-a65157d3320a?auto=format&fit=crop&w=2200&q=72 2200w" sizes="100vw" alt="" fetchpriority="high"><div class="w"><span class="kick">Rakennus ja remontti · Ylivieska</span><h1>Remontti alusta loppuun yhdellä sopimuksella</h1><p>Kylpyhuoneet, keittiöt ja pintaremontit avaimet käteen. Yksi vastuuhenkilö, selkeä aikataulu ja takuu.</p><div class="toim"><a class="btn" href="#yhteys">Pyydä tarjous →</a><a class="btn ghost" href="tel:0456789012"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h4l2 5-3 2a12 12 0 006 6l2-3 5 2v4a2 2 0 01-2 2A16 16 0 014 6a2 2 0 010-2z"/></svg>045 678 9012</a></div><div class="auki" data-auki><i></i><span>Avoinna</span></div></div></section>
+<div class="trust"><div class="w"><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 10-10"/></svg>Avaimet käteen</div><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 10-10"/></svg>Vedeneristyssertifikaatti</div><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 10-10"/></svg>Takuu töille</div><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 10-10"/></svg>Kotitalousvähennys hyödynnettävissä</div></div></div>
+<section class="s" id="palvelut"><div class="w"><span class="eb">Palvelut</span><h2 class="ilm">Mitä teemme</h2>
+<div class="pal"><div class="lista ilm"><div class="rivi"><h3>Kylpyhuoneremontti</h3><span></span><p>Vedeneristys sertifioidusti, laatoitus ja kalusteet.</p></div><div class="rivi"><h3>Keittiöremontti</h3><span></span><p>Kaapistot, tasot ja kodinkoneet asennettuna.</p></div><div class="rivi"><h3>Pintaremontit</h3><span></span><p>Maalaus, tapetointi ja lattiat nopeasti ja siististi.</p></div><div class="rivi"><h3>Terassit ja piharakennukset</h3><span></span><p>Terassit, katokset ja varastot mittatilaustyönä.</p></div></div><div class="kuva ilm"><img src="https://images.unsplash.com/photo-1618832515490-e181c4794a45?auto=format&fit=crop&w=900&h=1125&q=72" srcset="https://images.unsplash.com/photo-1618832515490-e181c4794a45?auto=format&fit=crop&w=500&h=625&q=72 500w, https://images.unsplash.com/photo-1618832515490-e181c4794a45?auto=format&fit=crop&w=900&h=1125&q=72 900w, https://images.unsplash.com/photo-1618832515490-e181c4794a45?auto=format&fit=crop&w=1300&h=1625&q=72 1300w" sizes="(max-width:860px) 100vw, 45vw" alt="" loading="lazy"></div></div></div></section>
+<section class="s alt" id="meista"><div class="w meista"><div class="ilm"><span class="eb">Meistä</span><h2>Yksi tekijä, ei stressiä</h2>
+<p class="lead">Hoidamme koko remontin yhdellä sopimuksella: suunnittelun, luvat, työt ja loppusiivouksen.</p><p class="lead">Saat alusta asti saman vastuuhenkilön, joka pitää sinut ajan tasalla ja aikataulussa.</p>
+<ul class="edut"><li><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 10-10"/></svg></span>Avaimet käteen</li><li><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 10-10"/></svg></span>Vedeneristyssertifikaatti</li><li><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 10-10"/></svg></span>Takuu töille</li><li><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 10-10"/></svg></span>Kotitalousvähennys hyödynnettävissä</li></ul>
+<div class="luku"><div><b>4,9</b><span>asiakkaiden arvio</span></div><div><b>4</b><span>palvelua</span></div><div><b>100 %</b><span>paikallinen</span></div></div></div>
+<div class="gal ilm" style="margin:0"><img src="https://images.unsplash.com/photo-1656733911001-16912b79d2bf?auto=format&fit=crop&w=900&h=1100&q=72" alt="" loading="lazy"><img src="https://images.unsplash.com/photo-1517581177682-a085bb7ffb15?auto=format&fit=crop&w=600&h=500&q=72" alt="" loading="lazy"><img src="https://images.unsplash.com/photo-1505798577917-a65157d3320a?auto=format&fit=crop&w=600&h=500&q=72" alt="" loading="lazy"></div></div></section>
+<section class="s"><div class="w"><span class="eb">Asiakkaat sanovat</span><h2 class="ilm">4,9 / 5 tähteä</h2><div class="arvot"><figure class="arvo ilm" style="margin:0"><div class="t">★★★★★</div><p>”Kylpyhuone valmistui aikataulussa ja budjetissa. Harvinaista nykyään.”</p><b>Timo</b></figure><figure class="arvo ilm" style="margin:0"><div class="t">★★★★★</div><p>”Siistiä jälkeä ja rehellinen tekijä. Suosittelen.”</p><b>Sari</b></figure></div></div></section>
+<section class="s alt" id="yhteys"><div class="w"><span class="eb">Yhteystiedot</span><h2 class="ilm">Pyydä tarjous</h2>
+<div class="yht"><div class="kortti ilm"><a class="yrivi" href="mailto:info@rakennusmakela.fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>info@rakennusmakela.fi</a>
+<div class="yrivi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6-7-11a7 7 0 1114 0c0 5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Verstastie 2, 84100 Ylivieska</div><h3 style="margin-top:22px;font-size:1.3rem">Aukioloajat</h3><table class="ajat"><tr><td>Ma–Pe</td><td>7–16</td></tr></table></div>
+<form class="lom kortti ilm" onsubmit="event.preventDefault();this.innerHTML='<h3>Kiitos viestistä!</h3><p class=&quot;pieni&quot;>Mallisivulla viestiä ei lähetetä. Oikealla sivulla se tulee suoraan sähköpostiisi.</p>'">
+<h3 style="font-size:1.3rem">Lähetä viesti</h3><input placeholder="Nimesi" required><input placeholder="Puhelin tai sähköposti" required><textarea rows="4" placeholder="Mitä voimme tehdä puolestasi?"></textarea>
+<button class="btn" type="submit">Lähetä →</button><p class="pieni">Vastaamme yleensä saman päivän aikana.</p></form></div></div></section>
+<footer><div class="w"><div><b>Rakennus Mäkelä</b><br>Verstastie 2, 84100 Ylivieska<br>info@rakennusmakela.fi</div>
+<div style="text-align:right">© Rakennus Mäkelä<br>Sivusto: <a href="https://netvo.fi/">Netvo</a> · Kuvat: Unsplash</div></div></footer>
 
-<section class="osio" id="yhteys" style="padding:56px 0"><div class="w"><h2>Ota yhteyttä</h2><div class="yht-grid">
-<div><a class="yht-rivi" href="tel:0456789012"><span class="ik"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h4l2 5-3 2a12 12 0 006 6l2-3 5 2v4a2 2 0 01-2 2A16 16 0 014 6a2 2 0 010-2z"/></svg></span>045 678 9012</a><a class="yht-rivi" href="mailto:info@rakennusmakela.fi"><span class="ik"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></span>info@rakennusmakela.fi</a><a class="yht-rivi" href="#"><span class="ik"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6-7-11a7 7 0 1114 0c0 5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span>Verstastie 2, 84100 Ylivieska</a><div class="aukiolo"><h3>Aukioloajat</h3><table><tr><td>Ma–Pe</td><td>7–16</td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr></table></div></div>
-<form class="lomake" onsubmit="return false">
-<input placeholder="Nimesi" required><input placeholder="Sähköposti tai puhelin" required>
-<textarea placeholder="Viestisi" rows="4"></textarea>
-<button type="submit">Lähetä viesti</button>
-<p style="color:#9a9aa0;font-size:.82rem;margin:0">Mallisivulla lomake ei lähetä viestiä. Oikealla sivustolla viesti tulee suoraan sähköpostiisi.</p>
-</form>
-</div></div></section>
-<footer class="jalka">© Rakennus Mäkelä · Verstastie 2, 84100 Ylivieska · Sivuston toteuttaa Netvo</footer>
-
-</body></html>
+<script>window.AUKI=[["Ma–Pe", "7–16"]];
+(function(){var o=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('nak');o.unobserve(e.target)}})},{threshold:.12});
+document.querySelectorAll('.ilm').forEach(function(x){o.observe(x)});setTimeout(function(){document.querySelectorAll('.ilm').forEach(function(x){x.classList.add('nak')})},2500);
+var A=window.AUKI||[];var d=new Date(),wd=(d.getDay()+6)%7,h=d.getHours()+d.getMinutes()/60;
+var map={'ma':0,'ti':1,'ke':2,'to':3,'pe':4,'la':5,'su':6};function paivat(s){s=s.toLowerCase();var m=s.match(/^(ma|ti|ke|to|pe|la|su)(?:\s*[–-]\s*(ma|ti|ke|to|pe|la|su))?$/);if(!m)return null;var a=map[m[1]],b=m[2]?map[m[2]]:a,r=[];for(var i=a;i<=b;i++)r.push(i);return r}
+var auki=false,tunn=false;A.forEach(function(r,ix){var p=paivat(r[0]||'');if(!p||p.indexOf(wd)<0)return;tunn=true;var row=document.querySelectorAll('.ajat tr')[ix];if(row)row.classList.add('tanaan');var t=(r[1]||'').match(/(\d{1,2})(?:[.:](\d\d))?\s*[–-]\s*(\d{1,2})(?:[.:](\d\d))?/);if(t){var a=+t[1]+(+t[2]||0)/60,b=+t[3]+(+t[4]||0)/60;if(h>=a&&h<b)auki=true}});
+document.querySelectorAll('[data-auki]').forEach(function(el){if(!tunn&&!A.length){el.remove();return}el.classList.toggle('on',auki);el.querySelector('span').textContent=auki?'Avoinna nyt':'Suljettu nyt – jätä viesti'});})();
+</script></body></html>

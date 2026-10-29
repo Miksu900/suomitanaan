@@ -86,7 +86,7 @@ def sivu(polku, otsikko, kuvaus, runko, noindex=False):
 <main id="sisalto">{runko}</main>
 <footer class="ft"><div class="w">{LOGO}
 <p>Faktapiste on suomalainen keskustelupalvelu, jossa sinut nähdään. Keskustelun tukena ovat ilmaiset palvelut, jotka perustuvat julkisiin lähteisiin: poliisin lupatietoihin, Finlexiin, eduskunnan avoimeen dataan ja uutismedian otsikoihin.</p>
-<p><a href="/">Etusivu / Keskustelu</a> · <a href="/palvelut/">Palvelut</a> · <a href="/tietoa/">Tietoa, säännöt ja tietosuoja</a> · <span class="mono">{YHTEYS}</span></p>
+<p><a href="/">Etusivu / Keskustelu</a> · <a href="/palvelut/">Palvelut</a> · <a href="/tietoa/">Tietoa ja säännöt</a> · <a href="/tietosuoja/">Tietosuojaseloste</a> · <span class="mono">{YHTEYS}</span></p>
 <p class="mute">© {vuosi} Faktapiste</p></div></footer>
 </body></html>"""
 
@@ -199,6 +199,21 @@ Käyttäjiksi lasketaan omalla nimellä rekisteröityneet tilit, joita ei ole su
 </ul>
 <p><a class="nappi" href="/">Kirjoita keskusteluun →</a></p>
 </section>"""
+import sys as _sys
+_sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "scripts"))
+from tietosuoja import seloste as _seloste
+_ts = _seloste(palvelu="Faktapiste (faktapiste.fi)", rekisterinpitaja="Miika Koskela (Faktapisteen ylläpitäjä)", yhteys=YHTEYS,
+    tiedot=[("Keskustelu", "jos kirjaudut, tallennamme sähköpostiosoitteesi, nimesi, postauksesi, kuvat ja videot, tykkäyksesi ja ilmoituksesi. Nimesi ja postauksesi näkyvät julkisesti, sähköpostiosoite ei. Salasana tallennetaan vain yksisuuntaisena tiivisteenä."),
+            ("Lukijatunniste", "selain tallentaa satunnaisen lukijatunnisteen, jonka avulla palvelin muistaa, mitkä postaukset olet jo nähnyt. Tietoa ei yhdistetä henkilöön, ja se poistuu muutamassa päivässä."),
+            ("Väärinkäytösten esto", "tiiviste IP-osoitteen verkko-osasta ja lukijatunnisteesta valetilien ja arvontahuijausten estämiseksi. Tiivisteet poistuvat 180 päivän kuluessa."),
+            ("Arvonnat", "nimi, sähköposti, kirjoitusten määrä ja väärinkäytöstunnisteet. Voittajalta pyydetään palkinnon toimittamiseen tarvittavat tiedot (tilinumero tai osoite)."),
+            ("Faktahaku", "kirjoittamasi kysymykset käsitellään tekoälyllä vastauksen muodostamiseksi."),
+            ("Tekniset lokitiedot", "palvelin käsittelee laitteesi IP-osoitteen ja selaimen tiedot sivuston toimittamiseksi ja tietoturvaa varten.")],
+    tarkoitus="Keskustelun tietoja käsitellään palvelun tarjoamiseksi (sopimus ja suostumus). Väärinkäytösten estäminen ja tekniset lokit perustuvat oikeutettuun etuun (tietosuoja-asetuksen 6 artiklan 1 kohdan f alakohta). Arvontojen voittajatietoja säilytetään kirjanpitolain ja arpajaisverotuksen vuoksi (lakisääteinen velvoite). Tarkemmat kuvaukset ovat Tietoa-sivulla.",
+    kasittelijat=[("Cloudflare, Inc.", "palvelimet, tietokanta ja kuvien ja videoiden tallennus"), ("Brevo", "kirjautumisviestien lähetys"), ("Anthropic PBC", "faktahaun tekoälyvastaukset ja roskapostin tunnistus"), ("Telegram", "ylläpitäjän ilmoitukset"), ("Google LLC (Google Fonts)", "kirjasintiedostot; laitteesi IP-osoite välittyy Googlelle")],
+    sailytys="Tilin tiedot ja postaukset säilytetään, kunnes poistat ne tai pyydät tilin poistamista. Väärinkäytöstunnisteet poistuvat 180 päivän kuluessa. Arvontojen muiden osallistujien tiedot poistetaan arvonnan jälkeen; voittajan tiedot säilytetään kirjanpitolain edellyttämän ajan.",
+    evasteet="Kirjautuminen käyttää yhtä välttämätöntä evästettä (fp_s), joka pitää sinut kirjautuneena 60 päivää. Mainos- tai seurantaevästeitä ei käytetä. Syötteen säädöt ja paikkakunta tallentuvat vain selaimeesi.")
+kirjoita("/tietosuoja/", sivu("/tietosuoja/", "Tietosuojaseloste | Faktapiste", "Faktapisteen tietosuojaseloste: mitä tietoja käsitellään ja miksi.", f'<section class="w">{_ts}</section>'))
 kirjoita("/tietoa/", sivu("/tietoa/", "Tietoa ja tietosuoja | Faktapiste", "Mikä Faktapiste on, kuka sitä ylläpitää, keskustelun säännöt, tietosuoja ja käyttöehdot.", runko))
 
 # ---- Yksityisyysvahti ----
@@ -348,7 +363,7 @@ kirjoita("/laskurit/", sivu("/laskurit/", "Laskurit – ilmaiset laskurit rahaan
 
 (ROOT / "robots.txt").write_text(f"User-agent: *\nAllow: /\nSitemap: {SITE}/sitemap.xml\n", encoding="utf-8")
 (ROOT / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
-    + "".join(f"<url><loc>{SITE}{p}</loc></url>" for p in ["/", "/palvelut/", "/tietoa/", "/yksityisyys/", "/laskurit/"] + [f"/laskurit/{l['slug']}/" for l in LASKURIT]) + "</urlset>", encoding="utf-8")
+    + "".join(f"<url><loc>{SITE}{p}</loc></url>" for p in ["/", "/palvelut/", "/tietoa/", "/tietosuoja/", "/yksityisyys/", "/laskurit/"] + [f"/laskurit/{l['slug']}/" for l in LASKURIT]) + "</urlset>", encoding="utf-8")
 # ---- Nettikoti: /nettikoti/ (oma brändi, esikatselu Faktapisteen alustalla) ----
 from nettisivut import rakenna_nettikoti
 _n = rakenna_nettikoti(ROOT)
