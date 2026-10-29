@@ -1,0 +1,28 @@
+name: Kuvakaappaus haaraan
+# Ottaa annetuista osoitteista puhelinkokoiset kuvakaappaukset ja tallentaa ne haaraan "kuvat".
+on:
+  workflow_dispatch:
+    inputs:
+      osoitteet: { description: "Osoitteet välilyönnillä", required: true }
+permissions: { contents: write }
+jobs:
+  kuvat:
+    runs-on: ubuntu-latest
+    steps:
+      - env: { URLS: "${{ inputs.osoitteet }}" }
+        run: |
+          pip install -q playwright && python3 -m playwright install --with-deps chromium >/dev/null 2>&1
+          mkdir out && python3 - <<'PY'
+          import os
+          from playwright.sync_api import sync_playwright
+          with sync_playwright() as p:
+              b = p.chromium.launch()
+              for i, u in enumerate(os.environ["URLS"].split(), 1):
+                  pg = b.new_page(viewport={"width": 390, "height": 844}, device_scale_factor=2)
+                  pg.goto(u, wait_until="networkidle"); pg.wait_for_timeout(1200)
+                  pg.screenshot(path=f"out/{i}.png", full_page=False)
+                  pg.screenshot(path=f"out/{i}-koko.png", full_page=True, clip=None)
+              b.close()
+          PY
+          cd out && git init -q -b kuvat && git add -A && git -c user.name=bot -c user.email=bot@x commit -qm kuvat
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" kuvat
