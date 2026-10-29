@@ -133,6 +133,7 @@ footer a{color:#e8e2d6}
 .hj.kaari figure img{border-radius:999px 999px var(--r) var(--r);aspect-ratio:3/4}
 .hj .auki{background:var(--soft);color:var(--tx)}
 @media(max-width:860px){.hj .w{grid-template-columns:1fr;gap:30px}.hj figure img{aspect-ratio:4/3}.hj.kaari figure img{aspect-ratio:4/5;max-height:70vh}}
+.s-remontti .hero h1{font-size:clamp(2rem,5.6vw,3.9rem);max-width:17ch;line-height:1.02}
 /* --- tumma tyyli --- */
 body.tumma{background:#121110;color:#ece6dc}
 body.tumma header.top{background:rgba(18,17,16,.86);border-color:rgba(255,255,255,.08)}
@@ -186,7 +187,7 @@ def sivu(d, demo=True):
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family={gf}&display=swap" rel="stylesheet">
 <link rel="preload" as="image" href="{U(hero, 1200)}">
-<style>:root{{--a:{a};--a2:{a2};--bg:{bg};--soft:{soft};--fh:{fh};--fb:{fb};--hw:{hw};--ls:{ls};--tt:{tt};--r:{r};--tx:{"#ece6dc" if tumma else "#1c1a17"};--mu:{"#a8a095" if tumma else "#5d574e"};--li2:{"rgba(255,255,255,.35)" if tumma else "rgba(0,0,0,.25)"}}}{CSS}</style></head><body class="{"tumma" if tumma else ""}">
+<style>:root{{--a:{a};--a2:{a2};--bg:{bg};--soft:{soft};--fh:{fh};--fb:{fb};--hw:{hw};--ls:{ls};--tt:{tt};--r:{r};--tx:{"#ece6dc" if tumma else "#1c1a17"};--mu:{"#a8a095" if tumma else "#5d574e"};--li2:{"rgba(255,255,255,.35)" if tumma else "rgba(0,0,0,.25)"}}}{CSS}</style></head><body class="s-{d["slug"]}{" tumma" if tumma else ""}">
 {demo_html}
 <header class="top"><div class="w bar"><a class="logo" href="#">{esc(nimi)}<small>{esc(d.get("ala", ""))}</small></a>
 <nav class="m"><a href="#palvelut">Palvelut</a><a href="#meista">Meistä</a><a href="#yhteys">Yhteys</a></nav></div></header>
