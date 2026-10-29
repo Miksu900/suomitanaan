@@ -1,0 +1,43 @@
+name: Kuvahaku (Unsplash) haaraan
+# Hakee Unsplashin hakusivuilta ilmaisten kuvien tunnukset ja tekee niistä kontaktiarkit haaraan "kuvahaku".
+on:
+  workflow_dispatch:
+    inputs:
+      haut: { description: "Hakusanat pilkuilla (esim. barbershop,plumber)", required: true }
+permissions: { contents: write }
+jobs:
+  hae:
+    runs-on: ubuntu-latest
+    steps:
+      - env: { HAUT: "${{ inputs.haut }}" }
+        run: |
+          pip install -q pillow requests
+          mkdir out && python3 - <<'PY'
+          import os, re, json, io, requests
+          from PIL import Image, ImageDraw
+          H = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36", "Accept-Language": "en"}
+          tulos = {}
+          for q in [x.strip() for x in os.environ["HAUT"].split(",") if x.strip()]:
+              t = requests.get(f"https://unsplash.com/s/photos/{q}?license=free", headers=H, timeout=30).text
+              ids = []
+              for m in re.findall(r"images\.unsplash\.com/(photo-[0-9]+-[0-9a-f]+)", t):
+                  if m not in ids: ids.append(m)
+              ids = ids[:12]; tulos[q] = ids
+              thumbs = []
+              for i in ids:
+                  try:
+                      im = Image.open(io.BytesIO(requests.get(f"https://images.unsplash.com/{i}?w=360&h=270&fit=crop&q=60", timeout=30).content)).convert("RGB")
+                      thumbs.append((i, im.resize((360, 270))))
+                  except Exception as e: print(q, i, e)
+              if not thumbs: continue
+              cols = 4; rows = (len(thumbs) + cols - 1) // cols
+              sheet = Image.new("RGB", (cols * 370, rows * 300), "white"); d = ImageDraw.Draw(sheet)
+              for k, (i, im) in enumerate(thumbs):
+                  x, y = (k % cols) * 370, (k // cols) * 300
+                  sheet.paste(im, (x, y)); d.text((x + 4, y + 274), f"{k}", fill="black")
+              sheet.save(f"out/{q}.jpg", quality=80)
+          json.dump(tulos, open("out/ids.json", "w"), indent=1)
+          print(json.dumps({k: len(v) for k, v in tulos.items()}))
+          PY
+          cd out && git init -q -b kuvahaku && git add -A && git -c user.name=bot -c user.email=bot@x commit -qm kuvat
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" kuvahaku
