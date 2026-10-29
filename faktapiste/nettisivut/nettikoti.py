@@ -55,7 +55,7 @@ header.top{{position:sticky;top:0;z-index:20;background:rgba(250,247,242,.88);ba
 .nappi.toissij{{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px rgba(0,0,0,.25)}}
 @media(max-width:620px){{.ylaoik .nappi{{display:none}}.puh{{background:var(--ink);color:#fff;padding:9px 14px;border-radius:999px;font-size:.92rem}}}}
 .hero{{position:relative;overflow:hidden;padding:90px 0 96px;color:#fff;background:#1d1a16}}.hero .tausta{{position:absolute;inset:0;z-index:0}}.hero .tausta img{{width:100%;height:100%;object-fit:cover;animation:kb 22s ease-out both}}@keyframes kb{{from{{transform:scale(1.12)}}to{{transform:scale(1)}}}}.hero .tausta::after{{content:'';position:absolute;inset:0;background:linear-gradient(100deg,rgba(18,15,12,.86) 0%,rgba(18,15,12,.62) 48%,rgba(18,15,12,.2) 100%),linear-gradient(0deg,rgba(18,15,12,.55),transparent 40%)}}@media(max-width:900px){{.hero{{padding:64px 0 70px;min-height:86svh;display:flex;align-items:flex-end}}.hero .tausta::after{{background:linear-gradient(0deg,rgba(18,15,12,.92) 0%,rgba(18,15,12,.7) 55%,rgba(18,15,12,.35) 100%)}}.kollaasi{{display:none}}}}@media(prefers-reduced-motion:reduce){{.hero .tausta img{{animation:none}}}}.hero .w{{position:relative;z-index:1}}
-.hero .w{{display:grid;grid-template-columns:1.05fr .95fr;gap:52px;align-items:center}}
+.hero .w{{max-width:1180px}}.hero .w>div{{max-width:640px}}
 @media(max-width:900px){{.hero .w{{grid-template-columns:1fr;gap:34px}}}}
 .kick{{display:inline-flex;gap:8px;align-items:center;font-size:.85rem;font-weight:600;background:#fff;color:var(--ink);border:1px solid var(--line);padding:6px 12px;border-radius:999px}}.hero .kick{{background:rgba(255,255,255,.14);color:#fff;border-color:rgba(255,255,255,.28);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}}
 .kick i{{width:8px;height:8px;border-radius:50%;background:var(--vihrea);display:inline-block}}
@@ -142,10 +142,7 @@ def etusivu():
 <div><span class="kick"><i></i>Tehty Suomessa · vastaan itse puhelimeen</span>
 <h1>Nettisivut, jotka näyttävät <em>sinun</em> yritykseltäsi.</h1>
 <p class="l">Kauniit, nopeat ja helppokäyttöiset sivut valmiina muutamassa päivässä. Pystytys 0 €, ylläpito {HINTA_KK} €/kk. Sinä keskityt työhösi, minä hoidan loput.</p>
-<div class="toim"><a class="nappi iso sin" href="#mallit">Katso mallisivut</a><a class="nappi iso toissij" href="#hinnat">Katso hinnat</a></div>
-<div class="luvut"><div><b>0 €</b><span>pystytys</span></div><div><b>{HINTA_KK} €/kk</b><span>kaikki mukana</span></div><div><b>2 h</b><span>vastausaika arkisin</span></div></div></div>
-<div class="kollaasi ilm"><div class="puhelin"><div class="ruutu"><img src="{UK(leip, 420, 860)}" alt=""><div class="yp"><small>Kotileipomo Ruis</small><b>Tuoretta leipää, joka aamu</b></div><div class="np">Tilaa aamuksi →</div></div></div>
-<div class="merkki">★★★★★ <b>Toimii puhelimella</b></div></div>
+<div class="toim"><a class="nappi iso sin" href="#mallit">Katso mallisivut</a><a class="nappi iso toissij" href="#hinnat">Katso hinnat</a></div></div>
 </div></section>
 
 <section class="osio alt" id="mallit"><div class="w"><div class="ots ilm"><span class="eb">Mallisivut</span><h2>Katso, miltä sivusi voisivat näyttää</h2><p>Avaa mikä tahansa malli. Sinun sivusi tehdään samalla laadulla, omilla kuvillasi, teksteilläsi ja väreilläsi.</p></div>
