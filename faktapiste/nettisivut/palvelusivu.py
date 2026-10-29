@@ -148,7 +148,7 @@ def sivu(d, demo=True):
 <style>:root{{--a:{a};--a2:{a2};--bg:{bg};--soft:{soft}}}{CSS}</style></head><body>
 {demo_html}
 <header class="top"><div class="w bar"><a class="logo" href="#">{esc(nimi)}<small>{esc(d.get("ala", ""))}</small></a>
-<nav class="m"><a href="#palvelut">Palvelut</a><a href="#meista">Meistä</a><a href="#yhteys">Yhteys</a><a class="btn" href="{tel}">{ik("puh")}Soita</a></nav></div></header>
+<nav class="m"><a href="#palvelut">Palvelut</a><a href="#meista">Meistä</a><a href="#yhteys">Yhteys</a></nav></div></header>
 <section class="hero"><img src="{U(hero, 1600)}" srcset="{SS(hero, (800, 1200, 1600, 2200))}" sizes="100vw" alt="" fetchpriority="high">
 <div class="w"><span class="kick">{esc(d.get("ala", ""))}{" · " + esc(kaupunki) if kaupunki else ""}</span><h1>{esc(d.get("slogan", nimi))}</h1><p>{esc(d.get("lupaus", ""))}</p>
 <div class="toim"><a class="btn" href="#yhteys">{esc(d.get("cta", "Ota yhteyttä"))} →</a><a class="btn ghost" href="{tel}">{ik("puh")}{esc(d.get("puhelin", ""))}</a></div>
@@ -163,12 +163,12 @@ def sivu(d, demo=True):
 <div class="gal ilm" style="margin:0"><img src="{U(gal[1], 900, 1100)}" alt="" loading="lazy"><img src="{U(gal[2], 600, 500)}" alt="" loading="lazy"><img src="{U(hero, 600, 500)}" alt="" loading="lazy"></div></div></section>
 <section class="s"><div class="w"><span class="eb">Asiakkaat sanovat</span><h2 class="ilm">4,9 / 5 tähteä</h2><div class="arvot">{arvot}</div></div></section>
 <section class="s alt" id="yhteys"><div class="w"><span class="eb">Yhteystiedot</span><h2 class="ilm">{esc(d.get("cta", "Ota yhteyttä"))}</h2>
-<div class="yht"><div class="kortti ilm"><a class="yrivi" href="{tel}">{ik("puh")}{esc(d.get("puhelin", ""))}</a><a class="yrivi" href="mailto:{esc(d.get("sposti", ""))}">{ik("posti")}{esc(d.get("sposti", ""))}</a>
+<div class="yht"><div class="kortti ilm"><a class="yrivi" href="mailto:{esc(d.get("sposti", ""))}">{ik("posti")}{esc(d.get("sposti", ""))}</a>
 <div class="yrivi">{ik("paikka")}{esc(d.get("osoite", ""))}</div>{('<h3 style="margin-top:22px;font-size:1.3rem">Aukioloajat</h3><table class="ajat">' + ajat + '</table>') if ajat else ''}</div>
 <form class="lom kortti ilm" onsubmit="event.preventDefault();this.innerHTML='<h3>Kiitos viestistä!</h3><p class=&quot;pieni&quot;>Mallisivulla viestiä ei lähetetä. Oikealla sivulla se tulee suoraan sähköpostiisi.</p>'">
 <h3 style="font-size:1.3rem">Lähetä viesti</h3><input placeholder="Nimesi" required><input placeholder="Puhelin tai sähköposti" required><textarea rows="4" placeholder="Mitä voimme tehdä puolestasi?"></textarea>
 <button class="btn" type="submit">Lähetä →</button><p class="pieni">Vastaamme yleensä saman päivän aikana.</p></form></div></div></section>
-<footer><div class="w"><div><b>{esc(nimi)}</b><br>{esc(d.get("osoite", ""))}<br>{esc(d.get("puhelin", ""))} · {esc(d.get("sposti", ""))}</div>
+<footer><div class="w"><div><b>{esc(nimi)}</b><br>{esc(d.get("osoite", ""))}<br>{esc(d.get("sposti", ""))}</div>
 <div style="text-align:right">© {esc(nimi)}<br>Sivusto: <a href="https://netvo.fi/">Netvo</a> · Kuvat: Unsplash</div></div></footer>
-<div class="alapalkki"><a class="btn light" href="{tel}">{ik("puh")}Soita</a><a class="btn" href="#yhteys">{esc(d.get("cta", "Ota yhteyttä"))}</a></div>
+<div class="alapalkki"><a class="btn" href="#yhteys">{esc(d.get("cta", "Ota yhteyttä"))}</a></div>
 <script>window.AUKI={json.dumps([[p, t] for p, t in ajat_rivit], ensure_ascii=False)};{JS}</script></body></html>"""

@@ -126,7 +126,7 @@ footer.jalka{{background:#0f1014;color:#9a9ca3;text-align:center;padding:40px 16
 {runko}
 <footer class="jalka"><p style="font-family:Fraunces,Georgia,serif;font-size:1.5rem;color:#fff;margin:0 0 8px">Net<span style="color:#4ade80">vo</span></p>
 <p>Nettisivut ja verkkokaupat suomalaisille pienyrityksille.</p>
-<p style="font-size:1.05rem;color:#fff">Soita <a href="tel:{PUHELIN_TEL}"><b>{PUHELIN}</b></a> (arkisin 9–21) · {esc(YHTEYS)}</p>
+<p style="font-size:1.05rem;color:#fff">{esc(YHTEYS)}</p>
 <p><a href="/ehdot/">Sopimusehdot</a> · Kuvat: Unsplash · Netvo on osa Faktapisteen palveluita.</p></footer>
 <script>(function(){{var o=new IntersectionObserver(function(es){{es.forEach(function(e){{if(e.isIntersecting){{e.target.classList.add('nak');o.unobserve(e.target)}}}})}},{{threshold:.1}});document.querySelectorAll('.ilm').forEach(function(x){{o.observe(x)}});setTimeout(function(){{document.querySelectorAll('.ilm').forEach(function(x){{x.classList.add('nak')}})}},2500)}})();</script>
 <script src="https://kauppa.netvo.fi/tuki.js" defer></script>
@@ -142,7 +142,7 @@ def etusivu():
 <div><span class="kick"><i></i>Tehty Suomessa · vastaan itse puhelimeen</span>
 <h1>Nettisivut, jotka näyttävät <em>sinun</em> yritykseltäsi.</h1>
 <p class="l">Kauniit, nopeat ja helppokäyttöiset sivut valmiina muutamassa päivässä. Pystytys 0 €, ylläpito {HINTA_KK} €/kk. Sinä keskityt työhösi, minä hoidan loput.</p>
-<div class="toim"><a class="nappi iso sin" href="#mallit">Katso mallisivut</a><a class="nappi iso toissij" href="tel:{PUHELIN_TEL}">📞 {PUHELIN}</a></div>
+<div class="toim"><a class="nappi iso sin" href="#mallit">Katso mallisivut</a><a class="nappi iso toissij" href="#hinnat">Katso hinnat</a></div>
 <div class="luvut"><div><b>0 €</b><span>pystytys</span></div><div><b>{HINTA_KK} €/kk</b><span>kaikki mukana</span></div><div><b>2 h</b><span>vastausaika arkisin</span></div></div></div>
 <div class="kollaasi ilm"><div class="kuva"><img src="{UK(HERO, 1100, 1000)}" srcset="{SSK(HERO, (600, 1100, 1500), .9)}" sizes="(max-width:900px) 100vw, 48vw" alt="Kahvilayrittäjät tiskinsä takana" fetchpriority="high"></div>
 <div class="puhelin"><div class="ruutu"><img src="{UK(leip, 420, 860)}" alt=""><div class="yp"><small>Kotileipomo Ruis</small><b>Tuoretta leipää, joka aamu</b></div><div class="np">Tilaa aamuksi →</div></div></div>
@@ -192,8 +192,8 @@ def etusivu():
 <details><summary>Kauanko tekeminen kestää?</summary><p>Yleensä muutaman päivän siitä, kun olet toimittanut tietosi. Näet vedoksen ennen julkaisua.</p></details>
 </div></div></section>
 
-<section class="osio" id="yhteys"><div class="w"><div class="cta ilm"><h2>Hanki sivut yrityksellesi</h2><p>Soita tai lähetä viesti. Kerron hinnat ja aikataulun, eikä mitään tarvitse päättää heti.</p>
-<div class="toim" style="justify-content:center"><a class="nappi iso" href="tel:{PUHELIN_TEL}">📞 Soita {PUHELIN}</a><a class="nappi iso toissij" href="mailto:{esc(YHTEYS)}?subject=Netvo%20-%20nettisivut%20yritykselleni">Lähetä sähköposti</a></div>
+<section class="osio" id="yhteys"><div class="w"><div class="cta ilm"><h2>Hanki sivut yrityksellesi</h2><p>Soita yläkulman numeroon tai lähetä viesti. Kerron hinnat ja aikataulun, eikä mitään tarvitse päättää heti.</p>
+<div class="toim" style="justify-content:center"><a class="nappi iso" href="mailto:{esc(YHTEYS)}?subject=Netvo%20-%20nettisivut%20yritykselleni">Lähetä sähköposti</a></div>
 <p style="margin:20px auto 0;font-size:.95rem">Arkisin 9–21 · {esc(YHTEYS)} · voit kysyä myös chatissa</p></div></div></section>
 """
     return _sivu("Netvo – kauniit nettisivut yrityksellesi, pystytys 0 €",

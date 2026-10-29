@@ -109,7 +109,6 @@ document.getElementById('tilaus').addEventListener('submit',function(e){e.preven
     yhteys_rivit = "".join(
         f'<a class="yht-rivi" href="{href}"><span class="ik">{_ikoni(ik)}</span>{esc(txt)}</a>'
         for ik, txt, href in [
-            ("puhelin", d.get("puhelin", ""), "tel:" + d.get("puhelin", "").replace(" ", "")),
             ("sposti", d.get("sposti", ""), "mailto:" + d.get("sposti", "")),
             ("sijainti", d.get("osoite", ""), "#"),
         ] if txt)
@@ -182,7 +181,7 @@ footer.jalka{{background:#0c0c0e;color:#9a9aa0;text-align:center;padding:26px 16
 {demopalkki}
 <header class="top"><div class="w">
 <a class="logo" href="#">{esc(nimi)}</a>
-<nav><a href="#palvelut">{"Tuotteet" if kauppa else "Palvelut"}</a>{'<a href="#meista">Meistä</a>' if d.get("esittely") else ""}<a href="#yhteys">Yhteys</a>{_nappi("Soita" if d.get("puhelin") else "Ota yhteyttä", "tel:" + d.get("puhelin", "").replace(" ", "") if d.get("puhelin") else "#yhteys")}</nav>
+<nav><a href="#palvelut">{"Tuotteet" if kauppa else "Palvelut"}</a>{'<a href="#meista">Meistä</a>' if d.get("esittely") else ""}<a href="#yhteys">Yhteys</a>{_nappi("📞 " + d["puhelin"] if d.get("puhelin") else "Ota yhteyttä", "tel:" + d.get("puhelin", "").replace(" ", "") if d.get("puhelin") else "#yhteys")}</nav>
 </div></header>
 <section class="hero"><div class="w">
 <h1>{esc(d.get("slogan", nimi))}</h1>

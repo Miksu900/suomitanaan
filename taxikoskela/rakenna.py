@@ -69,7 +69,7 @@ PALVELUT = [
 ]
 
 UKK = [
-    ("Miten tilaan taksin?", f"Soita numeroon {PUH}. Kerro noutopaikka, kellonaika ja määränpää."),
+    ("Miten tilaan taksin?", "Paina sivun yläosan soittonappia tai laita viesti. Kerro noutopaikka, kellonaika ja määränpää."),
     ("Ajatteko Ylivieskasta Kalajoelle?", "Kyllä. Ajamme koko Ylivieska–Alavieska–Kalajoki-akselilla, myös Hiekkasärkille, Himankaan ja Rautioon."),
     ("Voiko taksin tilata junalle Ylivieskan asemalle?", "Voi. Kerro junan saapumisaika, niin taksi on asemalla vastassa."),
     ("Voiko kyydin varata etukäteen?", "Voi. Ennakkotilaus kannattaa erityisesti aikaisille aamuille ja viikonlopuille."),
@@ -201,13 +201,12 @@ def layout(title, desc, path, body, city=None):
 <meta property="og:type" content="website"><meta property="og:title" content="{esc(title)}"><meta property="og:description" content="{esc(desc)}"><meta property="og:url" content="{url}"><meta property="og:locale" content="fi_FI">
 <meta property="og:image" content="{SITE}/og.png"><meta name="theme-color" content="#0f1115"><link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <style>{CSS}</style>{schema(url, city)}</head><body>
-<header><div class="w bar"><a class="logo" href="/" aria-label="{NIMI} etusivu"><i>TAXI</i>{NIMI}</a><nav class="m" aria-label="Alueet">{nav}<a href="/yhteystiedot/">Yhteystiedot</a></nav>{call()}</div></header>
+<header><div class="w bar"><a class="logo" href="/" aria-label="{NIMI} etusivu"><i>TAXI</i>{NIMI}</a><nav class="m" aria-label="Alueet">{nav}<a href="/yhteystiedot/">Yhteystiedot</a></nav></div></header>
 <main>{body}</main>
-<footer><div class="w fc"><div><h4>{NIMI}</h4><p>Paikallinen taksi Ylivieskassa, Alavieskassa ja Kalajoella.</p><p>{call('call', 'Soita ' + PUH)}</p></div>
+<footer><div class="w fc"><div><h4>{NIMI}</h4><p>Paikallinen taksi Ylivieskassa, Alavieskassa ja Kalajoella.</p></div>
 <div><h4>Alueet</h4><ul>{''.join(f'<li><a href="/taksi-{k}/">Taksi {esc(c["nimi"])}</a></li>' for k, c in KAUPUNGIT.items())}<li><a href="/taksi-kalajoki/#hiekkasarkat">Taksi Hiekkasärkät</a></li></ul></div>
-<div><h4>Yritys</h4><ul><li>{YRITYS}</li><li>Y-tunnus {YTUNNUS}</li>{''.join(f'<li>Tilaukset: <a href="tel:{t}">{esc(n)} {esc(p)}</a></li>' for n, p, t in KULJETTAJAT)}<li><a href="/yhteystiedot/">Kaikki yhteystiedot</a></li></ul></div></div>
+<div><h4>Yritys</h4><ul><li>{YRITYS}</li><li>Y-tunnus {YTUNNUS}</li><li><a href="/yhteystiedot/">Yhteystiedot</a></li></ul></div></div>
 <div class="w" style="margin-top:24px;font-size:.82rem;opacity:.7">© {datetime.date.today().year} {YRITYS} · Sivut: <a href="https://netvo.fi/">Netvo</a></div></footer>
-<div class="float">{call('call', 'Soita')}{sms('call sms', 'Viesti')}</div>
 <script>if(/iPad|iPhone|iPod/.test(navigator.userAgent))document.querySelectorAll('a[data-sms]').forEach(function(a){{a.href=a.href.replace(/^sms:([^?]*)\\?body=/,'sms:/open?addresses=$1&body=')}})</script>
 </body></html>"""
 
@@ -228,7 +227,7 @@ def lomake():
 <p class="err" id="t-err" role="alert"></p>
 <button class="call big" type="submit">{PHONE_SVG}Tilaa kyyti</button>
 <div class="ok" id="t-ok" role="status"></div>
-<p class="note">Viesti lähtee omasta puhelimestasi tavallisena tekstiviestinä (operaattorisi hinnoittelun mukaan). Tietojasi käytetään vain kyydin hoitamiseen. Kiireessä soita: {' / '.join(f'<a href="tel:{t}">{esc(n)} {esc(p)}</a>' for n, p, t in KULJETTAJAT)}.</p>
+<p class="note">Viesti lähtee omasta puhelimestasi tavallisena tekstiviestinä (operaattorisi hinnoittelun mukaan). Tietojasi käytetään vain kyydin hoitamiseen.</p>
 </form></div></section>
 <script>(function(){{var N={nums},f=document.getElementById('tf'),e=document.getElementById('t-err'),ok=document.getElementById('t-ok'),a=document.getElementById('t-aika');
 f.addEventListener('change',function(x){{if(x.target.name==='t-kun')a.style.display=x.target.value==='aika'?'block':'none'}});
@@ -253,16 +252,15 @@ def etusivu():
 <p class="lead">Paikallinen taksi Ylivieskan ja Kalajoen välillä. Asemakyydit, Hiekkasärkät, kauppa- ja lääkärimatkat sekä ennakkotilaukset – yhdellä puhelulla.</p>
 <div class="cta">{call('call big', 'Soita ' + PUH)}{sms('call big sms')}</div>
 <p style="margin:12px 0 0"><a href="#tilaa" style="color:var(--mut)">tai täytä tilauslomake →</a></p>
-<p class="drv">{'<br>'.join(f'<a href="tel:{t}">{esc(n)} · {esc(p)}</a>' for n, p, t in KULJETTAJAT)}<br><b>Myös illat ja yöt</b></p>
+<p class="drv"><b>Myös illat ja yöt</b></p>
 <div class="chips"><span>Ylivieskan rautatieasema</span><span>Kalajoen Hiekkasärkät</span><span>Himanka</span><span>Alavieska</span><span>Rautio</span></div>
 </div><div class="map">{MAP_SVG}</div></div></section>
 {lomake()}
 <section id="palvelut"><div class="w"><h2>Taksipalvelut Ylivieska–Kalajoki-alueella</h2><p class="sub">Ajamme valtatien 27 varrella Ylivieskasta Alavieskan kautta Kalajoelle ja Hiekkasärkille – ja kaikkialla niiden välillä.</p><div class="cards">{palvelut}</div></div></section>
 <section class="alt" id="alueet"><div class="w"><h2>Alueet</h2><p class="sub">Valitse paikkakunta, niin näet tarkemmin, minne ajamme.</p><div class="areas">{alue_kortit}</div></div></section>
 <section><div class="w"><h2>Näin tilaat taksin</h2><p class="sub">Nopein tapa on soittaa. Ennakkotilaukset onnistuvat samasta numerosta.</p>
-<div class="steps"><div class="step"><h3>Soita</h3><p>{'<br>'.join(f'<a href="tel:{t}">{esc(n)} {esc(p)}</a>' for n, p, t in KULJETTAJAT)}</p></div><div class="step"><h3>Kerro matka</h3><p>Noutopaikka, aika ja määränpää – esimerkiksi juna, Hiekkasärkät tai koti.</p></div><div class="step"><h3>Taksi tulee</h3><p>Auto on paikalla sovittuna aikana.</p></div></div></div></section>
-<section class="alt" id="ukk"><div class="w" style="max-width:820px"><h2>Usein kysyttyä</h2>{ukk}</div></section>
-<section><div class="w"><div class="band"><h2>Tarvitsetko taksin nyt?</h2><p>Ylivieska, Alavieska, Kalajoki ja Hiekkasärkät.</p><div class="cta" style="justify-content:center">{call('call big', 'Soita ' + PUH)}{sms('call big sms2')}</div></div></div></section>"""
+<div class="steps"><div class="step"><h3>Soita tai viestitä</h3><p>Paina sivun yläosan soittonappia tai täytä tilauslomake.</p></div><div class="step"><h3>Kerro matka</h3><p>Noutopaikka, aika ja määränpää – esimerkiksi juna, Hiekkasärkät tai koti.</p></div><div class="step"><h3>Taksi tulee</h3><p>Auto on paikalla sovittuna aikana.</p></div></div></div></section>
+<section class="alt" id="ukk"><div class="w" style="max-width:820px"><h2>Usein kysyttyä</h2>{ukk}</div></section>"""
     return layout(f"{NIMI} – Taksi Ylivieska ja Kalajoki | Tilaa: {PUH}",
                   f"Paikallinen taksi Ylivieskassa, Alavieskassa ja Kalajoella: asemakyydit, Hiekkasärkät, ennakkotilaukset. Tilaa {NIMI}: {PUH}.", "/", body)
 
@@ -279,8 +277,7 @@ def kaupunkisivu(k, c):
 <ul class="place">{''.join(f'<li>{esc(p)}</li>' for p in c['paikat'])}</ul>
 {''.join(f'<p class="sub" style="margin-bottom:14px">{esc(t)}</p>' for t in c['teksti'])}{hs}</div></section>
 <section class="alt"><div class="w"><h2>Taksipalvelut {esc(c['ines'])}</h2><div class="cards">{palvelut}</div></div></section>
-<section><div class="w"><h2>Myös lähialueilla</h2><div class="areas">{muut}</div></div></section>
-<section style="padding-top:0"><div class="w"><div class="band"><h2>Taksi {esc(c['nimi'])} – soita</h2><p>Tilaukset ja ennakkotilaukset samasta numerosta.</p>{call('call big', 'Soita ' + PUH)}</div></div></section>"""
+<section><div class="w"><h2>Myös lähialueilla</h2><div class="areas">{muut}</div></div></section>"""
     return layout(f"{c['otsikko']} | {NIMI} {PUH}", c["kuvaus"], f"/taksi-{k}/", body, c)
 
 
