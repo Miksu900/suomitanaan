@@ -18,10 +18,15 @@ jobs:
           H = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36", "Accept-Language": "en"}
           tulos = {}
           for q in [x.strip() for x in os.environ["HAUT"].split(",") if x.strip()]:
-              t = requests.get(f"https://unsplash.com/s/photos/{q}?license=free", headers=H, timeout=30).text
+              r = requests.get(f"https://unsplash.com/napi/search/photos?query={q}&per_page=30", headers=H, timeout=30)
+              print(q, r.status_code, r.text[:120])
               ids = []
-              for m in re.findall(r"images\.unsplash\.com/(photo-[0-9]+-[0-9a-f]+)", t):
-                  if m not in ids: ids.append(m)
+              try:
+                  for x in r.json().get("results", []):
+                      if x.get("premium") or x.get("plus"): continue
+                      m = re.search(r"(photo-[0-9]+-[0-9a-f]+)", x.get("urls", {}).get("raw", ""))
+                      if m and m.group(1) not in ids: ids.append(m.group(1))
+              except Exception as e: print("json", e)
               ids = ids[:12]; tulos[q] = ids
               thumbs = []
               for i in ids:
