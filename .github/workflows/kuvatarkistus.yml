@@ -1,0 +1,38 @@
+name: Kuvatarkistus haaraan
+# Lataa annetut Unsplash-kuvatunnukset pikkukuviksi kontaktiarkeille (ryhmä:id|id;ryhmä:...) haaraan "kuvahaku".
+on:
+  workflow_dispatch:
+    inputs:
+      ryhmat: { description: "ryhma:id|id;ryhma2:id", required: true }
+permissions: { contents: write }
+jobs:
+  t:
+    runs-on: ubuntu-latest
+    steps:
+      - env: { R: "${{ inputs.ryhmat }}" }
+        run: |
+          pip install -q pillow requests
+          mkdir out && python3 - <<'PY'
+          import os, io, json, requests
+          from PIL import Image, ImageDraw, ImageFont
+          ok = {}
+          F = ImageFont.load_default(size=22)
+          for g in os.environ["R"].split(";"):
+              if ":" not in g: continue
+              nimi, ids = g.split(":", 1); ids = [i for i in ids.split("|") if i]
+              th = []
+              for k, i in enumerate(ids):
+                  r = requests.get(f"https://images.unsplash.com/{i}?w=400&h=300&fit=crop&q=60", timeout=30)
+                  if r.status_code == 200 and r.headers.get("content-type","").startswith("image"):
+                      th.append((k, Image.open(io.BytesIO(r.content)).convert("RGB").resize((400, 300)))); ok.setdefault(nimi, []).append(i)
+                  else: print(nimi, i, r.status_code)
+              cols = 5; rows = max(1, (len(th) + cols - 1) // cols)
+              s = Image.new("RGB", (cols * 410, rows * 310), "white"); d = ImageDraw.Draw(s)
+              for n, (k, im) in enumerate(th):
+                  x, y = (n % cols) * 410, (n // cols) * 310; s.paste(im, (x, y))
+                  d.rectangle((x, y, x + 40, y + 30), fill="black"); d.text((x + 8, y + 3), str(k), fill="white", font=F)
+              s.save(f"out/{nimi}.jpg", quality=78)
+          json.dump(ok, open("out/ok.json", "w"), indent=1)
+          PY
+          cd out && git init -q -b kuvahaku && git add -A && git -c user.name=bot -c user.email=bot@x commit -qm kuvat
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" kuvahaku
