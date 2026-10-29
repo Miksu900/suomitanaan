@@ -54,18 +54,18 @@ header.top{{position:sticky;top:0;z-index:20;background:rgba(250,247,242,.88);ba
 .nappi.sin{{background:var(--p)}}.nappi.sin:hover{{background:var(--p2)}}
 .nappi.toissij{{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px rgba(0,0,0,.25)}}
 @media(max-width:620px){{.ylaoik .nappi{{display:none}}.puh{{background:var(--ink);color:#fff;padding:9px 14px;border-radius:999px;font-size:.92rem}}}}
-.hero{{padding:56px 0 70px}}
+.hero{{position:relative;overflow:hidden;padding:90px 0 96px;color:#fff;background:#1d1a16}}.hero .tausta{{position:absolute;inset:0;z-index:0}}.hero .tausta img{{width:100%;height:100%;object-fit:cover;animation:kb 22s ease-out both}}@keyframes kb{{from{{transform:scale(1.12)}}to{{transform:scale(1)}}}}.hero .tausta::after{{content:'';position:absolute;inset:0;background:linear-gradient(100deg,rgba(18,15,12,.86) 0%,rgba(18,15,12,.62) 48%,rgba(18,15,12,.2) 100%),linear-gradient(0deg,rgba(18,15,12,.55),transparent 40%)}}@media(max-width:900px){{.hero{{padding:64px 0 70px;min-height:86svh;display:flex;align-items:flex-end}}.hero .tausta::after{{background:linear-gradient(0deg,rgba(18,15,12,.92) 0%,rgba(18,15,12,.7) 55%,rgba(18,15,12,.35) 100%)}}.kollaasi{{display:none}}}}@media(prefers-reduced-motion:reduce){{.hero .tausta img{{animation:none}}}}.hero .w{{position:relative;z-index:1}}
 .hero .w{{display:grid;grid-template-columns:1.05fr .95fr;gap:52px;align-items:center}}
 @media(max-width:900px){{.hero .w{{grid-template-columns:1fr;gap:34px}}}}
-.kick{{display:inline-flex;gap:8px;align-items:center;font-size:.85rem;font-weight:600;background:#fff;border:1px solid var(--line);padding:6px 12px;border-radius:999px}}
+.kick{{display:inline-flex;gap:8px;align-items:center;font-size:.85rem;font-weight:600;background:#fff;color:var(--ink);border:1px solid var(--line);padding:6px 12px;border-radius:999px}}.hero .kick{{background:rgba(255,255,255,.14);color:#fff;border-color:rgba(255,255,255,.28);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}}
 .kick i{{width:8px;height:8px;border-radius:50%;background:var(--vihrea);display:inline-block}}
-.hero h1{{font-size:clamp(2.6rem,6.4vw,4.6rem);margin:18px 0 18px}}.hero h1 em{{font-style:italic;color:var(--p)}}
-.hero p.l{{font-size:1.2rem;color:var(--mute);max-width:44ch;margin:0 0 28px}}
+.hero h1{{font-size:clamp(2.6rem,6.4vw,4.6rem);margin:18px 0 18px}}.hero h1 em{{font-style:italic;color:#9fe3b5}}.hero h1{{color:#fff;text-shadow:0 2px 24px rgba(0,0,0,.25)}}
+.hero p.l{{font-size:1.2rem;color:rgba(255,255,255,.88);max-width:44ch;margin:0 0 28px}}.hero .nappi.toissij{{color:#fff;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.6)}}.hero .luvut span{{color:rgba(255,255,255,.75)}}
 .toim{{display:flex;gap:12px;flex-wrap:wrap}}
 .luvut{{display:flex;gap:30px;margin-top:30px;flex-wrap:wrap}}.luvut b{{display:block;font-family:Fraunces,Georgia,serif;font-size:2rem;font-weight:500;line-height:1}}.luvut span{{color:var(--mute);font-size:.88rem}}
 .kollaasi{{position:relative;height:540px}}
 @media(max-width:900px){{.kollaasi{{height:430px}}}}
-.kollaasi .kuva{{position:absolute;inset:0 60px 40px 0;border-radius:28px;overflow:hidden;box-shadow:0 40px 80px -40px rgba(0,0,0,.45)}}
+.kollaasi .kuva{{display:none;position:absolute;inset:0 60px 40px 0;border-radius:28px;overflow:hidden;box-shadow:0 40px 80px -40px rgba(0,0,0,.45)}}
 .kollaasi .kuva img{{width:100%;height:100%;object-fit:cover}}
 .puhelin{{position:absolute;right:0;bottom:0;width:200px;aspect-ratio:9/18.5;border-radius:34px;background:#111;padding:8px;box-shadow:0 30px 60px -20px rgba(0,0,0,.5)}}
 .puhelin .ruutu{{width:100%;height:100%;border-radius:27px;overflow:hidden;position:relative;background:#000}}
@@ -138,14 +138,13 @@ def etusivu():
     kaupat = [d for d in DEMOT if d.get("tyyppi") == "kauppa"]
     leip = KAUPPAKUVAT["kauppa-leipomo"]
     runko = f"""
-<section class="hero"><div class="w">
+<section class="hero"><div class="tausta"><img src="{UK(HERO, 1600)}" srcset="{SSK(HERO, (700, 1100, 1600, 2200))}" sizes="100vw" alt="Kahvilayrittäjät tiskinsä takana" fetchpriority="high"></div><div class="w">
 <div><span class="kick"><i></i>Tehty Suomessa · vastaan itse puhelimeen</span>
 <h1>Nettisivut, jotka näyttävät <em>sinun</em> yritykseltäsi.</h1>
 <p class="l">Kauniit, nopeat ja helppokäyttöiset sivut valmiina muutamassa päivässä. Pystytys 0 €, ylläpito {HINTA_KK} €/kk. Sinä keskityt työhösi, minä hoidan loput.</p>
 <div class="toim"><a class="nappi iso sin" href="#mallit">Katso mallisivut</a><a class="nappi iso toissij" href="#hinnat">Katso hinnat</a></div>
 <div class="luvut"><div><b>0 €</b><span>pystytys</span></div><div><b>{HINTA_KK} €/kk</b><span>kaikki mukana</span></div><div><b>2 h</b><span>vastausaika arkisin</span></div></div></div>
-<div class="kollaasi ilm"><div class="kuva"><img src="{UK(HERO, 1100, 1000)}" srcset="{SSK(HERO, (600, 1100, 1500), .9)}" sizes="(max-width:900px) 100vw, 48vw" alt="Kahvilayrittäjät tiskinsä takana" fetchpriority="high"></div>
-<div class="puhelin"><div class="ruutu"><img src="{UK(leip, 420, 860)}" alt=""><div class="yp"><small>Kotileipomo Ruis</small><b>Tuoretta leipää, joka aamu</b></div><div class="np">Tilaa aamuksi →</div></div></div>
+<div class="kollaasi ilm"><div class="puhelin"><div class="ruutu"><img src="{UK(leip, 420, 860)}" alt=""><div class="yp"><small>Kotileipomo Ruis</small><b>Tuoretta leipää, joka aamu</b></div><div class="np">Tilaa aamuksi →</div></div></div>
 <div class="merkki">★★★★★ <b>Toimii puhelimella</b></div></div>
 </div></section>
 
