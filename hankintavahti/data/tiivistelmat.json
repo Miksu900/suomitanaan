@@ -5201,15 +5201,6 @@
 "pienyritys": "ehka",
 "selko": "Sansia Oy perustaa dynaamisen hankintajärjestelmän, johon kuuluvat leikkaustasot, tutkimuspöydät ja -tuolit sekä muut irtaimet sairaalakalusteet, kuten sairaalavaunut ja instrumenttivaunut. Sairaalasänkyjä hankinta ei sisällä. Järjestelmä on voimassa 31.12.2035 asti; hakemukset tehdään vähintään 30 päivän aikana ja ensimmäiset hankinnat ajoittuvat vuodelle 2026."
 },
-"58059": {
-"ala": "Ajoneuvot ja koneet",
-"kunta": "Virrat",
-"maakunta": "Pirkanmaa",
-"otsikko": "Lämpöenergian tuotanto palveluhankintana, Virrat",
-"perustelu": "Lämpölaitoksen käyttö ja jatkuva energiantuotanto vaatii todennäköisesti suuren toimijan kapasiteettia ja teknistä osaamista, eikä ilmoitus tarjoa osiin jakoa pienille toimijoille.",
-"pienyritys": "iso",
-"selko": "Virtain kaupunki kilpailuttaa lämpöenergian tuotannon palveluna. Lämpö tuotetaan kaupungin omistamassa lämpölaitoksessa osoitteessa Herrasentie 16, Virrat. Lämmöntuotanto alkaa 1.1.2027, ja laitoksen arvioitu vuosittainen energiantarve on noin 1400 MWh."
-},
 "58061": {
 "ala": "Kalusteet ja tarvikkeet",
 "kunta": "Kokkola",
@@ -9521,15 +9512,6 @@
 "pienyritys": "iso",
 "selko": "Numera Palvelut Oy kilpailuttaa siivouskoneita (lattianhoitokoneet, yhdistelmäkoneet, imurit, robottisiivouskoneet) sekä laitoskäyttöön tarkoitettuja pyykinpesukoneita ja kuivausrumpuja. Hankinta on jaettu kahteen osaan: Uusimaa ja muu Suomi. Sopimuskausi on neljä vuotta ja alkaa arviolta 1.1.2027."
 },
-"59706": {
-"ala": "Kalusteet ja tarvikkeet",
-"kunta": "",
-"maakunta": "Satakunta",
-"otsikko": "Ultraäänilaite Teho-osastolle ja Sydänyksikölle, Satakunta",
-"perustelu": "Laitehankinta lääketieteelliseen käyttöön vaatii todennäköisesti valmistajan tai laajan jälleenmyyjän kykyä toimittaa ja huoltaa laite, joten pienen yrityksen on vaikea tarjota suoraan.",
-"pienyritys": "iso",
-"selko": "Satakunnan hyvinvointialue hankkii ultraäänilaitteen käytettäväksi teho-osastolla, teho-osaston valvonnassa ja sydänyksikössä. Ilmoituksessa ei kerrota tarkkaa toimitusaikaa tai kestoa, eikä arvioitua hankintasummaa ole ilmoitettu."
-},
 "59708": {
 "ala": "Kiinteistöhuolto ja siivous",
 "kunta": "Hanko",
@@ -12131,6 +12113,15 @@
 "pienyritys": "iso",
 "selko": "Sotkamon kunta hankkii lakisääteiset tilintarkastuspalvelut itselleen ja kuntakonserniin kuuluville yhteisöille. Sopimuskausi on 1.1.2027–31.12.2030, ja lisäksi on mahdollisuus jatkaa sopimusta optiokaudella 2031–2032."
 },
+"60424": {
+"ala": "Rakentaminen ja korjaus",
+"kunta": "Hattula",
+"maakunta": "Kanta-Häme",
+"otsikko": "Pienet rakennustyöt Hattulan kunnassa 2027–2029",
+"perustelu": "Pienet paikalliset rakennustyöt Hattulan alueella sopivat hyvin paikalliselle pienyritykselle, ja ilmoitus on luonteeltaan usein osiin jaettu tai puitesopimus.",
+"pienyritys": "sopii",
+"selko": "Hattulan kunta hankkii pieniä rakennustöitä omalla alueellaan, mahdollisesti myös purkutöitä. Sopimuskausi on 2027–2029, ja sitä voidaan optiolla jatkaa vuodella 2030."
+},
 "60426": {
 "ala": "Konsultointi ja asiantuntijat",
 "kunta": "Kotka",
@@ -12283,6 +12274,24 @@
 "perustelu": "Vaatii kokonaisvastuullisen SaaS-toimittajan valmisratkaisulla ja laajat ylläpito- ja tukipalvelut, mikä on tyypillisesti suurten ohjelmistotoimijoiden tasolla, vaikka arvo (860 000 €) ei sitä yksin ratkaisisi.",
 "pienyritys": "iso",
 "selko": "Vantaan kaupunki hankkii työturvallisuusjärjestelmän ohjelmistopalveluna (SaaS). Toimittajan tulee tarjota käyttöliittymät, lisenssit, laitteistot ja ylläpito- sekä tukipalvelut, ja palvelun pitää olla käytössä tarjouspyynnön aikataulun mukaan. Sopimus on voimassa toistaiseksi, eikä kaupunki takaa tiettyjä hankintamääriä."
+},
+"60461": {
+"ala": "Sähkö, LVI ja talotekniikka",
+"kunta": "Hattula",
+"maakunta": "Kanta-Häme",
+"otsikko": "Pienet sähkötyöt Hattulan kunnassa 2027–2029 (+optio 2030)",
+"perustelu": "Pienet paikalliset sähkötyöt Hattulan alueella sopivat hyvin pienelle paikalliselle sähköurakoitsijalle.",
+"pienyritys": "sopii",
+"selko": "Hattulan kunta hankkii pieniä sähkötöitä kunnan alueelta vuosille 2027–2029, ja sopimukseen on mahdollisuus jatkaa vuodella 2030. Työhön voi kuulua myös mahdollisia purkutöitä."
+},
+"60463": {
+"ala": "Sähkö, LVI ja talotekniikka",
+"kunta": "Hattula",
+"maakunta": "Kanta-Häme",
+"otsikko": "Pienet LVI-työt Hattulan kunnassa 2027–2029 (+optio 2030)",
+"perustelu": "Kyse on pienistä, paikallisista LVI-töistä Hattulan alueella, joihin paikallinen pienyritys voi realistisesti tarjota.",
+"pienyritys": "sopii",
+"selko": "Hattulan kunta hankkii pieniä LVI-töitä kunnan alueelle vuosille 2027–2029, ja lisäksi on mahdollisuus optioon vuodelle 2030. Työt voivat sisältää myös purkutöitä."
 },
 "60464": {
 "ala": "Kalusteet ja tarvikkeet",
@@ -13003,6 +13012,24 @@
 "perustelu": "Hankinta on paikallinen ja arvoltaan kohtalainen, joten pienet kalustotoimittajat voivat tarjota, mutta laajuus ja kilpailutuksen muoto (käänteinen kilpailutus) vaatii tarkistusta.",
 "pienyritys": "ehka",
 "selko": "Ruskon kunta kilpailuttaa kunnantalon ja kirjaston irtokalusteet (kalusteet, joita voi siirtää tiloissa). Hankinnan arvioitu arvo on 80 000 euroa ilman arvonlisäveroa, ja hankintaa koskevat tarkemmat tarpeet ja tilakohtaiset vaatimukset on kuvattu liiteasiakirjoissa. Aikataulua tai toimitusaikaa ilmoituksessa ei ole mainittu."
+},
+"60650": {
+"ala": "Sähkö, LVI ja talotekniikka",
+"kunta": "Oulu",
+"maakunta": "Pohjois-Pohjanmaa",
+"otsikko": "Hissien, nostimien ja nosto-ovien lakisääteiset tarkastukset, Oulu",
+"perustelu": "Kilpailutus on jaettu kahteen osa-alueeseen, mutta tarkastaja tarvitsee Turvallisuus- ja kemikaaliviraston hyväksynnän valtuutettuna laitoksena, mikä rajaa pienten yritysten mahdollisuuksia.",
+"pienyritys": "ehka",
+"selko": "Oulun kaupunki hakee puitesopimuskumppania hissien, nostimien ja nosto-ovien lakisääteisiin tarkastuksiin. Tarkastuksia ovat käyttöönotto-, varmennus- ja määräaikaistarkastukset, ja hissit tarkastetaan pääosin kahden vuoden välein. Sopimus on voimassa 1.2.2027–31.1.2029, ja siihen kuuluu kaksi optiovuotta (1+1 vuotta)."
+},
+"60680": {
+"ala": "Konsultointi ja asiantuntijat",
+"kunta": "Helsinki",
+"maakunta": "Uusimaa",
+"otsikko": "Infrarakennuksen tärinämittaukset ja katselmukset 2027, Helsinki",
+"perustelu": "Palvelu on asiantuntijatyötä, joka voi sopia pienelle tärinä- tai rakennusalan asiantuntijayritykselle, mutta puitejärjestely ja laaja kokonaisuus voivat vaatia suurempaa toimijaa.",
+"pienyritys": "ehka",
+"selko": "Helsingin kaupungin rakentamispalveluliikelaitos Stara etsii palveluntuottajia tärinämittauksiin ja katselmuksiin infratyömailla Helsingissä. Palveluihin kuuluvat louhintatöiden, pohjavahvistustöiden ja muiden töiden tärinän todentaminen, suojaukset ja asiantuntijalausunnot. Sopimus on voimassa 1.1.–31.12.2027, ja tilaukset tehdään kohdekohtaisesti; hankinnalla valitaan 2–3 palveluntuottajaa puitejärjestelyyn."
 },
 "6181": {
 "ala": "Sosiaali- ja terveyspalvelut",
