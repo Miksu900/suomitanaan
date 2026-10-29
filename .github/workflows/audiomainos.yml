@@ -40,4 +40,5 @@ jobs:
           git push -qf "https://x-access-token:$GH_TOKEN@github.com/${{ github.repository }}" audio
       - name: Telegramiin
         env: { TG: "${{ secrets.TELEGRAM_BOT_TOKEN }}", NIMI: "${{ inputs.nimi }}" }
-        run: curl -sS -X POST "https://api.telegram.org/bot$TG/sendAudio" -F chat_id=1893930799 -F audio=@"$NIMI.mp3" -F "caption=Audiomainos: $NIMI" | jq -c .ok
+        run: |
+          curl -sS -X POST "https://api.telegram.org/bot$TG/sendAudio" -F chat_id=1893930799 -F audio=@"$NIMI.mp3" -F "caption=Audiomainos - $NIMI" | jq -c .ok
