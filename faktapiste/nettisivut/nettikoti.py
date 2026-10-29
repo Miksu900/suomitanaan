@@ -4,6 +4,7 @@ Reiluus on kärki: selkeä hinta, oma domain asiakkaalle, keskeytys 2 kk maksull
 """
 import html, pathlib
 from .malli import sivu as mallisivu
+from .palvelusivu import sivu as palvelusivu, KUVAT, U as UK, SS as SSK
 from .data import DEMOT
 
 esc = html.escape
@@ -16,92 +17,118 @@ SITOUTUS = "12 tai 24 kuukautta"
 SAKKO_KK = 2
 
 
+KAUPPAKUVAT = {"kauppa-leipomo": "photo-1548228623-13e55dd16984", "kauppa-kasityo": "photo-1742386676097-a2a55fcdcc64"}
+HERO = "photo-1753351052617-62818ffc9173"
+
+
 def _demokortti(d):
     kauppa = d.get("tyyppi") == "kauppa"
-    merkki = "Verkkokauppa" if kauppa else d["ala"]
+    kuva = KAUPPAKUVAT.get(d["slug"]) or KUVAT.get(d["slug"], ("",))[0]
+    merkki = "Räätälöity verkkokauppa" if kauppa else d["ala"]
     return f"""<a class="malli" href="/mallit/{d['slug']}/" target="_blank" rel="noopener">
-<span class="malli-kuva teema-{d.get('teema','sininen')}"><b>{esc(d['nimi'])}</b><i>{esc(d.get('slogan',''))}</i></span>
-<span class="malli-tieto"><span class="malli-ala">{esc(merkki)}</span>Katso malli →</span></a>"""
+<span class="mk"><img src="{UK(kuva, 700, 520)}" srcset="{SSK(kuva, (400, 700, 1000), .74)}" sizes="(max-width:700px) 90vw, 33vw" alt="" loading="lazy"><em>{esc(merkki)}</em></span>
+<span class="mt"><b>{esc(d['nimi'])}</b><span>{esc(d.get('slogan',''))}</span><i>Avaa malli →</i></span></a>"""
 
 
 def _sivu(otsikko, kuvaus, runko):
     return f"""<!doctype html>
-<html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>{esc(otsikko)}</title><meta name="description" content="{esc(kuvaus)}">
-<meta name="robots" content="noindex">
-<meta property="og:title" content="{esc(otsikko)}"><meta property="og:description" content="{esc(kuvaus)}">
+<meta property="og:title" content="{esc(otsikko)}"><meta property="og:description" content="{esc(kuvaus)}"><meta property="og:image" content="{UK(HERO, 1200, 630)}">
+<meta name="theme-color" content="#14213d">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{{--p:#1557c0;--p2:#0e3a85;--ink:#17181c;--mute:#5b6069;--line:#e6e7ea;--pehmea:#eef3fc;--bg:#fff;--vihrea:#1f7a4d}}
-*{{box-sizing:border-box}}
-body{{margin:0;font:16px/1.65 -apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg)}}
-.w{{max-width:1000px;margin:0 auto;padding:0 20px}}
-a{{color:var(--p)}}
-h1,h2,h3{{line-height:1.2;margin:0 0 .5em}}
-header.top{{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid var(--line)}}
-.ylaoik{{display:flex;align-items:center;gap:10px}}.puh{{color:var(--p);text-decoration:none;white-space:nowrap;font-size:1.02rem}}.puh b{{font-weight:800}}
-@media(max-width:560px){{.ylaoik .nappi{{display:none}}.puh{{background:var(--p);color:#fff;padding:9px 14px;border-radius:999px}}}}
-.nappi.toissij{{background:#fff;color:var(--p);border:2px solid var(--p)}}
-.top .w{{display:flex;align-items:center;justify-content:space-between;height:66px}}
-.logo{{font-weight:800;font-size:1.3rem;color:var(--p);text-decoration:none}}
-.logo span{{color:var(--vihrea)}}
-.nappi{{background:var(--p);color:#fff;text-decoration:none;font-weight:700;padding:11px 20px;border-radius:10px;display:inline-block}}
-.nappi:hover{{background:var(--p2)}}
-.nappi.iso{{padding:15px 28px;font-size:1.05rem}}
-.hero{{background:linear-gradient(135deg,var(--p),var(--p2));color:#fff;padding:76px 0}}
-.hero h1{{font-size:clamp(2.1rem,6vw,3.4rem);max-width:16ch}}
-.hero p{{font-size:1.2rem;opacity:.95;max-width:44ch;margin:.4em 0 1.6em}}
-.hero .alle{{margin-top:14px;font-size:.95rem;opacity:.9}}
-.osio{{padding:60px 0}}
-.osio h2{{font-size:clamp(1.6rem,4vw,2.2rem);text-align:center;margin-bottom:.8em}}
-.askeleet{{display:grid;gap:22px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}}
-.askel{{text-align:center;padding:10px}}
-.askel .num{{width:46px;height:46px;border-radius:50%;background:var(--pehmea);color:var(--p);font-weight:800;font-size:1.2rem;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}}
-.hinnoittelu{{background:var(--pehmea)}}
-.hintakortti{{max-width:460px;margin:0 auto;background:#fff;border:2px solid var(--p);border-radius:20px;padding:34px;text-align:center}}
-.hintakortti .suuri{{font-size:3rem;font-weight:800;color:var(--p);line-height:1}}
-.hintakortti .suuri small{{font-size:1.1rem;color:var(--mute);font-weight:600}}
-.hintakortti .ilmainen{{display:inline-block;background:var(--vihrea);color:#fff;font-weight:700;padding:5px 14px;border-radius:999px;margin-bottom:14px}}
-.hintakortti ul{{list-style:none;padding:0;margin:20px 0;text-align:left}}
-.hintakortti li{{padding:8px 0 8px 30px;position:relative}}
-.hintakortti li::before{{content:"✓";position:absolute;left:0;color:var(--vihrea);font-weight:800}}
-.reilu{{background:var(--ink);color:#fff}}
-.reilu h2{{color:#fff}}
+:root{{--p:#1d4ed8;--p2:#1e3a8a;--ink:#16181d;--mute:#5f6168;--line:#e7e2d9;--bg:#faf7f2;--card:#fff;--soft:#f1ece3;--vihrea:#15803d;--kulta:#d8a23c}}
+*{{box-sizing:border-box}}html{{scroll-behavior:smooth}}
+body{{margin:0;font:16.5px/1.65 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased}}
+img{{display:block;max-width:100%}}a{{color:var(--p)}}
+h1,h2,h3{{font-family:Fraunces,Georgia,serif;font-weight:500;line-height:1.1;letter-spacing:-.018em;margin:0 0 .45em}}
+.w{{max-width:1160px;margin:0 auto;padding:0 22px}}
+header.top{{position:sticky;top:0;z-index:20;background:rgba(250,247,242,.88);backdrop-filter:saturate(1.4) blur(12px);-webkit-backdrop-filter:saturate(1.4) blur(12px);border-bottom:1px solid rgba(0,0,0,.06)}}
+.top .w{{display:flex;align-items:center;justify-content:space-between;height:70px}}
+.logo{{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:1.6rem;color:var(--ink);text-decoration:none;letter-spacing:-.02em}}.logo span{{color:var(--vihrea)}}
+.ylaoik{{display:flex;align-items:center;gap:14px}}.puh{{color:var(--ink);text-decoration:none;white-space:nowrap;font-weight:600}}
+.nappi{{display:inline-flex;align-items:center;gap:8px;background:var(--ink);color:#fff;text-decoration:none;font-weight:600;padding:12px 22px;border-radius:999px;border:0;transition:transform .15s,background .15s}}
+.nappi:hover{{transform:translateY(-1px);background:#000}}.nappi.iso{{padding:16px 28px;font-size:1.05rem}}
+.nappi.sin{{background:var(--p)}}.nappi.sin:hover{{background:var(--p2)}}
+.nappi.toissij{{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px rgba(0,0,0,.25)}}
+@media(max-width:620px){{.ylaoik .nappi{{display:none}}.puh{{background:var(--ink);color:#fff;padding:9px 14px;border-radius:999px;font-size:.92rem}}}}
+.hero{{padding:56px 0 70px}}
+.hero .w{{display:grid;grid-template-columns:1.05fr .95fr;gap:52px;align-items:center}}
+@media(max-width:900px){{.hero .w{{grid-template-columns:1fr;gap:34px}}}}
+.kick{{display:inline-flex;gap:8px;align-items:center;font-size:.85rem;font-weight:600;background:#fff;border:1px solid var(--line);padding:6px 12px;border-radius:999px}}
+.kick i{{width:8px;height:8px;border-radius:50%;background:var(--vihrea);display:inline-block}}
+.hero h1{{font-size:clamp(2.6rem,6.4vw,4.6rem);margin:18px 0 18px}}.hero h1 em{{font-style:italic;color:var(--p)}}
+.hero p.l{{font-size:1.2rem;color:var(--mute);max-width:44ch;margin:0 0 28px}}
+.toim{{display:flex;gap:12px;flex-wrap:wrap}}
+.luvut{{display:flex;gap:30px;margin-top:30px;flex-wrap:wrap}}.luvut b{{display:block;font-family:Fraunces,Georgia,serif;font-size:2rem;font-weight:500;line-height:1}}.luvut span{{color:var(--mute);font-size:.88rem}}
+.kollaasi{{position:relative;height:540px}}
+@media(max-width:900px){{.kollaasi{{height:430px}}}}
+.kollaasi .kuva{{position:absolute;inset:0 60px 40px 0;border-radius:28px;overflow:hidden;box-shadow:0 40px 80px -40px rgba(0,0,0,.45)}}
+.kollaasi .kuva img{{width:100%;height:100%;object-fit:cover}}
+.puhelin{{position:absolute;right:0;bottom:0;width:200px;aspect-ratio:9/18.5;border-radius:34px;background:#111;padding:8px;box-shadow:0 30px 60px -20px rgba(0,0,0,.5)}}
+.puhelin .ruutu{{width:100%;height:100%;border-radius:27px;overflow:hidden;position:relative;background:#000}}
+.puhelin img{{width:100%;height:100%;object-fit:cover;opacity:.88}}
+.puhelin .yp{{position:absolute;left:0;right:0;top:0;padding:30px 14px 0;color:#fff}}.puhelin .yp b{{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:1.25rem;line-height:1.1;display:block;margin-top:120px}}
+.puhelin .yp small{{font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;opacity:.85}}
+.puhelin .np{{position:absolute;left:14px;right:14px;bottom:16px;background:#fff;color:#111;text-align:center;font-size:.72rem;font-weight:700;padding:9px;border-radius:999px}}
+.merkki{{position:absolute;left:-12px;bottom:70px;background:#fff;border-radius:16px;padding:12px 16px;box-shadow:0 20px 40px -20px rgba(0,0,0,.35);font-size:.9rem;font-weight:600}}.merkki b{{color:var(--vihrea)}}
+.osio{{padding:88px 0}}.osio.alt{{background:var(--soft)}}
+.eb{{display:block;font-size:.76rem;letter-spacing:.24em;text-transform:uppercase;color:var(--p);font-weight:700;margin-bottom:10px}}
+.osio h2{{font-size:clamp(2rem,4.4vw,3.1rem)}}.ots{{max-width:640px;margin-bottom:34px}}.ots p{{color:var(--mute);font-size:1.08rem}}
+.keski{{text-align:center;margin-left:auto;margin-right:auto}}
+.galleria{{display:grid;gap:22px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}}
+.malli{{text-decoration:none;color:inherit;background:var(--card);border-radius:22px;overflow:hidden;display:block;box-shadow:0 1px 0 rgba(0,0,0,.04),0 24px 44px -32px rgba(0,0,0,.35);transition:transform .2s,box-shadow .2s}}
+.malli:hover{{transform:translateY(-4px);box-shadow:0 30px 60px -30px rgba(0,0,0,.45)}}
+.mk{{position:relative;display:block;aspect-ratio:4/3;overflow:hidden}}.mk img{{width:100%;height:100%;object-fit:cover;transition:transform .6s}}.malli:hover .mk img{{transform:scale(1.05)}}
+.mk em{{position:absolute;left:12px;top:12px;font-style:normal;font-size:.75rem;font-weight:600;background:rgba(255,255,255,.92);padding:5px 10px;border-radius:999px}}
+.mt{{display:block;padding:18px 20px 20px}}.mt b{{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:1.35rem;display:block}}.mt span{{color:var(--mute);font-size:.94rem;display:block}}.mt i{{font-style:normal;color:var(--p);font-weight:600;font-size:.92rem;display:block;margin-top:10px}}
+.askeleet{{display:grid;gap:22px;grid-template-columns:repeat(3,1fr)}}@media(max-width:820px){{.askeleet{{grid-template-columns:1fr}}}}
+.askel{{background:var(--card);border-radius:22px;padding:30px}}.askel .num{{font-family:Fraunces,Georgia,serif;font-size:3rem;color:var(--p);line-height:1;margin-bottom:12px}}.askel p{{color:var(--mute);margin:0}}
+.hinnat{{display:grid;gap:22px;grid-template-columns:repeat(3,1fr);align-items:stretch}}@media(max-width:900px){{.hinnat{{grid-template-columns:1fr}}}}
+.hk{{background:var(--card);border-radius:24px;padding:32px;display:flex;flex-direction:column;border:1px solid var(--line)}}
+.hk.paras{{background:var(--ink);color:#fff;border:0;box-shadow:0 40px 70px -40px rgba(0,0,0,.6)}}.hk.paras .m{{color:#b9bcc4}}.hk.paras li::before{{color:#4ade80}}
+.hk .tag{{align-self:flex-start;font-size:.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:var(--soft);color:var(--ink);padding:5px 10px;border-radius:999px;margin-bottom:14px}}
+.hk.paras .tag{{background:var(--kulta);color:#1b1305}}
+.hk h3{{font-size:1.5rem;margin-bottom:6px}}.hk .m{{color:var(--mute);margin:0 0 16px;font-size:.96rem}}
+.hk .h{{font-family:Fraunces,Georgia,serif;font-size:2.8rem;line-height:1}}.hk .h small{{font-family:Inter,sans-serif;font-size:1rem;opacity:.7}}
+.hk ul{{list-style:none;padding:0;margin:20px 0 26px;display:grid;gap:9px;font-size:.96rem;flex:1}}.hk li{{padding-left:26px;position:relative}}.hk li::before{{content:"✓";position:absolute;left:0;color:var(--vihrea);font-weight:800}}
+.hk .nappi{{justify-content:center}}.hk.paras .nappi{{background:#fff;color:var(--ink)}}
+.raat{{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}}@media(max-width:900px){{.raat{{grid-template-columns:1fr;gap:30px}}}}
+.raat .kuva{{border-radius:28px;overflow:hidden;aspect-ratio:4/5;box-shadow:0 40px 80px -40px rgba(0,0,0,.45)}}.raat .kuva img{{width:100%;height:100%;object-fit:cover}}
+.ominais{{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:24px 0 28px}}@media(max-width:560px){{.ominais{{grid-template-columns:1fr}}}}
+.ominais div{{background:var(--card);border-radius:16px;padding:16px 18px;font-size:.95rem;color:var(--mute)}}.ominais b{{display:block;color:var(--ink);font-size:1rem;margin-bottom:2px}}
+.reilu{{background:var(--ink);color:#fff}}.reilu h2{{color:#fff}}.reilu .eb{{color:var(--kulta)}}
 .reilu .ruudut{{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));margin-top:10px}}
-.reilu .r{{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:22px}}
-.reilu .r h3{{color:#ffd24a;font-size:1.1rem}}
-.reilu .r p{{color:#d4d6db;margin:0}}
-.galleria{{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}}
-.malli{{text-decoration:none;color:inherit;border:1px solid var(--line);border-radius:16px;overflow:hidden;display:block;transition:transform .15s}}
-.malli:hover{{transform:translateY(-3px);box-shadow:0 10px 30px rgba(0,0,0,.08)}}
-.malli-kuva{{height:140px;display:flex;flex-direction:column;justify-content:center;align-items:center;color:#fff;text-align:center;padding:16px}}
-.malli-kuva b{{font-size:1.3rem}}.malli-kuva i{{font-style:normal;opacity:.9;font-size:.9rem;margin-top:4px}}
-.teema-sininen{{background:linear-gradient(135deg,#1557c0,#0e3a85)}}.teema-vihrea{{background:linear-gradient(135deg,#1f7a4d,#145535)}}
-.teema-oranssi{{background:linear-gradient(135deg,#d9631a,#a84a11)}}.teema-musta{{background:linear-gradient(135deg,#333,#000)}}
-.teema-viininpunainen{{background:linear-gradient(135deg,#9c2742,#6f1a2f)}}.teema-petroli{{background:linear-gradient(135deg,#116b74,#0b4a50)}}
-.teema-ruskea{{background:linear-gradient(135deg,#7a5230,#553820)}}.teema-purppura{{background:linear-gradient(135deg,#5b3a9c,#3f286e)}}
-.malli-tieto{{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;font-weight:700}}
-.malli-ala{{color:var(--mute);font-weight:600;font-size:.88rem}}
-.ukk details{{border-bottom:1px solid var(--line);padding:6px 0}}
-.ukk summary{{cursor:pointer;font-weight:700;padding:12px 0;list-style:none}}
-.ukk summary::-webkit-details-marker{{display:none}}
-.ukk summary::before{{content:"+ ";color:var(--p)}}.ukk details[open] summary::before{{content:"– "}}
-.ukk p{{color:var(--mute);margin:0 0 12px}}
-.teksti{{max-width:720px;margin:0 auto}}
-.teksti h2{{text-align:left;margin-top:1.4em}}
-footer.jalka{{background:#0c0c0e;color:#9a9aa0;text-align:center;padding:30px 16px;font-size:.88rem}}
-footer.jalka a{{color:#cfd0d4}}
+.reilu .r{{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:26px}}.reilu .r h3{{color:#fff;font-size:1.25rem}}.reilu .r p{{color:#c9ccd3;margin:0}}
+.tekija{{display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:center;background:var(--card);border-radius:26px;padding:34px;max-width:860px;margin:0 auto}}
+.tekija .av{{width:96px;height:96px;border-radius:50%;background:linear-gradient(135deg,var(--p),var(--vihrea));color:#fff;display:grid;place-items:center;font-family:Fraunces,Georgia,serif;font-size:2.4rem}}
+@media(max-width:620px){{.tekija{{grid-template-columns:1fr;text-align:center}}.tekija .av{{margin:0 auto}}}}
+.tekija p{{margin:0 0 10px;color:var(--mute);font-size:1.05rem}}.tekija p.q{{font-family:Fraunces,Georgia,serif;color:var(--ink);font-size:1.4rem;line-height:1.35}}
+.ukk{{max-width:760px;margin:0 auto}}.ukk details{{border-bottom:1px solid var(--line);padding:6px 0}}
+.ukk summary{{cursor:pointer;font-weight:600;padding:16px 0;list-style:none;font-size:1.08rem;display:flex;justify-content:space-between;gap:16px}}
+.ukk summary::-webkit-details-marker{{display:none}}.ukk summary::after{{content:"+";color:var(--p);font-size:1.4rem;line-height:1}}.ukk details[open] summary::after{{content:"–"}}
+.ukk p{{color:var(--mute);margin:0 0 16px}}
+.cta{{background:linear-gradient(135deg,#1e3a8a,#1d4ed8);color:#fff;border-radius:30px;padding:56px 34px;text-align:center}}
+.cta h2{{color:#fff}}.cta p{{color:#dbe4ff;max-width:46ch;margin:0 auto 24px;font-size:1.1rem}}.cta .nappi{{background:#fff;color:var(--ink)}}.cta .nappi.toissij{{background:transparent;color:#fff;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.6)}}
+.teksti{{max-width:720px;margin:0 auto}}.teksti h2{{text-align:left;margin-top:1.4em;font-size:1.6rem}}
+footer.jalka{{background:#0f1014;color:#9a9ca3;text-align:center;padding:40px 16px 100px;font-size:.9rem}}footer.jalka a{{color:#e5e7eb}}
 .keskita{{text-align:center;margin-top:28px}}
+.ilm{{opacity:0;transform:translateY(16px);transition:opacity .7s,transform .7s}}.ilm.nak{{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){{.ilm{{opacity:1;transform:none}}}}
 </style></head>
 <body>
 <header class="top"><div class="w">
 <a class="logo" href="/">Net<span>vo</span></a>
-<span class="ylaoik"><a class="puh" href="tel:{PUHELIN_TEL}" aria-label="Soita {PUHELIN}">📞 <b>{PUHELIN}</b></a><a class="nappi" href="#yhteys">Ota yhteyttä</a></span>
+<span class="ylaoik"><a class="puh" href="tel:{PUHELIN_TEL}" aria-label="Soita {PUHELIN}">📞 {PUHELIN}</a><a class="nappi" href="#yhteys">Pyydä sivut</a></span>
 </div></header>
 {runko}
-<footer class="jalka"><p><b>Netvo</b> – valmiit nettisivut suomalaisille yrityksille.</p>
+<footer class="jalka"><p style="font-family:Fraunces,Georgia,serif;font-size:1.5rem;color:#fff;margin:0 0 8px">Net<span style="color:#4ade80">vo</span></p>
+<p>Nettisivut ja verkkokaupat suomalaisille pienyrityksille.</p>
 <p style="font-size:1.05rem;color:#fff">Soita <a href="tel:{PUHELIN_TEL}"><b>{PUHELIN}</b></a> (arkisin 9–21) · {esc(YHTEYS)}</p>
-<p><a href="/ehdot/">Sopimusehdot</a></p>
-<p>Netvo on osa Faktapisteen palveluita.</p></footer>
+<p><a href="/ehdot/">Sopimusehdot</a> · Kuvat: Unsplash · Netvo on osa Faktapisteen palveluita.</p></footer>
+<script>(function(){{var o=new IntersectionObserver(function(es){{es.forEach(function(e){{if(e.isIntersecting){{e.target.classList.add('nak');o.unobserve(e.target)}}}})}},{{threshold:.1}});document.querySelectorAll('.ilm').forEach(function(x){{o.observe(x)}})}})();</script>
 <script src="https://kauppa.netvo.fi/tuki.js" defer></script>
 </body></html>"""
 
@@ -109,76 +136,68 @@ footer.jalka a{{color:#cfd0d4}}
 def etusivu():
     palvelut = [d for d in DEMOT if d.get("tyyppi") != "kauppa"]
     kaupat = [d for d in DEMOT if d.get("tyyppi") == "kauppa"]
+    leip = KAUPPAKUVAT["kauppa-leipomo"]
     runko = f"""
 <section class="hero"><div class="w">
-<h1>Ammattimaiset nettisivut yrityksellesi</h1>
-<p>Saat valmiit, mobiilioptimoidut nettisivut ilman pystytysmaksua. Me teemme kaiken, sinä keskityt työhösi.</p>
-<a class="nappi iso" href="#yhteys">Hanki sivut yrityksellesi</a>
-<div class="alle">Pystytys 0 € · Oma verkkotunnus sinun nimiisi · Peru milloin vain {SAKKO_KK} kk maksulla</div>
+<div><span class="kick"><i></i>Tehty Suomessa · vastaan itse puhelimeen</span>
+<h1>Nettisivut, jotka näyttävät <em>sinun</em> yritykseltäsi.</h1>
+<p class="l">Kauniit, nopeat ja helppokäyttöiset sivut valmiina muutamassa päivässä. Pystytys 0 €, ylläpito {HINTA_KK} €/kk. Sinä keskityt työhösi, minä hoidan loput.</p>
+<div class="toim"><a class="nappi iso sin" href="#mallit">Katso mallisivut</a><a class="nappi iso toissij" href="tel:{PUHELIN_TEL}">📞 {PUHELIN}</a></div>
+<div class="luvut"><div><b>0 €</b><span>pystytys</span></div><div><b>{HINTA_KK} €/kk</b><span>kaikki mukana</span></div><div><b>2 h</b><span>vastausaika arkisin</span></div></div></div>
+<div class="kollaasi ilm"><div class="kuva"><img src="{UK(HERO, 1100, 1000)}" srcset="{SSK(HERO, (600, 1100, 1500), .9)}" sizes="(max-width:900px) 100vw, 48vw" alt="Kahvilayrittäjät tiskinsä takana" fetchpriority="high"></div>
+<div class="puhelin"><div class="ruutu"><img src="{UK(leip, 420, 860)}" alt=""><div class="yp"><small>Kotileipomo Ruis</small><b>Tuoretta leipää, joka aamu</b></div><div class="np">Tilaa aamuksi →</div></div></div>
+<div class="merkki">★★★★★ <b>Toimii puhelimella</b></div></div>
 </div></section>
 
-<section class="osio"><div class="w"><h2>Näin se toimii</h2><div class="askeleet">
-<div class="askel"><div class="num">1</div><h3>Kerro yrityksestäsi</h3><p>Täytät lyhyen lomakkeen: nimi, palvelut, yhteystiedot ja toiveesi väreistä.</p></div>
-<div class="askel"><div class="num">2</div><h3>Me teemme sivut</h3><p>Rakennamme sivut puolestasi ja kirjoitamme tekstit valmiiksi. Näet vedoksen ja saat muutokset mukaan.</p></div>
-<div class="askel"><div class="num">3</div><h3>Sivut julkaistaan</h3><p>Sivut tulevat nettiin omalla verkkotunnuksellasi. Me pidämme ne pystyssä ja ajan tasalla.</p></div>
+<section class="osio alt" id="mallit"><div class="w"><div class="ots ilm"><span class="eb">Mallisivut</span><h2>Katso, miltä sivusi voisivat näyttää</h2><p>Avaa mikä tahansa malli. Sinun sivusi tehdään samalla laadulla, omilla kuvillasi, teksteilläsi ja väreilläsi.</p></div>
+<div class="galleria">{''.join(_demokortti(d) for d in palvelut + kaupat)}</div></div></section>
+
+<section class="osio"><div class="w"><div class="ots keski ilm" style="text-align:center"><span class="eb">Näin se toimii</span><h2>Valmista kolmessa askeleessa</h2></div><div class="askeleet">
+<div class="askel ilm"><div class="num">1</div><h3>Kerro yrityksestäsi</h3><p>Soitto tai viesti riittää: palvelut, yhteystiedot ja muutama kuva. Teksteistä ei tarvitse huolehtia.</p></div>
+<div class="askel ilm"><div class="num">2</div><h3>Minä teen sivut</h3><p>Rakennan sivut ja kirjoitan tekstit valmiiksi. Näet vedoksen ja saat muutokset mukaan.</p></div>
+<div class="askel ilm"><div class="num">3</div><h3>Sivut julkaistaan</h3><p>Sivut tulevat nettiin omalla verkkotunnuksellasi. Pidän ne pystyssä ja ajan tasalla.</p></div>
 </div></div></section>
 
-<section class="osio hinnoittelu"><div class="w"><h2>Selkeä hinta, ei yllätyksiä</h2>
-<div class="hintakortti">
-<span class="ilmainen">Pystytys 0 €</span>
-<div class="suuri">{HINTA_KK} €<small> / kk</small></div>
-<p style="color:var(--mute);margin:6px 0 0">Sitoutuminen {SITOUTUS}, sitten jatkuu kuukausi kerrallaan.</p>
-<ul>
-<li>Valmiit sivut rakennettuna puolestasi</li>
-<li>Oma verkkotunnus (esim. yrityksesi.fi) sinun nimiisi</li>
-<li>Hosting, varmuuskopiot ja tietoturva</li>
-<li>Pienet tekstimuutokset sisältyvät hintaan</li>
-<li>Yhteydenottolomake suoraan sähköpostiisi</li>
-<li>Toimii puhelimella, tabletilla ja tietokoneella</li>
-</ul>
-<a class="nappi iso" href="#yhteys">Aloita nyt</a>
+<section class="osio alt" id="hinnat"><div class="w"><div class="ots keski ilm" style="text-align:center"><span class="eb">Hinnat</span><h2>Selkeä hinta, ei yllätyksiä</h2><p>Kaikki hinnat sisältävät alv:n. Ei pystytysmaksua, ei piilokuluja.</p></div>
+<div class="hinnat">
+<div class="hk paras ilm"><span class="tag">Suosituin</span><h3>Nettisivut</h3><p class="m">Valmiit, kauniit sivut yrityksellesi.</p><div class="h">{HINTA_KK} €<small> / kk</small></div>
+<ul><li>Pystytys 0 €</li><li>Oma verkkotunnus sinun nimiisi</li><li>Hosting, varmuuskopiot ja tietoturva</li><li>Pienet muutokset hintaan sisältyen</li><li>Soitto- ja yhteydenottonapit</li></ul><a class="nappi" href="#yhteys">Pyydä sivut</a></div>
+<div class="hk ilm"><span class="tag">Verkkokauppa</span><h3>Kauppa Käyntiin</h3><p class="m">Rakennan ja ylläpidän kaupan puolestasi.</p><div class="h">99 €<small> / kk</small></div>
+<ul><li>Tuotteet, ostoskori ja kassa</li><li>Mikä tahansa suomalainen maksupalvelu</li><li>Tuki arkisin 9–21, vastaus 2 h</li><li>1 h muutoksia kuukaudessa</li></ul><a class="nappi toissij" href="mailto:{esc(YHTEYS)}?subject=Netvo%20-%20Kauppa%20K%C3%A4yntiin">Kysy lisää</a></div>
+<div class="hk ilm"><span class="tag">Tee itse</span><h3>Netvo Kauppa</h3><p class="m">Valmis alusta, lisäät tuotteet itse.</p><div class="h">29 €<small> / kk</small></div>
+<ul><li>14 päivää ilmaiseksi</li><li>Oma ulkoasu ja tuotteet</li><li>Suomalaiset maksutavat</li></ul><a class="nappi toissij" href="https://kauppa.netvo.fi/">Kokeile ilmaiseksi</a></div>
 </div></div></section>
 
-<section class="osio"><div class="w teksti" style="text-align:center"><h2>Kauppa Käyntiin – 99 €/kk</h2>
-<p style="max-width:58ch;margin:0 auto">Rakennamme kaupan niin, että voit liittää minkä tahansa suomalaisen maksupalvelun, etkä ole sidottu meihin. Maksupalvelun sopimuksen teet suoraan palveluntarjoajan kanssa, maksut menevät suoraan sinulle, ja maksupalvelun kulut maksat palveluntarjoajalle.</p><p style="max-width:58ch;margin:16px auto 0">Ylläpitoon kuuluu nopea ja turvallinen hosting, SSL, päivittäiset varmuuskopiot ja päivitykset. Tuki arkisin 9–21, vastaus 2 h. Sisältää 1 h pieniä muutoksia kuukaudessa ja yhden yhteyshenkilön.</p><p style="max-width:58ch;margin:16px auto 0"><strong>Räätälöity verkkokauppa:</strong> isommat kaupat rakennetaan kertahintaan tarjouksen mukaan, ja ylläpito (hosting, SSL, varmuuskopiot ja päivitykset) on sen jälkeen 29 €/kk. Pyydä tarjous.</p><p style="max-width:58ch;margin:16px auto 0;padding:14px 16px;border:1px dashed #c9c2b8;border-radius:12px">Haluatko tehdä kaupan itse? <strong>Netvo Kauppa 29 €/kk</strong> – valmis verkkokauppa-alusta, jossa lisäät tuotteet ja ulkoasun itse. Kokeile 14 päivää ilmaiseksi: <a href="https://kauppa.netvo.fi/" style="font-weight:700">kauppa.netvo.fi</a></p>
-<p style="margin-top:20px"><a class="nappi" href="mailto:{esc(YHTEYS)}?subject=Netvo%20-%20Kauppa%20K%C3%A4yntiin">Pyydä kauppa käyntiin</a></p>
-</div></section>
+<section class="osio" id="raataloity"><div class="w raat"><div class="kuva ilm"><img src="{UK(leip, 900, 1125)}" srcset="{SSK(leip, (500, 900, 1300), 1.25)}" sizes="(max-width:900px) 100vw, 48vw" alt="Tuoreita leipiä" loading="lazy"></div>
+<div class="ilm"><span class="eb">Räätälöity verkkokauppa</span><h2>Kauppa, joka myy tunnelmalla</h2><p class="lead" style="color:var(--mute);font-size:1.08rem">Isompiin tarpeisiin rakennan kaupan alusta asti juuri sinun yrityksellesi. Rakentaminen kertahintaan tarjouksen mukaan, ylläpito sen jälkeen 29 €/kk. Räätälöityyn kauppaan voi lisätä esimerkiksi:</p>
+<div class="ominais"><div><b>Nouto- ja toimitusajat</b>Asiakas valitsee ajan, esim. "huomenna 7–9".</div><div><b>Kotiinkuljetus alueittain</b>Postinumeroalueet ja omat hinnat.</div><div><b>Tuotteen räätälöinti</b>Kakkutoiveet, kaiverrukset, koot ja värit.</div><div><b>Lahjakortit ja koodit</b>Myy lahjakortteja ja tee kampanjoita.</div><div><b>Kanta-asiakasedut</b>Pisteet tai joka 10. ostos edullisemmin.</div><div><b>Tekoälyavustaja</b>Vastaa asiakkaille kaupan tiedoilla.</div></div>
+<a class="nappi sin" href="/mallit/kauppa-leipomo/" target="_blank" rel="noopener">Katso leipomon mallikauppa →</a></div></div></section>
 
-<section class="osio reilu"><div class="w"><h2>Reilut ehdot – ei loukkua</h2>
-<p style="text-align:center;color:#d4d6db;max-width:52ch;margin:0 auto">Moni "ilmainen sivu" -palvelu sitoo asiakkaan loukkuun. Me teemme toisin. Reiluus on lupauksemme.</p>
+<section class="osio reilu"><div class="w"><div class="ots ilm"><span class="eb">Reilut ehdot</span><h2>Ei loukkuja, ei pientä pränttiä</h2><p style="color:#c9ccd3">Moni "ilmainen sivu" -palvelu sitoo asiakkaan. Netvossa reiluus on lupaus.</p></div>
 <div class="ruudut">
-<div class="r"><h3>Oma verkkotunnus</h3><p>Verkkotunnus rekisteröidään sinun yrityksesi nimiin. Se on sinun, et jää siitä riippuvaiseksi meistä.</p></div>
-<div class="r"><h3>Voit perua milloin vain</h3><p>Jos haluat lopettaa kesken sitoutumisajan, maksat vain {SAKKO_KK} kuukauden maksua vastaavan summan. Ei muuta.</p></div>
-<div class="r"><h3>Ei automaattista kallistumista</h3><p>Sitoutumisajan jälkeen sopimus ei muutu kalliimmaksi, vaan jatkuu samalla hinnalla kuukausi kerrallaan.</p></div>
-<div class="r"><h3>Selkeä hinta etukäteen</h3><p>Kerromme kaiken ennen kuin sitoudut mihinkään. Ei piilokuluja, ei pientä pränttiä.</p></div>
-</div>
-<p style="text-align:center;margin-top:24px"><a href="/ehdot/" style="color:#ffd24a;font-weight:700">Lue tarkat sopimusehdot →</a></p>
-</div></section>
+<div class="r ilm"><h3>Oma verkkotunnus</h3><p>Verkkotunnus rekisteröidään sinun yrityksesi nimiin. Se on sinun.</p></div>
+<div class="r ilm"><h3>Peru milloin vain</h3><p>Kesken sitoutumisajan lopettaminen maksaa vain {SAKKO_KK} kuukauden maksun. Ei muuta.</p></div>
+<div class="r ilm"><h3>Ei kallistumista</h3><p>Sitoutumisajan jälkeen hinta pysyy samana, kuukausi kerrallaan.</p></div>
+<div class="r ilm"><h3>Hinta etukäteen</h3><p>Kerron kaiken ennen kuin sitoudut mihinkään.</p></div>
+</div><p style="margin-top:26px"><a href="/ehdot/" style="color:var(--kulta);font-weight:600">Lue tarkat sopimusehdot →</a></p></div></section>
 
-<section class="osio" id="mallit"><div class="w"><h2>Katso mallisivut</h2>
-<p style="text-align:center;color:var(--mute);max-width:50ch;margin:0 auto 10px">Klikkaa mitä tahansa mallia nähdäksesi, miltä valmis sivusto näyttää. Omasi tehdään samalla laadulla, sinun sisällölläsi ja väreilläsi.</p>
-<h3 style="margin-top:30px">Palvelualat</h3><div class="galleria">{''.join(_demokortti(d) for d in palvelut)}</div>
-<h3 style="margin-top:34px">Verkkokaupat</h3><div class="galleria">{''.join(_demokortti(d) for d in kaupat)}</div>
-</div></section>
+<section class="osio"><div class="w"><div class="tekija ilm"><div class="av">M</div><div><p class="q">”Hoidan jokaisen asiakkaan sivut alusta loppuun ja vastaan puhelimeen itse. Kun soitat, puhut sen kanssa, joka sivustasi oikeasti vastaa.”</p><p><b style="color:var(--ink)">Miika Koskela</b>, Netvo · Ylivieska</p></div></div></div></section>
 
-<section class="osio" id="ukk"><div class="w teksti"><h2 style="text-align:center">Usein kysyttyä</h2><div class="ukk">
-<details><summary>Onko pystytys oikeasti ilmainen?</summary><p>Kyllä. Et maksa sivujen tekemisestä mitään. Kuukausimaksu kattaa verkkotunnuksen, hostingin, ylläpidon ja pienet muutokset. Näin sivut pysyvät kunnossa koko ajan.</p></details>
-<details><summary>Omistanko verkkotunnuksen itse?</summary><p>Kyllä. Verkkotunnus rekisteröidään sinun yrityksesi nimiin, ja se on sinun. Et jää meistä riippuvaiseksi.</p></details>
-<details><summary>Mitä jos haluan lopettaa?</summary><p>Voit perua milloin vain. Jos lopetat kesken sitoutumisajan, maksat vain {SAKKO_KK} kuukauden maksua vastaavan summan. Sitoutumisajan jälkeen voit lopettaa ilman erillistä maksua.</p></details>
-<details><summary>Voinko muuttaa sivujen sisältöä myöhemmin?</summary><p>Kyllä. Pienet tekstimuutokset, kuten aukioloajat, hinnat tai yhteystiedot, sisältyvät kuukausihintaan. Lähetät vain viestin, niin hoidamme ne.</p></details>
-<details><summary>Saako verkkokaupan myös?</summary><p>Kyllä. Teemme myös yksinkertaisia verkkokauppoja tuotteiden esittelyyn ja tilaamiseen. Katso esimerkit mallisivuista.</p></details>
-<details><summary>Kauanko sivujen tekeminen kestää?</summary><p>Yleensä muutaman päivän siitä, kun olet toimittanut tietosi. Saat vedoksen nähtäväksi ennen julkaisua.</p></details>
+<section class="osio alt" id="ukk"><div class="w"><div class="ots keski ilm" style="text-align:center"><span class="eb">Kysyttyä</span><h2>Usein kysyttyä</h2></div><div class="ukk">
+<details><summary>Onko pystytys oikeasti ilmainen?</summary><p>Kyllä. Et maksa sivujen tekemisestä mitään. Kuukausimaksu kattaa verkkotunnuksen, hostingin, ylläpidon ja pienet muutokset.</p></details>
+<details><summary>Omistanko verkkotunnuksen itse?</summary><p>Kyllä. Verkkotunnus rekisteröidään sinun yrityksesi nimiin, ja se on sinun.</p></details>
+<details><summary>Mitä jos haluan lopettaa?</summary><p>Voit perua milloin vain. Kesken sitoutumisajan maksat vain {SAKKO_KK} kuukauden maksua vastaavan summan. Sitoutumisajan jälkeen voit lopettaa ilman erillistä maksua.</p></details>
+<details><summary>Voinko käyttää omia kuvia?</summary><p>Totta kai, ja se on suositeltavaa: omat kuvat tekevät sivuista aidon näköiset. Jos kuvia ei ole, valitaan yhdessä laadukkaat kuvapankkikuvat.</p></details>
+<details><summary>Voinko muuttaa sisältöä myöhemmin?</summary><p>Kyllä. Pienet muutokset, kuten aukioloajat, hinnat tai yhteystiedot, sisältyvät kuukausihintaan. Lähetät vain viestin.</p></details>
+<details><summary>Kauanko tekeminen kestää?</summary><p>Yleensä muutaman päivän siitä, kun olet toimittanut tietosi. Näet vedoksen ennen julkaisua.</p></details>
 </div></div></section>
 
-<section class="osio hinnoittelu" id="yhteys"><div class="w teksti" style="text-align:center">
-<h2>Hanki nettisivut yrityksellesi</h2>
-<p style="color:var(--mute);max-width:46ch;margin:0 auto 20px">Kerro lyhyesti yrityksestäsi, niin otamme yhteyttä ja kerromme lisää. Ei sitoumusta vielä tässä vaiheessa.</p>
-<p style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:0"><a class="nappi iso" href="tel:{PUHELIN_TEL}">📞 Soita {PUHELIN}</a><a class="nappi iso toissij" href="mailto:{esc(YHTEYS)}?subject=Netvo%20-%20nettisivut%20yritykselleni">Lähetä sähköposti</a></p>
-<p style="margin-top:16px;color:var(--mute)">Puhelin <b>{PUHELIN}</b> arkisin 9–21 · sähköposti <b>{esc(YHTEYS)}</b> · voit kysyä myös chatissa oikeassa alakulmassa</p>
-</div></section>
+<section class="osio" id="yhteys"><div class="w"><div class="cta ilm"><h2>Hanki sivut yrityksellesi</h2><p>Soita tai lähetä viesti. Kerron hinnat ja aikataulun, eikä mitään tarvitse päättää heti.</p>
+<div class="toim" style="justify-content:center"><a class="nappi iso" href="tel:{PUHELIN_TEL}">📞 Soita {PUHELIN}</a><a class="nappi iso toissij" href="mailto:{esc(YHTEYS)}?subject=Netvo%20-%20nettisivut%20yritykselleni">Lähetä sähköposti</a></div>
+<p style="margin:20px auto 0;font-size:.95rem">Arkisin 9–21 · {esc(YHTEYS)} · voit kysyä myös chatissa</p></div></div></section>
 """
-    return _sivu("Netvo – valmiit nettisivut yrityksellesi ilman pystytysmaksua",
-                 "Ammattimaiset nettisivut suomalaisille yrityksille. Pystytys 0 €, oma verkkotunnus, reilut ehdot. Peru milloin vain 2 kk maksulla.", runko)
+    return _sivu("Netvo – kauniit nettisivut yrityksellesi, pystytys 0 €",
+                 "Kauniit, nopeat ja helppokäyttöiset nettisivut suomalaisille yrityksille. Pystytys 0 €, ylläpito 25 €/kk, oma verkkotunnus, reilut ehdot.", runko)
 
 
 def ehtosivu():
@@ -215,7 +234,7 @@ def rakenna_nettikoti(root):
     for d in DEMOT:
         kansio = root / "netvo" / "mallit" / d["slug"]
         kansio.mkdir(parents=True, exist_ok=True)
-        (kansio / "index.html").write_text(mallisivu(d), encoding="utf-8")
+        (kansio / "index.html").write_text(palvelusivu(d) if d.get("tyyppi") != "kauppa" else mallisivu(d), encoding="utf-8")
     # Verkkokauppamallit: räätälöidyt, täysin toimivat mallikaupat (korvaavat yksinkertaiset)
     from .premium import rakenna as rakenna_premium
     rakenna_premium(root)
