@@ -149,7 +149,7 @@ def etusivu():
 <section class="osio alt" id="mallit"><div class="w"><div class="ots ilm"><span class="eb">Esimerkkejä</span><h2>Jokainen sivu tehdään juuri sinulle</h2><p>Ei valmispohjia: suunnittelen jokaisen sivun ja kaupan yrityksesi tarpeiden mukaan. Avaa esimerkki ja katso, millaista laatua saat – omilla kuvillasi, teksteilläsi ja väreilläsi.</p></div>
 <div class="galleria">{''.join(_demokortti(d) for d in palvelut + kaupat)}</div></div></section>
 
-<section class="osio" id="ilmaiseksi"><div class="w"><div class="ots keski ilm" style="text-align:center"><span class="eb">Mitä saat ilmaiseksi</span><h2>Työ, josta muualla maksaisit 1000–1500 €</h2><p>Vastaavan sivuston teettäminen maksaa tyypillisesti yli 1000 €, verkkokauppa usein enemmän. Netvossa rakentaminen on aina 0 €.</p></div>
+<section class="osio" id="ilmaiseksi"><div class="w"><div class="ots keski ilm" style="text-align:center"><span class="eb">Mitä saat ilmaiseksi</span><h2>Työ, josta muualla maksaisit 1000–1500 €</h2><p>Vastaavan sivuston teettäminen maksaa tyypillisesti yli 1000 €, verkkokauppa usein enemmän. Netvossa rakentaminen on aina 0 €. Ja koska muutoksista ei peritä erillistä hintaa, hyöty voi vuosien mittaan kasvaa jopa tuhansiin euroihin.</p></div>
 <div class="ominais ilm" style="max-width:880px;margin:30px auto 0"><div><b>Räätälöity suunnittelu</b>Ei valmispohjia – ulkoasu ja toiminnot tehdään sinun tarpeisiisi.</div><div><b>Tekstit puolestasi</b>Sinun ei tarvitse kirjoittaa riviäkään.</div><div><b>Kuvat ja puhelinversio</b>Kauniit kuvat, toimii jokaisella laitteella.</div><div><b>Verkko-osoite ja julkaisu</b>Esim. yrityksesi.fi, valmiina nettiin.</div><div><b>Google-näkyvyyden perusta</b>Hakukoneystävälliset sivut alusta asti.</div><div><b>Verkkokauppaan tuotteet ja kassa</b>Lisään tuotteet ja kytken maksutavat.</div></div></div></section>
 
 <section class="osio alt"><div class="w"><div class="ots keski ilm" style="text-align:center"><span class="eb">Näin se toimii</span><h2>Valmista kolmessa askeleessa</h2></div><div class="askeleet">
@@ -176,7 +176,7 @@ def etusivu():
 <div class="r ilm"><h3>Rakentaminen 0 €</h3><p>Et maksa sivujen tai kaupan tekemisestä mitään.</p></div>
 <div class="r ilm"><h3>Lopeta milloin tahansa</h3><p>Ei sitoutumisaikaa eikä irtisanomismaksua. Kuukausi kerrallaan.</p></div>
 <div class="r ilm"><h3>Osoite lunastettavissa</h3><p>Verkko-osoitteen voi lunastaa itselleen milloin vain {LUNASTUS} €:lla.</p></div>
-<div class="r ilm"><h3>Muutokset sisältyvät</h3><p>Haluatko muuttaa sivustoa? Muutokset kuuluvat hintaan, ei lisälaskuja.</p></div>
+<div class="r ilm"><h3>Muutokset sisältyvät</h3><p>Haluatko muuttaa sivustoa? Muutokset kuuluvat hintaan. Muualla jokainen muutos laskutetaan – Netvossa säästö voi olla tuhansia euroja.</p></div>
 </div><p style="margin-top:26px"><a href="/ehdot/" style="color:var(--kulta);font-weight:600">Lue tarkat sopimusehdot →</a></p></div></section>
 
 <section class="osio"><div class="w"><div class="tekija ilm"><div class="av">M</div><div><p class="q">”Hoidan jokaisen asiakkaan sivut alusta loppuun ja vastaan puhelimeen itse. Kun soitat, puhut sen kanssa, joka sivustasi oikeasti vastaa.”</p><p><b style="color:var(--ink)">Miika Koskela</b>, Netvo · Ylivieska</p></div></div></div></section>
@@ -185,7 +185,7 @@ def etusivu():
 <details><summary>Onko rakentaminen oikeasti ilmainen?</summary><p>Kyllä. Et maksa sivujen tai kaupan tekemisestä mitään. Maksat vain kuukausimaksun: nettisivut {HINTA_KK} €/kk tai verkkokauppa {KAUPPA_KK} €/kk.</p></details>
 <details><summary>Onko sitoutumisaikaa?</summary><p>Ei. Voit lopettaa milloin tahansa, eikä lopettamisesta peritä maksua. Palvelu päättyy maksetun kuukauden lopussa.</p></details>
 <details><summary>Kenen nimissä verkko-osoite on?</summary><p>Verkko-osoite rekisteröidään Netvon nimiin. Voit lunastaa sen itsellesi milloin tahansa {LUNASTUS} €:lla, ja siirrän sen sinulle viikon sisällä maksusta.</p></details>
-<details><summary>Maksavatko muutokset erikseen?</summary><p>Eivät. Kaikki muutokset sisältyvät kuukausihintaan – oli kyse teksteistä, kuvista, tuotteista, uudesta sivusta tai ulkoasusta. Lähetät vain viestin.</p></details>
+<details><summary>Maksavatko muutokset erikseen?</summary><p>Eivät. Kaikki muutokset sisältyvät kuukausihintaan – oli kyse teksteistä, kuvista, tuotteista, uudesta sivusta tai ulkoasusta. Lähetät vain viestin. Koska muutoksista ei laskuteta erikseen, hyöty voi vuosien mittaan olla jopa tuhansia euroja.</p></details>
 <details><summary>Milloin maksan ensimmäisen kerran?</summary><p>Ensimmäinen kuukausi maksetaan, kun olet hyväksynyt vedoksen ja ennen kuin sivut julkaistaan. Sen jälkeen lasku tulee kuukausittain.</p></details>
 <details><summary>Käytätkö valmispohjia?</summary><p>En. Jokainen nettisivu ja verkkokauppa räätälöidään asiakkaan tarpeen mukaan: ulkoasu, rakenne ja toiminnot suunnitellaan juuri sinun yrityksellesi.</p></details>
 <details><summary>Voinko käyttää omia kuvia?</summary><p>Totta kai, ja se on suositeltavaa: omat kuvat tekevät sivuista aidon näköiset. Jos kuvia ei ole, valitaan yhdessä laadukkaat kuvapankkikuvat.</p></details>
