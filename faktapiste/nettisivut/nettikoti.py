@@ -48,7 +48,7 @@ h1,h2,h3{{font-family:Fraunces,Georgia,serif;font-weight:500;line-height:1.1;let
 header.top{{position:sticky;top:0;z-index:20;background:rgba(250,247,242,.88);backdrop-filter:saturate(1.4) blur(12px);-webkit-backdrop-filter:saturate(1.4) blur(12px);border-bottom:1px solid rgba(0,0,0,.06)}}
 .top .w{{display:flex;align-items:center;justify-content:space-between;height:70px}}
 .logo{{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:1.6rem;color:var(--ink);text-decoration:none;letter-spacing:-.02em}}.logo span{{color:var(--vihrea)}}
-.ylaoik{{display:flex;align-items:center;gap:14px}}.puh{{color:var(--ink);text-decoration:none;white-space:nowrap;font-weight:600}}
+.ylaoik{{display:flex;align-items:center;gap:14px}}.puh{{background:var(--ink);color:#fff;text-decoration:none;white-space:nowrap;font-weight:600;padding:10px 18px;border-radius:999px}}
 .nappi{{display:inline-flex;align-items:center;gap:8px;background:var(--ink);color:#fff;text-decoration:none;font-weight:600;padding:12px 22px;border-radius:999px;border:0;transition:transform .15s,background .15s}}
 .nappi:hover{{transform:translateY(-1px);background:#000}}.nappi.iso{{padding:16px 28px;font-size:1.05rem}}
 .nappi.sin{{background:var(--p)}}.nappi.sin:hover{{background:var(--p2)}}
@@ -121,7 +121,7 @@ footer.jalka{{background:#0f1014;color:#9a9ca3;text-align:center;padding:40px 16
 <body>
 <header class="top"><div class="w">
 <a class="logo" href="/">Net<span>vo</span></a>
-<span class="ylaoik"><a class="puh" href="tel:{PUHELIN_TEL}" aria-label="Soita {PUHELIN}">📞 {PUHELIN}</a><a class="nappi" href="#yhteys">Pyydä sivut</a></span>
+<span class="ylaoik"><a class="puh" href="tel:{PUHELIN_TEL}" aria-label="Soita {PUHELIN}">📞 {PUHELIN}</a></span>
 </div></header>
 {runko}
 <footer class="jalka"><p style="font-family:Fraunces,Georgia,serif;font-size:1.5rem;color:#fff;margin:0 0 8px">Net<span style="color:#4ade80">vo</span></p>
@@ -142,7 +142,7 @@ def etusivu():
 <div><span class="kick"><i></i>Tehty Suomessa · vastaan itse puhelimeen</span>
 <h1>Nettisivut, jotka näyttävät <em>sinun</em> yritykseltäsi.</h1>
 <p class="l">Kauniit, nopeat ja helppokäyttöiset sivut valmiina muutamassa päivässä. Pystytys 0 €, ylläpito {HINTA_KK} €/kk. Sinä keskityt työhösi, minä hoidan loput.</p>
-<div class="toim"><a class="nappi iso sin" href="#mallit">Katso mallisivut</a><a class="nappi iso toissij" href="#hinnat">Katso hinnat</a></div></div>
+<div class="toim"><a class="nappi iso sin" href="#yhteys">Ota yhteyttä</a><a class="nappi iso toissij" href="#mallit">Katso mallisivut</a></div></div>
 </div></section>
 
 <section class="osio alt" id="mallit"><div class="w"><div class="ots ilm"><span class="eb">Mallisivut</span><h2>Katso, miltä sivusi voisivat näyttää</h2><p>Avaa mikä tahansa malli. Sinun sivusi tehdään samalla laadulla, omilla kuvillasi, teksteilläsi ja väreilläsi.</p></div>
