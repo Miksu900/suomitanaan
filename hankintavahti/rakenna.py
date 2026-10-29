@@ -199,6 +199,16 @@ function f(){const s=q.value.trim().toLowerCase();let n=0;for(const c of k){cons
 const u=new URLSearchParams(location.search);if(u.get('q'))q.value=u.get('q');f();})();
 </script>"""
 
+ETUSUODATIN = """<script>
+(()=>{const q=document.getElementById('q'),mk=document.getElementById('mk'),al=document.getElementById('al'),pk=document.getElementById('pk'),m=document.getElementById('maara'),L=document.getElementById('lista'),B=document.getElementById('lisaa');
+let K=null,osumat=[],n=40;const tmp=document.createElement('div');
+const sopii=c=>{const s=q.value.trim().toLowerCase();return(!s||c.dataset.q.includes(s))&&(!mk.value||c.dataset.mk===mk.value)&&(!al.value||c.dataset.ala===al.value)&&(!pk.checked||c.dataset.pk==='sopii')};
+function piirra(){if(!K)return;osumat=K.filter(sopii);L.replaceChildren(...osumat.slice(0,n));m.textContent=osumat.length+' avointa hankintaa';B.style.display=osumat.length>n?'':'none'}
+function f(){n=40;piirra()}
+fetch('/kaikki.json').then(r=>r.json()).then(a=>{K=a.map(h=>{tmp.innerHTML=h;return tmp.firstElementChild});const u=new URLSearchParams(location.search);if(u.get('q'))q.value=u.get('q');piirra()});
+[q,mk,al,pk].forEach(x=>x.addEventListener('input',f));B.addEventListener('click',()=>{n+=40;piirra()});})();
+</script>"""
+
 def hakupalkki(nayta_mk=True, nayta_ala=True):
     mk = '<select id="mk" aria-label="Maakunta"><option value="">Kaikki maakunnat</option>' + "".join(f'<option>{m}</option>' for m in MAAKUNNAT) + "</select>"
     al = '<select id="al" aria-label="Toimiala"><option value="">Kaikki toimialat</option>' + "".join(f'<option>{a}</option>' for a in ALAT) + "</select>"
@@ -224,10 +234,11 @@ def rakenna(ilm, tv):
     etusivu = (f'<section class="hero"><h1>Julkiset tarjouspyynnöt <em>selkokielellä</em> – löydä seuraava asiakkaasi.</h1>'
                f'<p>Kunnat, kaupungit ja hyvinvointialueet ostavat joka viikko satoja palveluita ja tuotteita. {NIMI} kokoaa ne yhteen, kertoo selkokielellä mitä ostetaan ja merkitsee, mitkä sopivat pienelle yritykselle.</p>'
                f'<div class="stat"><div><b>{len(ilm)}</b><span>avointa hankintaa</span></div><div><b>{vk}</b><span>uutta 7 päivässä</span></div><div><b>{sopii}</b><span>sopii pienyritykselle</span></div></div></section>'
-               + hakupalkki() + '<div class="lista">' + "".join(kortti(n, T(n)) for n in ilm) + "</div>"
+               + hakupalkki() + '<div class="lista" id="lista">' + "".join(kortti(n, T(n)) for n in ilm[:40]) + '</div><p style="text-align:center"><button id="lisaa" class="nappi" style="border:0;cursor:pointer;font:inherit;font-weight:700">Näytä lisää</button></p>'
                + '<section class="vahti"><h2>Henkilökohtainen hälytys tulossa</h2><p>Kerro omin sanoin mitä yrityksesi tekee ja missä – tekoäly lähettää sinulle vain ne hankinnat, jotka oikeasti sopivat. Avataan pian.</p></section>'
                + f'<section class="sec" id="alueet"><h2>Hankinnat maakunnittain</h2><div class="ruudut">{ruudut(mk_n, "maakunta")}</div></section>'
-               + f'<section class="sec"><h2>Hankinnat toimialoittain</h2><div class="ruudut">{ruudut(al_n, "ala")}</div></section>' + SUODATIN)
+               + f'<section class="sec"><h2>Hankinnat toimialoittain</h2><div class="ruudut">{ruudut(al_n, "ala")}</div></section>' + ETUSUODATIN)
+    (PUB / "kaikki.json").write_text(json.dumps([kortti(n, T(n)) for n in ilm], ensure_ascii=False))
     kirjoita("/", kehys(f"{NIMI} – julkiset tarjouspyynnöt selkokielellä pienyrittäjille",
                         f"{len(ilm)} avointa julkista hankintaa selkokielellä. Katso mitä kunnat ja hyvinvointialueet ostavat ja löydä sopivat tarjouspyynnöt pienyrityksellesi.", "/", etusivu,
                         {"@context": "https://schema.org", "@type": "WebSite", "name": NIMI, "url": SIVU}))
