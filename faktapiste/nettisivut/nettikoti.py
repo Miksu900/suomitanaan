@@ -158,12 +158,12 @@ def etusivu():
 <div class="askel ilm"><div class="num">3</div><h3>Sivut julkaistaan</h3><p>Sivut tulevat nettiin omalla verkko-osoitteellasi. Pidän ne pystyssä ja ajan tasalla.</p></div>
 </div></div></section>
 
-<section class="osio" id="hinnat"><div class="w"><div class="ots keski ilm" style="text-align:center"><span class="eb">Hinnat</span><h2>Kaksi selkeää hintaa</h2><p>Rakentaminen 0 €. Ei sitoutumista, ei aloitusmaksua, ei piilokuluja. Hinnat sisältävät alv:n.</p></div>
+<section class="osio" id="hinnat"><div class="w"><div class="ots keski ilm" style="text-align:center"><span class="eb">Hinnat</span><h2>Kaksi selkeää hintaa</h2><p>Rakentaminen 0 € ja kaikki muutokset hintaan sisältyen. Ei sitoutumista, ei lisämaksuja. Hinnat sisältävät alv:n.</p></div>
 <div class="hinnat">
 <div class="hk paras ilm"><span class="tag">Nettisivut</span><h3>Nettisivut</h3><p class="m">Rakentaminen 0 € – yli 1000 €:n arvosta.</p><div class="h">{HINTA_KK} €<small> / kk</small></div>
-<ul><li>Räätälöity suunnittelu, ei valmispohjia</li><li>Tekstit kirjoitettuna puolestasi</li><li>Verkko-osoite, hosting ja tietoturva</li><li>Varmuuskopiot ja päivitykset</li><li>Sisältömuutokset hintaan sisältyen</li><li>Soitto- ja yhteydenottonapit</li><li>Lopeta milloin tahansa</li></ul><a class="nappi" href="#yhteys">Pyydä sivut</a></div>
+<ul><li>Räätälöity suunnittelu, ei valmispohjia</li><li>Tekstit kirjoitettuna puolestasi</li><li>Verkko-osoite, hosting ja tietoturva</li><li>Varmuuskopiot ja päivitykset</li><li>Kaikki muutokset hintaan sisältyen</li><li>Soitto- ja yhteydenottonapit</li><li>Lopeta milloin tahansa</li></ul><a class="nappi" href="#yhteys">Pyydä sivut</a></div>
 <div class="hk ilm"><span class="tag">Verkkokauppa</span><h3>Verkkokauppa</h3><p class="m">Rakentaminen 0 € – jopa 1500 €:n arvosta.</p><div class="h">{KAUPPA_KK} €<small> / kk</small></div>
-<ul><li>Räätälöity kauppa, ei valmispohjia</li><li>Tuotteet, ostoskori ja kassa</li><li>Suomalaiset maksutavat, rahat suoraan sinulle</li><li>Toimitustavat ja tilausten hallinta</li><li>Muutokset ja tuki arkisin 9–21</li><li>Lopeta milloin tahansa</li></ul><a class="nappi toissij" href="#yhteys">Pyydä kauppa</a></div>
+<ul><li>Räätälöity kauppa, ei valmispohjia</li><li>Tuotteet, ostoskori ja kassa</li><li>Suomalaiset maksutavat, rahat suoraan sinulle</li><li>Toimitustavat ja tilausten hallinta</li><li>Kaikki muutokset hintaan sisältyen</li><li>Tuki arkisin 9–21</li><li>Lopeta milloin tahansa</li></ul><a class="nappi toissij" href="#yhteys">Pyydä kauppa</a></div>
 </div><p class="ilm" style="text-align:center;color:var(--mute);font-size:.9rem;margin-top:18px">Verkkokaupassa maksupalvelu (esim. Paytrail tai MobilePay) veloittaa omat kulunsa suoraan.</p></div></section>
 
 <section class="osio alt" id="raataloity"><div class="w raat"><div class="kuva ilm"><img src="{UK(leip, 900, 1125)}" srcset="{SSK(leip, (500, 900, 1300), 1.25)}" sizes="(max-width:900px) 100vw, 48vw" alt="Tuoreita leipiä" loading="lazy"></div>
@@ -176,7 +176,7 @@ def etusivu():
 <div class="r ilm"><h3>Rakentaminen 0 €</h3><p>Et maksa sivujen tai kaupan tekemisestä mitään.</p></div>
 <div class="r ilm"><h3>Lopeta milloin tahansa</h3><p>Ei sitoutumisaikaa eikä irtisanomismaksua. Kuukausi kerrallaan.</p></div>
 <div class="r ilm"><h3>Osoite lunastettavissa</h3><p>Verkko-osoitteen voi lunastaa itselleen milloin vain {LUNASTUS} €:lla.</p></div>
-<div class="r ilm"><h3>Hinta etukäteen</h3><p>Kaksi hintaa, ei yllätyksiä eikä piilokuluja.</p></div>
+<div class="r ilm"><h3>Muutokset sisältyvät</h3><p>Haluatko muuttaa sivustoa? Muutokset kuuluvat hintaan, ei lisälaskuja.</p></div>
 </div><p style="margin-top:26px"><a href="/ehdot/" style="color:var(--kulta);font-weight:600">Lue tarkat sopimusehdot →</a></p></div></section>
 
 <section class="osio"><div class="w"><div class="tekija ilm"><div class="av">M</div><div><p class="q">”Hoidan jokaisen asiakkaan sivut alusta loppuun ja vastaan puhelimeen itse. Kun soitat, puhut sen kanssa, joka sivustasi oikeasti vastaa.”</p><p><b style="color:var(--ink)">Miika Koskela</b>, Netvo · Ylivieska</p></div></div></div></section>
@@ -185,6 +185,7 @@ def etusivu():
 <details><summary>Onko rakentaminen oikeasti ilmainen?</summary><p>Kyllä. Et maksa sivujen tai kaupan tekemisestä mitään. Maksat vain kuukausimaksun: nettisivut {HINTA_KK} €/kk tai verkkokauppa {KAUPPA_KK} €/kk.</p></details>
 <details><summary>Onko sitoutumisaikaa?</summary><p>Ei. Voit lopettaa milloin tahansa, eikä lopettamisesta peritä maksua. Palvelu päättyy maksetun kuukauden lopussa.</p></details>
 <details><summary>Kenen nimissä verkko-osoite on?</summary><p>Verkko-osoite rekisteröidään Netvon nimiin. Voit lunastaa sen itsellesi milloin tahansa {LUNASTUS} €:lla, ja siirrän sen sinulle viikon sisällä maksusta.</p></details>
+<details><summary>Maksavatko muutokset erikseen?</summary><p>Eivät. Kaikki muutokset sisältyvät kuukausihintaan – oli kyse teksteistä, kuvista, tuotteista, uudesta sivusta tai ulkoasusta. Lähetät vain viestin.</p></details>
 <details><summary>Milloin maksan ensimmäisen kerran?</summary><p>Ensimmäinen kuukausi maksetaan, kun olet hyväksynyt vedoksen ja ennen kuin sivut julkaistaan. Sen jälkeen lasku tulee kuukausittain.</p></details>
 <details><summary>Käytätkö valmispohjia?</summary><p>En. Jokainen nettisivu ja verkkokauppa räätälöidään asiakkaan tarpeen mukaan: ulkoasu, rakenne ja toiminnot suunnitellaan juuri sinun yrityksellesi.</p></details>
 <details><summary>Voinko käyttää omia kuvia?</summary><p>Totta kai, ja se on suositeltavaa: omat kuvat tekevät sivuista aidon näköiset. Jos kuvia ei ole, valitaan yhdessä laadukkaat kuvapankkikuvat.</p></details>
@@ -204,9 +205,9 @@ def ehtosivu():
 <h1>Sopimusehdot</h1>
 <p style="color:var(--mute)">Nämä ehdot kuvaavat Netvo-palvelun sisällön ja hinnoittelun selkeästi ja reilusti. Ehdot ovat voimassa 29.10.2026 alkaen.</p>
 <h2>1. Palvelut</h2>
-<p>Netvolla on kaksi palvelua: <b>Nettisivut</b> ja <b>Verkkokauppa</b>. Netvo rakentaa sivut tai kaupan asiakkaan puolesta ja ylläpitää niitä. Kuukausimaksuun sisältyvät verkko-osoite, hosting, varmuuskopiot, tietoturva, päivitykset ja sisältömuutokset (kuten aukioloajat, hinnat, yhteystiedot ja tuotteet).</p>
+<p>Netvolla on kaksi palvelua: <b>Nettisivut</b> ja <b>Verkkokauppa</b>. Netvo rakentaa sivut tai kaupan asiakkaan puolesta ja ylläpitää niitä. Kuukausimaksuun sisältyvät verkko-osoite, hosting, varmuuskopiot, tietoturva, päivitykset sekä kaikki asiakkaan pyytämät muutokset sivustoon (esimerkiksi tekstit, kuvat, tuotteet, uudet sivut ja ulkoasu). Muutoksista ei peritä erillistä maksua.</p>
 <h2>2. Hinta</h2>
-<p>Sivujen ja kaupan rakentaminen on maksutonta. Kuukausihinnat (sis. alv): Nettisivut {HINTA_KK} € ja Verkkokauppa {KAUPPA_KK} €. Verkkokaupassa asiakas tekee sopimuksen haluamansa maksupalvelun kanssa suoraan; maksupalvelu veloittaa omat kulunsa, ja myyntitulot menevät suoraan asiakkaalle. Muita kuluja ei ole. Laskutus kuukausittain laskulla; palvelun tuottaa ja laskuttaa Taksiliikenne Koskela Oy, palvelun nimi Netvo.</p>
+<p>Sivujen ja kaupan rakentaminen on maksutonta. Kuukausihinnat (sis. alv): Nettisivut {HINTA_KK} € ja Verkkokauppa {KAUPPA_KK} €. Verkkokaupassa asiakas tekee sopimuksen haluamansa maksupalvelun kanssa suoraan; maksupalvelu veloittaa omat kulunsa, ja myyntitulot menevät suoraan asiakkaalle. Muita kuluja tai lisämaksuja ei ole. Laskutus kuukausittain laskulla; palvelun tuottaa ja laskuttaa Taksiliikenne Koskela Oy, palvelun nimi Netvo.</p>
 <h2>3. Laskutus ja julkaisu</h2>
 <p>Asiakas näkee vedoksen ennen julkaisua. Ensimmäinen kuukausi maksetaan, kun asiakas on hyväksynyt vedoksen, ja sivut julkaistaan maksun jälkeen. Sen jälkeen palvelu laskutetaan kuukausi kerrallaan etukäteen.</p>
 <h2>4. Ei sitoutumista</h2>
