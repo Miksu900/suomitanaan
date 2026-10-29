@@ -165,6 +165,18 @@ nav a{color:var(--mute);text-decoration:none;margin-left:18px;font-size:15px}nav
 .huom{background:var(--amberbg);border-radius:10px;padding:12px 14px;font-size:14.5px}
 details{margin-top:14px}summary{cursor:pointer;color:var(--mute);font-size:14.5px}details p{white-space:pre-line;font-size:14.5px;color:var(--mute)}
 footer{border-top:1px solid var(--line);padding:26px 0 40px;color:var(--mute);font-size:14px;margin-top:40px}
+.yks-hero{padding:40px 0 18px;text-align:center}.yks-hero h1{margin:0 auto 10px;font-size:clamp(38px,8vw,64px)}.yks-hero p{margin:0 auto}
+.iso{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:14px;display:grid;grid-template-columns:2fr 1fr;gap:10px;box-shadow:0 8px 30px rgba(0,0,0,.06);margin:8px 0 6px}
+.iso input,.iso select{font:inherit;font-size:18px;padding:15px 14px;border:1.5px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);width:100%}
+.iso input:focus{outline:none;border-color:var(--green)}
+.pika{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:7px}.pika button{font:inherit;font-size:14.5px;padding:7px 12px;border-radius:99px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.pika button.on{background:var(--green);border-color:var(--green);color:#fff}.pika .pk{border-color:var(--ok);color:var(--ok)}.pika .pk.on{background:var(--ok);color:#fff}
+@media(max-width:720px){.iso{grid-template-columns:1fr}}
+.askeleet{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:26px 0}.askeleet div{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:14px;font-size:15px}
+.askeleet b{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--green);color:#fff;margin-bottom:8px}
+@media(max-width:720px){.askeleet{grid-template-columns:1fr}}
+details.sec summary{font-weight:700;color:var(--ink);font-size:17px}
+.kortti .tag.ok{margin-bottom:4px}
 .murupolku{font-size:14px;color:var(--mute);margin-top:18px}.murupolku a{color:var(--mute)}
 """
 def kehys(otsikko, kuvaus, polku, sisalto, ld=None):
@@ -180,16 +192,21 @@ def kehys(otsikko, kuvaus, polku, sisalto, ld=None):
 <footer><div class="wrap">{NIMI} kokoaa julkiset tarjouspyynnöt selkokielellä pienyrittäjille. Ilmoitusten tiedot: <a href="https://www.hankintailmoitukset.fi/">Hilma – hankintailmoitukset.fi</a> (Hansel Oy), lisenssi CC BY 4.0. Tiivistelmät on tehty tekoälyllä – tarkista aina alkuperäinen tarjouspyyntö ennen tarjouksen jättämistä. · <a href="/tietoa/">Tietoa palvelusta</a></div></footer>
 </body></html>"""
 
+def lyhyt(x, n=150):
+    x = (x or "").strip(); i = x.find(". ")
+    x = x[:i + 1] if 40 < i < n else x
+    return x if len(x) <= n else x[:n].rsplit(" ", 1)[0] + "…"
 def kortti(n, t):
     dl = paivia(n["expirationDate"]); kiire = dl <= 7
-    tags = f'<span class="tag">{e(t["ala"])}</span>' + ('<span class="tag ok">Sopii pienyritykselle</span>' if t["pienyritys"] == "sopii" else "")
     paikka = t.get("kunta") or t.get("maakunta") or ""
+    sop = '<span class="tag ok">✓ Sopii pienelle yritykselle</span>' if t["pienyritys"] == "sopii" else ""
     return (f'<a class="kortti" href="/h/{n["noticeId"]}/" data-mk="{e(t.get("maakunta"))}" data-ala="{e(t["ala"])}" data-pk="{t["pienyritys"]}" '
-            f'data-q="{e((t["otsikko"] + " " + n.get("titleFi","") + " " + (n.get("organisationNameFi") or "") + " " + paikka).lower())}">'
-            f'<div>{tags}</div><h3>{e(t["otsikko"] or n.get("titleFi"))}</h3><p>{e(t["selko"])}</p><div class="meta">'
-            f'<span>{e(n.get("organisationNameFi"))}</span>' + (f'<span>📍 {e(paikka)}</span>' if paikka else "") +
-            (f'<span>Arvo <b>{euro(n.get("estimatedValue"))}</b></span>' if n.get("estimatedValue") else "") +
-            f'<span class="dl{" kiire" if kiire else ""}">Jätä {pvm(n["expirationDate"])} ({dl} pv)</span></div></a>')
+            f'data-q="{e((t["otsikko"] + " " + n.get("titleFi","") + " " + (n.get("organisationNameFi") or "") + " " + paikka + " " + t["ala"] + " " + t["selko"]).lower())}">'
+            f'{sop}<h3>{e(t["otsikko"] or n.get("titleFi"))}</h3><p>{e(lyhyt(t["selko"]))}</p><div class="meta">'
+            + (f'<span>📍 {e(paikka)}</span>' if paikka else "")
+            + f'<span class="dl{" kiire" if kiire else ""}">⏰ {dl} pv jäljellä</span>'
+            + (f'<span>💶 {euro(n.get("estimatedValue"))}</span>' if n.get("estimatedValue") else "")
+            + '</div></a>')
 
 SUODATIN = """<script>
 (()=>{const q=document.getElementById('q'),mk=document.getElementById('mk'),al=document.getElementById('al'),pk=document.getElementById('pk'),m=document.getElementById('maara');
@@ -203,10 +220,12 @@ ETUSUODATIN = """<script>
 (()=>{const q=document.getElementById('q'),mk=document.getElementById('mk'),al=document.getElementById('al'),pk=document.getElementById('pk'),m=document.getElementById('maara'),L=document.getElementById('lista'),B=document.getElementById('lisaa');
 let K=null,osumat=[],n=40;const tmp=document.createElement('div');
 const sopii=c=>{const s=q.value.trim().toLowerCase();return(!s||c.dataset.q.includes(s))&&(!mk.value||c.dataset.mk===mk.value)&&(!al.value||c.dataset.ala===al.value)&&(!pk.checked||c.dataset.pk==='sopii')};
-function piirra(){if(!K)return;osumat=K.filter(sopii);L.replaceChildren(...osumat.slice(0,n));m.textContent=osumat.length+' avointa hankintaa';B.style.display=osumat.length>n?'':'none'}
+function piirra(){if(!K)return;osumat=K.filter(sopii);L.replaceChildren(...osumat.slice(0,n));m.textContent=osumat.length+(osumat.length===1?' hankinta':' avointa hankintaa');B.style.display=osumat.length>n?'':'none'}
 function f(){n=40;piirra()}
 fetch('/kaikki.json').then(r=>r.json()).then(a=>{K=a.map(h=>{tmp.innerHTML=h;return tmp.firstElementChild});const u=new URLSearchParams(location.search);if(u.get('q'))q.value=u.get('q');piirra()});
-[q,mk,al,pk].forEach(x=>x.addEventListener('input',f));B.addEventListener('click',()=>{n+=40;piirra()});})();
+[q,mk,al,pk].forEach(x=>x.addEventListener('input',f));B.addEventListener('click',()=>{n+=40;piirra()});
+document.querySelectorAll('.pika button[data-ala]').forEach(b=>b.addEventListener('click',()=>{const on=al.value===b.dataset.ala;al.value=on?'':b.dataset.ala;document.querySelectorAll('.pika button[data-ala]').forEach(x=>x.classList.toggle('on',!on&&x===b));f()}));
+const pkb=document.getElementById('pkb');pkb.addEventListener('click',()=>{pk.checked=!pk.checked;pkb.classList.toggle('on',pk.checked);f()});})();
 </script>"""
 
 def hakupalkki(nayta_mk=True, nayta_ala=True):
@@ -231,13 +250,20 @@ def rakenna(ilm, tv):
     mk_n = {m: sum(1 for n in ilm if T(n).get("maakunta") == m) for m in MAAKUNNAT}
     al_n = {a: sum(1 for n in ilm if T(n)["ala"] == a) for a in ALAT}
     ruudut = lambda d, pre: "".join(f'<a href="/{pre}/{slug(k)}/">{k} <span>{v}</span></a>' for k, v in d.items() if v)
-    etusivu = (f'<section class="hero"><h1>Julkiset tarjouspyynnöt <em>selkokielellä</em> – löydä seuraava asiakkaasi.</h1>'
-               f'<p>Kunnat, kaupungit ja hyvinvointialueet ostavat joka viikko satoja palveluita ja tuotteita. {NIMI} kokoaa ne yhteen, kertoo selkokielellä mitä ostetaan ja merkitsee, mitkä sopivat pienelle yritykselle.</p>'
-               f'<div class="stat"><div><b>{len(ilm)}</b><span>avointa hankintaa</span></div><div><b>{vk}</b><span>uutta 7 päivässä</span></div><div><b>{sopii}</b><span>sopii pienyritykselle</span></div></div></section>'
-               + hakupalkki() + '<div class="lista" id="lista">' + "".join(kortti(n, T(n)) for n in ilm[:40]) + '</div><p style="text-align:center"><button id="lisaa" class="nappi" style="border:0;cursor:pointer;font:inherit;font-weight:700">Näytä lisää</button></p>'
-               + '<section class="vahti"><h2>Henkilökohtainen hälytys tulossa</h2><p>Kerro omin sanoin mitä yrityksesi tekee ja missä – tekoäly lähettää sinulle vain ne hankinnat, jotka oikeasti sopivat. Avataan pian.</p></section>'
-               + f'<section class="sec" id="alueet"><h2>Hankinnat maakunnittain</h2><div class="ruudut">{ruudut(mk_n, "maakunta")}</div></section>'
-               + f'<section class="sec"><h2>Hankinnat toimialoittain</h2><div class="ruudut">{ruudut(al_n, "ala")}</div></section>' + ETUSUODATIN)
+    PIKA = [("Rakentaminen", "Rakentaminen ja korjaus"), ("Sähkö & LVI", "Sähkö, LVI ja talotekniikka"), ("Siivous & kiinteistöt", "Kiinteistöhuolto ja siivous"),
+            ("Kuljetus", "Kuljetus ja logistiikka"), ("Ruoka", "Ruoka ja ateriapalvelut"), ("IT", "IT ja ohjelmistot"), ("Kalusteet", "Kalusteet ja tarvikkeet"),
+            ("Metsä & ympäristö", "Maa-, metsä- ja ympäristötyöt"), ("Konsultointi", "Konsultointi ja asiantuntijat"), ("Sote", "Sosiaali- ja terveyspalvelut")]
+    mksel = '<select id="mk" aria-label="Alue"><option value="">📍 Koko Suomi</option>' + "".join(f'<option>{m}</option>' for m in MAAKUNNAT) + "</select>"
+    etusivu = (f'<section class="hero yks-hero"><h1>Kunnat ostavat.<br><em>Sinä myyt.</em></h1>'
+               f'<p>Kaikki julkiset tarjouspyynnöt yhdessä paikassa, selkokielellä ja ilmaiseksi.</p></section>'
+               f'<div class="iso"><input id="q" type="search" placeholder="🔍 Mitä yrityksesi tekee?" aria-label="Mitä yrityksesi tekee?">{mksel}'
+               '<select id="al" hidden><option value=""></option>' + "".join(f'<option>{a}</option>' for a in ALAT) + '</select>'
+               '<div class="pika">' + "".join(f'<button type="button" data-ala="{e(v)}">{e(k)}</button>' for k, v in PIKA)
+               + '<button type="button" id="pkb" class="pk">✓ Vain pienelle sopivat</button></div><input id="pk" type="checkbox" hidden></div>'
+               f'<div class="maara" id="maara">{len(ilm)} avointa hankintaa</div>'
+               + '<div class="lista" id="lista">' + "".join(kortti(n, T(n)) for n in ilm[:40]) + '</div><p style="text-align:center"><button id="lisaa" class="nappi" style="border:0;cursor:pointer;font:inherit;font-weight:700">Näytä lisää</button></p>'
+               + '<section class="askeleet"><div><b>1</b>Kirjoita, mitä yrityksesi tekee</div><div><b>2</b>Valitse alue</div><div><b>3</b>Avaa hankinta ja jätä tarjous</div></section>'
+               + f'<details class="sec" id="alueet"><summary>Selaa alueittain ja toimialoittain</summary><h2>Maakunnat</h2><div class="ruudut">{ruudut(mk_n, "maakunta")}</div><h2>Toimialat</h2><div class="ruudut">{ruudut(al_n, "ala")}</div></details>' + ETUSUODATIN)
     (PUB / "kaikki.json").write_text(json.dumps([kortti(n, T(n)) for n in ilm], ensure_ascii=False))
     kirjoita("/", kehys(f"{NIMI} – julkiset tarjouspyynnöt selkokielellä pienyrittäjille",
                         f"{len(ilm)} avointa julkista hankintaa selkokielellä. Katso mitä kunnat ja hyvinvointialueet ostavat ja löydä sopivat tarjouspyynnöt pienyrityksellesi.", "/", etusivu,
