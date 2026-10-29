@@ -18,7 +18,7 @@ SAKKO_KK = 2
 
 
 KAUPPAKUVAT = {"kauppa-leipomo": "photo-1548228623-13e55dd16984", "kauppa-kasityo": "photo-1742386676097-a2a55fcdcc64"}
-HERO = "photo-1753351052617-62818ffc9173"
+HERO = "photo-1783949247747-210d1403da8a"
 
 
 def _demokortti(d):
@@ -138,7 +138,7 @@ def etusivu():
     kaupat = [d for d in DEMOT if d.get("tyyppi") == "kauppa"]
     leip = KAUPPAKUVAT["kauppa-leipomo"]
     runko = f"""
-<section class="hero"><div class="tausta"><img src="{UK(HERO, 1600)}" srcset="{SSK(HERO, (700, 1100, 1600, 2200))}" sizes="100vw" alt="Kahvilayrittäjät tiskinsä takana" fetchpriority="high"></div><div class="w">
+<section class="hero"><div class="tausta"><img src="{UK(HERO, 1600)}" srcset="{SSK(HERO, (700, 1100, 1600, 2200))}" sizes="100vw" alt="Tunnelmallinen kahvila" fetchpriority="high"></div><div class="w">
 <div><span class="kick"><i></i>Tehty Suomessa · vastaan itse puhelimeen</span>
 <h1>Nettisivut, jotka näyttävät <em>sinun</em> yritykseltäsi.</h1>
 <p class="l">Kauniit, nopeat ja helppokäyttöiset sivut valmiina muutamassa päivässä. Pystytys 0 €, ylläpito {HINTA_KK} €/kk. Sinä keskityt työhösi, minä hoidan loput.</p>
