@@ -108,9 +108,6 @@ form.lom input:focus,form.lom textarea:focus{outline:2px solid var(--a);border-c
 footer{background:#141210;color:#a49d92;padding:46px 0 110px;font-size:.92rem}
 footer .w{display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between}footer b{color:#fff;font-family:Fraunces,Georgia,serif;font-weight:500;font-size:1.3rem}
 footer a{color:#e8e2d6}
-.alapalkki{position:fixed;left:12px;right:12px;bottom:12px;z-index:30;display:none;gap:10px}
-.alapalkki a{flex:1;justify-content:center;box-shadow:0 10px 30px rgba(0,0,0,.25)}
-@media(max-width:760px){.alapalkki{display:flex}}
 .ilm{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease}.ilm.nak{opacity:1;transform:none}
 @media(prefers-reduced-motion:reduce){.hero img{animation:none}.ilm{opacity:1;transform:none}}
 """
@@ -170,5 +167,5 @@ def sivu(d, demo=True):
 <button class="btn" type="submit">Lähetä →</button><p class="pieni">Vastaamme yleensä saman päivän aikana.</p></form></div></div></section>
 <footer><div class="w"><div><b>{esc(nimi)}</b><br>{esc(d.get("osoite", ""))}<br>{esc(d.get("sposti", ""))}</div>
 <div style="text-align:right">© {esc(nimi)}<br>Sivusto: <a href="https://netvo.fi/">Netvo</a> · Kuvat: Unsplash</div></div></footer>
-<div class="alapalkki"><a class="btn" href="#yhteys">{esc(d.get("cta", "Ota yhteyttä"))}</a></div>
+
 <script>window.AUKI={json.dumps([[p, t] for p, t in ajat_rivit], ensure_ascii=False)};{JS}</script></body></html>"""
