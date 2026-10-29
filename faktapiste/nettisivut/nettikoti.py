@@ -128,7 +128,7 @@ footer.jalka{{background:#0f1014;color:#9a9ca3;text-align:center;padding:40px 16
 <p>Nettisivut ja verkkokaupat suomalaisille pienyrityksille.</p>
 <p style="font-size:1.05rem;color:#fff">Soita <a href="tel:{PUHELIN_TEL}"><b>{PUHELIN}</b></a> (arkisin 9–21) · {esc(YHTEYS)}</p>
 <p><a href="/ehdot/">Sopimusehdot</a> · Kuvat: Unsplash · Netvo on osa Faktapisteen palveluita.</p></footer>
-<script>(function(){{var o=new IntersectionObserver(function(es){{es.forEach(function(e){{if(e.isIntersecting){{e.target.classList.add('nak');o.unobserve(e.target)}}}})}},{{threshold:.1}});document.querySelectorAll('.ilm').forEach(function(x){{o.observe(x)}})}})();</script>
+<script>(function(){{var o=new IntersectionObserver(function(es){{es.forEach(function(e){{if(e.isIntersecting){{e.target.classList.add('nak');o.unobserve(e.target)}}}})}},{{threshold:.1}});document.querySelectorAll('.ilm').forEach(function(x){{o.observe(x)}});setTimeout(function(){{document.querySelectorAll('.ilm').forEach(function(x){{x.classList.add('nak')}})}},2500)}})();</script>
 <script src="https://kauppa.netvo.fi/tuki.js" defer></script>
 </body></html>"""
 

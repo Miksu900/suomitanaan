@@ -117,7 +117,7 @@ footer a{color:#e8e2d6}
 
 JS = """
 (function(){var o=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('nak');o.unobserve(e.target)}})},{threshold:.12});
-document.querySelectorAll('.ilm').forEach(function(x){o.observe(x)});
+document.querySelectorAll('.ilm').forEach(function(x){o.observe(x)});setTimeout(function(){document.querySelectorAll('.ilm').forEach(function(x){x.classList.add('nak')})},2500);
 var A=window.AUKI||[];var d=new Date(),wd=(d.getDay()+6)%7,h=d.getHours()+d.getMinutes()/60;
 var map={'ma':0,'ti':1,'ke':2,'to':3,'pe':4,'la':5,'su':6};function paivat(s){s=s.toLowerCase();var m=s.match(/^(ma|ti|ke|to|pe|la|su)(?:\\s*[–-]\\s*(ma|ti|ke|to|pe|la|su))?$/);if(!m)return null;var a=map[m[1]],b=m[2]?map[m[2]]:a,r=[];for(var i=a;i<=b;i++)r.push(i);return r}
 var auki=false,tunn=false;A.forEach(function(r,ix){var p=paivat(r[0]||'');if(!p||p.indexOf(wd)<0)return;tunn=true;var row=document.querySelectorAll('.ajat tr')[ix];if(row)row.classList.add('tanaan');var t=(r[1]||'').match(/(\\d{1,2})(?:[.:](\\d\\d))?\\s*[–-]\\s*(\\d{1,2})(?:[.:](\\d\\d))?/);if(t){var a=+t[1]+(+t[2]||0)/60,b=+t[3]+(+t[4]||0)/60;if(h>=a&&h<b)auki=true}});

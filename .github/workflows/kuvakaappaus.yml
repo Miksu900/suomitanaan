@@ -19,7 +19,10 @@ jobs:
               b = p.chromium.launch()
               for i, u in enumerate(os.environ["URLS"].split(), 1):
                   pg = b.new_page(viewport={"width": 390, "height": 844}, device_scale_factor=2)
-                  pg.goto(u, wait_until="networkidle"); pg.wait_for_timeout(1200)
+                  pg.goto(u, wait_until="networkidle"); pg.wait_for_timeout(800)
+                  hh = pg.evaluate("document.body.scrollHeight")
+                  for y in range(0, hh, 500): pg.evaluate(f"window.scrollTo(0,{y})"); pg.wait_for_timeout(120)
+                  pg.evaluate("window.scrollTo(0,0)"); pg.wait_for_timeout(2600)
                   pg.screenshot(path=f"out/{i}.png", full_page=False)
                   pg.screenshot(path=f"out/{i}-koko.png", full_page=True, clip=None)
               b.close()
