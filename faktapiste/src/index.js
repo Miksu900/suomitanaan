@@ -71,6 +71,7 @@ export default {
     const u = new URL(req.url);
     if (u.hostname === "www.faktapiste.fi") return Response.redirect("https://faktapiste.fi" + u.pathname + u.search, 301);
     if (u.hostname === "www.netvo.fi") return Response.redirect("https://netvo.fi" + u.pathname + u.search, 301);
+    if (u.pathname === "/api/kauppias") return kauppias(req, env);
     if (u.hostname === "netvo.fi") {
       const np = "/netvo" + (u.pathname === "/" ? "/" : u.pathname);
       return env.ASSETS.fetch(new Request(u.origin + np + u.search));
@@ -194,6 +195,78 @@ async function telegram(env, teksti) {
     await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, { method: "POST", headers: { "content-type": "application/json" },
       body: JSON.stringify({ chat_id: env.TG_CHAT, text: teksti.slice(0, 3900), disable_web_page_preview: true }) });
   } catch {}
+}
+
+// ---- Netvo "Puhuva kauppias": asiakas kysyy tai tilaa puhumalla, vastaus kauppiaan äänellä
+const KAUPPIAAT = {
+  "kauppa-leipomo": {
+    aani: "3OArekHEkHv5XvmZirVD",
+    kuvaus: `Olet Ville, Kotileipomo Ruis -nimisen pienen leipomon leipuri Ylivieskassa (kolmannen polven leipuri, sama juuri vuodesta 1962).
+Puhut lämpimästi, rennosti ja lyhyesti kevyellä pohjalaisella puhekielellä (esim. "mää", "sää", "ny", "kyllä se", "otappa"), mutta selkeästi niin että jokainen ymmärtää.
+Tuotteet (id: nimi, hinta, tiedot):
+1: Juurileipä (ruis) 4,50 € – hapanjuuri, 600 g, vegaaninen, laktoositon, maidoton
+2: Saaristolaisleipä 5,90 € – makeahko maltaileipä rusinoilla, 500 g, laktoositon
+3: Korvapuustit 6 kpl 7,90 € – suosituin, voi ja raesokeri; vehnä, maito, muna
+4: Karjalanpiirakat 10 kpl 8,50 € – laktoositon; munavoin kanssa
+5: Täytekakku tilauksesta alk. 35 € – 8/12/16 hlöä (35/45/59 €), täytteet mansikka-vanilja, suklaa-vadelma, kinuski-banaani, sitruuna-mustikka; gluteeniton +5 €; tilattava 3 vrk ennen
+6: Gluteenittomat kaurasämpylät 6 kpl 6,90 € – gluteeniton, laktoositon, vegaaninen, oma linja
+7: Mustikkapiirakka 12,90 € – sesonki, 8 palaa
+8: Lihapiirakka 3,20 € – kpl
+Toimitus: nouto leipomosta (Leipurinkuja 2, Ylivieska) ilmaiseksi tai kotiinkuljetus 4,90 € Ylivieskaan, Alavieskaan, Sieviin ja Nivalaan ma–la. Yli 35 € tilaukset ilmainen toimitus. Tilaa klo 20 mennessä, niin leivotaan aamuksi. Auki ma–pe 7–17, la 8–14, su kiinni. Viikkotilaus −10 %.`,
+  },
+};
+const kauppiasLaskuri = new Map();
+async function kauppias(req, env) {
+  const vas = (o, s = 200) => new Response(JSON.stringify(o), { status: s, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" } });
+  if (req.method !== "POST") return vas({ virhe: "POST" }, 405);
+  const ip = req.headers.get("cf-connecting-ip") || "?", nyt = Date.now();
+  const l = (kauppiasLaskuri.get(ip) || []).filter(t => nyt - t < 600000);
+  if (l.length >= 25) return vas({ vastaus: "Nyt tuli niin paljon kysymyksiä, että pidetään pieni tauko. Kokeile hetken päästä uudestaan!" });
+  l.push(nyt); kauppiasLaskuri.set(ip, l);
+  const d = await req.json().catch(() => ({}));
+  const k = KAUPPIAAT[d.kauppa];
+  if (!k) return vas({ virhe: "tuntematon kauppa" }, 404);
+  const viesti = puhdas(d.viesti).slice(0, 300);
+  if (!viesti) return vas({ virhe: "tyhjä" }, 400);
+  const historia = (Array.isArray(d.historia) ? d.historia : []).slice(-6).map(h => `${h.r === "a" ? "Asiakas" : "Sinä"}: ${puhdas(h.t).slice(0, 300)}`).join("\n");
+  const kori = (Array.isArray(d.kori) ? d.kori : []).slice(0, 20).map(x => `${+x.id} x${+x.q}`).join(", ") || "tyhjä";
+  const system = k.kuvaus + `
+
+Tehtäväsi: auta asiakasta verkkokaupassa. Asiakas puhuu sinulle ääneen (teksti on puheentunnistuksesta, voi sisältää pieniä virheitä).
+- Vastaa 1–3 lyhyellä lauseella (vastaus luetaan ääneen). Ei listoja, ei emojeita, ei markdownia. Kirjoita hinnat sanoina tai muodossa "7,90".
+- Jos asiakas haluaa tilata tai laittaa jotain koriin, lisää tuotteet "lisaa"-kenttään ja kerro mitä lisäsit. Älä lisää mitään, ellei asiakas pyydä.
+- Täytekakkua (id 5) ei lisätä suoraan: laita "avaa": 5, niin asiakas valitsee koon ja täytteen.
+- Kun suosittelet tuotteita, laita niiden id:t "nayta"-kenttään.
+- Jos asiakas haluaa maksaa tai mennä kassalle, laita "kassalle": true.
+- Älä keksi tuotteita, hintoja tai palveluita, joita ei ole listassa. Jos et tiedä, sano että asiakas voi soittaa 040 111 2233.
+- Pysy leipomon asioissa; muihin aiheisiin vastaa ystävällisesti, että autat vain leipomon tilauksissa.
+Asiakkaan nykyinen kori (id x määrä): ${kori}
+Palauta VAIN JSON: {"vastaus":"...","lisaa":[{"id":3,"q":2}],"nayta":[1],"avaa":null,"kassalle":false}`;
+  let o;
+  try { o = jsonista(await claude(env, system, (historia ? "Aiempi keskustelu:\n" + historia + "\n\n" : "") + "Asiakas: " + viesti, 400)); } catch (e) { o = null; }
+  if (!o || !o.vastaus) return vas({ vastaus: "Anteeks, nyt meni ohi korvien. Sanotko uuestaan?" });
+  const ok = new Set([1, 2, 3, 4, 5, 6, 7, 8]);
+  const tulos = {
+    vastaus: String(o.vastaus).slice(0, 400),
+    lisaa: (Array.isArray(o.lisaa) ? o.lisaa : []).filter(x => x && ok.has(+x.id) && +x.id !== 5).map(x => ({ id: +x.id, q: Math.max(1, Math.min(20, Math.round(+x.q || 1))) })),
+    nayta: (Array.isArray(o.nayta) ? o.nayta : []).map(Number).filter(i => ok.has(i)).slice(0, 4),
+    avaa: ok.has(+o.avaa) ? +o.avaa : null,
+    kassalle: !!o.kassalle,
+  };
+  if (env.ELEVENLABS_API_KEY && d.aani !== false) {
+    try {
+      const r = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${k.aani}?output_format=mp3_44100_64`, {
+        method: "POST", headers: { "xi-api-key": env.ELEVENLABS_API_KEY, "content-type": "application/json" },
+        body: JSON.stringify({ text: tulos.vastaus, model_id: "eleven_multilingual_v2", voice_settings: { stability: 0.45, similarity_boost: 0.8, style: 0.35, speed: 1.05 } }),
+      });
+      if (r.ok) {
+        const b = new Uint8Array(await r.arrayBuffer());
+        let s = ""; for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000));
+        tulos.aani = "data:audio/mpeg;base64," + btoa(s);
+      }
+    } catch {}
+  }
+  return vas(tulos);
 }
 
 // Äänestyssivun puolueittainen taulukko

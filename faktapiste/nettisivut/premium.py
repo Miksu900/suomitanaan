@@ -127,6 +127,9 @@ def leipomo(folder):
                 ["Voiko kakun saada gluteenittomana?", "Kyllä, valitse kakun tilauksessa gluteeniton (+5 €)."]],
         "contact": ["tilaukset@kotileipomoruis.fi", "040 111 2233"],
         "hours": [["Ma–Pe", 7, 17], ["La", 8, 14], ["Su", None, None]],
+        "kauppias": {"nimi": "Ville", "rooli": "Leipuri", "avatar": "👨‍🍳",
+                     "tervehdys": "Moi! Mää oon Ville, täällä leipomossa. Kysy vaikka mitä suosittelen kahvipöytään, tai sano suoraan mitä haluat, niin laitan sen koriin.",
+                     "vinkit": ["Mitä suosittelet 8 hengen kahvipöytään?", "Laita kaks korvapuustipakettia ja ruisleipä koriin", "Onko teillä gluteenittomia?", "Tuotteko Nivalaan?"]},
         "cake": {"sizes": [["8 hlöä", 3500], ["12 hlöä", 4500], ["16 hlöä", 5900]], "fill": ["Mansikka-vanilja", "Suklaa-vadelma", "Kinuski-banaani", "Sitruuna-mustikka"], "gf": 500},
     }
 
@@ -343,6 +346,8 @@ document.addEventListener('change',function(e){var t=e.target;if(t.id==='pg'){st
 document.addEventListener('input',function(e){if(e.target.id==='zip'&&C.bakery&&co.ship===1){var z=e.target.value.replace(/\D/g,'');e.target.value=z;var zn=zone(z),m=$('#zipmsg');m.className='small '+(zn?'okmsg':zn===false?'errmsg':'muted');m.textContent=zn?'✓ Toimitamme alueelle '+zn+'.':zn===false?'Emme vielä toimita tälle alueelle. Valitse nouto leipomosta.':'Toimitamme Ylivieskaan, Alavieskaan, Sieviin ja Nivalaan.'}if(e.target.id==='sq')search(e.target.value);if(e.target.id==='ctx')st.txt=e.target.value});
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeOv();if(e.key==='Enter'&&e.target.classList&&e.target.classList.contains('card'))openProduct(+e.target.dataset.id)});
 if(C.hours){var n=new Date(),d=n.getDay(),hh=n.getHours(),row=C.hours[d===0?2:d===6?1:0],open=row[1]!=null&&hh>=row[1]&&hh<row[2];$$('[data-open-now]').forEach(function(e){e.className='open-now'+(open?'':' closed');e.textContent=open?'Auki nyt – suljemme klo '+row[2]:'Suljettu nyt – tilaa verkosta valmiiksi'})}
+window.NV={P:P,cart:function(){return cart},img:img,eur:eur,kori:openCart,avaa:openProduct,kassa:function(){closeOv();openCo()},
+lisaa:function(id,q){var p=P.find(function(x){return x.id===id});if(!p)return;var l={id:id,c:0,s:null,g:false,x:'',u:p.price,q:q||1,cake:false},k=lineKey(l),r=cart.find(function(x){return lineKey(x)===k});if(r)r.q+=l.q;else cart.push(l);save();count()}};
 renderGrid();count()})();"""
 
 
@@ -380,10 +385,14 @@ def page(c):
     if ph.get("band"):
         bi, bh, bp = ph["band"]
         band = f'<section class="band" style="--bimg:url({U(bi, 2000)})"><div class="w"><h2>{esc(bh)}</h2><p>{esc(bp)}</p><a class="btn light" href="#tuotteet">Tutustu tuotteisiin →</a></div></section>'
+    kp_css = kp_intro = kp_pane = kp_js = ""
+    if c.get("kauppias"):
+        from .kauppias import lisaa as _kp
+        kp_css, kp_intro, kp_pane, kp_js = _kp(c["kauppias"], c["slug"])
     nl_style = f' style="--nimg:url({U(ph["nl"], 1600)})"' if ph.get("nl") else ""
     return f"""<!doctype html><html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>{esc(c['title'])}</title><meta name="description" content="{esc(c['meta'])}"><meta name="robots" content="noindex"><meta name="theme-color" content="{css['acc']}">
-<style>:root{{{root}}}{CSS}</style></head><body>
+<style>:root{{{root}}}{CSS}{kp_css}</style></head><body>
 <div class="demo">Tämä on Netvon <b>räätälöity verkkokauppa</b> -mallisivu. Kaikki toimii – tilauksia ei tehdä. <a href="https://netvo.fi/">Katso hinnat ja pyydä tarjous →</a></div>
 <div class="annc">Ilmainen toimitus yli {c['free'] // 100} € tilauksiin{' · Tilaa klo 20 mennessä, leivomme aamuksi' if c.get('bakery') else ' · Lahjapaketointi saatavilla'}</div>
 <header class="top"><div class="w bar"><div style="display:flex;align-items:center;gap:4px"><button class="ic burger" data-menu aria-label="Valikko">{I['menu']}</button>
@@ -392,7 +401,7 @@ def page(c):
 <div class="tools"><button class="ic" data-search aria-label="Hae">{I['search']}</button><button class="ic hide-m" aria-label="Suosikit" onclick="document.getElementById('tuotteet').scrollIntoView()">{I['heart']}<b class="cnt" data-fc hidden>0</b></button><button class="ic" data-cart aria-label="Ostoskori">{I['bag']}<b class="cnt" data-cc hidden>0</b></button></div></div></header>
 <section class="hero">{hero_img}<div class="w"><div class="in"><span class="kick">{esc(hero['kicker'])}</span><h1>{esc(hero['h'])}</h1><p>{esc(hero['p'])}</p>
 <a class="btn light" href="#tuotteet">{esc(hero['cta'])} →</a>{' <span data-open-now style="margin-left:16px;color:#fff"></span>' if c.get('hours') else ''}</div></div></section>
-<div class="usp">{''.join(f'<div><b>{esc(a)}</b><span>{esc(b)}</span></div>' for a, b in c['usp'])}</div>
+<div class="usp">{''.join(f'<div><b>{esc(a)}</b><span>{esc(b)}</span></div>' for a, b in c['usp'])}</div>{kp_intro}
 <section class="s"><div class="w"><div class="sh"><div><span class="eyebrow">Kategoriat</span><h2>Löydä suosikkisi</h2></div></div>
 <div class="tiles">{''.join(f'<button class="tile" data-cat="{esc(n)}"><img src="{im}" alt="" loading="lazy"><span>{esc(n)}</span></button>' for n, im in tiles)}</div></div></section>
 <section class="s" id="tuotteet" style="padding-top:20px;scroll-margin-top:80px"><div class="w"><div class="sh"><div><span class="eyebrow">Mallisto</span><h2>Kaikki tuotteet</h2></div><span class="muted" id="cnt"></span></div>
@@ -418,7 +427,7 @@ def page(c):
 <table class="sg" style="border-collapse:collapse;width:100%"><tr><th>Koko</th><th>Kenkäkoko</th><th>Jalan pituus</th></tr><tr><td>36–38</td><td>36–38</td><td>23–24,5 cm</td></tr><tr><td>39–41</td><td>39–41</td><td>25–26,5 cm</td></tr><tr><td>42–44</td><td>42–44</td><td>27–28,5 cm</td></tr><tr><td>45–47</td><td>45–47</td><td>29–30,5 cm</td></tr></table>
 <p class="muted small">Lapaset: S = naisten pieni, M = naisten / miesten pieni, L = miesten. Kokojen välissä? Valitse isompi – villa painuu käytössä.</p></div></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script>window.CFG={json.dumps(cfg, ensure_ascii=False).replace('</', '<\\/')};</script><script>{JS}</script></body></html>"""
+<script>window.CFG={json.dumps(cfg, ensure_ascii=False).replace('</', '<\\/')};</script><script>{JS}</script>{kp_pane}{kp_js}</body></html>"""
 
 
 def rakenna(root):
