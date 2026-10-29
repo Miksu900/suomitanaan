@@ -135,8 +135,8 @@ def sivu(d, demo=True):
     arvot = "".join(f'<figure class="arvo ilm" style="margin:0"><div class="t">★★★★★</div><p>”{esc(x["teksti"])}”</p><b>{esc(x["nimi"])}</b></figure>' for x in d.get("arvostelut", []))
     ajat_rivit = [(p, t) for p, t in d.get("aukiolo", []) if p]
     ajat = "".join(f"<tr><td>{esc(p)}</td><td>{esc(t)}</td></tr>" for p, t in ajat_rivit)
-    demo_html = ('<div class="demo">Tämä on Netvon <b>mallisivu</b>. Sinun sivusi tehdään samalla laadulla, omilla kuvillasi ja teksteilläsi. '
-                 '<a href="/">Katso hinta →</a></div>') if demo else ""
+    demo_html = ('<div class="demo">Tämä on Netvon <b>esimerkkisivu</b>. Jokainen sivu räätälöidään asiakkaan tarpeen mukaan – ei valmispohjia. '
+                 '<a href="/">Rakentaminen 0 € →</a></div>') if demo else ""
     return f"""<!doctype html><html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>{esc(nimi)} – {esc(d.get("ala", ""))} {esc(kaupunki)}</title><meta name="description" content="{esc(d.get("meta", nimi))}"><meta name="robots" content="noindex"><meta name="theme-color" content="{a}">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

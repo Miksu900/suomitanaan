@@ -393,7 +393,7 @@ def page(c):
     return f"""<!doctype html><html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>{esc(c['title'])}</title><meta name="description" content="{esc(c['meta'])}"><meta name="robots" content="noindex"><meta name="theme-color" content="{css['acc']}">
 <style>:root{{{root}}}{CSS}{kp_css}</style></head><body>
-<div class="demo">Tämä on Netvon <b>räätälöity verkkokauppa</b> -mallisivu. Kaikki toimii – tilauksia ei tehdä. <a href="https://netvo.fi/">Katso hinnat ja pyydä tarjous →</a></div>
+<div class="demo">Tämä on Netvon <b>esimerkkikauppa</b>. Jokainen kauppa räätälöidään asiakkaan tarpeen mukaan. Kaikki toimii – tilauksia ei tehdä. <a href="https://netvo.fi/">Rakentaminen 0 € →</a></div>
 <div class="annc">Ilmainen toimitus yli {c['free'] // 100} € tilauksiin{' · Tilaa klo 20 mennessä, leivomme aamuksi' if c.get('bakery') else ' · Lahjapaketointi saatavilla'} · <a href="tel:{c['contact'][1].replace(' ', '')}" style="color:inherit;font-weight:700;white-space:nowrap">📞 {esc(c['contact'][1])}</a></div>
 <header class="top"><div class="w bar"><div style="display:flex;align-items:center;gap:4px"><button class="ic burger" data-menu aria-label="Valikko">{I['menu']}</button>
 <nav class="main" aria-label="Valikko">{''.join(f'<a href="#tuotteet" data-cat="{esc(n)}">{esc(n)}</a>' for n in cats)}<a href="#tarina">Meistä</a></nav></div>

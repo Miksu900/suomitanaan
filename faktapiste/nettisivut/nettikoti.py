@@ -1,6 +1,6 @@
 """Netvo – myynti- ja ehtosivu sekä mallisivujen galleria. Oma brändi, erillään Faktapisteesta.
 
-Reiluus on kärki: selkeä hinta, oma domain asiakkaalle, keskeytys 2 kk maksulla, ei loukkua.
+Malli (29.10.2026): rakentaminen 0 € (jopa 1500 € arvosta), vain kuukausimaksu, ei sitoutumista, domain lunastettavissa 99 €.
 """
 import html, pathlib
 from .malli import sivu as mallisivu
@@ -13,9 +13,9 @@ SEURANTA = "<script async src=\"https://www.googletagmanager.com/gtag/js?id=AW-1
 PUHELIN = "044 777 7149"
 PUHELIN_TEL = "+358447777149"
 
-HINTA_KK = 25
-SITOUTUS = "12 tai 24 kuukautta"
-SAKKO_KK = 2
+HINTA_KK = 99        # nettisivut €/kk (sis. alv)
+KAUPPA_KK = 149      # verkkokauppa €/kk (sis. alv)
+LUNASTUS = 99        # verkkotunnuksen lunastus €
 
 
 KAUPPAKUVAT = {"kauppa-leipomo": "photo-1548228623-13e55dd16984", "kauppa-kasityo": "photo-1742386676097-a2a55fcdcc64"}
@@ -87,7 +87,7 @@ header.top{{position:sticky;top:0;z-index:20;background:rgba(250,247,242,.88);ba
 .mt{{display:block;padding:18px 20px 20px}}.mt b{{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:1.35rem;display:block}}.mt span{{color:var(--mute);font-size:.94rem;display:block}}.mt i{{font-style:normal;color:var(--p);font-weight:600;font-size:.92rem;display:block;margin-top:10px}}
 .askeleet{{display:grid;gap:22px;grid-template-columns:repeat(3,1fr)}}@media(max-width:820px){{.askeleet{{grid-template-columns:1fr}}}}
 .askel{{background:var(--card);border-radius:22px;padding:30px}}.askel .num{{font-family:Fraunces,Georgia,serif;font-size:3rem;color:var(--p);line-height:1;margin-bottom:12px}}.askel p{{color:var(--mute);margin:0}}
-.hinnat{{display:grid;gap:22px;grid-template-columns:repeat(3,1fr);align-items:stretch}}@media(max-width:900px){{.hinnat{{grid-template-columns:1fr}}}}
+.hinnat{{display:grid;gap:22px;grid-template-columns:repeat(2,1fr);align-items:stretch;max-width:880px;margin:0 auto}}@media(max-width:900px){{.hinnat{{grid-template-columns:1fr}}}}
 .hk{{background:var(--card);border-radius:24px;padding:32px;display:flex;flex-direction:column;border:1px solid var(--line)}}
 .hk.paras{{background:var(--ink);color:#fff;border:0;box-shadow:0 40px 70px -40px rgba(0,0,0,.6)}}.hk.paras .m{{color:#b9bcc4}}.hk.paras li::before{{color:#4ade80}}
 .hk .tag{{align-self:flex-start;font-size:.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:var(--soft);color:var(--ink);padding:5px 10px;border-radius:999px;margin-bottom:14px}}
@@ -140,85 +140,87 @@ def etusivu():
     leip = KAUPPAKUVAT["kauppa-leipomo"]
     runko = f"""
 <section class="hero"><div class="tausta"><img src="{UK(HERO, 1600)}" srcset="{SSK(HERO, (700, 1100, 1600, 2200))}" sizes="100vw" alt="Tunnelmallinen kahvila" fetchpriority="high"></div><div class="w">
-<div><span class="kick"><i></i>Tehty Suomessa · vastaan itse puhelimeen</span>
-<h1>Nettisivut, jotka näyttävät <em>sinun</em> yritykseltäsi.</h1>
-<p class="l">Kauniit, nopeat ja helppokäyttöiset sivut valmiina muutamassa päivässä. Pystytys 0 €, ylläpito {HINTA_KK} €/kk. Sinä keskityt työhösi, minä hoidan loput.</p>
-<div class="toim"><a class="nappi iso sin" href="#yhteys">Ota yhteyttä</a><a class="nappi iso toissij" href="#mallit">Katso mallisivut</a></div></div>
+<div><span class="kick"><i></i>Ei aloitusmaksua · ei sitoutumista</span>
+<h1>Saat jopa <em>1500 €</em> edestä työtä ilmaiseksi.</h1>
+<p class="l">Räätälöin yrityksesi nettisivut tai verkkokaupan alusta loppuun juuri sinun tarpeisiisi – maksutta. Ei valmispohjia. Maksat vain kuukausimaksun, ja voit lopettaa milloin tahansa.</p>
+<div class="toim"><a class="nappi iso sin" href="#yhteys">Ota yhteyttä</a><a class="nappi iso toissij" href="#mallit">Katso esimerkkejä</a></div></div>
 </div></section>
 
-<section class="osio alt" id="mallit"><div class="w"><div class="ots ilm"><span class="eb">Mallisivut</span><h2>Katso, miltä sivusi voisivat näyttää</h2><p>Avaa mikä tahansa malli. Sinun sivusi tehdään samalla laadulla, omilla kuvillasi, teksteilläsi ja väreilläsi.</p></div>
+<section class="osio alt" id="mallit"><div class="w"><div class="ots ilm"><span class="eb">Esimerkkejä</span><h2>Jokainen sivu tehdään juuri sinulle</h2><p>Ei valmispohjia: suunnittelen jokaisen sivun ja kaupan yrityksesi tarpeiden mukaan. Avaa esimerkki ja katso, millaista laatua saat – omilla kuvillasi, teksteilläsi ja väreilläsi.</p></div>
 <div class="galleria">{''.join(_demokortti(d) for d in palvelut + kaupat)}</div></div></section>
 
-<section class="osio"><div class="w"><div class="ots keski ilm" style="text-align:center"><span class="eb">Näin se toimii</span><h2>Valmista kolmessa askeleessa</h2></div><div class="askeleet">
+<section class="osio" id="ilmaiseksi"><div class="w"><div class="ots keski ilm" style="text-align:center"><span class="eb">Mitä saat ilmaiseksi</span><h2>Työ, josta muualla maksaisit 1000–1500 €</h2><p>Vastaavan sivuston teettäminen maksaa tyypillisesti yli 1000 €, verkkokauppa usein enemmän. Netvossa rakentaminen on aina 0 €.</p></div>
+<div class="ominais ilm" style="max-width:880px;margin:30px auto 0"><div><b>Räätälöity suunnittelu</b>Ei valmispohjia – ulkoasu ja toiminnot tehdään sinun tarpeisiisi.</div><div><b>Tekstit puolestasi</b>Sinun ei tarvitse kirjoittaa riviäkään.</div><div><b>Kuvat ja puhelinversio</b>Kauniit kuvat, toimii jokaisella laitteella.</div><div><b>Verkko-osoite ja julkaisu</b>Esim. yrityksesi.fi, valmiina nettiin.</div><div><b>Google-näkyvyyden perusta</b>Hakukoneystävälliset sivut alusta asti.</div><div><b>Verkkokauppaan tuotteet ja kassa</b>Lisään tuotteet ja kytken maksutavat.</div></div></div></section>
+
+<section class="osio alt"><div class="w"><div class="ots keski ilm" style="text-align:center"><span class="eb">Näin se toimii</span><h2>Valmista kolmessa askeleessa</h2></div><div class="askeleet">
 <div class="askel ilm"><div class="num">1</div><h3>Kerro yrityksestäsi</h3><p>Soitto tai viesti riittää: palvelut, yhteystiedot ja muutama kuva. Teksteistä ei tarvitse huolehtia.</p></div>
-<div class="askel ilm"><div class="num">2</div><h3>Minä teen sivut</h3><p>Rakennan sivut ja kirjoitan tekstit valmiiksi. Näet vedoksen ja saat muutokset mukaan.</p></div>
-<div class="askel ilm"><div class="num">3</div><h3>Sivut julkaistaan</h3><p>Sivut tulevat nettiin omalla verkkotunnuksellasi. Pidän ne pystyssä ja ajan tasalla.</p></div>
+<div class="askel ilm"><div class="num">2</div><h3>Minä räätälöin sivut</h3><p>Suunnittelen ja rakennan sivut tai kaupan juuri sinun tarpeisiisi ja kirjoitan tekstit. Näet vedoksen ja saat muutokset mukaan.</p></div>
+<div class="askel ilm"><div class="num">3</div><h3>Sivut julkaistaan</h3><p>Sivut tulevat nettiin omalla verkko-osoitteellasi. Pidän ne pystyssä ja ajan tasalla.</p></div>
 </div></div></section>
 
-<section class="osio alt" id="hinnat"><div class="w"><div class="ots keski ilm" style="text-align:center"><span class="eb">Hinnat</span><h2>Selkeä hinta, ei yllätyksiä</h2><p>Kaikki hinnat sisältävät alv:n. Ei pystytysmaksua, ei piilokuluja.</p></div>
+<section class="osio" id="hinnat"><div class="w"><div class="ots keski ilm" style="text-align:center"><span class="eb">Hinnat</span><h2>Kaksi selkeää hintaa</h2><p>Rakentaminen 0 €. Ei sitoutumista, ei aloitusmaksua, ei piilokuluja. Hinnat sisältävät alv:n.</p></div>
 <div class="hinnat">
-<div class="hk paras ilm"><span class="tag">Suosituin</span><h3>Nettisivut</h3><p class="m">Valmiit, kauniit sivut yrityksellesi.</p><div class="h">{HINTA_KK} €<small> / kk</small></div>
-<ul><li>Pystytys 0 €</li><li>Oma verkkotunnus sinun nimiisi</li><li>Hosting, varmuuskopiot ja tietoturva</li><li>Pienet muutokset hintaan sisältyen</li><li>Soitto- ja yhteydenottonapit</li></ul><a class="nappi" href="#yhteys">Pyydä sivut</a></div>
-<div class="hk ilm"><span class="tag">Verkkokauppa</span><h3>Kauppa Käyntiin</h3><p class="m">Rakennan ja ylläpidän kaupan puolestasi.</p><div class="h">99 €<small> / kk</small></div>
-<ul><li>Tuotteet, ostoskori ja kassa</li><li>Mikä tahansa suomalainen maksupalvelu</li><li>Tuki arkisin 9–21, vastaus 2 h</li><li>1 h muutoksia kuukaudessa</li></ul><a class="nappi toissij" href="mailto:{esc(YHTEYS)}?subject=Netvo%20-%20Kauppa%20K%C3%A4yntiin">Kysy lisää</a></div>
-<div class="hk ilm"><span class="tag">Tee itse</span><h3>Netvo Kauppa</h3><p class="m">Valmis alusta, lisäät tuotteet itse.</p><div class="h">29 €<small> / kk</small></div>
-<ul><li>14 päivää ilmaiseksi</li><li>Oma ulkoasu ja tuotteet</li><li>Suomalaiset maksutavat</li></ul><a class="nappi toissij" href="https://kauppa.netvo.fi/">Kokeile ilmaiseksi</a></div>
-</div></div></section>
+<div class="hk paras ilm"><span class="tag">Nettisivut</span><h3>Nettisivut</h3><p class="m">Rakentaminen 0 € – yli 1000 €:n arvosta.</p><div class="h">{HINTA_KK} €<small> / kk</small></div>
+<ul><li>Räätälöity suunnittelu, ei valmispohjia</li><li>Tekstit kirjoitettuna puolestasi</li><li>Verkko-osoite, hosting ja tietoturva</li><li>Varmuuskopiot ja päivitykset</li><li>Sisältömuutokset hintaan sisältyen</li><li>Soitto- ja yhteydenottonapit</li><li>Lopeta milloin tahansa</li></ul><a class="nappi" href="#yhteys">Pyydä sivut</a></div>
+<div class="hk ilm"><span class="tag">Verkkokauppa</span><h3>Verkkokauppa</h3><p class="m">Rakentaminen 0 € – jopa 1500 €:n arvosta.</p><div class="h">{KAUPPA_KK} €<small> / kk</small></div>
+<ul><li>Räätälöity kauppa, ei valmispohjia</li><li>Tuotteet, ostoskori ja kassa</li><li>Suomalaiset maksutavat, rahat suoraan sinulle</li><li>Toimitustavat ja tilausten hallinta</li><li>Muutokset ja tuki arkisin 9–21</li><li>Lopeta milloin tahansa</li></ul><a class="nappi toissij" href="#yhteys">Pyydä kauppa</a></div>
+</div><p class="ilm" style="text-align:center;color:var(--mute);font-size:.9rem;margin-top:18px">Verkkokaupassa maksupalvelu (esim. Paytrail tai MobilePay) veloittaa omat kulunsa suoraan.</p></div></section>
 
-<section class="osio" id="raataloity"><div class="w raat"><div class="kuva ilm"><img src="{UK(leip, 900, 1125)}" srcset="{SSK(leip, (500, 900, 1300), 1.25)}" sizes="(max-width:900px) 100vw, 48vw" alt="Tuoreita leipiä" loading="lazy"></div>
-<div class="ilm"><span class="eb">Räätälöity verkkokauppa</span><h2>Kauppa, joka myy tunnelmalla</h2><p class="lead" style="color:var(--mute);font-size:1.08rem">Isompiin tarpeisiin rakennan kaupan alusta asti juuri sinun yrityksellesi. Rakentaminen kertahintaan tarjouksen mukaan, ylläpito sen jälkeen 29 €/kk. Räätälöityyn kauppaan voi lisätä esimerkiksi:</p>
-<div class="ominais"><div><b>Nouto- ja toimitusajat</b>Asiakas valitsee ajan, esim. "huomenna 7–9".</div><div><b>Kotiinkuljetus alueittain</b>Postinumeroalueet ja omat hinnat.</div><div><b>Tuotteen räätälöinti</b>Kakkutoiveet, kaiverrukset, koot ja värit.</div><div><b>Lahjakortit ja koodit</b>Myy lahjakortteja ja tee kampanjoita.</div><div><b>Kanta-asiakasedut</b>Pisteet tai joka 10. ostos edullisemmin.</div><div style="grid-column:1/-1;background:var(--ink,#2b1d14);color:#fff"><b style="color:#ffd27a">🎙️ Uutuus: Puhuva kauppias</b>Asiakas tilaa puhumalla, ja tekoäly vastaa <u>sinun omalla äänelläsi</u>. <a href="/mallit/kauppa-leipomo/" style="color:#ffd27a;font-weight:700"> Kokeile leipomon mallikaupassa →</a></div></div>
-<a class="nappi sin" href="/mallit/kauppa-leipomo/" target="_blank" rel="noopener">Katso leipomon mallikauppa →</a></div></div></section>
+<section class="osio alt" id="raataloity"><div class="w raat"><div class="kuva ilm"><img src="{UK(leip, 900, 1125)}" srcset="{SSK(leip, (500, 900, 1300), 1.25)}" sizes="(max-width:900px) 100vw, 48vw" alt="Tuoreita leipiä" loading="lazy"></div>
+<div class="ilm"><span class="eb">Räätälöity verkkokauppa</span><h2>Kauppa, joka myy tunnelmalla</h2><p class="lead" style="color:var(--mute);font-size:1.08rem">Jokainen kauppa rakennetaan alusta asti juuri sinun yrityksesi tarpeisiin. Kauppaan voi lisätä esimerkiksi:</p>
+<div class="ominais"><div><b>Nouto- ja toimitusajat</b>Asiakas valitsee ajan, esim. "huomenna 7–9".</div><div><b>Kotiinkuljetus alueittain</b>Postinumeroalueet ja omat hinnat.</div><div><b>Tuotteen räätälöinti</b>Kakkutoiveet, kaiverrukset, koot ja värit.</div><div><b>Lahjakortit ja koodit</b>Myy lahjakortteja ja tee kampanjoita.</div><div><b>Kanta-asiakasedut</b>Pisteet tai joka 10. ostos edullisemmin.</div><div style="grid-column:1/-1;background:var(--ink,#2b1d14);color:#fff"><b style="color:#ffd27a">🎙️ Uutuus: Puhuva kauppias</b>Asiakas tilaa puhumalla, ja tekoäly vastaa <u>sinun omalla äänelläsi</u>. <a href="/mallit/kauppa-leipomo/" style="color:#ffd27a;font-weight:700"> Kokeile leipomon esimerkkikaupassa →</a></div></div>
+<a class="nappi sin" href="/mallit/kauppa-leipomo/" target="_blank" rel="noopener">Katso esimerkkikauppa →</a></div></div></section>
 
-<section class="osio reilu"><div class="w"><div class="ots ilm"><span class="eb">Reilut ehdot</span><h2>Ei loukkuja, ei pientä pränttiä</h2><p style="color:#c9ccd3">Moni "ilmainen sivu" -palvelu sitoo asiakkaan. Netvossa reiluus on lupaus.</p></div>
+<section class="osio reilu"><div class="w"><div class="ots ilm"><span class="eb">Reilut ehdot</span><h2>Ei sitoutumista. Ei pientä pränttiä.</h2><p style="color:#c9ccd3">Riski on minun, ei sinun. Jos et ole tyytyväinen, voit lopettaa milloin vain.</p></div>
 <div class="ruudut">
-<div class="r ilm"><h3>Oma verkkotunnus</h3><p>Verkkotunnus rekisteröidään sinun yrityksesi nimiin. Se on sinun.</p></div>
-<div class="r ilm"><h3>Peru milloin vain</h3><p>Kesken sitoutumisajan lopettaminen maksaa vain {SAKKO_KK} kuukauden maksun. Ei muuta.</p></div>
-<div class="r ilm"><h3>Ei kallistumista</h3><p>Sitoutumisajan jälkeen hinta pysyy samana, kuukausi kerrallaan.</p></div>
-<div class="r ilm"><h3>Hinta etukäteen</h3><p>Kerron kaiken ennen kuin sitoudut mihinkään.</p></div>
+<div class="r ilm"><h3>Rakentaminen 0 €</h3><p>Et maksa sivujen tai kaupan tekemisestä mitään.</p></div>
+<div class="r ilm"><h3>Lopeta milloin tahansa</h3><p>Ei sitoutumisaikaa eikä irtisanomismaksua. Kuukausi kerrallaan.</p></div>
+<div class="r ilm"><h3>Osoite lunastettavissa</h3><p>Verkko-osoitteen voi lunastaa itselleen milloin vain {LUNASTUS} €:lla.</p></div>
+<div class="r ilm"><h3>Hinta etukäteen</h3><p>Kaksi hintaa, ei yllätyksiä eikä piilokuluja.</p></div>
 </div><p style="margin-top:26px"><a href="/ehdot/" style="color:var(--kulta);font-weight:600">Lue tarkat sopimusehdot →</a></p></div></section>
 
 <section class="osio"><div class="w"><div class="tekija ilm"><div class="av">M</div><div><p class="q">”Hoidan jokaisen asiakkaan sivut alusta loppuun ja vastaan puhelimeen itse. Kun soitat, puhut sen kanssa, joka sivustasi oikeasti vastaa.”</p><p><b style="color:var(--ink)">Miika Koskela</b>, Netvo · Ylivieska</p></div></div></div></section>
 
 <section class="osio alt" id="ukk"><div class="w"><div class="ots keski ilm" style="text-align:center"><span class="eb">Kysyttyä</span><h2>Usein kysyttyä</h2></div><div class="ukk">
-<details><summary>Onko pystytys oikeasti ilmainen?</summary><p>Kyllä. Et maksa sivujen tekemisestä mitään. Kuukausimaksu kattaa verkkotunnuksen, hostingin, ylläpidon ja pienet muutokset.</p></details>
-<details><summary>Omistanko verkkotunnuksen itse?</summary><p>Kyllä. Verkkotunnus rekisteröidään sinun yrityksesi nimiin, ja se on sinun.</p></details>
-<details><summary>Mitä jos haluan lopettaa?</summary><p>Voit perua milloin vain. Kesken sitoutumisajan maksat vain {SAKKO_KK} kuukauden maksua vastaavan summan. Sitoutumisajan jälkeen voit lopettaa ilman erillistä maksua.</p></details>
+<details><summary>Onko rakentaminen oikeasti ilmainen?</summary><p>Kyllä. Et maksa sivujen tai kaupan tekemisestä mitään. Maksat vain kuukausimaksun: nettisivut {HINTA_KK} €/kk tai verkkokauppa {KAUPPA_KK} €/kk.</p></details>
+<details><summary>Onko sitoutumisaikaa?</summary><p>Ei. Voit lopettaa milloin tahansa, eikä lopettamisesta peritä maksua. Palvelu päättyy maksetun kuukauden lopussa.</p></details>
+<details><summary>Kenen nimissä verkko-osoite on?</summary><p>Verkko-osoite rekisteröidään Netvon nimiin. Voit lunastaa sen itsellesi milloin tahansa {LUNASTUS} €:lla, ja siirrän sen sinulle viikon sisällä maksusta.</p></details>
+<details><summary>Milloin maksan ensimmäisen kerran?</summary><p>Ensimmäinen kuukausi maksetaan, kun olet hyväksynyt vedoksen ja ennen kuin sivut julkaistaan. Sen jälkeen lasku tulee kuukausittain.</p></details>
+<details><summary>Käytätkö valmispohjia?</summary><p>En. Jokainen nettisivu ja verkkokauppa räätälöidään asiakkaan tarpeen mukaan: ulkoasu, rakenne ja toiminnot suunnitellaan juuri sinun yrityksellesi.</p></details>
 <details><summary>Voinko käyttää omia kuvia?</summary><p>Totta kai, ja se on suositeltavaa: omat kuvat tekevät sivuista aidon näköiset. Jos kuvia ei ole, valitaan yhdessä laadukkaat kuvapankkikuvat.</p></details>
-<details><summary>Voinko muuttaa sisältöä myöhemmin?</summary><p>Kyllä. Pienet muutokset, kuten aukioloajat, hinnat tai yhteystiedot, sisältyvät kuukausihintaan. Lähetät vain viestin.</p></details>
 <details><summary>Kauanko tekeminen kestää?</summary><p>Yleensä muutaman päivän siitä, kun olet toimittanut tietosi. Näet vedoksen ennen julkaisua.</p></details>
 </div></div></section>
 
-<section class="osio" id="yhteys"><div class="w"><div class="cta ilm"><h2>Hanki sivut yrityksellesi</h2><p>Soita yläkulman numeroon tai lähetä viesti. Kerron hinnat ja aikataulun, eikä mitään tarvitse päättää heti.</p>
+<section class="osio" id="yhteys"><div class="w"><div class="cta ilm"><h2>Hanki sivut tai kauppa ilmaiseksi</h2><p>Soita yläkulman numeroon tai lähetä viesti. Rakentaminen on 0 €, eikä mitään tarvitse päättää heti.</p>
 <div class="toim" style="justify-content:center"><a class="nappi iso" href="mailto:{esc(YHTEYS)}?subject=Netvo%20-%20nettisivut%20yritykselleni">Lähetä sähköposti</a></div>
 <p style="margin:20px auto 0;font-size:.95rem">Arkisin 9–21 · {esc(YHTEYS)} · voit kysyä myös chatissa</p></div></div></section>
 """
-    return _sivu("Netvo – kauniit nettisivut yrityksellesi, pystytys 0 €",
-                 "Kauniit, nopeat ja helppokäyttöiset nettisivut suomalaisille yrityksille. Pystytys 0 €, ylläpito 25 €/kk, oma verkkotunnus, reilut ehdot.", runko)
+    return _sivu("Netvo – nettisivut ja verkkokauppa ilmaiseksi rakennettuna, ei sitoutumista",
+                 f"Saat jopa 1500 € edestä työtä ilmaiseksi: Netvo räätälöi yrityksesi nettisivut tai verkkokaupan maksutta, ilman valmispohjia. Nettisivut {HINTA_KK} €/kk, verkkokauppa {KAUPPA_KK} €/kk, ei sitoutumista.", runko)
 
 
 def ehtosivu():
     runko = f"""<section class="osio"><div class="w teksti">
 <h1>Sopimusehdot</h1>
-<p style="color:var(--mute)">Nämä ehdot kuvaavat Netvo-palvelun sisällön ja hinnoittelun selkeästi ja reilusti. Ehdot täydentyvät tilauksen yhteydessä.</p>
-<h2>1. Palvelun sisältö</h2>
-<p>Nämä ehdot koskevat Netvon nettisivuja ja Kauppa Käyntiin -verkkokauppaa. Itse tehtävän Netvo Kauppa -alustan ehdot: <a href="https://kauppa.netvo.fi/ehdot">kauppa.netvo.fi/ehdot</a>. Netvo rakentaa Kuukausimaksu sisältää verkkotunnuksen, hostingin, varmuuskopiot, tietoturvan, yhteydenottolomakkeen ja pienet sisältömuutokset (kuten aukioloajat, hinnat ja yhteystiedot).</p>
+<p style="color:var(--mute)">Nämä ehdot kuvaavat Netvo-palvelun sisällön ja hinnoittelun selkeästi ja reilusti. Ehdot ovat voimassa 29.10.2026 alkaen.</p>
+<h2>1. Palvelut</h2>
+<p>Netvolla on kaksi palvelua: <b>Nettisivut</b> ja <b>Verkkokauppa</b>. Netvo rakentaa sivut tai kaupan asiakkaan puolesta ja ylläpitää niitä. Kuukausimaksuun sisältyvät verkko-osoite, hosting, varmuuskopiot, tietoturva, päivitykset ja sisältömuutokset (kuten aukioloajat, hinnat, yhteystiedot ja tuotteet).</p>
 <h2>2. Hinta</h2>
-<p>Sivujen pystytys on maksuton. Kuukausihinnat (sis. alv): nettisivut {HINTA_KK} € ja Kauppa Käyntiin -verkkokauppa 99 € (me rakennamme ja ylläpidämme) sekä räätälöidyn verkkokaupan ylläpito 29 € (räätälöinnin kertahinta sovitaan tarjouksessa). Hinta kerrotaan selkeästi ennen sopimuksen tekoa, eikä piilokuluja ole. Laskutus kuukausittain laskulla; palvelun tuottaa ja laskuttaa Taksiliikenne Koskela Oy, palvelun nimi Netvo.</p>
-<h2>3. Sitoutumisaika</h2>
-<p>Asiakas valitsee sitoutumisajaksi {SITOUTUS}. Sitoutumisajan jälkeen sopimus jatkuu samalla hinnalla toistaiseksi, kuukauden irtisanomisajalla. Hinta ei nouse automaattisesti sitoutumisajan päättyessä.</p>
-<h2>4. Palvelun keskeyttäminen kesken sitoutumisajan</h2>
-<p>Asiakas voi lopettaa palvelun milloin tahansa myös kesken sitoutumisajan. Tällöin asiakas maksaa keskeytyksestä {SAKKO_KK} kuukauden maksua vastaavan summan, ei enempää. Tämä korvaa jäljellä olevan sitoutumisajan. Mitään muuta maksua ei peritä.</p>
-<h2>5. Verkkotunnus</h2>
-<p>Verkkotunnus (domain) rekisteröidään asiakkaan tai asiakkaan yrityksen nimiin, ja se on asiakkaan omaisuutta. Sopimuksen päättyessä asiakas voi siirtää verkkotunnuksen toiselle palveluntarjoajalle.</p>
+<p>Sivujen ja kaupan rakentaminen on maksutonta. Kuukausihinnat (sis. alv): Nettisivut {HINTA_KK} € ja Verkkokauppa {KAUPPA_KK} €. Verkkokaupassa asiakas tekee sopimuksen haluamansa maksupalvelun kanssa suoraan; maksupalvelu veloittaa omat kulunsa, ja myyntitulot menevät suoraan asiakkaalle. Muita kuluja ei ole. Laskutus kuukausittain laskulla; palvelun tuottaa ja laskuttaa Taksiliikenne Koskela Oy, palvelun nimi Netvo.</p>
+<h2>3. Laskutus ja julkaisu</h2>
+<p>Asiakas näkee vedoksen ennen julkaisua. Ensimmäinen kuukausi maksetaan, kun asiakas on hyväksynyt vedoksen, ja sivut julkaistaan maksun jälkeen. Sen jälkeen palvelu laskutetaan kuukausi kerrallaan etukäteen.</p>
+<h2>4. Ei sitoutumista</h2>
+<p>Sopimus on voimassa toistaiseksi ilman sitoutumisaikaa. Asiakas voi lopettaa palvelun milloin tahansa ilmoittamalla siitä sähköpostilla tai puhelimella. Palvelu päättyy maksetun kuukauden lopussa. Lopettamisesta ei peritä maksua.</p>
+<h2>5. Verkko-osoite</h2>
+<p>Verkko-osoite (domain) rekisteröidään Netvon nimiin, ja Netvo maksaa sen vuosimaksut palvelun ajan. Asiakas voi lunastaa verkko-osoitteen itselleen milloin tahansa {LUNASTUS} €:lla (sis. alv). Netvo tekee haltijanvaihdon viikon sisällä maksusta. Jos asiakas lopettaa palvelun eikä lunasta osoitetta, osoite jää Netvolle.</p>
 <h2>6. Sivujen sisältö ja vastuu</h2>
-<p>Asiakas vastaa toimittamiensa tietojen ja kuvien oikeellisuudesta ja siitä, että niillä on oikeus julkaista ne. Netvo vastaa sivujen teknisestä toiminnasta ja ylläpidosta.</p>
+<p>Asiakas vastaa toimittamiensa tietojen, tuotetietojen ja kuvien oikeellisuudesta ja siitä, että niillä on oikeus julkaista ne. Verkkokaupassa asiakas vastaa myymistään tuotteista ja kuluttajansuojan velvoitteista. Netvo vastaa sivujen teknisestä toiminnasta ja ylläpidosta.</p>
 <h2>7. Sopimuksen päättyminen</h2>
-<p>Sopimuksen päättyessä sivut poistetaan verkosta. Asiakas voi halutessaan pyytää sivujen sisällön itselleen. Verkkotunnus jää asiakkaalle.</p>
+<p>Sopimuksen päättyessä sivut poistetaan verkosta. Asiakas voi halutessaan pyytää sivujen tekstit ja kuvat itselleen. Verkko-osoite siirtyy asiakkaalle, jos hän on lunastanut sen.</p>
 <p style="color:var(--mute);margin-top:30px">Kysymyksiä ehdoista? Ota yhteyttä: {esc(YHTEYS)}</p>
 <p class="keskita"><a class="nappi" href="/">← Takaisin etusivulle</a></p>
 </div></section>"""
-    return _sivu("Sopimusehdot – Netvo", "Netvo-palvelun selkeät ja reilut sopimusehdot: hinta, sitoutumisaika ja keskeytys.", runko)
+    return _sivu("Sopimusehdot – Netvo", "Netvo-palvelun selkeät ja reilut sopimusehdot: rakentaminen 0 €, kuukausihinta, ei sitoutumista.", runko)
 
 
 def rakenna_nettikoti(root):
