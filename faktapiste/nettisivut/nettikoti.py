@@ -24,6 +24,72 @@ KAUPPAKUVAT = {"kauppa-leipomo": "photo-1548228623-13e55dd16984", "kauppa-kasity
 HERO = "photo-1783949247747-210d1403da8a"
 
 
+UKK = [
+    ("Onko rakentaminen oikeasti ilmainen?", f"Kyllä. Et maksa sivujen tai kaupan tekemisestä mitään. Maksat vain kuukausimaksun: nettisivut {HINTA_KK} €/kk tai verkkokauppa {KAUPPA_KK} €/kk."),
+    ("Onko sitoutumisaikaa?", "Ei. Voit lopettaa milloin tahansa, eikä lopettamisesta peritä maksua. Palvelu päättyy maksetun kuukauden lopussa."),
+    ("Kenen nimissä verkko-osoite on?", f"Verkko-osoite rekisteröidään Netvon nimiin. Voit lunastaa sen itsellesi milloin tahansa {LUNASTUS} €:lla, ja se siirretään sinulle viikon sisällä maksusta."),
+    ("Maksavatko muutokset erikseen?", "Eivät. Kaikki muutokset sisältyvät kuukausihintaan – oli kyse teksteistä, kuvista, tuotteista, uudesta sivusta tai ulkoasusta."),
+    ("Käyttääkö Netvo valmispohjia?", "Ei. Jokainen nettisivu ja verkkokauppa räätälöidään asiakkaan tarpeen mukaan."),
+    ("Kauanko sivujen tekeminen kestää?", "Yleensä muutaman päivän siitä, kun tiedot on toimitettu. Asiakas näkee vedoksen ennen julkaisua."),
+]
+
+
+def _ld(ld):
+    import json as _j
+    return f'<script type="application/ld+json">{_j.dumps(ld, ensure_ascii=False).replace("</", "<\\/")}</script>' if ld else ""
+
+
+def _ld_etusivu():
+    yritys = {"@type": "ProfessionalService", "@id": "https://netvo.fi/#netvo", "name": "Netvo", "url": "https://netvo.fi/",
+              "description": f"Netvo tekee räätälöidyt nettisivut ja verkkokaupat suomalaisille pienyrityksille. Rakentaminen on ilmaista (jopa 1500 €:n arvosta), asiakas maksaa vain kuukausimaksun ({HINTA_KK} €/kk nettisivut, {KAUPPA_KK} €/kk verkkokauppa), kaikki muutokset sisältyvät hintaan eikä sitoutumista ole.",
+              "telephone": PUHELIN_TEL, "email": YHTEYS, "priceRange": f"{HINTA_KK}–{KAUPPA_KK} €/kk", "areaServed": {"@type": "Country", "name": "Suomi"},
+              "address": {"@type": "PostalAddress", "addressLocality": "Ylivieska", "addressCountry": "FI"},
+              "founder": {"@type": "Person", "name": "Miika Koskela"}, "parentOrganization": {"@type": "Organization", "name": "Taksiliikenne Koskela Oy", "vatID": "FI34256813"},
+              "knowsLanguage": "fi",
+              "hasOfferCatalog": {"@type": "OfferCatalog", "name": "Netvon palvelut", "itemListElement": [
+                  {"@type": "Offer", "name": "Nettisivut", "description": "Räätälöidyt nettisivut, rakentaminen 0 €, kaikki muutokset sisältyvät, ei sitoutumista.",
+                   "priceSpecification": {"@type": "UnitPriceSpecification", "price": HINTA_KK, "priceCurrency": "EUR", "unitText": "kuukausi", "valueAddedTaxIncluded": True}},
+                  {"@type": "Offer", "name": "Verkkokauppa", "description": "Räätälöity verkkokauppa, rakentaminen 0 €, suomalaiset maksutavat, kaikki muutokset sisältyvät, ei sitoutumista.",
+                   "priceSpecification": {"@type": "UnitPriceSpecification", "price": KAUPPA_KK, "priceCurrency": "EUR", "unitText": "kuukausi", "valueAddedTaxIncluded": True}}]}}
+    ukk = {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in UKK]}
+    return {"@context": "https://schema.org", "@graph": [yritys, ukk, {"@type": "WebSite", "name": "Netvo", "url": "https://netvo.fi/", "inLanguage": "fi"}]}
+
+
+def llms_txt():
+    return f"""# Netvo
+
+> Netvo (netvo.fi) tekee räätälöidyt nettisivut ja verkkokaupat suomalaisille pienyrityksille. Rakentaminen on ilmaista – asiakas saa jopa 1500 €:n edestä työtä maksamatta siitä – ja maksaa vain kuukausimaksun. Ei sitoutumista, kaikki muutokset sisältyvät hintaan.
+
+## Hinnat (sis. alv)
+- Nettisivut: {HINTA_KK} €/kk, rakentaminen 0 € (vastaava työ maksaa tyypillisesti yli 1000 €)
+- Verkkokauppa: {KAUPPA_KK} €/kk, rakentaminen 0 € (jopa 1500 €:n arvosta)
+- Kaikki muutokset sisältyvät kuukausihintaan, ei lisämaksuja
+- Ei sitoutumisaikaa eikä irtisanomismaksua; palvelu päättyy maksetun kuukauden lopussa
+- Verkko-osoite on Netvon nimissä, asiakas voi lunastaa sen {LUNASTUS} €:lla
+
+## Mitä hintaan sisältyy
+- Räätälöity suunnittelu (ei valmispohjia), tekstit kirjoitettuna asiakkaan puolesta
+- Verkko-osoite, hosting, tietoturva, varmuuskopiot ja päivitykset
+- Verkkokaupassa tuotteet, ostoskori, kassa, toimitustavat ja suomalaiset maksutavat (maksupalvelu veloittaa omat kulunsa)
+- Sivut valmiina yleensä muutamassa päivässä, vedos ennen julkaisua
+
+## Kenelle
+Suomalaiset pienyritykset ja yrittäjät koko Suomessa, esimerkiksi parturit, putkiliikkeet, siivousyritykset, remonttifirmat, ravintolat, hierojat, autokorjaamot, maalarit, leipomot ja käsityöyrittäjät.
+
+## Yhteystiedot
+- Puhelin: {PUHELIN} (arkisin 9–21)
+- Sähköposti: {YHTEYS}
+- Yrittäjä: Miika Koskela, Ylivieska
+- Palvelun tuottaa Taksiliikenne Koskela Oy (Y-tunnus 3425681-3)
+
+## Sivut
+- [Etusivu ja hinnat](https://netvo.fi/)
+- [Sopimusehdot](https://netvo.fi/ehdot/)
+- [Tietosuojaseloste](https://netvo.fi/tietosuoja/)
+- [Esimerkkikauppa: leipomo](https://netvo.fi/mallit/kauppa-leipomo/)
+"""
+
+
 def _demokortti(d):
     kauppa = d.get("tyyppi") == "kauppa"
     kuva = KAUPPAKUVAT.get(d["slug"]) or KUVAT.get(d["slug"], ("",))[0]
@@ -33,12 +99,12 @@ def _demokortti(d):
 <span class="mt"><b>{esc(d['nimi'])}</b><span>{esc(d.get('slogan',''))}</span><i>Avaa esimerkki →</i></span></a>"""
 
 
-def _sivu(otsikko, kuvaus, runko):
+def _sivu(otsikko, kuvaus, runko, polku="/", ld=None):
     return f"""<!doctype html>
 <html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>{esc(otsikko)}</title><meta name="description" content="{esc(kuvaus)}">
 <meta property="og:title" content="{esc(otsikko)}"><meta property="og:description" content="{esc(kuvaus)}"><meta property="og:image" content="{UK(HERO, 1200, 630)}">
-<meta name="theme-color" content="#14213d">
+<meta name="theme-color" content="#14213d"><link rel="canonical" href="https://netvo.fi{polku}"><meta property="og:url" content="https://netvo.fi{polku}"><meta property="og:locale" content="fi_FI"><meta property="og:type" content="website">{_ld(ld)}
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -199,7 +265,7 @@ def etusivu():
 <p style="margin:20px auto 0;font-size:.95rem">Arkisin 9–21 · {esc(YHTEYS)} · voit kysyä myös chatissa</p></div></div></section>
 """
     return _sivu("Netvo – nettisivut ja verkkokauppa ilmaiseksi rakennettuna, ei sitoutumista",
-                 f"Saat jopa 1500 € edestä työtä ilmaiseksi: Netvo räätälöi yrityksesi nettisivut tai verkkokaupan maksutta, ilman valmispohjia. Nettisivut {HINTA_KK} €/kk, verkkokauppa {KAUPPA_KK} €/kk, ei sitoutumista.", runko)
+                 f"Saat jopa 1500 € edestä työtä ilmaiseksi: Netvo räätälöi yrityksesi nettisivut tai verkkokaupan maksutta, ilman valmispohjia. Nettisivut {HINTA_KK} €/kk, verkkokauppa {KAUPPA_KK} €/kk, ei sitoutumista.", runko, "/", _ld_etusivu())
 
 
 def ehtosivu():
@@ -223,7 +289,7 @@ def ehtosivu():
 <p style="color:var(--mute);margin-top:30px">Kysymyksiä ehdoista? Ota yhteyttä: {esc(YHTEYS)}</p>
 <p class="keskita"><a class="nappi" href="/">← Takaisin etusivulle</a></p>
 </div></section>"""
-    return _sivu("Sopimusehdot – Netvo", "Netvo-palvelun selkeät ja reilut sopimusehdot: rakentaminen 0 €, kuukausihinta, ei sitoutumista.", runko)
+    return _sivu("Sopimusehdot – Netvo", "Netvo-palvelun selkeät ja reilut sopimusehdot: rakentaminen 0 €, kuukausihinta, ei sitoutumista.", runko, "/ehdot/")
 
 
 def tietosuojasivu():
@@ -239,7 +305,7 @@ def tietosuojasivu():
                       ("Google LLC", "Google Ads -mainonnan mittaus ja Google Fonts -kirjasimet"), ("Google Workspace / Gmail", "sähköpostiviestintä"), ("Kirjanpitäjä", "kirjanpito ja laskutusaineisto")],
         sailytys="Yhteydenotot säilytetään niin kauan kuin asian hoitaminen vaatii, enintään kaksi vuotta. Asiakkuuden tiedot säilytetään asiakkuuden ajan ja kirjanpitoaineisto kirjanpitolain mukaisen ajan (yleensä 6–10 vuotta). Mainonnan mittaustiedot säilyvät Googlen asetusten mukaisesti.",
         evasteet="Mainonnan mittauksen evästeet otetaan käyttöön vain, jos hyväksyt ne sivun alareunan ilmoituksesta. Valintasi tallentuu selaimeesi, ja voit muuttaa sitä tyhjentämällä sivuston tallennetut tiedot. Ilman hyväksyntää Google saa vain evästeettömän, yksilöimättömän tiedon käynnistä.")
-    return _sivu("Tietosuojaseloste – Netvo", "Netvon tietosuojaseloste: mitä tietoja käsitellään ja miksi.", f'<section class="osio"><div class="w teksti">{ts}</div></section>')
+    return _sivu("Tietosuojaseloste – Netvo", "Netvon tietosuojaseloste: mitä tietoja käsitellään ja miksi.", f'<section class="osio"><div class="w teksti">{ts}</div></section>', "/tietosuoja/")
 
 
 def rakenna_nettikoti(root):
@@ -251,6 +317,11 @@ def rakenna_nettikoti(root):
     (root / "netvo" / "ehdot" / "index.html").write_text(ehtosivu(), encoding="utf-8")
     (root / "netvo" / "tietosuoja").mkdir(exist_ok=True)
     (root / "netvo" / "tietosuoja" / "index.html").write_text(tietosuojasivu(), encoding="utf-8")
+    (root / "netvo" / "llms.txt").write_text(llms_txt(), encoding="utf-8")
+    (root / "netvo" / "robots.txt").write_text("User-agent: *\nAllow: /\nDisallow: /mallit/\n\nSitemap: https://netvo.fi/sitemap.xml\n", encoding="utf-8")
+    import datetime as _dt
+    _pv = _dt.date.today().isoformat()
+    (root / "netvo" / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + "".join(f"<url><loc>https://netvo.fi{u}</loc><lastmod>{_pv}</lastmod></url>" for u in ["/", "/ehdot/", "/tietosuoja/"]) + "</urlset>", encoding="utf-8")
     for d in DEMOT:
         kansio = root / "netvo" / "mallit" / d["slug"]
         kansio.mkdir(parents=True, exist_ok=True)
