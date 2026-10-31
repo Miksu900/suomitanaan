@@ -74,7 +74,13 @@ export default {
     if (u.pathname === "/api/kauppias") return kauppias(req, env);
     if (u.hostname === "netvo.fi") {
       const np = "/netvo" + (u.pathname === "/" ? "/" : u.pathname);
-      return env.ASSETS.fetch(new Request(u.origin + np + u.search));
+      const r = await env.ASSETS.fetch(new Request(u.origin + np + u.search));
+      if (/\.(txt|xml)$/.test(u.pathname) && r.ok) {
+        const h = new Headers(r.headers);
+        h.set("content-type", (u.pathname.endsWith(".xml") ? "application/xml" : "text/plain") + "; charset=utf-8");
+        return new Response(r.body, { status: r.status, headers: h });
+      }
+      return r;
     }
     // Vanha polku faktapiste.fi/netvo/* ohjataan kanoniseen netvo.fi:hin
     if (u.hostname === "faktapiste.fi" && (u.pathname === "/netvo" || u.pathname.startsWith("/netvo/"))) {
