@@ -3,7 +3,7 @@
 Etusivu esittelee kaikki palvelut. /palvelut/ on mainoksiin sopiva versio ilman poliittisia palveluita.
 Aja: python3 faktapiste/rakenna.py
 """
-import os, html, datetime, pathlib
+import os, html, datetime, pathlib, json
 
 ROOT = pathlib.Path(__file__).parent / "public"
 SITE = os.environ.get("FAKTAPISTE_URL", "https://faktapiste.fi")
@@ -24,8 +24,8 @@ PALVELUT = [
      "Sammuta puhelimesi sijainti- ja mainosseuranta muutamassa minuutissa ja pyydä yrityksiä poistamaan tietosi valmiilla viestipohjalla.",
      "Uusi", False),
     ("pv", "Pykälävahti", PV, "Mitä laki sanoo?",
-     "Kysy arkisesta lakiasiasta ja saat vastauksen suoraan voimassa olevista pykälistä lähteineen. Kirjoittaa myös reklamaation tai muun vaatimuksen puolestasi.",
-     "Valmis kirje", False),
+     "Kysy arkisesta lakiasiasta ja saat yleistä tietoa suoraan voimassa olevista pykälistä lähteineen. Löydä myös lähin lakitoimisto.",
+     "Lähteineen", False),
     ("kr", "Korjausvahti", "https://nytpuhutaan.fi/muutokset/", "Mitä otsikossa muutettiin?",
      "Seuraa, miten uutisotsikot muuttuvat julkaisun jälkeen. Näet alkuperäisen ja uuden otsikon rinnakkain.",
      "Otsikkomuutokset", False),
@@ -298,6 +298,11 @@ document.getElementById("yv-teksti").value=t;var R=document.getElementById("yv-t
 document.getElementById("yv-posti").href="mailto:?subject="+encodeURIComponent("Tietosuojapyyntö – "+n)+"&body="+encodeURIComponent(t.replace(/^Aihe:.*\\n\\n/,""));R.scrollIntoView({{behavior:"smooth"}})}});
 document.getElementById("yv-kopioi").onclick=function(){{var t=document.getElementById("yv-teksti");t.select();try{{navigator.clipboard.writeText(t.value)}}catch(e){{document.execCommand("copy")}}this.textContent="Kopioitu!"}};
 }})()</script>"""
+_yvfaq = [("Miten estän sijaintitietojeni myynnin?", "Rajaa sovellusten sijaintiluvat (vain käytön aikana tai ei koskaan), poista tarkka sijainti käytöstä sovelluksilta, jotka eivät sitä tarvitse, ja poista tai nollaa puhelimen mainostunniste. Yksityisyysvahdin tarkistuslista näyttää askeleet Androidille ja iPhonelle."),
+    ("Mitkä sovellukset keräävät sijaintia?", "Sijaintia keräävät usein esimerkiksi sää- ja liikuntasovellukset, ilmaiset pelit ja kauppojen sovellukset sekä kaikki sovellukset, joilla on lupa sijaintiin aina."),
+    ("Voinko vaatia yritystä poistamaan tietoni?", "Kyllä. Tietosuoja-asetuksen 17 artiklan nojalla voit pyytää henkilötietojesi poistamista ja 15 artiklan nojalla tietoa siitä, mitä tietoja sinusta käsitellään. Yrityksen on vastattava pääsääntöisesti kuukauden kuluessa."),
+    ("Mitä teen, jos yritys ei vastaa?", "Jos yritys ei vastaa kuukauden kuluessa, voit tehdä ilmoituksen tietosuojavaltuutetun toimistoon (tietosuoja.fi).")]
+runko += '<script type="application/ld+json">' + json.dumps({"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": k, "acceptedAnswer": {"@type": "Answer", "text": v}} for k, v in _yvfaq]}, ensure_ascii=False).replace("</", "<\\/") + '</script>'
 kirjoita("/yksityisyys/", sivu("/yksityisyys/", "Yksityisyysvahti – onko sijaintisi myynnissä? | Faktapiste",
     "Sammuta puhelimesi sijainti- ja mainosseuranta Androidissa ja iPhonessa ja pyydä yrityksiä poistamaan tietosi valmiilla viestipohjalla.", runko))
 
@@ -361,6 +366,9 @@ runko += "</section>"
 kirjoita("/laskurit/", sivu("/laskurit/", "Laskurit – ilmaiset laskurit rahaan, asumiseen ja sähköön | Faktapiste",
                            "Ilmaiset suomalaiset laskurit: asuntolaina, osamaksun todellinen vuosikorko, vuokratuotto, sähkösopimusten vertailu, sähköauton lataus ja auton kulut.", runko))
 
+(ROOT / "llms.txt").write_text("\n".join(["# Faktapiste", "", "> Faktapiste on suomalainen, puolueeton avoimuushanke: keskustelupalvelu, jossa jokainen kirjoitus näytetään vähintään 30 ihmiselle, sekä ilmaisia palveluita, jotka perustuvat julkisiin lähteisiin. Ei mainoksia eikä seurantaa.", "", "## Palvelut", ""]
+    + [f"- [{p[1]}]({p[2] if p[2].startswith('http') else SITE + p[2]}): {p[4]}" for p in PALVELUT]
+    + ["", "## Lisää", "", f"- [Keskustelu]({SITE}/)", f"- [Laskurit]({SITE}/laskurit/): ilmaiset laskurit rahaan, asumiseen ja sähköön", f"- [Tietoa]({SITE}/tietoa/)", ""]), encoding="utf-8")
 (ROOT / "robots.txt").write_text(f"User-agent: *\nAllow: /\nSitemap: {SITE}/sitemap.xml\n", encoding="utf-8")
 (ROOT / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
     + "".join(f"<url><loc>{SITE}{p}</loc></url>" for p in ["/", "/palvelut/", "/tietoa/", "/tietosuoja/", "/yksityisyys/", "/laskurit/"] + [f"/laskurit/{l['slug']}/" for l in LASKURIT]) + "</urlset>", encoding="utf-8")

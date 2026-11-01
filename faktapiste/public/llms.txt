@@ -1,0 +1,19 @@
+# Faktapiste
+
+> Faktapiste on suomalainen, puolueeton avoimuushanke: keskustelupalvelu, jossa jokainen kirjoitus näytetään vähintään 30 ihmiselle, sekä ilmaisia palveluita, jotka perustuvat julkisiin lähteisiin. Ei mainoksia eikä seurantaa.
+
+## Palvelut
+
+- [Keräysvahti](https://keraysvahti.fi): Tarkista ennen lahjoittamista, onko rahankeräyksellä poliisin lupa ja kuuluuko tilinumero oikealle järjestölle. Haku kattaa kaikki voimassa olevat luvat.
+- [Huijausapu](https://keraysvahti.fi/huijaukset/): Tunnista tavallisimmat huijaukset, tarkista epäilyttävä viesti ja katso, mitä tehdä heti, jos rahaa on jo mennyt.
+- [Yksityisyysvahti](https://faktapiste.fi/yksityisyys/): Sammuta puhelimesi sijainti- ja mainosseuranta muutamassa minuutissa ja pyydä yrityksiä poistamaan tietosi valmiilla viestipohjalla.
+- [Pykälävahti](https://pykalavahti.fi): Kysy arkisesta lakiasiasta ja saat yleistä tietoa suoraan voimassa olevista pykälistä lähteineen. Löydä myös lähin lakitoimisto.
+- [Korjausvahti](https://nytpuhutaan.fi/muutokset/): Seuraa, miten uutisotsikot muuttuvat julkaisun jälkeen. Näet alkuperäisen ja uuden otsikon rinnakkain.
+- [Nytpuhutaan](https://nytpuhutaan.fi): Päivän uutiset suomalaisista lähteistä yhdessä paikassa, ilman algoritmia ja ilman kirjautumista.
+- [Eduskuntaseuranta](https://eduskuntaseuranta.fi): Jokaisen kansanedustajan äänet, poissaolot ja ryhmästä poikkeamiset eduskunnan avoimesta datasta.
+
+## Lisää
+
+- [Keskustelu](https://faktapiste.fi/)
+- [Laskurit](https://faktapiste.fi/laskurit/): ilmaiset laskurit rahaan, asumiseen ja sähköön
+- [Tietoa](https://faktapiste.fi/tietoa/)

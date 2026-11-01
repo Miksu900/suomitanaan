@@ -1,0 +1,31 @@
+# Netvo
+
+> Netvo (netvo.fi) tekee räätälöidyt nettisivut ja verkkokaupat suomalaisille pienyrityksille. Rakentaminen on ilmaista – asiakas saa jopa 1500 €:n edestä työtä maksamatta siitä – ja maksaa vain kuukausimaksun. Ei sitoutumista, kaikki muutokset sisältyvät hintaan.
+
+## Hinnat (sis. alv)
+- Nettisivut: 99 €/kk, rakentaminen 0 € (vastaava työ maksaa tyypillisesti yli 1000 €)
+- Verkkokauppa: 149 €/kk, rakentaminen 0 € (jopa 1500 €:n arvosta)
+- Kaikki muutokset sisältyvät kuukausihintaan, ei lisämaksuja
+- Ei sitoutumisaikaa eikä irtisanomismaksua; palvelu päättyy maksetun kuukauden lopussa
+- Verkko-osoite on Netvon nimissä, asiakas voi lunastaa sen 99 €:lla
+
+## Mitä hintaan sisältyy
+- Räätälöity suunnittelu (ei valmispohjia), tekstit kirjoitettuna asiakkaan puolesta
+- Verkko-osoite, hosting, tietoturva, varmuuskopiot ja päivitykset
+- Verkkokaupassa tuotteet, ostoskori, kassa, toimitustavat ja suomalaiset maksutavat (maksupalvelu veloittaa omat kulunsa)
+- Sivut valmiina yleensä muutamassa päivässä, vedos ennen julkaisua
+
+## Kenelle
+Suomalaiset pienyritykset ja yrittäjät koko Suomessa, esimerkiksi parturit, putkiliikkeet, siivousyritykset, remonttifirmat, ravintolat, hierojat, autokorjaamot, maalarit, leipomot ja käsityöyrittäjät.
+
+## Yhteystiedot
+- Puhelin: 044 777 7149 (arkisin 9–21)
+- Sähköposti: info@netvo.fi
+- Yrittäjä: Miika Koskela, Ylivieska
+- Palvelun tuottaa Taksiliikenne Koskela Oy (Y-tunnus 3425681-3)
+
+## Sivut
+- [Etusivu ja hinnat](https://netvo.fi/)
+- [Sopimusehdot](https://netvo.fi/ehdot/)
+- [Tietosuojaseloste](https://netvo.fi/tietosuoja/)
+- [Esimerkkikauppa: leipomo](https://netvo.fi/mallit/kauppa-leipomo/)

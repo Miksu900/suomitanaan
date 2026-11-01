@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /mallit/
+
+Sitemap: https://netvo.fi/sitemap.xml
