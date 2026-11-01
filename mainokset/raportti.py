@@ -72,3 +72,4 @@ if __name__ == "__main__":
         osat.append("")
     laheta("\n".join(osat))
     print("::notice title=Raportti::lähetetty")
+    for r in osat[-8:]: print("::notice title=Rivi::" + r.replace("<b>", "").replace("</b>", "")[:300])
