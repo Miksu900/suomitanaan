@@ -1,0 +1,12 @@
+name: Kävijäerittely
+on:
+  workflow_dispatch:
+    inputs:
+      host: { description: "Sivusto", required: true, default: "eduskuntaseuranta.fi" }
+jobs:
+  aja:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - env: { CF: "${{ secrets.CLOUDFLARE_API_TOKEN }}", HOST: "${{ inputs.host }}" }
+        run: python3 mainokset/kavijat.py
