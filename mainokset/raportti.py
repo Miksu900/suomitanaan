@@ -27,7 +27,10 @@ def google():
 def bing():
     rivit = ["<b>Bing</b>"]
     v = msads.kutsu(msads.CM + "/Campaigns/QueryByAccountId", {"AccountId": msads.AID, "CampaignType": "Search"})
-    if "virhe" in v: return rivit + ["⚠️ Haku epäonnistui: " + str(v.get("vastaus", ""))[:200]]
+    if "virhe" in v:
+        if "InvalidCredentials" in str(v.get("vastaus", "")):
+            return rivit + ["⛔ Microsoft on jäädyttänyt tilin (1.11.). Mainoksia ei näytetä eikä kuluja synny."]
+        return rivit + ["⚠️ Haku epäonnistui: " + str(v.get("vastaus", ""))[:200]]
     for c in v.get("Campaigns", []):
         tila = {"Active": "🟢", "Paused": "⏸", "BudgetPaused": "⏸ budjetti", "Suspended": "⛔"}.get(c["Status"], c["Status"])
         rivit.append(f"{tila} {c['Name']} ({c.get('DailyBudget')} €/pv)")
