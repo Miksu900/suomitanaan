@@ -1,0 +1,14 @@
+# Pykälävahti
+
+> Ilmainen suomalainen palvelu, joka selittää Suomen lakia ajantasaisen lainsäädännön (Finlex) pohjalta ja ohjaa lakitoimistoihin. Vastaukset ovat yleistä tietoa, eivät oikeudellista neuvontaa. Osa Faktapistettä (faktapiste.fi).
+
+## Ohjeet
+
+- [Reklamaatio – mitä kuluttajansuojalaki sanoo?](https://pykalavahti.fi/reklamaatio/): Yleistä tietoa reklamaatiosta: milloin virheestä pitää ilmoittaa, mitä myyjältä voi vaatia ja mistä saa maksutonta apua.
+- [Takuu loppui – onko myyjä silti vastuussa virheestä?](https://pykalavahti.fi/takuu-loppui/): Yleistä tietoa takuusta ja lakisääteisestä virhevastuusta: miksi takuun päättyminen ei aina tarkoita, että myyjän vastuu loppuu.
+
+## Palvelu
+
+- [Kysy laista](https://pykalavahti.fi/): vastaus pykälineen
+- [Lakitoimistot](https://pykalavahti.fi/toimistot/): asianajo- ja lakiasiaintoimistot paikkakunnittain
+- [Tietoa](https://pykalavahti.fi/tietoa/)

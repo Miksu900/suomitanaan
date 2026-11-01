@@ -97,6 +97,8 @@ def main():
 <section class="kolme">
 <a class="kortti" href="/toimistot/"><b>Löydä lakitoimisto</b><span>Kaikki asianajo- ja lakiasiaintoimistot paikkakunnittain. Näe lähimmät.</span></a>
 <a class="kortti" href="/tietoa/"><b>Miten tämä toimii?</b><span>{lait_lkm} keskeistä lakia Finlexistä, päivitetään viikoittain.</span></a>
+<a class="kortti" href="/reklamaatio/"><b>Reklamaatio</b><span>Milloin virheestä pitää ilmoittaa ja mitä myyjältä voi vaatia.</span></a>
+<a class="kortti" href="/takuu-loppui/"><b>Takuu loppui?</b><span>Miksi myyjän vastuu ei aina pääty takuun mukana.</span></a>
 </section>"""
     kirjoita("/", sivu("/", f"{NIMI} – kysy Suomen laista, vastaus pykälineen",
                        "Kysy Suomen laista omin sanoin ja saat selkokielisen vastauksen, jossa on viittaukset ajantasaisiin pykäliin. Ilmainen.",
@@ -241,12 +243,15 @@ var m=Math.max(1,...d.map(x=>x.kysymys||0));document.getElementById('pv').innerH
 var t=Object.entries(L).sort((a,b)=>b[1]-a[1]).slice(0,15),mm=Math.max(1,...t.map(x=>x[1]));document.getElementById('lait').innerHTML=t.map(x=>'<div class="pal"><span>'+x[1]+'</span><i style="width:'+Math.round(200*x[1]/mm)+'px"></i>'+(N[x[0]]||x[0])+'</div>').join('')||'<p class="mute">Ei vielä kysymyksiä.</p>'})</script>"""
     kirjoita("/seuranta/", sivu("/seuranta/", f"Seuranta | {NIMI}", "", runko, js).replace("<head>", '<head><meta name="robots" content="noindex,nofollow">', 1))
 
+    import ohjeet
+    OHJE = ohjeet.rakenna(sivu, kirjoita)
     # ---- 404, robots, sivukartta ----
     open(os.path.join(PUB, "404.html"), "w", encoding="utf-8").write(sivu("/404", f"Sivua ei löytynyt | {NIMI}", "", '<h1>Sivua ei löytynyt</h1><p><a class="btn" href="/">Etusivulle</a></p>'))
     if SITE:
         open(os.path.join(PUB, "robots.txt"), "w").write(f"User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /seuranta/\nSitemap: {SITE}/sitemap.xml\n")
         open(os.path.join(PUB, "sitemap.xml"), "w").write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
-            + "".join(f"<url><loc>{SITE}{u}</loc></url>" for u in ("/", "/toimistot/", "/tietoa/", "/ehdot/", "/tietosuoja/")) + "</urlset>\n")
+            + "".join(f"<url><loc>{SITE}{u}</loc></url>" for u in ["/", "/toimistot/", "/tietoa/", "/ehdot/", "/tietosuoja/"] + OHJE) + "</urlset>\n")
+        open(os.path.join(PUB, "llms.txt"), "w").write(ohjeet.llms(SITE))
     print("sivut valmiit")
 
 
