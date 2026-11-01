@@ -66,10 +66,10 @@ def laheta(teksti):
 if __name__ == "__main__":
     pv = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%-d.%-m.")
     osat = [f"📊 <b>Mainosraportti</b> (eilen {pv})", ""]
-    for f in (google, bing, xads.raporttirivit):
+    for f in (google, bing, xads.raporttirivit, ilmainen):
         try: osat += f()
         except Exception as e: osat.append(f"⚠️ {getattr(f, '__name__', 'X')}: {type(e).__name__}")
         osat.append("")
     laheta("\n".join(osat))
     print("::notice title=Raportti::lähetetty")
-    for r in osat[-8:]: print("::notice title=Rivi::" + r.replace("<b>", "").replace("</b>", "")[:300])
+    for r in osat[-10:]: print("::notice title=Rivi::" + r.replace("<b>", "").replace("</b>", "")[:300])
