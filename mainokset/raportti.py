@@ -37,6 +37,28 @@ def bing():
             rivit.append(f"⚠️ Tilin tila: {a['AccountLifeCycleStatus']} (esim. vahvistus tai kortti kesken)")
     return rivit
 
+def ilmainen():
+    """Ilmainen liikenne hakukoneista ja tekoälyistä Cloudflare Web Analyticsista (eilinen päivä)."""
+    cf = os.environ.get("CF", "").strip()
+    if not cf: return []
+    h = {"Authorization": "Bearer " + cf, "Content-Type": "application/json"}
+    acc = json.loads(urllib.request.urlopen(urllib.request.Request("https://api.cloudflare.com/client/v4/accounts", headers=h)).read())["result"][0]["id"]
+    eilen = (datetime.date.today() - datetime.timedelta(days=1)).isoformat()
+    q = """query($a:String!,$d:Date!){viewer{accounts(filter:{accountTag:$a}){rumPageloadEventsAdaptiveGroups(limit:200,filter:{date:$d}){count dimensions{refererHost requestHost}}}}}"""
+    r = json.loads(urllib.request.urlopen(urllib.request.Request("https://api.cloudflare.com/client/v4/graphql", json.dumps({"query": q, "variables": {"a": acc, "d": eilen}}).encode(), h)).read())
+    ryhmat = (((r.get("data") or {}).get("viewer") or {}).get("accounts") or [{}])[0].get("rumPageloadEventsAdaptiveGroups") or []
+    if not ryhmat: return ["<b>Ilmainen liikenne</b>", "ei tietoa (" + str((r.get("errors") or [{}])[0].get("message", "tyhjä"))[:80] + ")"]
+    haku, ai, yht = {}, {}, {}
+    for g in ryhmat:
+        ref, host, n = (g["dimensions"].get("refererHost") or ""), g["dimensions"].get("requestHost") or "?", g["count"]
+        yht[host] = yht.get(host, 0) + n
+        if any(x in ref for x in ("google.", "bing.", "duckduckgo.", "yahoo.", "ecosia.")): haku[host] = haku.get(host, 0) + n
+        if any(x in ref for x in ("chatgpt.", "openai.", "perplexity.", "claude.ai", "copilot.", "gemini.")): ai[host] = ai.get(host, 0) + n
+    rivit = ["<b>Ilmainen liikenne (eilen)</b>"]
+    for host in sorted(yht, key=lambda k: -yht[k])[:6]:
+        rivit.append(f"{host}: {yht[host]} sivulatausta, hakukoneista {haku.get(host, 0)}" + (f", tekoälyistä {ai[host]}" if ai.get(host) else ""))
+    return rivit
+
 def laheta(teksti):
     d = json.dumps({"chat_id": "1893930799", "text": teksti, "parse_mode": "HTML", "disable_web_page_preview": True}).encode()
     urllib.request.urlopen(urllib.request.Request(f"https://api.telegram.org/bot{os.environ['TG'].strip()}/sendMessage", d, {"content-type": "application/json"}))
