@@ -1,6 +1,9 @@
 name: Netvo sähköpostin tila
-# Tarkistaa netvo.fi:n sähköpostin vastaanoton (Cloudflare Email Routing) ja Brevon lähettäjät/domainit.
-on: { workflow_dispatch: {} }
+# Tarkistaa ja tarvittaessa tunnistaa netvo.fi:n Brevoon (DNS-tietueet Cloudflareen) ja luo lähettäjän info@netvo.fi.
+on:
+  workflow_dispatch:
+    inputs:
+      tee: { description: "kyllä = lisää domain Brevoon ja DNS-tietueet", required: false, default: "" }
 jobs:
   tila:
     runs-on: ubuntu-latest
@@ -10,10 +13,33 @@ jobs:
           BREVO: ${{ secrets.BREVO_API_KEY }}
         run: |
           A="https://api.cloudflare.com/client/v4"; H=(-sS -H "Authorization: Bearer $CF")
+          B=(-sS -H "api-key: $BREVO" -H "content-type: application/json")
           Z=$(curl "${H[@]}" "$A/zones?name=netvo.fi" | jq -r '.result[0].id')
-          echo "::notice title=Routing::$(curl "${H[@]}" "$A/zones/$Z/email/routing" | jq -c '{s:.success,e:.result.enabled,st:.result.status,err:.errors}')"
-          echo "::notice title=Säännöt::$(curl "${H[@]}" "$A/zones/$Z/email/routing/rules" | jq -c '[.result[]? | {m:[.matchers[].value], a:[.actions[].value], en:.enabled}], .errors')"
+          if [ "${{ inputs.tee }}" = "kyllä" ]; then
+            curl "${B[@]}" -X POST https://api.brevo.com/v3/senders/domains -d '{"name":"netvo.fi"}' > d.json; echo "::notice title=Lisäys::$(head -c 1500 d.json)"
+            curl "${B[@]}" https://api.brevo.com/v3/senders/domains/netvo.fi > g.json; echo "::notice title=Domain::$(head -c 2000 g.json)"
+            jq -c '.dns_records | to_entries[] | .value | select(.host_name != null)' g.json | while read r; do
+              T=$(echo "$r" | jq -r .type); N=$(echo "$r" | jq -r .host_name); V=$(echo "$r" | jq -r .value)
+              [ "$N" = "@" ] || [ -z "$N" ] && N="netvo.fi"
+              case "$N" in *netvo.fi) ;; *) N="$N.netvo.fi";; esac
+              if [ "$T" = "TXT" ] && [ "$N" = "netvo.fi" ] && echo "$V" | grep -q "v=spf1"; then
+                ID=$(curl "${H[@]}" "$A/zones/$Z/dns_records?type=TXT&name=netvo.fi" | jq -r '.result[] | select(.content|test("v=spf1")) | .id' | head -1)
+                NEW='"v=spf1 include:_spf.mx.cloudflare.net include:spf.brevo.com ~all"'
+                echo "::notice title=SPF::$(curl "${H[@]}" -X PATCH "$A/zones/$Z/dns_records/$ID" -H 'content-type: application/json' -d "$(jq -n --arg c "$NEW" '{content:$c}')" | jq -c .success)"
+                continue
+              fi
+              if [ "$T" = "TXT" ]; then V="\"$V\""; fi
+              EX=$(curl "${H[@]}" "$A/zones/$Z/dns_records?type=$T&name=$N" | jq -r --arg v "$V" '[.result[] | select(.content==$v or .content==($v|ltrimstr("\"")|rtrimstr("\"")))] | length')
+              if [ "$T" = "TXT" ] && [ "$N" = "_dmarc.netvo.fi" ] && [ "$(curl "${H[@]}" "$A/zones/$Z/dns_records?type=TXT&name=$N" | jq '.result|length')" != "0" ]; then echo "::notice title=DMARC::on jo"; continue; fi
+              if [ "$EX" = "0" ]; then
+                echo "::notice title=DNS $T $N::$(curl "${H[@]}" -X POST "$A/zones/$Z/dns_records" -H 'content-type: application/json' -d "$(jq -n --arg t "$T" --arg n "$N" --arg c "$V" '{type:$t,name:$n,content:$c,ttl:1,proxied:false}')" | jq -c '{s:.success,e:.errors}')"
+              fi
+            done
+            sleep 60
+            echo "::notice title=Tunnistus::$(curl "${B[@]}" -X PUT https://api.brevo.com/v3/senders/domains/netvo.fi/authenticate | head -c 800)"
+            echo "::notice title=Lähettäjä::$(curl "${B[@]}" -X POST https://api.brevo.com/v3/senders -d '{"name":"Netvo","email":"info@netvo.fi"}' | head -c 500)"
+          fi
           echo "::notice title=MX::$(curl "${H[@]}" "$A/zones/$Z/dns_records?type=MX" | jq -c '[.result[]?.content]')"
-          echo "::notice title=TXT::$(curl "${H[@]}" "$A/zones/$Z/dns_records?type=TXT" | jq -c '[.result[]? | (.name+" "+.content[:60])]')"
-          echo "::notice title=Brevo lähettäjät::$(curl -sS -H "api-key: $BREVO" https://api.brevo.com/v3/senders | jq -c '[.senders[]? | {email, active}]')"
-          echo "::notice title=Brevo domainit::$(curl -sS -H "api-key: $BREVO" https://api.brevo.com/v3/senders/domains | jq -c '[.domains[]? | {domain_name, authenticated, verified}]')"
+          echo "::notice title=TXT::$(curl "${H[@]}" "$A/zones/$Z/dns_records?type=TXT" | jq -c '[.result[]? | (.name+" "+.content[:70])]')"
+          echo "::notice title=Brevo lähettäjät::$(curl "${B[@]}" https://api.brevo.com/v3/senders | jq -c '[.senders[]? | {email, active}]')"
+          echo "::notice title=Brevo domainit::$(curl "${B[@]}" https://api.brevo.com/v3/senders/domains | jq -c '[.domains[]? | {domain_name, authenticated, verified}]')"
