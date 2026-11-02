@@ -1,0 +1,16 @@
+name: Toimittajakysely
+# Lähettää mainokset/toimittajakysely.json -viestin Brevolla osoitteesta info@netvo.fi (kopio Miikalle).
+on: { workflow_dispatch: {} }
+jobs:
+  laheta:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - env: { BREVO: "${{ secrets.BREVO_API_KEY }}" }
+        run: |
+          F=mainokset/toimittajakysely.json
+          for to in $(jq -r '.vastaanottajat[]' $F); do
+            B=$(jq -n --arg to "$to" --slurpfile f $F '{sender:{email:"info@netvo.fi",name:"Miika Koskela | Netvo"},replyTo:{email:"info@netvo.fi",name:"Miika Koskela"},to:[{email:$to}],bcc:[{email:"miika.koskela990@gmail.com"}],subject:$f[0].aihe,textContent:$f[0].runko}')
+            echo "::notice title=$to::$(curl -sS -X POST https://api.brevo.com/v3/smtp/email -H "api-key: $BREVO" -H 'content-type: application/json' -d "$B")"
+            sleep 4
+          done
