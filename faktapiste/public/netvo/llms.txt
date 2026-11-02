@@ -6,8 +6,9 @@
 - Nettisivut: 99 €/kk, rakentaminen 0 € (vastaava työ maksaa tyypillisesti yli 1000 €)
 - Verkkokauppa: 149 €/kk, rakentaminen 0 € (jopa 1500 €:n arvosta)
 - Kaikki muutokset sisältyvät kuukausihintaan, ei lisämaksuja
+- Ensimmäinen kuukausi ilmainen
 - Ei sitoutumisaikaa eikä irtisanomismaksua; palvelu päättyy maksetun kuukauden lopussa
-- Verkko-osoite on Netvon nimissä, asiakas voi lunastaa sen 99 €:lla
+- Verkko-osoite on Netvon nimissä, asiakas voi lunastaa sen 19 €:lla
 
 ## Mitä hintaan sisältyy
 - Räätälöity suunnittelu (ei valmispohjia), tekstit kirjoitettuna asiakkaan puolesta

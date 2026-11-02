@@ -1,6 +1,6 @@
 """Netvo – myynti- ja ehtosivu sekä mallisivujen galleria. Oma brändi, erillään Faktapisteesta.
 
-Malli (29.10.2026): rakentaminen 0 € (jopa 1500 € arvosta), vain kuukausimaksu, ei sitoutumista, domain lunastettavissa 99 €.
+Malli (29.10.2026): rakentaminen 0 € (jopa 1500 € arvosta), vain kuukausimaksu, ei sitoutumista, domain lunastettavissa 19 €. 2.11.: ensimmäinen kuukausi ilmainen.
 """
 import html, pathlib, sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "scripts"))
@@ -17,7 +17,7 @@ PUHELIN_TEL = "+358447777149"
 
 HINTA_KK = 99        # nettisivut €/kk (sis. alv)
 KAUPPA_KK = 149      # verkkokauppa €/kk (sis. alv)
-LUNASTUS = 99        # verkkotunnuksen lunastus €
+LUNASTUS = 19        # verkkotunnuksen lunastus €
 
 
 KAUPPAKUVAT = {"kauppa-leipomo": "photo-1548228623-13e55dd16984", "kauppa-kasityo": "photo-1742386676097-a2a55fcdcc64"}
@@ -64,6 +64,7 @@ def llms_txt():
 - Nettisivut: {HINTA_KK} €/kk, rakentaminen 0 € (vastaava työ maksaa tyypillisesti yli 1000 €)
 - Verkkokauppa: {KAUPPA_KK} €/kk, rakentaminen 0 € (jopa 1500 €:n arvosta)
 - Kaikki muutokset sisältyvät kuukausihintaan, ei lisämaksuja
+- Ensimmäinen kuukausi ilmainen
 - Ei sitoutumisaikaa eikä irtisanomismaksua; palvelu päättyy maksetun kuukauden lopussa
 - Verkko-osoite on Netvon nimissä, asiakas voi lunastaa sen {LUNASTUS} €:lla
 
@@ -208,9 +209,9 @@ def etusivu():
     leip = KAUPPAKUVAT["kauppa-leipomo"]
     runko = f"""
 <section class="hero"><div class="tausta"><img src="{UK(HERO, 1600)}" srcset="{SSK(HERO, (700, 1100, 1600, 2200))}" sizes="100vw" alt="Tunnelmallinen kahvila" fetchpriority="high"></div><div class="w">
-<div><span class="kick"><i></i>Ei aloitusmaksua · ei sitoutumista</span>
+<div><span class="kick"><i></i>1. kuukausi ilmaiseksi · ei sitoutumista</span>
 <h1>Saat jopa <em>1500 €</em> edestä työtä ilmaiseksi.</h1>
-<p class="l">Räätälöin yrityksesi nettisivut tai verkkokaupan alusta loppuun juuri sinun tarpeisiisi – maksutta. Ei valmispohjia. Maksat vain kuukausimaksun, ja voit lopettaa milloin tahansa.</p>
+<p class="l">Räätälöin yrityksesi nettisivut tai verkkokaupan alusta loppuun juuri sinun tarpeisiisi – maksutta. Ei valmispohjia. Ensimmäinen kuukausi on ilmainen, sen jälkeen maksat vain kuukausimaksun. Voit lopettaa milloin tahansa.</p>
 <div class="toim"><a class="nappi iso sin" href="#yhteys">Ota yhteyttä</a><a class="nappi iso toissij" href="#mallit">Katso esimerkkejä</a></div></div>
 </div></section>
 
@@ -226,7 +227,7 @@ def etusivu():
 <div class="askel ilm"><div class="num">3</div><h3>Sivut julkaistaan</h3><p>Sivut tulevat nettiin omalla verkko-osoitteellasi. Pidän ne pystyssä ja ajan tasalla.</p></div>
 </div></div></section>
 
-<section class="osio" id="hinnat"><div class="w"><div class="ots keski ilm" style="text-align:center"><span class="eb">Hinnat</span><h2>Kaksi selkeää hintaa</h2><p>Rakentaminen 0 € ja kaikki muutokset hintaan sisältyen. Ei sitoutumista, ei lisämaksuja. Hinnat sisältävät alv:n.</p></div>
+<section class="osio" id="hinnat"><div class="w"><div class="ots keski ilm" style="text-align:center"><span class="eb">Hinnat</span><h2>Kaksi selkeää hintaa</h2><p>Rakentaminen 0 €, ensimmäinen kuukausi ilmainen ja kaikki muutokset hintaan sisältyen. Ei sitoutumista, ei lisämaksuja. Hinnat sisältävät alv:n.</p></div>
 <div class="hinnat">
 <div class="hk paras ilm"><span class="tag">Suosituin</span><h3>Nettisivut</h3><p class="m">Rakentaminen 0 € – yli 1000 €:n arvosta.</p><div class="h">{HINTA_KK} €<small> / kk</small></div>
 <ul><li>Räätälöity suunnittelu, ei valmispohjia</li><li>Tekstit kirjoitettuna puolestasi</li><li>Verkko-osoite, hosting ja tietoturva</li><li>Varmuuskopiot ja päivitykset</li><li>Kaikki muutokset hintaan sisältyen</li><li>Soitto- ja yhteydenottonapit</li><li>Lopeta milloin tahansa</li></ul><a class="nappi" href="#yhteys">Pyydä sivut</a></div>
@@ -254,7 +255,7 @@ def etusivu():
 <details><summary>Onko sitoutumisaikaa?</summary><p>Ei. Voit lopettaa milloin tahansa, eikä lopettamisesta peritä maksua. Palvelu päättyy maksetun kuukauden lopussa.</p></details>
 <details><summary>Kenen nimissä verkko-osoite on?</summary><p>Verkko-osoite rekisteröidään Netvon nimiin. Voit lunastaa sen itsellesi milloin tahansa {LUNASTUS} €:lla, ja siirrän sen sinulle viikon sisällä maksusta.</p></details>
 <details><summary>Maksavatko muutokset erikseen?</summary><p>Eivät. Kaikki muutokset sisältyvät kuukausihintaan – oli kyse teksteistä, kuvista, tuotteista, uudesta sivusta tai ulkoasusta. Lähetät vain viestin. Koska muutoksista ei laskuteta erikseen, hyöty voi vuosien mittaan olla jopa tuhansia euroja.</p></details>
-<details><summary>Milloin maksan ensimmäisen kerran?</summary><p>Ensimmäinen kuukausi maksetaan, kun olet hyväksynyt vedoksen ja ennen kuin sivut julkaistaan. Sen jälkeen lasku tulee kuukausittain.</p></details>
+<details><summary>Milloin maksan ensimmäisen kerran?</summary><p>Ensimmäinen kuukausi on ilmainen. Sivut julkaistaan, kun olet hyväksynyt vedoksen, ja ensimmäinen lasku tulee kuukauden kuluttua julkaisusta. Sen jälkeen lasku tulee kuukausittain. Jos lopetat ilmaisen kuukauden aikana, et maksa mitään.</p></details>
 <details><summary>Käytätkö valmispohjia?</summary><p>En. Jokainen nettisivu ja verkkokauppa räätälöidään asiakkaan tarpeen mukaan: ulkoasu, rakenne ja toiminnot suunnitellaan juuri sinun yrityksellesi.</p></details>
 <details><summary>Voinko käyttää omia kuvia?</summary><p>Totta kai, ja se on suositeltavaa: omat kuvat tekevät sivuista aidon näköiset. Jos kuvia ei ole, valitaan yhdessä laadukkaat kuvapankkikuvat.</p></details>
 <details><summary>Kauanko tekeminen kestää?</summary><p>Yleensä muutaman päivän siitä, kun olet toimittanut tietosi. Näet vedoksen ennen julkaisua.</p></details>
@@ -277,7 +278,7 @@ def ehtosivu():
 <h2>2. Hinta</h2>
 <p>Sivujen ja kaupan rakentaminen on maksutonta. Kuukausihinnat (sis. alv): Nettisivut {HINTA_KK} € ja Verkkokauppa {KAUPPA_KK} €. Verkkokaupassa asiakas tekee sopimuksen haluamansa maksupalvelun kanssa suoraan; maksupalvelu veloittaa omat kulunsa, ja myyntitulot menevät suoraan asiakkaalle. Muita kuluja tai lisämaksuja ei ole. Laskutus kuukausittain laskulla; palvelun tuottaa ja laskuttaa Taksiliikenne Koskela Oy, palvelun nimi Netvo.</p>
 <h2>3. Laskutus ja julkaisu</h2>
-<p>Asiakas näkee vedoksen ennen julkaisua. Ensimmäinen kuukausi maksetaan, kun asiakas on hyväksynyt vedoksen, ja sivut julkaistaan maksun jälkeen. Sen jälkeen palvelu laskutetaan kuukausi kerrallaan etukäteen.</p>
+<p>Asiakas näkee vedoksen ennen julkaisua. Sivut julkaistaan, kun asiakas on hyväksynyt vedoksen. Ensimmäinen kuukausi julkaisusta on maksuton. Sen jälkeen palvelu laskutetaan kuukausi kerrallaan etukäteen. Jos asiakas lopettaa maksuttoman kuukauden aikana, hänelle ei synny maksuja.</p>
 <h2>4. Ei sitoutumista</h2>
 <p>Sopimus on voimassa toistaiseksi ilman sitoutumisaikaa. Asiakas voi lopettaa palvelun milloin tahansa ilmoittamalla siitä sähköpostilla tai puhelimella. Palvelu päättyy maksetun kuukauden lopussa. Lopettamisesta ei peritä maksua.</p>
 <h2>5. Verkko-osoite</h2>
