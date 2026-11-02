@@ -1,0 +1,19 @@
+name: Netvo sähköpostin tila
+# Tarkistaa netvo.fi:n sähköpostin vastaanoton (Cloudflare Email Routing) ja Brevon lähettäjät/domainit.
+on: { workflow_dispatch: {} }
+jobs:
+  tila:
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          CF: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          BREVO: ${{ secrets.BREVO_API_KEY }}
+        run: |
+          A="https://api.cloudflare.com/client/v4"; H=(-sS -H "Authorization: Bearer $CF")
+          Z=$(curl "${H[@]}" "$A/zones?name=netvo.fi" | jq -r '.result[0].id')
+          echo "::notice title=Routing::$(curl "${H[@]}" "$A/zones/$Z/email/routing" | jq -c '{s:.success,e:.result.enabled,st:.result.status,err:.errors}')"
+          echo "::notice title=Säännöt::$(curl "${H[@]}" "$A/zones/$Z/email/routing/rules" | jq -c '[.result[]? | {m:[.matchers[].value], a:[.actions[].value], en:.enabled}], .errors')"
+          echo "::notice title=MX::$(curl "${H[@]}" "$A/zones/$Z/dns_records?type=MX" | jq -c '[.result[]?.content]')"
+          echo "::notice title=TXT::$(curl "${H[@]}" "$A/zones/$Z/dns_records?type=TXT" | jq -c '[.result[]? | (.name+" "+.content[:60])]')"
+          echo "::notice title=Brevo lähettäjät::$(curl -sS -H "api-key: $BREVO" https://api.brevo.com/v3/senders | jq -c '[.senders[]? | {email, active}]')"
+          echo "::notice title=Brevo domainit::$(curl -sS -H "api-key: $BREVO" https://api.brevo.com/v3/senders/domains | jq -c '[.domains[]? | {domain_name, authenticated, verified}]')"
