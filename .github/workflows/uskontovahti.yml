@@ -2,10 +2,10 @@ name: Uskontovahti
 # Miikan oma päivittäinen koonti: julkiset uutiset islamista ja muslimeista Suomessa -> Telegram
 on:
   schedule:
-    - cron: "37 5 * * *"   # n. klo 7.37 Suomen aikaa
+    - cron: "37 2-20/3 * * *"   # n. 3 tunnin välein; aamun ajo (5.37 UTC) lähettää koonnin Telegramiin
   workflow_dispatch:
     inputs:
-      testi: { description: "1 = lähetä koonti ilman muistia", required: false, default: "" }
+      koonti: { description: "1 = lähetä koonti Telegramiin nyt", required: false, default: "" }
 concurrency: uutisvinkit
 jobs:
   aja:
@@ -18,9 +18,11 @@ jobs:
           git show origin/uutisvinkit-tila:uskontovahti.json > mainokset/uskontovahti.json || true
       - env:
           TG: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TESTI: ${{ inputs.testi }}
+          CF: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          KOONTI: ${{ inputs.koonti }}
+          TAPAHTUMA: ${{ github.event_name }}
         run: cd mainokset && python3 uskontovahti.py
-      - if: inputs.testi != '1'
+      - if: success()
         run: |
           mkdir /tmp/t && cd /tmp/t && git init -q && git checkout -q -b uutisvinkit-tila
           cp /tmp/nahdyt.json . 2>/dev/null || true; cp $GITHUB_WORKSPACE/mainokset/uskontovahti.json .

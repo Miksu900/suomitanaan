@@ -389,6 +389,19 @@ export class Faktapiste extends DurableObject {
         const raja = new Date(Date.now() - pv * 86400e3).toISOString().slice(0, 10);
         return json({ pv, laskurit: this.kaikki("SELECT sivu, SUM(nayt) AS nayt, SUM(kaytot) AS kaytot FROM laskurit WHERE pv>=? GROUP BY sivu ORDER BY nayt DESC, kaytot DESC", raja) });
       }
+      if (p === "/api/hallinta/oma" && m === "POST" && this.env.HALLINTA && req.headers.get("x-avain") === this.env.HALLINTA) {
+        // Miikan omat yksityiset seurantasivut (esim. uskontovahti); avataan vain salaisella avaimella.
+        const d = await req.json(); const nimi = String(d.nimi || "").replace(/[^a-z0-9-]/g, "");
+        if (!nimi || typeof d.html !== "string") return json({ virhe: "nimi ja html" }, 400);
+        this.sql.exec("INSERT OR REPLACE INTO asetukset VALUES(?,?)", "oma:" + nimi, d.html); return json({ ok: true, koko: d.html.length });
+      }
+      if (p.startsWith("/api/oma/") && m === "GET") {
+        const nimi = p.slice(9).replace(/[^a-z0-9-]/g, "");
+        const ok = this.env.HALLINTA && u.searchParams.get("k") === (await tiiviste("oma-" + nimi + this.env.HALLINTA)).slice(0, 32);
+        const r = ok ? this.yksi("SELECT v FROM asetukset WHERE k=?", "oma:" + nimi) : null;
+        if (!r) return new Response("Ei löytynyt", { status: 404, headers: { "content-type": "text/plain; charset=utf-8" } });
+        return new Response(r.v, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store", "x-robots-tag": "noindex, nofollow", "referrer-policy": "no-referrer" } });
+      }
       if (p === "/api/hallinta/holvi" && this.env.HALLINTA && req.headers.get("x-avain") === this.env.HALLINTA) {
         // Ylläpidon salaisuusholvi (esim. mainostilien kirjautumisavaimet); ei koskaan julkisesti luettavissa.
         const d = await req.json(); const k = "holvi:" + String(d.nimi || "");
