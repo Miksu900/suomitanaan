@@ -8,10 +8,10 @@ GN = "https://news.google.com/rss/search?hl=fi&gl=FI&ceid=FI:fi&q="
 SYOTTEET = [
     "https://feeds.yle.fi/uutiset/v1/recent.rss?publisherIds=YLE_UUTISET", "https://www.hs.fi/rss/tuoreimmat.xml",
     "https://www.iltalehti.fi/rss/uutiset.xml", "https://www.is.fi/rss/tuoreimmat.xml",
-    "https://www.mtvuutiset.fi/api/feed/rss/uutiset_uusimmat", "https://www.kotimaa.fi/feed/",
+    "https://www.mtvuutiset.fi/api/feed/rss/uutiset_uusimmat",
 ] + [GN + urllib.parse.quote(q) for q in [
-    "islam Suomi when:2d", "muslimit Suomi when:2d", "moskeija when:2d", "imaami when:2d",
-    "islam eduskunta OR ministeriö OR poliisi when:3d", "Suomen islamilainen neuvosto when:7d"]]
+    "islam when:2d", "muslimi when:2d", "muslimit when:2d", "muslimien when:2d", "moskeija when:3d",
+    "imaami when:3d", "islamilainen when:3d", "ramadan when:3d", "Suomen islamilainen neuvosto when:7d"]]
 AIHE = re.compile(r"islam|muslim|moskei|moske|imaam|ramadan|ramazan|halal|koraan|hijab|burka|niqab|sharia|islamilai", re.I)
 SUOMI = re.compile(r"suom|helsin|espoo|vantaa|tampere|turku|oulu|jyväsky|kuopio|lahti|eduskun|yle|poliisi|ministeri|kunta|koulu|kela|migri|thl|opetushallit|seurakun|kirkko", re.I)
 
