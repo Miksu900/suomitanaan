@@ -20,8 +20,8 @@ KUNTAHAUT = ["moskeija kaava", "moskeija rakennuslupa", "moskeijahanke", "rukous
 SYOTTEET = [("media", "https://feeds.yle.fi/uutiset/v1/recent.rss?publisherIds=YLE_UUTISET"), ("media", "https://www.hs.fi/rss/tuoreimmat.xml"),
             ("media", "https://www.iltalehti.fi/rss/uutiset.xml"), ("media", "https://www.is.fi/rss/tuoreimmat.xml"),
             ("media", "https://www.mtvuutiset.fi/api/feed/rss/uutiset_uusimmat"), ("media", "https://www.uusisuomi.fi/rss"),
-            ("media", "https://www.verkkouutiset.fi/feed/"), ("media", "https://www.kirkkojakaupunki.fi/rss"),
-            ("media", "https://www.seurakuntalainen.fi/feed/"), ("media", "https://www.dagen.fi/feed/")]
+            ("media", "https://www.verkkouutiset.fi/feed/"),
+            ("media", "https://www.seurakuntalainen.fi/feed/")]
 SYOTTEET += [("media", GN + urllib.parse.quote(q + " when:3d")) for q in HAUT]
 SYOTTEET += [("kunta", GN + urllib.parse.quote(f"site:{d} (islam OR muslimi OR muslimit OR moskeija OR rukoustila OR uskonnollinen yhdyskunta)")) for d in KUNNAT]
 SYOTTEET += [("kunta", GN + urllib.parse.quote(q + " when:30d")) for q in KUNTAHAUT]
