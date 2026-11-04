@@ -1,0 +1,20 @@
+name: Netvo-viesti
+# Lähettää yhden sähköpostin osoitteesta info@netvo.fi (Brevo), piilokopio Miikalle. Vain Miikan hyväksymät viestit.
+on:
+  workflow_dispatch:
+    inputs:
+      to: { description: "Vastaanottaja", required: true }
+      aihe: { description: "Aihe", required: true }
+      runko: { description: "Viestin teksti", required: true }
+jobs:
+  laheta:
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          BREVO: ${{ secrets.BREVO_API_KEY }}
+          TO: ${{ inputs.to }}
+          AIHE: ${{ inputs.aihe }}
+          RUNKO: ${{ inputs.runko }}
+        run: |
+          B=$(jq -n --arg to "$TO" --arg s "$AIHE" --arg t "$RUNKO" '{sender:{email:"info@netvo.fi",name:"Miika Koskela | Netvo"},replyTo:{email:"info@netvo.fi",name:"Miika Koskela"},to:[{email:$to}],bcc:[{email:"miika.koskela990@gmail.com"}],subject:$s,textContent:$t}')
+          echo "::notice title=Lähetetty::$TO $(curl -sS -X POST https://api.brevo.com/v3/smtp/email -H "api-key: $BREVO" -H 'content-type: application/json' -d "$B")"
