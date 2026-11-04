@@ -1,0 +1,12 @@
+name: Mediaseuranta – esimerkkikoonti
+on:
+  workflow_dispatch:
+    inputs: { asiakas: { description: "Asiakastiedosto (mediaseuranta/...)", required: true, default: "esim-ylivieska.json" } }
+jobs:
+  k:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: cd mediaseuranta && python3 koonti.py "${{ inputs.asiakas }}"
+      - uses: actions/upload-artifact@v4
+        with: { name: koonti, path: mediaseuranta/koonti.html }
