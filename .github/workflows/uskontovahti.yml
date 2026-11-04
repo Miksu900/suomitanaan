@@ -6,6 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       koonti: { description: "1 = lähetä koonti Telegramiin nyt", required: false, default: "" }
+      taysi: { description: "1 = hae myös vanhat jutut (ilman aikarajaa)", required: false, default: "" }
 concurrency: uutisvinkit
 jobs:
   aja:
@@ -21,6 +22,7 @@ jobs:
           CF: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           KOONTI: ${{ inputs.koonti }}
           TAPAHTUMA: ${{ github.event_name }}
+          TAYSI: ${{ inputs.taysi }}
         run: cd mainokset && python3 uskontovahti.py
       - if: success()
         run: |

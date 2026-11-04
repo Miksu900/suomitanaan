@@ -22,9 +22,10 @@ SYOTTEET = [("media", "https://feeds.yle.fi/uutiset/v1/recent.rss?publisherIds=Y
             ("media", "https://www.mtvuutiset.fi/api/feed/rss/uutiset_uusimmat"), ("media", "https://www.uusisuomi.fi/rss"),
             ("media", "https://www.verkkouutiset.fi/feed/"),
             ("media", "https://www.seurakuntalainen.fi/feed/")]
-SYOTTEET += [("media", GN + urllib.parse.quote(q + " when:3d")) for q in HAUT]
+TAYSI = os.environ.get("TAYSI") == "1"   # kerralla myös vanhat jutut (ilman aikarajaa)
+SYOTTEET += [("media", GN + urllib.parse.quote(q + ("" if TAYSI else " when:3d"))) for q in HAUT]
 SYOTTEET += [("kunta", GN + urllib.parse.quote(f"site:{d} (islam OR muslimi OR muslimit OR moskeija OR rukoustila OR uskonnollinen yhdyskunta)")) for d in KUNNAT]
-SYOTTEET += [("kunta", GN + urllib.parse.quote(q + " when:30d")) for q in KUNTAHAUT]
+SYOTTEET += [("kunta", GN + urllib.parse.quote(q + ("" if TAYSI else " when:30d"))) for q in KUNTAHAUT]
 SYOTTEET += [("viranomainen", GN + urllib.parse.quote(f"site:{d} (islam OR muslimi OR muslimit OR moskeija OR uskonnollinen)")) for d in VIRANOMAISET]
 # Muslimiyhteisöjen omat sivut: kokeillaan tavallisia syöteosoitteita; toimimattomat ohitetaan ja kirjataan lokiin.
 YHTEISOT = ["sine.fi", "tatar.fi", "rabita.fi", "islamkeskus.fi", "islam.fi", "muslimit.fi", "hiks.fi", "fida.fi", "resalat.fi",
@@ -106,7 +107,7 @@ const D={data};const C={{media:"Media",viranomainen:"Viranomainen",kunta:"Kunta"
 const L=document.getElementById("lista"),H=document.getElementById("haku"),M=document.getElementById("maara");
 function pv(t){{const d=new Date(t+"Z");return d.toLocaleDateString("fi-FI",{{weekday:"long",day:"numeric",month:"numeric",year:"numeric"}})}}
 function nayta(){{const q=H.value.trim().toLowerCase();const r=D.filter(x=>(!luokka||x.c===luokka)&&(!q||(x.o+" "+x.l+" "+x.k).toLowerCase().includes(q)));
-M.textContent=r.length+" juttua"+(q||luokka?" (suodatettu)":"")+" · viimeiset 90 päivää";L.textContent="";let ed="";
+M.textContent=r.length+" juttua"+(q||luokka?" (suodatettu)":"")+" · koko arkisto";L.textContent="";let ed="";
 for(const x of r){{const p=pv(x.t);if(p!==ed){{const h=document.createElement("h2");h.textContent=p.charAt(0).toUpperCase()+p.slice(1);L.append(h);ed=p}}
 const a=document.createElement("article");const l=document.createElement("a");l.href=x.u;l.target="_blank";l.rel="noopener noreferrer";l.textContent=x.o;
 const m=document.createElement("div");m.className="meta";const t=document.createElement("span");t.className="tag "+x.c;t.textContent=C[x.c];const s=document.createElement("span");s.textContent=x.l;m.append(t,s);a.append(m,l);
@@ -130,13 +131,21 @@ if __name__ == "__main__":
     for x in kohteet(loki):
         if avain(x) in nahty or x["u"] in nahty: continue
         nahty.update([avain(x), x["u"]]); uudet.append(x); arkisto.append(x)
-    raja = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=90)).isoformat()[:16]
-    arkisto = sorted([x for x in arkisto if x["t"] >= raja], key=lambda x: x["t"], reverse=True)[:3000]
+    arkisto = sorted(arkisto, key=lambda x: x["t"], reverse=True)[:30000]   # arkisto säilyy, vanhatkin jutut
     nyt = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=2))).strftime("%-d.%-m.%Y klo %H.%M")
     hallinta = hashlib.sha256((os.environ["CF"].strip() + "-faktapiste").encode()).hexdigest()[:40]
     k = hashlib.sha256(("oma-uskonto" + hallinta).encode()).hexdigest()[:32]
     url = f"https://faktapiste.fi/api/oma/uskonto?k={k}"
-    r = urllib.request.Request("https://faktapiste.fi/api/hallinta/oma", json.dumps({"nimi": "uskonto", "html": sivu(arkisto, nyt)}).encode(),
+    nayt = [dict(x) for x in arkisto]
+    h = sivu(nayt, nyt)
+    if len(h.encode()) >= 1_800_000:            # sivun kokoraja: yli vuoden vanhoista jätetään kuvaus pois
+        vuosi = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=365)).isoformat()[:16]
+        for x in nayt:
+            if x["t"] < vuosi: x["k"] = ""
+        h = sivu(nayt, nyt)
+    while len(h.encode()) >= 1_800_000 and len(nayt) > 100:
+        nayt = nayt[:int(len(nayt) * 0.9)]; h = sivu(nayt, nyt)
+    r = urllib.request.Request("https://faktapiste.fi/api/hallinta/oma", json.dumps({"nimi": "uskonto", "html": h}).encode(),
                                {"content-type": "application/json", "x-avain": hallinta, **UA})
     print("::notice title=Sivu::" + urllib.request.urlopen(r, timeout=30).read().decode()[:200])
     for l in loki: print(l)
