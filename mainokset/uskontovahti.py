@@ -1,4 +1,4 @@
-"""Miikan oma seuranta: julkiset uutiset, viranomaistiedotteet ja yhteisöjen omat tiedotteet islamista ja
+"""Miikan oma seuranta: julkiset uutiset, viranomais- ja kuntatiedot sekä yhteisöjen omat tiedotteet islamista ja
 muslimeista Suomessa. Kerää arkiston (90 pv), rakentaa yksityisen sivun (faktapiste.fi/api/oma/uskonto?k=...)
 ja lähettää aamulla koonnin Telegramiin. Vain julkista tietoa; ei henkilöiden seurantaa eikä kommentointia.
 Tila: uskontovahti.json (haara uutisvinkit-tila)."""
@@ -10,13 +10,21 @@ HAUT = ["islam", "muslimi", "muslimit", "muslimien", "muslimeja", "moskeija", "m
         "islamilaisen", "ramadan", "halal", "koraani", "huivi koulu", "Suomen islamilainen neuvosto", "islamin opetus",
         "muslimitaustainen", "islamofobia", "uskonnonvapaus"]
 VIRANOMAISET = ["poliisi.fi", "valtioneuvosto.fi", "intermin.fi", "um.fi", "oph.fi", "migri.fi", "supo.fi", "eduskunta.fi",
-                "hel.fi", "espoo.fi", "vantaa.fi", "turku.fi", "tampere.fi", "oulu.fi", "yhdenvertaisuus.fi", "okm.fi", "stm.fi", "thl.fi"]
+                "yhdenvertaisuus.fi", "okm.fi", "stm.fi", "thl.fi"]
+KUNNAT = ["hel.fi", "espoo.fi", "vantaa.fi", "turku.fi", "tampere.fi", "oulu.fi", "jyvaskyla.fi", "kuopio.fi", "lahti.fi", "pori.fi",
+          "vaasa.fi", "joensuu.fi", "lappeenranta.fi", "kouvola.fi", "hameenlinna.fi", "seinajoki.fi", "rovaniemi.fi", "kotka.fi",
+          "kerava.fi", "jarvenpaa.fi", "porvoo.fi", "kokkola.fi", "ylivieska.fi", "kuntaliitto.fi"]
+KUNTAHAUT = ["moskeija kaava", "moskeija rakennuslupa", "moskeijahanke", "rukoustila kaupunki", "islamilainen kulttuurikeskus",
+             "muslimien hautausmaa", "islamilainen hautausmaa", "uskonnollinen yhdyskunta avustus kaupunki", "halal kouluruoka",
+             "islamin opetus koulu", "rukoushuone kunta", "moskeija valtuusto", "moskeija lautakunta"]
 SYOTTEET = [("media", "https://feeds.yle.fi/uutiset/v1/recent.rss?publisherIds=YLE_UUTISET"), ("media", "https://www.hs.fi/rss/tuoreimmat.xml"),
             ("media", "https://www.iltalehti.fi/rss/uutiset.xml"), ("media", "https://www.is.fi/rss/tuoreimmat.xml"),
             ("media", "https://www.mtvuutiset.fi/api/feed/rss/uutiset_uusimmat"), ("media", "https://www.uusisuomi.fi/rss"),
             ("media", "https://www.verkkouutiset.fi/feed/"), ("media", "https://www.kirkkojakaupunki.fi/rss"),
             ("media", "https://www.seurakuntalainen.fi/feed/"), ("media", "https://www.dagen.fi/feed/")]
 SYOTTEET += [("media", GN + urllib.parse.quote(q + " when:3d")) for q in HAUT]
+SYOTTEET += [("kunta", GN + urllib.parse.quote(f"site:{d} (islam OR muslimi OR muslimit OR moskeija OR rukoustila OR uskonnollinen yhdyskunta)")) for d in KUNNAT]
+SYOTTEET += [("kunta", GN + urllib.parse.quote(q + " when:30d")) for q in KUNTAHAUT]
 SYOTTEET += [("viranomainen", GN + urllib.parse.quote(f"site:{d} (islam OR muslimi OR muslimit OR moskeija OR uskonnollinen)")) for d in VIRANOMAISET]
 # Muslimiyhteisöjen omat sivut: kokeillaan tavallisia syöteosoitteita; toimimattomat ohitetaan ja kirjataan lokiin.
 YHTEISOT = ["sine.fi", "tatar.fi", "rabita.fi", "islamkeskus.fi", "islam.fi", "muslimit.fi", "hiks.fi", "fida.fi", "resalat.fi",
@@ -24,9 +32,9 @@ YHTEISOT = ["sine.fi", "tatar.fi", "rabita.fi", "islamkeskus.fi", "islam.fi", "m
 SYOTTEET += [("yhteiso", f"https://{d}{p}") for d in YHTEISOT for p in ("/feed/", "/rss")]
 SYOTTEET += [("yhteiso", GN + urllib.parse.quote(f'"{n}"')) for n in ["Suomen Islamilainen Neuvosto", "Suomen Islam-seurakunta", "Helsingin Islamkeskus", "Rabita", "Suomen islamilainen yhdyskunta"]]
 
-AIHE = re.compile(r"islam|muslim|moskei|moske|imaam|ramadan|ramazan|halal|koraan|hijab|burka|niqab|sharia|islamilai|uskonnonvapau|eid\b|tataari", re.I)
+AIHE = re.compile(r"rukousti|rukoushuo|islam|muslim|moskei|moske|imaam|ramadan|ramazan|halal|koraan|hijab|burka|niqab|sharia|islamilai|uskonnonvapau|eid\b|tataari", re.I)
 SUOMI = re.compile(r"suom|helsin|espoo|vantaa|tampere|turku|turun|oulu|jyväsky|kuopio|lahti|pori|vaasa|joensuu|lappeenran|rovanie|kotka|seinäjo|eduskun|yle\b|poliisi|ministeri|kunta|kaupun|koulu|kela|migri|thl|opetushallit|seurakun|kirkko|supo", re.I)
-LUOKAT = {"media": "Media", "viranomainen": "Viranomainen", "yhteiso": "Muslimiyhteisöt"}
+LUOKAT = {"media": "Media", "viranomainen": "Viranomainen", "kunta": "Kunnat", "yhteiso": "Muslimiyhteisöt"}
 
 def hae(url):
     return urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=25).read().decode("utf-8", "replace")
@@ -70,14 +78,14 @@ main{{max-width:820px;margin:auto;display:grid;gap:18px}} h1{{font:650 1.7rem/1.
 article{{background:var(--s);border:1px solid var(--l);border-radius:10px;padding:12px 14px;display:grid;gap:4px}}
 article a{{color:var(--f);font-weight:600;text-decoration:none}} article a:hover{{text-decoration:underline}}
 .meta{{font-size:.82rem;color:var(--m);display:flex;gap:8px;flex-wrap:wrap;align-items:center}} .tag{{font-size:.72rem;letter-spacing:.05em;text-transform:uppercase;font-weight:700}}
-.media{{color:var(--b)}} .viranomainen{{color:var(--c)}} .yhteiso{{color:var(--a)}} .k{{font-size:.92rem;color:var(--m);margin:0}}
+.media{{color:var(--b)}} .viranomainen{{color:var(--c)}} .yhteiso{{color:var(--a)}} .kunta{{color:#b5543c}} .k{{font-size:.92rem;color:var(--m);margin:0}}
 details{{background:var(--s);border:1px solid var(--l);border-radius:10px;padding:12px 14px}} summary{{cursor:pointer;font-weight:600}}
 table{{border-collapse:collapse;width:100%;font-size:.92rem}} td,th{{text-align:left;vertical-align:top;padding:7px 6px;border-bottom:1px solid var(--l)}} .tw{{overflow-x:auto}}
 </style></head><body><main>
 <header style="display:grid;gap:8px"><h1>Islam ja muslimit Suomessa</h1>
-<p class="p">Julkiset uutiset, viranomaisten tiedotteet ja muslimiyhteisöjen omat tiedotteet yhdessä paikassa. Päivittyy noin kolmen tunnin välein. Päivitetty {nyt}. Sivu on vain sinun käytössäsi.</p></header>
+<p class="p">Julkiset uutiset, viranomaisten ja kuntien tiedot (esim. hankkeet ja kaavat) sekä muslimiyhteisöjen omat tiedotteet yhdessä paikassa. Päivittyy noin kolmen tunnin välein. Päivitetty {nyt}. Sivu on vain sinun käytössäsi.</p></header>
 <input id="haku" type="search" placeholder="Hae otsikoista ja lähteistä, esim. moskeija, Turku, poliisi" aria-label="Haku">
-<div class="chips" id="chips"><button data-c="" aria-pressed="true">Kaikki</button><button data-c="media" aria-pressed="false">Media</button><button data-c="viranomainen" aria-pressed="false">Viranomaiset</button><button data-c="yhteiso" aria-pressed="false">Muslimiyhteisöt</button></div>
+<div class="chips" id="chips"><button data-c="" aria-pressed="true">Kaikki</button><button data-c="media" aria-pressed="false">Media</button><button data-c="viranomainen" aria-pressed="false">Viranomaiset</button><button data-c="kunta" aria-pressed="false">Kunnat ja hankkeet</button><button data-c="yhteiso" aria-pressed="false">Muslimiyhteisöt</button></div>
 <p class="p" id="maara"></p><div id="lista" style="display:grid;gap:10px"></div>
 <details><summary>Kristinusko ja islam – vertailu</summary><div class="tw"><table>
 <tr><th>Aihe</th><th>Kristinusko</th><th>Islam</th></tr>
@@ -94,7 +102,7 @@ table{{border-collapse:collapse;width:100%;font-size:.92rem}} td,th{{text-align:
 <tr><td>Kannattajia</td><td>n. 2,3 mrd</td><td>n. 2 mrd</td></tr></table></div>
 <p class="p">Suomessa arviolta noin 130 000 muslimitaustaista (tutkija-arvio, MTV Uutiset). Laajempi vertailu: Claude-sivu "Kristinusko ja islam".</p></details>
 </main><script>
-const D={data};const C={{media:"Media",viranomainen:"Viranomainen",yhteiso:"Muslimiyhteisö"}};let luokka="";
+const D={data};const C={{media:"Media",viranomainen:"Viranomainen",kunta:"Kunta",yhteiso:"Muslimiyhteisö"}};let luokka="";
 const L=document.getElementById("lista"),H=document.getElementById("haku"),M=document.getElementById("maara");
 function pv(t){{const d=new Date(t+"Z");return d.toLocaleDateString("fi-FI",{{weekday:"long",day:"numeric",month:"numeric",year:"numeric"}})}}
 function nayta(){{const q=H.value.trim().toLowerCase();const r=D.filter(x=>(!luokka||x.c===luokka)&&(!q||(x.o+" "+x.l+" "+x.k).toLowerCase().includes(q)));
