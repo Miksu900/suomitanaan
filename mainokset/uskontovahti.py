@@ -26,6 +26,10 @@ TAYSI = os.environ.get("TAYSI") == "1"   # kerralla myös vanhat jutut (ilman ai
 SYOTTEET += [("media", GN + urllib.parse.quote(q + ("" if TAYSI else " when:3d"))) for q in HAUT]
 SYOTTEET += [("kunta", GN + urllib.parse.quote(f"site:{d} (islam OR muslimi OR muslimit OR moskeija OR rukoustila OR uskonnollinen yhdyskunta)")) for d in KUNNAT]
 SYOTTEET += [("kunta", GN + urllib.parse.quote(q + ("" if TAYSI else " when:30d"))) for q in KUNTAHAUT]
+if TAYSI:   # vanhat jutut vuosi kerrallaan (Google palauttaa max ~100 juttua hakua kohden)
+    SYOTTEET += [("media", GN + urllib.parse.quote(f"{q} after:{v}-01-01 before:{v + 1}-01-01")) for v in range(2008, 2027)
+                 for q in ["islam Suomi", "muslimit Suomi", "moskeija", "imaami", "islamilainen yhdyskunta", "muslimi Helsinki"]]
+    SYOTTEET += [("kunta", GN + urllib.parse.quote(f"moskeija (kaava OR rakennuslupa OR valtuusto OR hanke) after:{v}-01-01 before:{v + 1}-01-01")) for v in range(2008, 2027)]
 SYOTTEET += [("viranomainen", GN + urllib.parse.quote(f"site:{d} (islam OR muslimi OR muslimit OR moskeija OR uskonnollinen)")) for d in VIRANOMAISET]
 # Muslimiyhteisöjen omat sivut: kokeillaan tavallisia syöteosoitteita; toimimattomat ohitetaan ja kirjataan lokiin.
 YHTEISOT = ["sine.fi", "tatar.fi", "rabita.fi", "islamkeskus.fi", "islam.fi", "muslimit.fi", "hiks.fi", "fida.fi", "resalat.fi",
