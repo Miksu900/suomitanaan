@@ -1,3 +1,1 @@
-{"otsikko": "Ylivieska tänään", "tunnit": 72,
- "hakusanat": "ylivies|kalajokilaak|nivala|kalajoki|sievi|alavie|oulainen|haapaj|pyhäjoki|pohjois-pohjanma|raahe|ylivieskan",
- "omat": {"Ylivieskan kaupunki": "https://www.ylivieska.fi/feed/"}, "omat_otsikko": "Kaupungin tiedotteet"}
+{"otsikko": "Ylivieska tänään", "tunnit": 72, "hakusanat": "\\b(ylivies|kalajokilaak|nivala|kalajoki|sievi|alaviesk|oulai|haapaj|pyhäjoki|pohjois-pohjanma|raahe)", "omat": {"Ylivieskan kaupunki": "https://www.ylivieska.fi/feed/"}, "omat_otsikko": "Kaupungin tiedotteet"}
