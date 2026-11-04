@@ -36,7 +36,8 @@ def laheta(t):
 
 if __name__ == "__main__":
     tila = "uskontovahti.json"
-    nahdyt = set(json.load(open(tila))) if os.path.exists(tila) else set()
+    try: nahdyt = set(json.load(open(tila)))
+    except Exception: nahdyt = set()
     testi = os.environ.get("TESTI") == "1"
     uudet, otsikot = [], set()
     for u in kohteet():
