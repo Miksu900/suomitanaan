@@ -1,0 +1,28 @@
+name: Uskontovahti
+# Miikan oma päivittäinen koonti: julkiset uutiset islamista ja muslimeista Suomessa -> Telegram
+on:
+  schedule:
+    - cron: "37 5 * * *"   # n. klo 7.37 Suomen aikaa
+  workflow_dispatch:
+    inputs:
+      testi: { description: "1 = lähetä koonti ilman muistia", required: false, default: "" }
+concurrency: uutisvinkit
+jobs:
+  aja:
+    runs-on: ubuntu-latest
+    permissions: { contents: write }
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          git fetch origin uutisvinkit-tila && git show origin/uutisvinkit-tila:nahdyt.json > /tmp/nahdyt.json || true
+          git show origin/uutisvinkit-tila:uskontovahti.json > mainokset/uskontovahti.json || true
+      - env:
+          TG: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TESTI: ${{ inputs.testi }}
+        run: cd mainokset && python3 uskontovahti.py
+      - if: inputs.testi != '1'
+        run: |
+          mkdir /tmp/t && cd /tmp/t && git init -q && git checkout -q -b uutisvinkit-tila
+          cp /tmp/nahdyt.json . 2>/dev/null || true; cp $GITHUB_WORKSPACE/mainokset/uskontovahti.json .
+          git add -A && git -c user.name=bot -c user.email=bot@x commit -qm tila
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" uutisvinkit-tila

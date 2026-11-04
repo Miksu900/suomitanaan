@@ -22,6 +22,6 @@ jobs:
         run: cd mainokset && python3 uutisvinkit.py
       - if: inputs.testi != '1'
         run: |
-          mkdir /tmp/t && cp mainokset/nahdyt.json /tmp/t/ && cd /tmp/t && git init -q && git checkout -q -b uutisvinkit-tila
+          mkdir /tmp/t && cp mainokset/nahdyt.json /tmp/t/ && (git show origin/uutisvinkit-tila:uskontovahti.json > /tmp/t/uskontovahti.json || true) && cd /tmp/t && git init -q && git checkout -q -b uutisvinkit-tila
           git add -A && git -c user.name=bot -c user.email=bot@x commit -qm tila
           git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" uutisvinkit-tila
