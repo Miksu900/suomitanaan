@@ -21,8 +21,9 @@ def hae(url):
 def kohteet():
     for s in SYOTTEET:
         try: x = hae(s)
-        except Exception: continue
-        for it in re.findall(r"<item>([\s\S]*?)</item>", x)[:60]:
+        except Exception as e: print(f"VIRHE {s[:70]}: {e}"); continue
+        its = re.findall(r"<item>([\s\S]*?)</item>", x)[:60]; print(f"{len(its):3} {s[:90]}")
+        for it in its:
             g = lambda t: html.unescape(re.sub(r"<!\[CDATA\[|\]\]>|<[^>]+>", " ", (re.search(rf"<{t}[^>]*>([\s\S]*?)</{t}>", it) or [None, ""])[1])).strip()
             otsikko, kuvaus, linkki = g("title"), g("description")[:500], g("link")
             lahde = g("source") or re.sub(r"^www\.", "", urllib.parse.urlparse(linkki).netloc)
