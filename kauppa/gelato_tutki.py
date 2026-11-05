@@ -2,7 +2,7 @@
 import os, json, urllib.request, urllib.error
 K = os.environ["GK"].strip()
 def api(url, data=None):
-    r = urllib.request.Request(url, json.dumps(data).encode() if data else None, {"X-API-KEY": K, "content-type": "application/json"})
+    r = urllib.request.Request(url, json.dumps(data).encode() if data else None, {"X-API-KEY": K, "content-type": "application/json", "user-agent": "NetvoKauppa/1.0", "accept": "application/json"})
     try: return json.loads(urllib.request.urlopen(r, timeout=40).read())
     except urllib.error.HTTPError as e: return {"VIRHE": e.code, "viesti": e.read().decode()[:400]}
 kat = api("https://product.gelatoapis.com/v3/catalogs")
