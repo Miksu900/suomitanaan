@@ -1,0 +1,13 @@
+name: Kauppa – testi
+on: { workflow_dispatch: {} }
+jobs:
+  t:
+    runs-on: ubuntu-latest
+    steps:
+      - env: { K: "${{ secrets.VISMAPAY_API_KEY }}", P: "${{ secrets.VISMAPAY_PRIVATE_KEY }}" }
+        run: |
+          echo "::notice title=Avaimet::api ${#K} merkkiä, private ${#P} merkkiä"
+          A=$(printf '%s' "$K" | openssl dgst -sha256 -hmac "$P" -hex | sed 's/.*= //' | tr a-f A-F)
+          for V in 2 w3.1; do echo "::notice title=Maksutavat v$V::$(curl -sS -X POST https://www.vismapay.com/pbwapi/merchant_payment_methods -H 'content-type: application/json' -d "{\"version\":\"$V\",\"api_key\":\"$K\",\"currency\":\"EUR\",\"authcode\":\"$A\"}" | jq -c '{result, n:(.payment_methods|length), eka:.payment_methods[0]}' | head -c 400)"; done
+          echo "::notice title=Netvo maksutavat::$(curl -sS https://netvo.fi/api/kauppa/maksutavat | head -c 300)"
+          echo "::notice title=Osto::$(curl -sS -X POST https://netvo.fi/api/kauppa/osto -H 'content-type: application/json' -d '{"tuote":"01","email":"testi@netvo.fi","hyvaksy":true}' | head -c 300)"
