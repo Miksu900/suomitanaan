@@ -490,8 +490,7 @@ def suunnittelija(malli):
     if CONFIG["avoinna"]:
         maksu = '<button class="nappi leveä" id="maksa" type="submit">Siirry maksamaan</button>'
     else:
-        maksu = ('<div class="ilmoitus">Tilaukset avautuvat aivan pian – ehdit hyvin jouluun. Suunnitelmasi säilyy tällä laitteella, joten voit palata tilaamaan myöhemmin.</div>'
-                 '<button class="nappi leveä" id="maksa" type="submit" disabled>Tilaukset avautuvat pian</button>')
+        maksu = '<button class="nappi leveä" id="maksa" type="submit" disabled>Tilaukset avautuvat pian</button>'
     runko = f"""<div class="tee">
 <div class="lava" id="esi" aria-label="Esikatselu"><div class="lava-seina" id="seina"><div class="taulu" id="taulu"><canvas id="cv" role="img" aria-label="{nimi}n esikatselu"></canvas></div><div id="lataus" class="lataus" hidden role="status" aria-live="polite"></div></div>
 <div class="lava-tyokalut"><button type="button" id="suurenna" aria-pressed="false">Suurenna</button><button type="button" id="kumoa" disabled>Kumoa</button><button type="button" id="alusta">Aloita alusta</button></div></div>
@@ -499,7 +498,7 @@ def suunnittelija(malli):
 <div class="alapalkki"><div><b id="hinta"></b><span id="tuotenimi"></span><span id="toimitus"></span></div><button type="button" class="nappi" id="jatka">Jatka tilaamaan</button></div>
 <div class="kassa" id="kassa" hidden role="dialog" aria-modal="true" aria-labelledby="kassa-otsikko"><div class="kassa-arkki">
 <button type="button" class="sulje" aria-label="Sulje">×</button>
-<h2 id="kassa-otsikko">Tarkista ja tilaa</h2>
+<h2 id="kassa-otsikko">Tarkista ja tilaa</h2>{'' if CONFIG['avoinna'] else '<div class="ilmoitus" style="margin-top:12px">Tilaukset avautuvat aivan pian – ehdit hyvin jouluun. Voit jo tarkistaa suunnitelmasi; se säilyy tällä laitteella.</div>'}
 <div class="kassa-ylä"><div class="kassa-kuva-alusta"><img id="kassa-kuva" class="kassa-kuva" alt="Lopullinen esikatselu"></div><div><b id="kassa-yht"></b><p id="kassa-toimitus"></p><p>Toimitus Suomeen sisältyy hintaan.</p></div></div>
 <form id="tilauslomake">
 <div class="tarkista"><h3>Tarkista tekstit</h3><ul id="kassa-tekstit"></ul><label class="rasti"><input type="checkbox" name="tarkistettu"> <span>Tekstit ovat oikein. Tuote painetaan juuri näin.</span></label></div>
