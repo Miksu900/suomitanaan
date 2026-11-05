@@ -1,0 +1,16 @@
+name: Omalahja sähköposti
+# info@omalahja.fi -> Gmail (Cloudflare Email Routing)
+on: { workflow_dispatch: {} }
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    steps:
+      - env: { CF: "${{ secrets.CLOUDFLARE_API_TOKEN }}" }
+        run: |
+          A=https://api.cloudflare.com/client/v4; H=(-sS -H "Authorization: Bearer $CF" -H "content-type: application/json")
+          Z=$(curl "${H[@]}" "$A/zones?name=omalahja.fi" | jq -r '.result[0].id'); ZN=$(curl "${H[@]}" "$A/zones?name=netvo.fi" | jq -r '.result[0].id')
+          echo "::notice title=Netvo säännöt::$(curl "${H[@]}" "$A/zones/$ZN/email/routing/rules" | jq -c '[.result[]? | {m:.matchers, a:.actions}]' | head -c 600)"
+          echo "::notice title=Enable::$(curl "${H[@]}" -X POST "$A/zones/$Z/email/routing/dns" -d '{}' | jq -c '{success, errors}')"
+          echo "::notice title=Enable2::$(curl "${H[@]}" -X POST "$A/zones/$Z/email/routing/enable" -d '{}' | jq -c '{success, errors}')"
+          echo "::notice title=Sääntö::$(curl "${H[@]}" -X POST "$A/zones/$Z/email/routing/rules" -d '{"name":"info","enabled":true,"matchers":[{"type":"literal","field":"to","value":"info@omalahja.fi"}],"actions":[{"type":"forward","value":["miika.koskela990@gmail.com"]}]}' | jq -c '{success, errors}')"
+          echo "::notice title=Tila::$(curl "${H[@]}" "$A/zones/$Z/email/routing" | jq -c '.result | {enabled, status}')"
