@@ -65,6 +65,8 @@ _EUVIR = {"eu": ["europa.eu", "europol.europa.eu", "fra.europa.eu", "europarl.eu
 EUROOPPA += [("viranomainen", gn(f"site:{d} (islam OR muslim OR mosque OR islamist OR Islamismus OR islamism OR moské OR muslimer)", "sv" if m == "se" else "en"), m)
              for m, ds in _EUVIR.items() for d in ds]
 AIHE_EU = re.compile(r"islam|muslim|moské|moske|mosque|moschee|mosquée|moskee|imam|ramadan|halal|koran|quran|coran|sharia|charia|hijab|burka|niqab|jihad|musulman|salafi", re.I)
+# Epäolennaiset: Islam-niminen urheilija ym., Lähi-idän uutistoimistot (ei Eurooppaa)
+POIS = re.compile(r"makhachev|islam makhachev|ufc|mma\b|ottelu|kampfsport|[\u0600-\u06ff]", re.I)
 AIHE = re.compile(r"rukousti|rukoushuo|islam|muslim|moskei|moske|imaam|ramadan|ramazan|halal|koraan|hijab|burka|niqab|sharia|islamilai|uskonnonvapau|eid\b|tataari", re.I)
 SUOMI = re.compile(r"suom|helsin|espoo|vantaa|tampere|turku|turun|oulu|jyväsky|kuopio|lahti|pori|vaasa|joensuu|lappeenran|rovanie|kotka|seinäjo|eduskun|yle\b|poliisi|ministeri|kunta|kaupun|koulu|kela|migri|thl|opetushallit|seurakun|kirkko|supo", re.I)
 LUOKAT = {"media": "Media", "viranomainen": "Viranomainen", "kunta": "Kunnat", "yhteiso": "Muslimiyhteisöt"}
@@ -97,6 +99,7 @@ def kohteet(loki):
             elif luokka == "yhteiso" and "news.google" not in s: pass                     # yhteisön oma sivu: kaikki tiedotteet
             elif not AIHE.search(teksti): continue
             elif "news.google" in s and luokka == "media" and not SUOMI.search(teksti + " " + lahde): continue
+            if alue == "eu" and POIS.search(otsikko + " " + lahde): continue
             yield {"o": re.sub(r"\s+", " ", otsikko), "k": kuvaus, "l": lahde, "u": linkki, "t": pvm(g("pubDate")), "c": luokka, "a": alue, **({"m": maa} if maa else {})}
 
 def sivu(arkisto, nyt):
@@ -178,6 +181,7 @@ if __name__ == "__main__":
     except Exception: vanha = {}
     if isinstance(vanha, list): vanha = {}
     arkisto, lahetetyt = vanha.get("arkisto", []), set(vanha.get("lahetetyt", []))
+    arkisto = [x for x in arkisto if not (x.get("a") == "eu" and POIS.search(x["o"] + " " + x.get("oo", "") + " " + x["l"]))]
     avain = lambda x: re.sub(r"\W+", "", x["o"].lower())[:70]
     nahty = {avain(x) for x in arkisto} | {x["u"] for x in arkisto}
     loki, uudet = [], []
