@@ -114,6 +114,79 @@ async function kasittelePaluu(env, p) {
   return { t, ok: true };
 }
 
+// ---- Karttadata: Overpass ja Nominatim Workerin kautta, välimuistissa (Cache API + R2) ----
+const UA = "Omalahja/1.0 (+https://omalahja.fi; info@omalahja.fi)";
+const KARTTA_TASOT = [0.6, 1, 1.6, 2.5, 4, 6.5, 10, 16];
+const OVERPASS = ["https://overpass-api.de/api/interpreter", "https://overpass.private.coffee/api/interpreter", "https://overpass.kumi.systems/api/interpreter"];
+export function karttaRuutu(lat, lon, sade) {
+  const ti = Math.max(0, KARTTA_TASOT.findIndex((x) => x >= sade * 0.999)), t = ti < 0 ? KARTTA_TASOT.length - 1 : ti, taso = KARTTA_TASOT[t === -1 ? 7 : t];
+  const askelLat = (taso * 0.6) / 111.32, i = Math.round(lat / askelLat), la = i * askelLat;
+  const askelLon = askelLat / Math.max(0.05, Math.cos((la * Math.PI) / 180)), j = Math.round(lon / askelLon), lo = j * askelLon;
+  const dlat = (taso * 1.7) / 111.32, dlon = dlat / Math.max(0.05, Math.cos((la * Math.PI) / 180));
+  return { taso, t: KARTTA_TASOT.indexOf(taso), i, j, lat: la, lon: lo, rajat: { s: la - dlat * 1.45, n: la + dlat * 1.45, w: lo - dlon, e: lo + dlon } };
+}
+export function overpassKysely(r) {
+  const b = r.rajat, bb = `${b.s.toFixed(5)},${b.w.toFixed(5)},${b.n.toFixed(5)},${b.e.toFixed(5)}`, s = r.taso;
+  const ryhmat = [["t3.3", 'way["highway"~"^(motorway|trunk|motorway_link|trunk_link)$"]'], ["t2.7", 'way["highway"~"^(primary|primary_link)$"]'],
+    ["t2.3", 'way["highway"~"^(secondary|secondary_link)$"]'], ["t1.9", 'way["highway"~"^(tertiary|tertiary_link)$"]']];
+  if (s <= 10) ryhmat.push(["t1.2", 'way["highway"~"^(unclassified|residential|living_street)$"]']);
+  if (s <= 1.6) ryhmat.push(["t0.85", 'way["highway"~"^(pedestrian|service)$"]']);
+  if (s <= 1) ryhmat.push(["t0.45", 'way["highway"~"^(footway|path|cycleway|track|steps)$"]']);
+  ryhmat.push(["rata", 'way["railway"="rail"]'], ["vesi", 'way["natural"="water"]'], ["vesi", 'way["waterway"="riverbank"]'], ["vr", 'relation["natural"="water"]'],
+    ["j2.4", 'way["waterway"="river"]'], ["j1.6", 'way["waterway"="canal"]'], ["ranta", 'way["natural"="coastline"]']);
+  if (s <= 4) ryhmat.push(["j0.7", 'way["waterway"="stream"]']);
+  return `[out:json][timeout:40][maxsize:300000000];` + ryhmat.map(([g, q]) => `make r g="${g}";out;${q}(${bb});out skel geom qt;`).join("");
+}
+async function haeOverpass(kysely) {
+  // Porrastetut rinnakkaiset pyynnöt peileihin: seuraava käynnistyy, jos edellinen ei ole vastannut 9 sekunnissa.
+  const ohjaimet = [];
+  const yksi = (url, viive) => new Promise((ok, ei) => setTimeout(async () => {
+    const ac = new AbortController(); ohjaimet.push(ac); const aika = setTimeout(() => ac.abort(), 45000);
+    try {
+      const r = await fetch(url, { method: "POST", body: "data=" + encodeURIComponent(kysely), headers: { "content-type": "application/x-www-form-urlencoded", "user-agent": UA, accept: "application/json" }, signal: ac.signal });
+      if (!r.ok) throw new Error(url + " " + r.status);
+      const b = new Uint8Array(await r.arrayBuffer()); clearTimeout(aika);
+      const loppu = new TextDecoder().decode(b.subarray(Math.max(0, b.length - 400)));
+      if (b[0] !== 0x7b || (/"remark"/.test(loppu) && /error|timed out|out of memory/i.test(loppu))) throw new Error(url + " remark");
+      ok({ b, url });
+    } catch (e) { clearTimeout(aika); ei(e); }
+  }, viive));
+  try { const t = await Promise.any(OVERPASS.map((u, k) => yksi(u, k * 9000))); ohjaimet.forEach((a) => a.abort()); return t; }
+  catch (e) { throw new Error("overpass: " + (e.errors || []).map((x) => x.message).join(" | ")); }
+}
+async function karttaAlue(env, u, ctx) {
+  const lat = +u.searchParams.get("lat"), lon = +u.searchParams.get("lon"), sade = +u.searchParams.get("sade");
+  if (!isFinite(lat) || !isFinite(lon) || !(sade > 0) || Math.abs(lat) > 85 || Math.abs(lon) > 180) return json({ virhe: "lat, lon ja sade" }, 400);
+  const r = karttaRuutu(lat, lon, Math.min(sade, 16));
+  const avain = `omalahja/kartta/v1/${r.t}/${r.i}_${r.j}.json`, valimuisti = caches.default, cu = new Request(`https://omalahja.fi/_kartta/v1/${r.t}/${r.i}_${r.j}`);
+  const otsakkeet = { "content-type": "application/json; charset=utf-8", "cache-control": "public, max-age=604800", "access-control-allow-origin": "*", "x-omalahja-ruutu": `${r.t}/${r.i}_${r.j}` };
+  const c = await valimuisti.match(cu); if (c) { const h = new Headers(c.headers); h.set("x-lahde", "cache"); return new Response(c.body, { headers: h }); }
+  const o = await env.VIDEOT.get(avain);
+  if (o) { const vas = new Response(o.body, { headers: { ...otsakkeet, "x-lahde": "r2" } }); ctx && ctx.waitUntil(valimuisti.put(cu, vas.clone())); return vas; }
+  let t; try { t = await haeOverpass(overpassKysely(r)); } catch (e) { console.log(String(e)); return json({ virhe: "Karttapalvelu ei vastannut. Yritä hetken päästä uudelleen." }, 503); }
+  const alku = new TextEncoder().encode(`{"ruutu":${JSON.stringify({ taso: r.taso, lat: r.lat, lon: r.lon, rajat: r.rajat, lahde: t.url.split("/")[2] })},"osm":`);
+  const runko = new Uint8Array(alku.length + t.b.length + 1); runko.set(alku); runko.set(t.b, alku.length); runko[runko.length - 1] = 0x7d;
+  ctx && ctx.waitUntil(Promise.all([env.VIDEOT.put(avain, runko, { httpMetadata: { contentType: "application/json" } }), valimuisti.put(cu, new Response(runko, { headers: otsakkeet }))]));
+  return new Response(runko, { headers: { ...otsakkeet, "x-lahde": t.url.split("/")[2] } });
+}
+async function karttaHaku(env, u, ctx) {
+  const q = (u.searchParams.get("q") || "").trim().slice(0, 120), fi = u.searchParams.get("fi") === "1";
+  if (q.length < 2) return json([]);
+  const avain = hex(await crypto.subtle.digest("SHA-256", new TextEncoder().encode((fi ? "fi:" : "kaikki:") + q.toLowerCase()))).slice(0, 40);
+  const cu = new Request(`https://omalahja.fi/_haku/v1/${avain}`), c = await caches.default.match(cu);
+  if (c) return c;
+  const o = await env.VIDEOT.get(`omalahja/haku/v1/${avain}.json`);
+  const otsakkeet = { "content-type": "application/json; charset=utf-8", "cache-control": "public, max-age=86400" };
+  if (o) return new Response(o.body, { headers: otsakkeet });
+  const nu = new URL("https://nominatim.openstreetmap.org/search");
+  nu.search = new URLSearchParams({ q, format: "jsonv2", limit: "6", "accept-language": "fi", addressdetails: "1", ...(fi ? { countrycodes: "fi" } : {}) });
+  const r = await fetch(nu, { headers: { "user-agent": UA, accept: "application/json", referer: "https://omalahja.fi/" }, signal: AbortSignal.timeout(12000) }).catch(() => null);
+  if (!r || !r.ok) return json({ virhe: "Paikkahaku ei vastannut. Yritä hetken päästä uudelleen." }, 503);
+  const b = await r.text();
+  ctx && ctx.waitUntil(Promise.all([env.VIDEOT.put(`omalahja/haku/v1/${avain}.json`, b), caches.default.put(cu, new Response(b, { headers: otsakkeet }))]));
+  return new Response(b, { headers: otsakkeet });
+}
+
 const tarkista = (env, req) => !!(env.HALLINTA && req.headers.get("x-avain") === env.HALLINTA);
 
 export async function omalahja(req, env, u, ctx) {
@@ -121,6 +194,8 @@ export async function omalahja(req, env, u, ctx) {
   const p = u.pathname.replace(/^\/api\//, "");
   const vp = !!(env.VISMAPAY_API_KEY && env.VISMAPAY_PRIVATE_KEY);
 
+  if (p === "kartta/alue" && req.method === "GET") return karttaAlue(env, u, ctx);
+  if (p === "kartta/haku" && req.method === "GET") return karttaHaku(env, u, ctx);
   if (p === "tila") return json({ ok: true, avoinna: !!CONFIG.avoinna, maksu: vp, gelato: !!env.GELATO_API_KEY, posti: !!env.BREVO_API_KEY, telegram: !!env.TELEGRAM_BOT_TOKEN });
 
   // Painotiedoston lataus (selain renderöi suunnitelman painoresoluutiolla)

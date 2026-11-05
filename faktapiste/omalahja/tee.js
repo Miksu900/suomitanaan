@@ -89,8 +89,23 @@
     },
   };
   try { const e = new URLSearchParams(location.search).get("esim"); const ex = e && (ESIMERKIT[MALLI] || {})[e]; if (ex) S = { ...OLETUS, tuote: S.tuote, koko: S.koko, vari: S.vari, ...ex, kuvioValittu: true }; } catch {}
+  // Tallennettu tila tarkistetaan: rikkinäinen tai vanha tallennus ei saa kaataa sivua.
+  function puhdista(x) {
+    const o = { ...OLETUS };
+    for (const k of Object.keys(OLETUS)) if (x && x[k] !== undefined && typeof x[k] === typeof OLETUS[k]) o[k] = x[k];
+    if (x && x.kuvioValittu) o.kuvioValittu = true;
+    const fontit = Object.fromEntries(FONTIT.map((f) => [f.id, 1])), kuviot = { ei: 1, ...KV.K };
+    const enumit = MALLI === "kartta" ? { teema: KA.TEEMAT, muoto: KARTTAMUODOT, reunus: REUNUKSET, tekstiSij: TEKSTISIJ, paksuus: PAKSUUS, fontti: fontit, kuvio: kuviot, kuvioSij: KV.SIJAINNIT, kuvioKoko: KV.KOOT }
+      : { asettelu: ASETTELUT, paletti: PALETIT, fontti: fontit, kuvio: kuviot, kuvioSij: KV.SIJAINNIT, kuvioKoko: KV.KOOT };
+    for (const [k, m] of Object.entries(enumit)) if (!Object.prototype.hasOwnProperty.call(m, o[k])) o[k] = OLETUS[k];
+    if (!["pysty", "vaaka"].includes(o.suunta)) o.suunta = "pysty";
+    if (!C.tuotteet[o.tuote] || !C.tuotteet[o.tuote].koot[o.koko]) { o.tuote = OLETUS.tuote; o.koko = OLETUS.koko; }
+    if (!C.tuotteet.kehys.varit[o.vari]) o.vari = Object.keys(C.tuotteet.kehys.varit)[0];
+    if (MALLI === "kartta") { if (!isFinite(o.lat) || Math.abs(o.lat) > 85 || !isFinite(o.lon) || Math.abs(o.lon) > 180) { o.lat = OLETUS.lat; o.lon = OLETUS.lon; } o.sade = Math.min(16, Math.max(0.4, +o.sade || OLETUS.sade)); }
+    return o;
+  }
+  S = puhdista(S);
   const tallenna = () => { try { localStorage.setItem(AVAIN, JSON.stringify(S)); } catch {} };
-  if (!C.tuotteet[S.tuote] || !C.tuotteet[S.tuote].koot[S.koko]) { S.tuote = "juliste"; S.koko = OLETUS.koko; }
 
   const tuote = () => C.tuotteet[S.tuote];
   const koko = () => tuote().koot[S.koko];
@@ -257,20 +272,37 @@
 
   const piirraSuunnitelma = (c, W, H) => (MALLI === "kartta" ? piirraKartta(c, W, H) : piirraNimi(c, W, H));
 
-  // ---------- Esikatselu ----------
-  const cv = $("#cv"), taulu = $("#taulu"), esi = $("#esi");
-  let rafId = 0;
-  function paivita() { tallenna(); paivitaHinta(); if (!rafId) rafId = requestAnimationFrame(() => { rafId = 0; piirraEsikatselu(); }); }
+  // ---------- Esikatselu (kehystetty mockup seinällä) ----------
+  const cv = $("#cv"), taulu = $("#taulu"), seina = $("#seina");
+  let rafId = 0, historia = [], edellinen = "", histAjastin = 0, pikkuAjastin = 0;
+  function paivita() {
+    tallenna(); kirjaaHistoria(); paivitaHinta();
+    if (!rafId) rafId = requestAnimationFrame(() => { rafId = 0; piirraEsikatselu(); });
+    clearTimeout(pikkuAjastin); pikkuAjastin = setTimeout(piirraPikkukuvat, 350);
+  }
+  function kirjaaHistoria() {
+    clearTimeout(histAjastin);
+    histAjastin = setTimeout(() => { const j = JSON.stringify(S); if (j !== edellinen) { if (edellinen) historia.push(edellinen); if (historia.length > 40) historia.shift(); edellinen = j; const k = $("#kumoa"); if (k) k.disabled = !historia.length; } }, 450);
+  }
+  function asetaTila(uusi) { Object.keys(S).forEach((k) => delete S[k]); Object.assign(S, puhdista(uusi)); }
+  function kumoa() { const j = historia.pop(); if (!j) return; edellinen = j; asetaTila(JSON.parse(j)); rakennaOhjaimet(); paivita(); varmistaKartta(); $("#kumoa").disabled = !historia.length; }
+  function alusta() {
+    if (!confirm("Aloitetaanko alusta? Nykyinen suunnitelma korvataan oletuksella.")) return;
+    try { localStorage.removeItem(AVAIN); } catch {}
+    asetaTila({ ...OLETUS }); delete S.kuvioValittu; rakennaOhjaimet(); paivita(); varmistaKartta();
+  }
   function piirraEsikatselu() {
     const f = fontti(), lupaus = varmistaFontit(f); if (lupaus) lupaus.then(() => paivita());
-    const [vw, vh] = nakyva(), tila = esi.getBoundingClientRect();
-    const kehys = S.tuote === "kehys" ? 1 + (2 * (S.koko === "30x40" ? 12 : 14)) / vw : 1;
-    const maxW = Math.max(120, tila.width - 32), maxH = Math.max(140, tila.height - 36);
-    let w = maxW / kehys, hh = (w * vh) / vw; if (hh * kehys > maxH) { hh = maxH / kehys; w = (hh * vw) / vh; }
+    const [vw, vh] = nakyva(), tila = seina.getBoundingClientRect();
+    const kehysMm = S.tuote === "kehys" ? (S.koko === "30x40" ? 12 : 14) : 0, kerroin = 1 + (2 * kehysMm) / vw;
+    const reuna = Math.max(18, Math.min(tila.width, tila.height) * 0.08);
+    const maxW = Math.max(100, tila.width - 2 * reuna), maxH = Math.max(120, tila.height - 2 * reuna);
+    let w = maxW / kerroin, hh = (w * vh) / vw; if (hh * kerroin > maxH) { hh = maxH / kerroin; w = (hh * vw) / vh; }
     const dpr = Math.min(2, window.devicePixelRatio || 1);
     cv.width = Math.round(w * dpr); cv.height = Math.round(hh * dpr); cv.style.width = w + "px"; cv.style.height = hh + "px";
-    taulu.className = "taulu " + S.tuote; taulu.style.setProperty("--kehys", S.tuote === "kehys" ? tuote().varit[S.vari].css : "transparent");
-    taulu.style.setProperty("--kp", S.tuote === "kehys" ? (w * (kehys - 1)) / 2 + "px" : "0px");
+    taulu.className = "taulu " + S.tuote;
+    taulu.style.setProperty("--kehys", S.tuote === "kehys" ? tuote().varit[S.vari].css : "transparent");
+    taulu.style.setProperty("--kp", S.tuote === "kehys" ? (w * (kerroin - 1)) / 2 + "px" : "0px");
     const c = cv.getContext("2d"); c.setTransform(1, 0, 0, 1, 0, 0); c.scale(cv.width / w, cv.height / hh);
     piirraSuunnitelma(c, w, hh);
   }
@@ -294,13 +326,22 @@
     cnv.width = cnv.height = 1;
     return { blob, ...m };
   }
+  async function esikuva(leveys = 1000, laatu = 0.86) {
+    await (varmistaFontit(fontti()) || Promise.resolve()); if (document.fonts) await document.fonts.ready;
+    if (MALLI === "kartta") await odotaKartta();
+    const [vw, vh] = nakyva(), c = document.createElement("canvas"); c.width = leveys; c.height = Math.round((leveys * vh) / vw);
+    piirraSuunnitelma(c.getContext("2d"), c.width, c.height);
+    return c.toDataURL("image/jpeg", laatu);
+  }
 
-  // ---------- Kartan data ----------
+  // ---------- Kartan data: lataus Workerin kautta, selkeä tila ja aikaraja ----------
   let lataus = null, latausAjastin = 0;
   const latausEl = $("#lataus");
   function naytaLataus(teksti, virhe) {
     if (!latausEl) return; latausEl.hidden = !teksti; latausEl.innerHTML = "";
-    if (teksti) latausEl.append(h("span", {}, teksti), virhe ? h("button", { type: "button", class: "nappi pieni", on: { click: () => varmistaKartta(true) } }, "Yritä uudelleen") : "");
+    latausEl.classList.toggle("virhe", !!virhe);
+    if (teksti) latausEl.append(virhe ? "" : h("span", { class: "pyora", "aria-hidden": "true" }), h("span", {}, teksti),
+      virhe ? h("button", { type: "button", class: "nappi pieni", on: { click: () => varmistaKartta(true) } }, "Yritä uudelleen") : "");
   }
   function varmistaKartta(heti) {
     if (MALLI !== "kartta") return;
@@ -308,13 +349,20 @@
     if (KA.kattaa(kartta, n)) { naytaLataus(""); return; }
     clearTimeout(latausAjastin);
     latausAjastin = setTimeout(async () => {
-      if (lataus) lataus.ac.abort();
+      if (lataus) { lataus.ac.abort(); clearTimeout(lataus.hidas); }
       const ac = new AbortController(), oma = { ac, n }; lataus = oma;
-      naytaLataus("Haetaan karttaa…");
-      oma.p = KA.lataa(n.lat, n.lon, n.sade, ac.signal);
-      try { const d = await oma.p; if (lataus === oma) { kartta = d; lataus = null; naytaLataus(""); paivita(); } }
-      catch (e) { if (lataus === oma) { lataus = null; naytaLataus("Karttapalvelu ei vastannut juuri nyt.", true); } }
-    }, heti ? 0 : 900);
+      naytaLataus("Ladataan karttaa…");
+      oma.hidas = setTimeout(() => { if (lataus === oma) naytaLataus("Ladataan karttaa… ison alueen aineisto voi viedä hetken."); }, 9000);
+      let d = null;
+      for (let yritys = 0; yritys < 2 && !d; yritys++) {
+        try { d = await KA.lataa(n.lat, n.lon, n.sade, ac.signal); }
+        catch (e) { if (ac.signal.aborted && lataus !== oma) return; if (yritys === 0) await new Promise((r) => setTimeout(r, 1500)); }
+      }
+      clearTimeout(oma.hidas);
+      if (lataus !== oma) return;
+      lataus = null;
+      if (d) { kartta = d; naytaLataus(""); paivita(); } else naytaLataus("Kartan lataus ei onnistunut. Tarkista yhteys ja yritä uudelleen.", true);
+    }, heti ? 0 : 700);
   }
   async function odotaKartta() {
     const n = { lat: S.lat, lon: S.lon, sade: S.sade };
@@ -324,10 +372,10 @@
 
   // ---------- Ohjaimet ----------
   const ohj = $("#ohj");
-  function osio(otsikko, auki, ...sis) { return h("details", { class: "osio", open: auki }, h("summary", {}, otsikko), h("div", { class: "osio-sis" }, ...sis)); }
+  function osio(otsikko, auki, ...sis) { return h("details", { class: "osio", open: auki }, h("summary", {}, h("span", {}, otsikko)), h("div", { class: "osio-sis" }, ...sis)); }
   function kentta(nimi, avain, tyyppi = "text", lisa = {}) {
     const id = "k-" + avain;
-    const inp = tyyppi === "textarea" ? h("textarea", { id, rows: lisa.rivit || 3, maxlength: lisa.max || 400, placeholder: lisa.ph || "" }) : h("input", { id, type: tyyppi, maxlength: lisa.max || 80, placeholder: lisa.ph || "", autocomplete: "off" });
+    const inp = tyyppi === "textarea" ? h("textarea", { id, rows: lisa.rivit || 3, maxlength: lisa.max || 400, placeholder: lisa.ph || "" }) : h("input", { id, type: tyyppi, maxlength: lisa.max || 80, placeholder: lisa.ph || "", autocomplete: "off", enterkeyhint: "done" });
     inp.value = S[avain] ?? "";
     inp.addEventListener("input", () => { S[avain] = inp.value; paivita(); });
     return h("label", { class: "kentta", "data-kentta": avain }, h("span", {}, nimi), inp, lisa.vihje ? h("small", {}, lisa.vihje) : null);
@@ -339,47 +387,64 @@
         on: { click: () => { S[avain] = arvo; opts.muutos && opts.muutos(arvo); ryhma.querySelectorAll(".valinta").forEach((x) => x.setAttribute("aria-checked", String(x.dataset.arvo === arvo))); paivita(); } } });
       typeof sisalto === "string" ? (b.textContent = sisalto) : b.append(sisalto); ryhma.append(b); } };
     piirto(); ryhma._piirra = piirto;
-    return h("div", { class: "ryhma", "data-ryhma": avain }, h("div", { class: "ryhma-otsikko" }, nimi), ryhma);
+    return h("div", { class: "ryhma", "data-ryhma": avain }, nimi ? h("div", { class: "ryhma-otsikko" }, nimi) : null, ryhma);
   }
-  function kuvioKuva(id, v) { const k = h("canvas", { width: 96, height: 96, class: "kuvake" }); const c = k.getContext("2d"); c.fillStyle = v.b; c.fillRect(0, 0, 96, 96); if (id !== "ei") KV.yksi(c, id, 48, 48, 80, v); else { c.strokeStyle = v.i; c.globalAlpha = 0.4; c.lineWidth = 3; c.beginPath(); c.moveTo(24, 24); c.lineTo(72, 72); c.stroke(); } return k; }
+  const piirraRyhma = (avain) => { const r = document.querySelector(`[data-ryhma="${avain}"] .valinnat`); if (r && r._piirra) r._piirra(); };
+  function kuvioKuva(id, v) { const k = h("canvas", { width: 96, height: 96, class: "kuvake" }); const c = k.getContext("2d"); c.fillStyle = v.b; c.fillRect(0, 0, 96, 96); if (id !== "ei") KV.yksi(c, id, 48, 48, 78, v); else { c.strokeStyle = v.i; c.globalAlpha = 0.35; c.lineWidth = 2; c.beginPath(); c.moveTo(30, 30); c.lineTo(66, 66); c.stroke(); } return k; }
   const varitNyt = () => { if (MALLI === "kartta") { const t = KA.TEEMAT[S.teema] || KA.TEEMAT.klassinen; return { a: t.korostus, i: t.teksti, s: t.vesi, b: t.bg }; } const p = PALETIT[S.paletti]; return { a: p.a, i: p.i, s: p.s, b: p.b }; };
-  let kuvioRyhma;
-  function kuvioOsio(sijainnit) {
-    kuvioRyhma = valinta("Kuvio", "kuvio", () => [["ei", h("span", { class: "kuvake-k" }, kuvioKuva("ei", varitNyt()), h("small", {}, "Ei kuviota"))], ...Object.entries(KV.K).map(([id, m]) => [id, h("span", { class: "kuvake-k" }, kuvioKuva(id, varitNyt()), h("small", {}, m.nimi))])],
-      { luokka: "kuviot", muutos: () => { S.kuvioValittu = true; } });
-    return osio("Koristekuvio", false, kuvioRyhma,
-      valinta("Kuvion paikka", "kuvioSij", () => Object.entries(KV.SIJAINNIT).filter(([k]) => sijainnit.includes(k))),
-      valinta("Kuvion koko", "kuvioKoko", () => Object.entries(KV.KOOT).map(([k, v]) => [k, v[0]])));
+  function kuvioOsat(sijainnit) {
+    return [valinta("Kuvio", "kuvio", () => [["ei", h("span", { class: "kuvake-k" }, kuvioKuva("ei", varitNyt()), h("small", {}, "Ei kuviota"))], ...Object.entries(KV.K).map(([id, m]) => [id, h("span", { class: "kuvake-k" }, kuvioKuva(id, varitNyt()), h("small", {}, m.nimi))])],
+      { luokka: "kuviot", muutos: () => { S.kuvioValittu = true; } }),
+      valinta("Kuvion paikka", "kuvioSij", () => Object.entries(KV.SIJAINNIT).filter(([k]) => sijainnit.includes(k)), { luokka: "sirut" }),
+      valinta("Kuvion koko", "kuvioKoko", () => Object.entries(KV.KOOT).map(([k, v]) => [k, v[0]]), { luokka: "segmentti" })];
   }
+  // Pikkukuvat: asettelut piirretään oikeilla teksteillä ja väreillä
+  function miniKuva(muutos, w = 84) {
+    const [vw, vh] = nakyva(), hgt = Math.round((w * vh) / vw), k = h("canvas", { width: w * 2, height: hgt * 2, class: "mini", style: `width:${w}px;height:${hgt}px` });
+    const vanha = {}; for (const a of Object.keys(muutos)) vanha[a] = S[a];
+    Object.assign(S, muutos); try { const c = k.getContext("2d"); c.scale(2, 2); piirraSuunnitelma(c, w, hgt); } catch {} Object.assign(S, vanha);
+    return k;
+  }
+  function piirraPikkukuvat() { if (MALLI === "nimi") piirraRyhma("asettelu"); }
   function tuoteOsio() {
-    const tyyppiR = valinta("Tuote", "tuote", () => Object.entries(C.tuotteet).map(([k, t]) => [k, h("span", { class: "tuote-k" }, h("b", {}, t.nimi), h("small", {}, "alk. " + euro(Math.min(...Object.values(t.koot).map((x) => x.hinta)))))]),
-      { luokka: "tuotteet", muutos: () => { if (!tuote().koot[S.koko]) S.koko = Object.keys(tuote().koot)[0]; kokoR.querySelector(".valinnat")._piirra(); varit.hidden = S.tuote !== "kehys"; kuvausEl.textContent = tuote().kuvaus; } });
-    const kokoR = valinta("Koko", "koko", () => Object.entries(tuote().koot).map(([k, x]) => [k, h("span", { class: "tuote-k" }, h("b", {}, k.replace("x", " × ") + " cm"), h("small", {}, euro(x.hinta)))]));
-    const varit = valinta("Kehyksen väri", "vari", () => Object.entries(C.tuotteet.kehys.varit).map(([k, x]) => [k, h("span", { class: "kehysvari" }, h("i", { style: `background:${x.css}` }), x.nimi)]));
+    const tyyppiR = valinta("", "tuote", () => Object.entries(C.tuotteet).map(([k, t]) => [k, h("span", { class: "tuote-k" }, h("i", { class: "tuote-ikoni " + k, "aria-hidden": "true" }), h("b", {}, t.nimi), h("small", {}, "alk. " + euro(Math.min(...Object.values(t.koot).map((x) => x.hinta)))))]),
+      { luokka: "tuotteet", muutos: () => { if (!tuote().koot[S.koko]) S.koko = Object.keys(tuote().koot)[0]; piirraRyhma("koko"); varit.hidden = S.tuote !== "kehys"; kuvausEl.textContent = tuote().kuvaus + "."; } });
+    const kokoR = valinta("Koko", "koko", () => Object.entries(tuote().koot).map(([k, x]) => [k, h("span", { class: "koko-k" }, h("b", {}, k.replace("x", " × ") + " cm"), h("small", {}, euro(x.hinta)))]), { luokka: "segmentti" });
+    const varit = valinta("Kehyksen väri", "vari", () => Object.entries(C.tuotteet.kehys.varit).map(([k, x]) => [k, h("span", { class: "savy-k" }, h("i", { style: `background:${x.css}` }), h("small", {}, x.nimi))]), { luokka: "savyt" });
     varit.hidden = S.tuote !== "kehys";
-    const kuvausEl = h("p", { class: "vihje" }, tuote().kuvaus);
-    return osio("Tuote ja koko", true, tyyppiR, kuvausEl, kokoR, varit, valinta("Suunta", "suunta", () => [["pysty", "Pysty"], ["vaaka", "Vaaka"]]),
-      h("p", { class: "vihje" }, "Hinta sisältää alv:n ja toimituksen Suomeen. Toimitusaika 8–14 arkipäivää."));
+    const kuvausEl = h("p", { class: "vihje" }, tuote().kuvaus + ".");
+    return osio("Tuote ja koko", true, tyyppiR, kuvausEl, kokoR, varit, valinta("Suunta", "suunta", () => [["pysty", "Pysty"], ["vaaka", "Vaaka"]], { luokka: "segmentti" }));
+  }
+  function pohjatOsio() {
+    const lista = MALLI === "kartta" ? [["helsinki", "Helsinki"], ["ylivieska", "Ylivieska"], ["tampere", "Sydänkartta"], ["betlehem", "Betlehem"]]
+      : [["perhe", "Perhe"], ["haat", "Häät"], ["vauva", "Vauva"], ["jae", "Raamatunlause"], ["joulu", "Joulu"], ["kaste", "Kaste"], ["muisto", "Muisto"]];
+    const rulla = h("div", { class: "pohjat" }, ...lista.map(([id, nimi]) => h("button", { type: "button", class: "pohja", "data-pohja": id, on: { click: () => {
+      const ex = ESIMERKIT[MALLI][id]; asetaTila({ ...S, ...ex, kuvioValittu: true }); S._edAsettelu = S.asettelu; rakennaOhjaimet(); paivita(); varmistaKartta(true);
+      if (matchMedia("(max-width: 899px)").matches) scrollTo({ top: 0, behavior: "smooth" }); } } },
+      h("img", { src: `/kuvat/${MALLI}-${id}.jpg`, alt: "", loading: "lazy", width: 1000, height: MALLI === "kartta" ? 1400 : 1333 }), h("span", {}, nimi))));
+    return h("section", { class: "pohjat-osio" }, h("div", { class: "ryhma-otsikko" }, "Aloita valmiista pohjasta"), rulla);
   }
 
   function rakennaNimi() {
     const tekstit = osio("Tekstit", true,
       kentta("Nimi tai nimet", "nimi", "textarea", { rivit: 2, max: 80, vihje: "Rivinvaihto jakaa nimen kahdelle riville." }),
-      kentta("Yläteksti / alaotsikko", "ala", "text", { max: 70 }),
+      kentta("Yläteksti", "ala", "text", { max: 70 }),
       kentta("Päivämäärä", "pvm", "text", { max: 40, ph: "esim. 14.6.2025" }),
       kentta("Lisärivi", "lisa", "text", { max: 90 }),
-      kentta("Perheenjäsenet (yksi per rivi)", "jasenet", "textarea", { rivit: 5, max: 300 }),
-      h("div", { class: "rinnakkain", "data-kentta": "vauva" }, kentta("Paino", "paino", "text", { max: 14 }), kentta("Pituus", "pituus", "text", { max: 14 }), kentta("Kellonaika", "klo", "text", { max: 10 })),
-      h("label", { class: "rasti" }, Object.assign(h("input", { type: "checkbox", on: { change: (e) => { S.isot = e.target.checked; paivita(); } } }), { checked: !!S.isot }), "Nimi isoilla kirjaimilla"));
-    const jaeValinta = h("select", { id: "jaevalinta", on: { change: (e) => { const j = JAKEET[+e.target.value]; if (!j) return; S.jae = j[0]; S.viite = j[1]; $("#k-jae").value = j[0]; $("#k-viite").value = j[1]; paivita(); } } },
-      h("option", { value: "" }, "Valitse valmis jae…"), ...JAKEET.map(([t, v], i) => h("option", { value: i }, `${v} – ${t.slice(0, 48)}${t.length > 48 ? "…" : ""}`)));
+      kentta("Perheenjäsenet, yksi per rivi", "jasenet", "textarea", { rivit: 5, max: 300 }),
+      h("div", { class: "rinnakkain", "data-kentta": "vauva" }, kentta("Paino", "paino", "text", { max: 14 }), kentta("Pituus", "pituus", "text", { max: 14 }), kentta("Kello", "klo", "text", { max: 10 })));
+    const jaeValinta = h("select", { id: "jaevalinta", on: { change: (e) => { const j = JAKEET[+e.target.value]; if (!j || e.target.value === "") return; S.jae = j[0]; S.viite = j[1]; $("#k-jae").value = j[0]; $("#k-viite").value = j[1]; paivita(); } } },
+      h("option", { value: "" }, "Valitse valmis jae"), ...JAKEET.map(([t, v], i) => h("option", { value: i }, `${v}: ${t.slice(0, 44)}${t.length > 44 ? "…" : ""}`)));
     const jae = osio("Raamatunlause", S.asettelu === "jae", h("label", { class: "kentta" }, h("span", {}, "Valmiit jakeet (Raamattu 1933/38)"), jaeValinta),
-      kentta("Jae", "jae", "textarea", { rivit: 3, max: 260 }), kentta("Jaeviite", "viite", "text", { max: 30, ph: "esim. Ps. 23:1" }), h("p", { class: "vihje" }, "Jätä tyhjäksi, jos et halua jaetta julisteeseen."));
-    const asettelu = osio("Asettelu", true, valinta("Asettelu", "asettelu", () => Object.entries(ASETTELUT).map(([k, a]) => [k, a.nimi]), { muutos: vaihdaAsettelu }));
-    const fontit = osio("Fontti", false, valinta("Fonttipari", "fontti", () => FONTIT.map((f) => [f.id, h("span", { class: "fontti-k" }, h("b", { style: `font-family:'${f.o}';font-weight:${f.ow}` }, "Aino"), h("small", { style: `font-family:'${f.t}'` }, f.nimi))]), { luokka: "fontit" }));
-    const varit = osio("Värit", false, valinta("Väripaletti", "paletti", () => Object.entries(PALETIT).map(([k, p]) => [k, h("span", { class: "paletti-k" }, h("i", { style: `background:${p.b};box-shadow:inset 0 0 0 1px #0002` }), h("i", { style: `background:${p.i}` }), h("i", { style: `background:${p.a}` }), h("small", {}, p.nimi))]),
-      { luokka: "paletit", muutos: () => kuvioRyhma.querySelector(".valinnat")._piirra() }));
-    ohj.append(tuoteOsio(), asettelu, tekstit, jae, fontit, varit, kuvioOsio(["yla", "ala", "tausta", "kuvio", "kulmat", "reunus"]));
+      kentta("Jae", "jae", "textarea", { rivit: 3, max: 260 }), kentta("Jaeviite", "viite", "text", { max: 30, ph: "esim. Ps. 23:1" }), h("p", { class: "vihje" }, "Jätä tyhjäksi, jos et halua jaetta."));
+    const tyyli = osio("Muokkaa tyyliä", false,
+      valinta("Asettelu", "asettelu", () => Object.entries(ASETTELUT).map(([k, a]) => [k, h("span", { class: "asettelu-k" }, miniKuva({ asettelu: k, ...(S.asettelu === k ? {} : {}) }, 66), h("small", {}, a.nimi))]), { luokka: "asettelut", muutos: vaihdaAsettelu }),
+      valinta("Fontti", "fontti", () => FONTIT.map((f) => [f.id, h("span", { class: "fontti-k" }, h("b", { style: `font-family:'${f.o}';font-weight:${f.ow}` }, "Aino"), h("small", {}, f.nimi))]), { luokka: "fontit" }),
+      valinta("Värit", "paletti", () => Object.entries(PALETIT).map(([k, p]) => [k, h("span", { class: "paletti-k" }, h("i", { style: `background:linear-gradient(135deg,${p.b} 0 50%,${p.a} 50% 75%,${p.i} 75%)` }), h("small", {}, p.nimi))]),
+        { luokka: "paletit", muutos: () => piirraRyhma("kuvio") }),
+      ...kuvioOsat(["yla", "ala", "tausta", "kuvio", "kulmat", "reunus"]),
+      h("label", { class: "rasti" }, Object.assign(h("input", { type: "checkbox", on: { change: (e) => { S.isot = e.target.checked; paivita(); } } }), { checked: !!S.isot }), "Nimi isoilla kirjaimilla"));
+    ohj.append(pohjatOsio(), tekstit, tuoteOsio(), tyyli, jae);
     nakyvyys();
   }
   function nakyvyys() {
@@ -391,7 +456,7 @@
     const vanha = ASETTELUT[S._edAsettelu || "keskitetty"] || ASETTELUT.keskitetty, a = ASETTELUT[uusi];
     for (const [k, v] of Object.entries(a.esim)) { const nyk = S[k] ?? ""; if (!nyk || nyk === (vanha.esim[k] ?? "")) { S[k] = v; const el = $("#k-" + k); if (el) el.value = v; } }
     for (const [k, v] of Object.entries(vanha.esim)) if (!(k in a.esim) && S[k] === v) { S[k] = ""; const el = $("#k-" + k); if (el) el.value = ""; }
-    if (!S.kuvioValittu) { S.kuvio = a.kuvio; if (["koristekulma"].includes(a.kuvio)) S.kuvioSij = "kulmat"; else if (!["yla", "ala"].includes(S.kuvioSij) || S.kuvioSij === "kulmat") S.kuvioSij = "yla"; kuvioRyhma.querySelector(".valinnat")._piirra(); document.querySelectorAll('[data-ryhma="kuvioSij"] .valinta').forEach((x) => x.setAttribute("aria-checked", String(x.dataset.arvo === S.kuvioSij))); }
+    if (!S.kuvioValittu) { S.kuvio = a.kuvio; S.kuvioSij = a.kuvio === "koristekulma" ? "kulmat" : "yla"; piirraRyhma("kuvio"); piirraRyhma("kuvioSij"); }
     if (uusi === "jae") { const d = [...document.querySelectorAll("details.osio")].find((x) => x.querySelector("#k-jae")); if (d) d.open = true; }
     S._edAsettelu = uusi; nakyvyys();
   }
@@ -404,48 +469,54 @@
       S.lat = p.lat; S.lon = p.lon; S.sade = p.sade || S.sade; S.otsikko = p.nimi; S.ala = p.ala || ""; S.koord = "";
       if (jae !== undefined) { S.jae = jae ? p.jae || "" : ""; S.viite = jae ? p.viite || "" : ""; }
       ["otsikko", "ala", "koord", "jae", "viite"].forEach((k) => { const el = $("#k-" + k); if (el) el.value = S[k] || ""; });
-      paivitaZoom(); paivita(); varmistaKartta();
+      paivitaZoom(); paivita(); varmistaKartta(true);
+      if (matchMedia("(max-width: 899px)").matches) scrollTo({ top: 0, behavior: "smooth" });
     };
     let hakuKaynnissa = false;
     const tee = async () => {
       const q = hakuKentta.value.trim(); if (q.length < 2 || hakuKaynnissa) return;
-      hakuKaynnissa = true; tulokset.innerHTML = ""; tulokset.append(h("p", { class: "vihje" }, "Haetaan…"));
+      hakuKentta.blur(); hakuKaynnissa = true; tulokset.innerHTML = ""; tulokset.append(h("p", { class: "vihje" }, "Haetaan…"));
       try {
         const r = await KA.hae(q, S.vainSuomi !== false); tulokset.innerHTML = "";
-        if (!r.length) tulokset.append(h("p", { class: "vihje" }, S.vainSuomi !== false ? "Ei osumia Suomesta. Kokeile toista nimeä tai poista rajaus “Vain Suomi”." : "Ei osumia. Kokeile toista nimeä."));
+        if (!r.length) tulokset.append(h("p", { class: "vihje" }, S.vainSuomi !== false ? "Ei osumia Suomesta. Kokeile toista nimeä tai poista rajaus Vain Suomi." : "Ei osumia. Kokeile toista nimeä."));
         r.forEach((p) => tulokset.append(h("button", { type: "button", class: "tulos", role: "listitem", on: { click: () => { asetaPaikka(p, false); tulokset.innerHTML = ""; } } }, h("b", {}, p.nimi), h("small", {}, p.kuvaus))));
       } catch { tulokset.innerHTML = ""; tulokset.append(h("p", { class: "vihje" }, "Haku ei onnistunut juuri nyt. Yritä hetken päästä uudelleen.")); }
       hakuKaynnissa = false;
     };
     hakuKentta.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); tee(); } });
     const pikat = (lista, jae) => h("div", { class: "pikat" }, ...lista.map((p) => h("button", { type: "button", class: "pika", on: { click: () => asetaPaikka(p, jae) } }, p.nimi)));
+    const zoom = h("input", { type: "range", min: 0, max: 100, step: 1, id: "zoom", "aria-label": "Alueen laajuus" });
+    const zArvo = h("output", { class: "vihje" });
+    const z2s = (z) => 0.4 * Math.pow(40, z / 100), s2z = (s) => (100 * Math.log(s / 0.4)) / Math.log(40);
+    function paivitaZoom() { zoom.value = Math.round(s2z(S.sade)); zArvo.textContent = "Näkyvä alue noin " + (S.sade * 2).toFixed(S.sade < 2.5 ? 1 : 0).replace(".", ",") + " km"; }
+    zoom.addEventListener("input", () => { S.sade = Math.round(z2s(+zoom.value) * 100) / 100; paivitaZoom(); paivita(); varmistaKartta(); });
+    const askel = (dx, dy) => () => { const n = KA.siirra(S, dx, dy, 200); S.lat = n.lat; S.lon = n.lon; S.koord = ""; const el = $("#k-koord"); if (el) el.value = ""; paivita(); varmistaKartta(); };
+    const zoomNappi = (k) => () => { S.sade = Math.min(16, Math.max(0.4, S.sade * k)); paivitaZoom(); paivita(); varmistaKartta(); };
     const paikka = osio("Paikka", true,
       h("div", { class: "hakurivi" }, hakuKentta, h("button", { type: "button", class: "nappi", on: { click: tee } }, "Hae")),
       h("label", { class: "rasti" }, vainSuomi, "Vain Suomi"), tulokset,
       h("div", { class: "ryhma-otsikko" }, "Suosittuja Suomessa"), pikat(KA.SUOMI, false),
       h("div", { class: "ryhma-otsikko" }, "Raamatun paikat"), pikat(KA.RAAMATTU, true),
-      h("p", { class: "vihje" }, "Raamatun paikoissa mukana on valmis jae (Raamattu 1933/38), jonka voit muokata tai poistaa Tekstit-kohdassa."));
-    const zoom = h("input", { type: "range", min: 0, max: 100, step: 1, id: "zoom", "aria-label": "Alueen laajuus" });
-    const zArvo = h("output", {});
-    const z2s = (z) => 0.4 * Math.pow(45, z / 100), s2z = (s) => (100 * Math.log(s / 0.4)) / Math.log(45);
-    function paivitaZoom() { zoom.value = Math.round(s2z(S.sade)); zArvo.textContent = (S.sade * 2).toFixed(S.sade < 2.5 ? 1 : 0).replace(".", ",") + " km leveä alue"; }
-    zoom.addEventListener("input", () => { S.sade = Math.round(z2s(+zoom.value) * 100) / 100; paivitaZoom(); paivita(); varmistaKartta(); });
-    const askel = (dx, dy) => () => { const n = KA.siirra(S, dx, dy, 200); S.lat = n.lat; S.lon = n.lon; S.koord = ""; const el = $("#k-koord"); if (el) el.value = ""; paivita(); varmistaKartta(); };
-    const zoomNappi = (k) => () => { S.sade = Math.min(18, Math.max(0.4, S.sade * k)); paivitaZoom(); paivita(); varmistaKartta(); };
-    const rajaus = osio("Kartan rajaus", true, h("div", { class: "zoomrivi" }, h("button", { type: "button", class: "nappi pieni", "aria-label": "Lähemmäs", on: { click: zoomNappi(0.8) } }, "＋"), zoom, h("button", { type: "button", class: "nappi pieni", "aria-label": "Kauemmas", on: { click: zoomNappi(1.25) } }, "－")), zArvo,
-      h("div", { class: "nuolet" }, h("button", { type: "button", class: "nappi pieni", on: { click: askel(0, 20) } }, "↑"), h("button", { type: "button", class: "nappi pieni", on: { click: askel(20, 0) } }, "←"), h("button", { type: "button", class: "nappi pieni", on: { click: askel(-20, 0) } }, "→"), h("button", { type: "button", class: "nappi pieni", on: { click: askel(0, -20) } }, "↓")),
-      h("p", { class: "vihje" }, "Voit myös siirtää karttaa vetämällä esikatselua sormella."),
-      valinta("Kartan muoto", "muoto", () => Object.entries(KARTTAMUODOT)), valinta("Reunus", "reunus", () => Object.entries(REUNUKSET)), valinta("Teiden paksuus", "paksuus", () => Object.entries(PAKSUUS).map(([k, v]) => [k, v[0]])));
+      h("div", { class: "ryhma-otsikko" }, "Rajaus"),
+      h("div", { class: "zoomrivi" }, h("button", { type: "button", class: "nappi pieni", "aria-label": "Kauemmas", on: { click: zoomNappi(1.25) } }, "−"), zoom, h("button", { type: "button", class: "nappi pieni", "aria-label": "Lähemmäs", on: { click: zoomNappi(0.8) } }, "+")), zArvo,
+      h("div", { class: "nuolet" }, ...[["↑", 0, 20, "Ylös"], ["←", 20, 0, "Vasemmalle"], ["→", -20, 0, "Oikealle"], ["↓", 0, -20, "Alas"]].map(([t, x, y, l]) => h("button", { type: "button", class: "nappi pieni", "aria-label": l, on: { click: askel(x, y) } }, t))),
+      h("p", { class: "vihje" }, "Voit myös siirtää karttaa vetämällä esikatselua."));
     paivitaZoom();
-    const teema = osio("Väriteema", true, valinta("Teema", "teema", () => Object.entries(KA.TEEMAT).map(([k, t]) => [k, h("span", { class: "paletti-k" }, h("i", { style: `background:${t.bg};box-shadow:inset 0 0 0 1px #0002` }), h("i", { style: `background:${t.tie}` }), h("i", { style: `background:${t.vesi}` }), h("small", {}, t.nimi))]),
-      { luokka: "paletit", muutos: () => kuvioRyhma.querySelector(".valinnat")._piirra() }));
-    const tekstit = osio("Tekstit", true, valinta("Tekstin paikka", "tekstiSij", () => Object.entries(TEKSTISIJ)),
-      kentta("Otsikko", "otsikko", "text", { max: 40 }), kentta("Alaotsikko", "ala", "text", { max: 60 }),
-      kentta("Koordinaatit", "koord", "text", { max: 60, ph: "Täytetään automaattisesti", vihje: "Jätä tyhjäksi, niin koordinaatit lasketaan kartan keskipisteestä." }),
-      kentta("Jae tai oma lause (valinnainen)", "jae", "textarea", { rivit: 2, max: 200 }), kentta("Jaeviite", "viite", "text", { max: 30 }),
-      osioFontit());
-    ohj.append(tuoteOsio(), paikka, rajaus, teema, tekstit, kuvioOsio(["yla", "kulmat", "reunus"]));
-    // Vetäminen esikatselussa
+    const tekstit = osio("Tekstit", true, kentta("Otsikko", "otsikko", "text", { max: 40 }), kentta("Alaotsikko", "ala", "text", { max: 60 }),
+      kentta("Koordinaatit", "koord", "text", { max: 60, ph: "Lasketaan automaattisesti" }),
+      kentta("Jae tai oma lause", "jae", "textarea", { rivit: 2, max: 200 }), kentta("Jaeviite", "viite", "text", { max: 30 }));
+    const tyyli = osio("Muokkaa tyyliä", false,
+      valinta("Väriteema", "teema", () => Object.entries(KA.TEEMAT).map(([k, t]) => [k, h("span", { class: "paletti-k" }, h("i", { style: `background:linear-gradient(135deg,${t.bg} 0 50%,${t.vesi} 50% 75%,${t.tie} 75%)` }), h("small", {}, t.nimi))]),
+        { luokka: "paletit", muutos: () => piirraRyhma("kuvio") }),
+      valinta("Kartan muoto", "muoto", () => Object.entries(KARTTAMUODOT), { luokka: "segmentti" }),
+      valinta("Tekstin paikka", "tekstiSij", () => Object.entries(TEKSTISIJ), { luokka: "segmentti" }),
+      valinta("Reunus", "reunus", () => Object.entries(REUNUKSET), { luokka: "segmentti" }),
+      valinta("Teiden paksuus", "paksuus", () => Object.entries(PAKSUUS).map(([k, v]) => [k, v[0]]), { luokka: "segmentti" }),
+      valinta("Fontti", "fontti", () => FONTIT.map((f) => [f.id, h("span", { class: "fontti-k" }, h("b", { style: `font-family:'${f.o}';font-weight:${f.ow}` }, "Oulu"), h("small", {}, f.nimi))]), { luokka: "fontit" }),
+      ...kuvioOsat(["yla", "kulmat", "reunus"]));
+    ohj.append(pohjatOsio(), paikka, tekstit, tuoteOsio(), tyyli);
+  }
+  if (MALLI === "kartta") {
     let veto = null;
     cv.addEventListener("pointerdown", (e) => { veto = { x: e.clientX, y: e.clientY, lat: S.lat, lon: S.lon }; cv.setPointerCapture(e.pointerId); });
     cv.addEventListener("pointermove", (e) => { if (!veto) return; const L = karttaAlue(cv.clientWidth, cv.clientHeight);
@@ -454,21 +525,49 @@
     cv.addEventListener("pointerup", loppu); cv.addEventListener("pointercancel", loppu);
     cv.style.touchAction = "none"; cv.style.cursor = "grab";
   }
-  function osioFontit() { return valinta("Fontti", "fontti", () => FONTIT.map((f) => [f.id, h("span", { class: "fontti-k" }, h("b", { style: `font-family:'${f.o}';font-weight:${f.ow}` }, "Oulu"), h("small", { style: `font-family:'${f.t}'` }, f.nimi))]), { luokka: "fontit" }); }
+  function rakennaOhjaimet() { ohj.innerHTML = ""; if (MALLI === "kartta") rakennaKartta(); else rakennaNimi(); }
 
-  // ---------- Hinta, tilaus ----------
-  function paivitaHinta() { $("#hinta").textContent = euro(hinta()); $("#tuotenimi").textContent = tuoteNimi(); const y = $("#yht"); if (y) y.textContent = `${tuoteNimi()} – ${euro(hinta())}`; }
-  const lomake = $("#tilauslomake");
+  // ---------- Hinta, toimitusarvio ja tilaus ----------
+  function arkipaivat(alku, n) { const d = new Date(alku); let k = 0; while (k < n) { d.setDate(d.getDate() + 1); if (d.getDay() % 6) k++; } return d; }
+  function toimitusArvio() {
+    const a = arkipaivat(new Date(), 8), b = arkipaivat(new Date(), 14);
+    return a.getMonth() === b.getMonth() ? `${a.getDate()}.–${b.getDate()}.${b.getMonth() + 1}.` : `${a.getDate()}.${a.getMonth() + 1}.–${b.getDate()}.${b.getMonth() + 1}.`;
+  }
+  function paivitaHinta() {
+    $("#hinta").textContent = euro(hinta()); $("#tuotenimi").textContent = tuoteNimi();
+    const t = $("#toimitus"); if (t) t.textContent = "Perillä arviolta " + toimitusArvio();
+  }
   function kuvaus() {
     if (MALLI === "kartta") return `Karttajuliste: ${S.otsikko} (${S.lat.toFixed(4)}, ${S.lon.toFixed(4)}), ${(S.sade * 2).toFixed(1)} km, teema ${KA.TEEMAT[S.teema].nimi}, muoto ${KARTTAMUODOT[S.muoto]}`;
     return `Nimijuliste: ”${(S.nimi || "").replace(/\n/g, " / ")}”, asettelu ${ASETTELUT[S.asettelu].nimi}, fontti ${fontti().nimi}, värit ${PALETIT[S.paletti].nimi}, kuvio ${S.kuvio === "ei" ? "ei" : KV.K[S.kuvio].nimi}`;
   }
+  function tarkistettavat() {
+    const r = MALLI === "kartta" ? [["Otsikko", S.otsikko], ["Alaotsikko", S.ala], ["Koordinaatit", S.koord || KA.koordinaatit(S.lat, S.lon)], ["Jae", S.jae], ["Jaeviite", S.viite]]
+      : [["Nimi", S.nimi], ["Yläteksti", S.ala], ["Päivämäärä", S.pvm], ["Lisärivi", S.lisa], ...(S.asettelu === "perhe" ? [["Perheenjäsenet", S.jasenet]] : []),
+        ...(S.asettelu === "vauva" ? [["Paino", S.paino], ["Pituus", S.pituus], ["Kello", S.klo]] : []), ["Jae", S.jae], ["Jaeviite", S.viite]];
+    return r.filter(([, v]) => String(v || "").trim());
+  }
+  const kassa = $("#kassa"), lomake = $("#tilauslomake");
+  async function avaaKassa() {
+    kassa.hidden = false; document.body.classList.add("kassa-auki");
+    $("#kassa-yht").textContent = `${tuoteNimi()} · ${euro(hinta())}`;
+    $("#kassa-toimitus").textContent = "Perillä arviolta " + toimitusArvio() + " (8–14 arkipäivää)";
+    const ul = $("#kassa-tekstit"); ul.innerHTML = ""; tarkistettavat().forEach(([k, v]) => ul.append(h("li", {}, h("span", {}, k), h("b", {}, String(v).replace(/\n/g, " / ")))));
+    const img = $("#kassa-kuva"); img.removeAttribute("src"); img.className = "kassa-kuva " + S.tuote; img.style.setProperty("--kehys", S.tuote === "kehys" ? tuote().varit[S.vari].css : "transparent");
+    $("#kassa .sulje").focus();
+    try { img.src = await esikuva(700, 0.85); } catch { img.alt = "Esikatselu ei ole saatavilla"; }
+  }
+  function suljeKassa() { kassa.hidden = true; document.body.classList.remove("kassa-auki"); $("#jatka").focus(); }
+  $("#jatka").addEventListener("click", avaaKassa);
+  kassa.addEventListener("click", (e) => { if (e.target === kassa || e.target.closest(".sulje")) suljeKassa(); });
+  addEventListener("keydown", (e) => { if (e.key === "Escape" && !kassa.hidden) suljeKassa(); });
   if (lomake) lomake.addEventListener("submit", async (e) => {
     e.preventDefault();
     const viesti = $("#lomakeviesti"), nappi = $("#maksa");
     const d = Object.fromEntries(new FormData(lomake).entries());
     const virhe = (t) => { viesti.textContent = t; viesti.className = "viesti virhe"; };
     if (!C.avoinna) return virhe("Tilaukset avautuvat pian. Suunnitelmasi on tallessa tällä laitteella.");
+    if (!d.tarkistettu) return virhe("Tarkista tekstit ja rastita kohta “Tekstit ovat oikein”.");
     if (!/^\d{5}$/.test((d.postinro || "").trim())) return virhe("Tarkista postinumero (5 numeroa).");
     if (!d.hyvaksy) return virhe("Hyväksy toimitusehdot ennen tilaamista.");
     nappi.disabled = true; viesti.className = "viesti"; viesti.textContent = "Valmistellaan painotiedostoa…";
@@ -485,19 +584,19 @@
       location.href = r2.url;
     } catch (err) { nappi.disabled = false; virhe(err.message || "Jokin meni vikaan. Yritä uudelleen."); }
   });
-  $("#jatka").addEventListener("click", () => { const k = $("#kassa"); k.hidden = false; k.scrollIntoView({ behavior: "smooth", block: "start" }); });
-  const iso = $("#suurenna"); if (iso) iso.addEventListener("click", () => { document.body.classList.toggle("iso-esikatselu"); iso.textContent = document.body.classList.contains("iso-esikatselu") ? "Pienennä" : "Suurenna"; paivita(); });
 
-  if (MALLI === "kartta") { rakennaKartta(); varmistaKartta(true); } else rakennaNimi();
+  // ---------- Työkalut: suurenna, kumoa, alusta; näppäimistö mobiilissa ----------
+  const iso = $("#suurenna");
+  if (iso) iso.addEventListener("click", () => { const on = document.body.classList.toggle("iso-esikatselu"); iso.textContent = on ? "Pienennä" : "Suurenna"; iso.setAttribute("aria-pressed", String(on)); paivita(); });
+  $("#kumoa").addEventListener("click", kumoa);
+  $("#alusta").addEventListener("click", alusta);
+  ohj.addEventListener("focusin", (e) => { if (e.target.matches("input[type=text],input[type=search],textarea") && matchMedia("(max-width: 899px)").matches) { document.body.classList.add("kirjoittaa"); paivita(); setTimeout(() => e.target.scrollIntoView({ block: "center", behavior: "smooth" }), 280); } });
+  ohj.addEventListener("focusout", () => { setTimeout(() => { if (!ohj.contains(document.activeElement) || !document.activeElement.matches("input,textarea")) { document.body.classList.remove("kirjoittaa"); paivita(); } }, 120); });
+
   S._edAsettelu = S.asettelu;
+  rakennaOhjaimet();
+  if (MALLI === "kartta") varmistaKartta(true);
+  edellinen = JSON.stringify(S);
   paivita();
-  // Esikatselukuva näkyvästä alueesta (etusivun esimerkkikuvat), leveys pikseleinä
-  async function esikuva(leveys = 1000, laatu = 0.86) {
-    await (varmistaFontit(fontti()) || Promise.resolve()); if (document.fonts) await document.fonts.ready;
-    if (MALLI === "kartta") await odotaKartta();
-    const [vw, vh] = nakyva(), c = document.createElement("canvas"); c.width = leveys; c.height = Math.round((leveys * vh) / vw);
-    piirraSuunnitelma(c.getContext("2d"), c.width, c.height);
-    return c.toDataURL("image/jpeg", laatu);
-  }
-  window.OLTesti = { S, painoKuva, painoMitat, paivita, esikuva, kartta: () => kartta };
+  window.OLTesti = { S, painoKuva, painoMitat, paivita, esikuva, kartta: () => kartta, toimitusArvio };
 })();

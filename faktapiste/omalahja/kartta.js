@@ -47,52 +47,35 @@
     { id: "ylivieska", nimi: "Ylivieska", ala: "Suomi", lat: 64.0736, lon: 24.5341, sade: 2 },
   ];
 
-  // ---- Nominatim (käyttöehdot: vain käyttäjän erillinen haku, ≥1 s väli, ei automaattitäydennystä) ----
+  // ---- Paikkahaku ja karttadata omalahja.fi:n kautta (Worker välimuistittaa Nominatimin ja Overpassin) ----
   let viimeHaku = 0;
   async function hae(teksti, vainSuomi) {
     const odota = 1100 - (Date.now() - viimeHaku); if (odota > 0) await new Promise((r) => setTimeout(r, odota));
     viimeHaku = Date.now();
-    const u = new URL("https://nominatim.openstreetmap.org/search");
-    u.search = new URLSearchParams({ q: teksti, format: "jsonv2", limit: "6", "accept-language": "fi", addressdetails: "1", ...(vainSuomi ? { countrycodes: "fi" } : {}) });
-    const r = await fetch(u, { headers: { accept: "application/json" } });
+    const r = await fetch(`/api/kartta/haku?q=${encodeURIComponent(teksti)}&fi=${vainSuomi ? 1 : 0}`, { signal: AbortSignal.timeout ? AbortSignal.timeout(15000) : undefined });
     if (!r.ok) throw new Error("haku " + r.status);
-    return (await r.json()).map((p) => {
+    const j = await r.json(); if (!Array.isArray(j)) throw new Error("haku");
+    return j.map((p) => {
       const a = p.address || {}, nimi = a.city || a.town || a.village || a.municipality || a.hamlet || a.suburb || p.name || p.display_name.split(",")[0];
-      const laji = p.addresstype || p.type, sade = { city: 3, town: 2, municipality: 3, village: 1.2, hamlet: 0.8, suburb: 1.5, neighbourhood: 0.8, island: 2, lake: 4 }[laji] || 1.5;
+      const laji = p.addresstype || p.type, sade = { city: 2.5, town: 2, municipality: 2.5, village: 1, hamlet: 0.8, suburb: 1.5, neighbourhood: 0.8, island: 2, lake: 4 }[laji] || 1.5;
       return { nimi: p.name || nimi, ala: a.country || "", kuvaus: p.display_name, lat: +p.lat, lon: +p.lon, sade };
     });
   }
-
-  // ---- Overpass ----
-  const PALVELIMET = ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter", "https://maps.mail.ru/osm/tools/overpass/api/interpreter"];
-  function tieluokat(sade) {
-    const kaikki = ["motorway", "trunk", "primary", "secondary", "tertiary", "motorway_link", "trunk_link", "primary_link", "secondary_link", "tertiary_link", "unclassified", "residential", "living_street", "pedestrian", "service", "footway", "path", "cycleway", "track", "steps"];
-    if (sade <= 1.6) return kaikki;
-    if (sade <= 4.5) return kaikki.filter((k) => !["footway", "path", "cycleway", "track", "steps"].includes(k));
-    if (sade <= 9) return kaikki.filter((k) => !["footway", "path", "cycleway", "track", "steps", "service", "pedestrian"].includes(k));
-    return kaikki.slice(0, 11);
-  }
+  const TASOT = [0.6, 1, 1.6, 2.5, 4, 6.5, 10, 16];
+  const taso = (sade) => TASOT.find((x) => x >= sade * 0.999) || 16;
   function rajat(lat, lon, sade, kerroin = 1.7) {
     const dlat = ((sade * kerroin) / 6371) * (180 / PI), dlon = dlat / Math.cos((lat * PI) / 180);
     return { s: lat - dlat * 1.45, n: lat + dlat * 1.45, w: lon - dlon, e: lon + dlon };
   }
   async function lataa(lat, lon, sade, signaali) {
-    const b = rajat(lat, lon, sade), bb = `${b.s.toFixed(5)},${b.w.toFixed(5)},${b.n.toFixed(5)},${b.e.toFixed(5)}`;
-    const q = `[out:json][timeout:50][maxsize:120000000];(way["highway"~"^(${tieluokat(sade).join("|")})$"](${bb});way["railway"="rail"](${bb});way["natural"="water"](${bb});relation["natural"="water"](${bb});way["waterway"~"^(riverbank|river|canal|stream)$"](${bb});way["natural"="coastline"](${bb}););out geom;`;
-    let virhe;
-    for (let k = 0; k < PALVELIMET.length; k++) {
-      try {
-        const ac = new AbortController(), aika = setTimeout(() => ac.abort(), 55000);
-        signaali && signaali.addEventListener("abort", () => ac.abort());
-        const r = await fetch(PALVELIMET[k], { method: "POST", body: "data=" + encodeURIComponent(q), headers: { "content-type": "application/x-www-form-urlencoded" }, signal: ac.signal });
-        clearTimeout(aika);
-        if (!r.ok) throw new Error("overpass " + r.status);
-        const j = await r.json();
-        if (j.remark && /error|timed out/i.test(j.remark) && !(j.elements || []).length) throw new Error(j.remark);
-        return { ...jasenna(j.elements || []), rajat: b, lat, lon, sade };
-      } catch (e) { virhe = e; if (signaali && signaali.aborted) throw e; }
-    }
-    throw virhe;
+    const ac = new AbortController(), aika = setTimeout(() => ac.abort(), 70000);
+    if (signaali) signaali.addEventListener("abort", () => ac.abort());
+    try {
+      const r = await fetch(`/api/kartta/alue?lat=${lat.toFixed(4)}&lon=${lon.toFixed(4)}&sade=${sade}`, { signal: ac.signal });
+      if (!r.ok) throw new Error("kartta " + r.status);
+      const j = await r.json();
+      return { ...jasenna(j.osm.elements || [], j.ruutu.taso), rajat: j.ruutu.rajat, taso: j.ruutu.taso, lat, lon, sade };
+    } finally { clearTimeout(aika); }
   }
 
   const LUOKKA = { motorway: 3.4, trunk: 3.2, primary: 2.7, secondary: 2.3, tertiary: 1.9, motorway_link: 1.8, trunk_link: 1.8, primary_link: 1.6, secondary_link: 1.5, tertiary_link: 1.4,
@@ -118,18 +101,25 @@
     }
     return ketjut;
   }
-  function jasenna(el) {
+  function ohenna(p, tol) { // poistetaan pisteet, jotka ovat liian lähellä edellistä (nopeampi piirto)
+    if (p.length < 4) return p; const u = [p[0]]; let [x0, y0] = p[0];
+    for (let i = 1; i < p.length - 1; i++) { const [x, y] = p[i]; if (Math.abs(x - x0) + Math.abs(y - y0) > tol) { u.push(p[i]); x0 = x; y0 = y; } }
+    u.push(p[p.length - 1]); return u;
+  }
+  function jasenna(el, tasoKm = 2.5) {
     const tiet = [], radat = [], vedet = [], joet = [], rannat = [];
+    const tol = tasoKm / 6371 / 900;
     const pisteet = (g) => (g || []).filter(Boolean).map((p) => [X(p.lon), Y(p.lat)]);
+    let g = "";
     for (const e of el) {
-      const t = e.tags || {};
+      if (!e.geometry && !e.members && e.tags && e.tags.g) { g = e.tags.g; continue; }
       if (e.type === "way") {
         const p = pisteet(e.geometry); if (p.length < 2) continue;
-        if (t.highway) tiet.push({ l: LUOKKA[t.highway] || 1, p });
-        else if (t.railway) radat.push(p);
-        else if (t.natural === "coastline") rannat.push(p);
-        else if (t.natural === "water" || t.waterway === "riverbank") vedet.push({ ulko: [p], sisa: [] });
-        else if (t.waterway) joet.push({ l: { river: 2.4, canal: 1.6, stream: 0.7 }[t.waterway] || 1, p });
+        if (g[0] === "t") tiet.push({ l: parseFloat(g.slice(1)) || 1, p: ohenna(p, tol) });
+        else if (g === "rata") radat.push(ohenna(p, tol));
+        else if (g === "ranta") rannat.push(p);
+        else if (g === "vesi") vedet.push({ ulko: [ohenna(p, tol)], sisa: [] });
+        else if (g[0] === "j") joet.push({ l: parseFloat(g.slice(1)) || 1, p: ohenna(p, tol) });
       } else if (e.type === "relation" && e.members) {
         const ulko = [], sisa = [];
         for (const m of e.members) if (m.type === "way" && m.geometry) (m.role === "inner" ? sisa : ulko).push(pisteet(m.geometry));
@@ -226,8 +216,9 @@
   // Onko näkymä vielä ladatun alueen sisällä?
   function kattaa(d, n) {
     if (!d) return false; const b = d.rajat, r = rajat(n.lat, n.lon, n.sade, 1.05);
-    return r.s >= b.s && r.n <= b.n && r.w >= b.w && r.e <= b.e && n.sade >= d.sade * 0.55 && tieluokat(n.sade).length >= tieluokat(d.sade).length - 0;
+    return taso(n.sade) === d.taso && r.s >= b.s && r.n <= b.n && r.w >= b.w && r.e <= b.e;
   }
+
   function koordinaatit(lat, lon) {
     const f = (v, pos, neg) => { const a = Math.abs(v), d = Math.floor(a), m = Math.floor((a - d) * 60), s = Math.round(((a - d) * 60 - m) * 60);
       return `${d}°${String(m).padStart(2, "0")}′${String(s % 60).padStart(2, "0")}″ ${v >= 0 ? pos : neg}`; };
