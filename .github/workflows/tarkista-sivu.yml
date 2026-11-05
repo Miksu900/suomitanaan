@@ -1,0 +1,15 @@
+name: Tarkista sivu
+# Tarkistaa julkisten sivujen tilan (kontti ei näe faktapiste.fi:tä)
+on:
+  workflow_dispatch:
+jobs:
+  tarkista:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          for u in https://faktapiste.fi/islam/ https://netvo.fi/kotivara/ https://faktapiste.fi/; do
+            echo "::notice title=$u::$(curl -sS -o /tmp/s -w '%{http_code} %{size_download}B' "$u") $(grep -o '<title>[^<]*' /tmp/s | head -1)"
+          done
+          curl -sS https://faktapiste.fi/api/julkinen/islam.json -o /tmp/d.json -w '%{http_code}\n'
+          echo "::notice title=Data::$(jq -r '"\(.jutut|length) juttua, päivitetty \(.paivitetty), uusin \(.jutut[0].t) \(.jutut[0].o)"' /tmp/d.json | head -c 300)"
+          echo "::notice title=Some-esikatselu::$(curl -sS https://faktapiste.fi/islam/ | grep -o 'og:[a-z]*" content="[^"]*' | tr '\n' ' ' | head -c 400)"
