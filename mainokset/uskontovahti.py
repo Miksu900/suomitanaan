@@ -184,7 +184,7 @@ if __name__ == "__main__":
     for x in kohteet(loki):
         if avain(x) in nahty or x["u"] in nahty: continue
         nahty.update([avain(x), x["u"]]); uudet.append(x); arkisto.append(x)
-    kaanna(uudet)
+    kaanna(uudet + [x for x in arkisto if x.get("a") == "eu" and "oo" not in x and x not in uudet][:200])   # myös aiemmin kääntämättä jääneet
     arkisto = sorted(arkisto, key=lambda x: x["t"], reverse=True)[:30000]   # arkisto säilyy, vanhatkin jutut
     nyt = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=2))).strftime("%-d.%-m.%Y klo %H.%M")
     hallinta = hashlib.sha256((os.environ["CF"].strip() + "-faktapiste").encode()).hexdigest()[:40]
