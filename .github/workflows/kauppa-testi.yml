@@ -10,5 +10,7 @@ jobs:
           echo "::notice title=Avaimet::api ${#K} merkkiä, private ${#P} merkkiä, private-merkit: $(printf '%s' "$P" | sed 's/[A-Za-z0-9]//g' | head -c 10 | od -c | head -1)"
           A=$(printf '%s' "$K" | openssl dgst -sha256 -hmac "$P" -hex | sed 's/.*= //' | tr a-f A-F)
           for V in 2 w3.1; do echo "::notice title=Maksutavat v$V::$(curl -sS -X POST https://www.vismapay.com/pbwapi/merchant_payment_methods -H 'content-type: application/json' -d "{\"version\":\"$V\",\"api_key\":\"$K\",\"currency\":\"EUR\",\"authcode\":\"$A\"}" | jq -c '{result, n:(.payment_methods|length), eka:.payment_methods[0]}' | head -c 400)"; done
+          O="TESTI$(date +%s)"; A2=$(printf '%s' "$K|$O" | openssl dgst -sha256 -hmac "$P" -hex | sed 's/.*= //' | tr a-f A-F)
+          echo "::notice title=Auth suoraan::$(curl -sS -X POST https://www.vismapay.com/pbwapi/auth_payment -H 'content-type: application/json' -d "{\"version\":\"w3.1\",\"api_key\":\"$K\",\"order_number\":\"$O\",\"amount\":100,\"currency\":\"EUR\",\"email\":\"testi@netvo.fi\",\"authcode\":\"$A2\",\"payment_method\":{\"type\":\"e-payment\",\"return_url\":\"https://netvo.fi/api/kauppa/paluu\",\"notify_url\":\"https://netvo.fi/api/kauppa/ilmoitus\",\"lang\":\"fi\"}}" | head -c 400)"
           echo "::notice title=Netvo maksutavat::$(curl -sS https://netvo.fi/api/kauppa/maksutavat | head -c 300)"
           echo "::notice title=Osto::$(curl -sS -X POST https://netvo.fi/api/kauppa/osto -H 'content-type: application/json' -d '{"tuote":"01","email":"testi@netvo.fi","hyvaksy":true}' | head -c 300)"
