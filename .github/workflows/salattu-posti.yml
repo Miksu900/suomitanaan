@@ -44,8 +44,10 @@ jobs:
             jq --arg n "$n" --rawfile c <(base64 -w0 "out/$n") '. + [{name:$n, content:$c}]' l.json > l2.json && mv l2.json l.json
             echo "::notice title=$n::$(stat -c %s out/$n) tavua, $(head -c 5 out/$n)"
           done
-          B=$(jq -n --arg to "$TO" --arg s "$AIHE" --arg t "$RUNKO" --slurpfile l l.json '{sender:{email:"info@netvo.fi",name:"Miika Koskela | Netvo"},replyTo:{email:"info@netvo.fi",name:"Miika Koskela"},to:[{email:$to}],bcc:[{email:"miika.koskela990@gmail.com"}],subject:$s,textContent:$t,attachment:$l[0]}')
-          echo "::notice title=Lähetetty::$TO $(curl -sS -X POST https://api.brevo.com/v3/smtp/email -H "api-key: $BREVO" -H 'content-type: application/json' -d "$B")"
+          jq -n --arg to "$TO" --arg s "$AIHE" --arg t "$RUNKO" --slurpfile l l.json '{sender:{email:"info@netvo.fi",name:"Miika Koskela | Netvo"},replyTo:{email:"info@netvo.fi",name:"Miika Koskela"},to:[{email:$to}],bcc:[{email:"miika.koskela990@gmail.com"}],subject:$s,textContent:$t,attachment:$l[0]}' > b.json
+          V=$(curl -sS -X POST https://api.brevo.com/v3/smtp/email -H "api-key: $BREVO" -H 'content-type: application/json' --data-binary @b.json)
+          echo "::notice title=Lähetetty::$TO $V"; rm -f b.json
+          echo "$V" | grep -q messageId
           curl -sS -X POST https://faktapiste.fi/api/hallinta/holvi -H "x-avain: $H" -H 'content-type: application/json' -d '{"nimi":"posti-rsa","arvo":""}' >/dev/null
           rm -rf out y.pem avain.hex l.json
       - name: Siivoa
