@@ -1,114 +1,289 @@
 {
-  "avoinna": false,
-  "dpi": 150,
-  "maxPikselit": 16000000,
-  "tuotteet": {
-    "juliste": {
-      "nimi": "Juliste",
-      "kuvaus": "Mattapintainen 200 g/m² julistepaperi",
-      "reuna": 3,
-      "koot": {
-        "30x40": {
-          "mm": [
-            300,
-            400
-          ],
-          "hinta": 4500,
-          "kulu": 1940,
-          "uid": "flat_300x400-mm-12x16-inch_200-gsm-80lb-uncoated_4-0_{s}"
-        },
-        "50x70": {
-          "mm": [
-            500,
-            700
-          ],
-          "hinta": 5900,
-          "kulu": 2348,
-          "uid": "flat_500x700-mm-20x28-inch_200-gsm-80lb-uncoated_4-0_{s}"
-        }
-      }
+ "avoinna": false,
+ "dpi": 150,
+ "maxPikselit": 16000000,
+ "tuotteet": {
+  "juliste": {
+   "nimi": "Juliste",
+   "kuvaus": "Mattapintainen 200 g/m² julistepaperi",
+   "reuna": 3,
+   "koot": {
+    "30x40": {
+     "mm": [
+      300,
+      400
+     ],
+     "hinta": 4500,
+     "kulu": 1940,
+     "uid": "flat_300x400-mm-12x16-inch_200-gsm-80lb-uncoated_4-0_{s}"
     },
-    "canvas": {
-      "nimi": "Canvastaulu",
-      "kuvaus": "Kangas pingotettuna FSC-puukehykselle (2 cm), valmis ripustettavaksi",
-      "reuna": 49,
-      "koot": {
-        "30x40": {
-          "mm": [
-            300,
-            400
-          ],
-          "hinta": 6900,
-          "kulu": 2763,
-          "uid": "canvas_300x400-mm-12x16-inch_canvas_wood-fsc-slim_4-0_{s}"
-        },
-        "50x70": {
-          "mm": [
-            500,
-            700
-          ],
-          "hinta": 10500,
-          "kulu": 5939,
-          "uid": "canvas_500x700-mm-20x28-inch_canvas_wood-fsc-slim_4-0_{s}"
-        }
-      }
-    },
-    "kehys": {
-      "nimi": "Kehystetty juliste",
-      "kuvaus": "Juliste valmiiksi kehystettynä, edessä pleksilasi",
-      "reuna": 3,
-      "koot": {
-        "30x40": {
-          "mm": [
-            300,
-            400
-          ],
-          "hinta": 7900,
-          "kulu": 3982,
-          "uid": "frame_and_poster_product_frs_300x400-mm_frc_{v}_gt_plexiglass__pf_300x400-mm_pt_200-gsm-uncoated_cl_4-0_ct_none_prt_none_{s}"
-        },
-        "50x70": {
-          "mm": [
-            500,
-            700
-          ],
-          "hinta": 13500,
-          "kulu": 8571,
-          "uid": "frame_and_poster_product_frs_500x700-mm_frc_{v}_gt_plexiglass__pf_500x700-mm_pt_200-gsm-uncoated_cl_4-0_ct_none_prt_none_{s}"
-        }
-      },
-      "varit": {
-        "musta": {
-          "nimi": "Musta alumiini",
-          "v": "black_frm_aluminum_frp_w10xt22-mm",
-          "css": "#1b1b1b"
-        },
-        "mustapuu": {
-          "nimi": "Musta puu",
-          "v": "black_frm_wood_frp_w12xt22-mm",
-          "css": "#2a2522"
-        },
-        "valkoinen": {
-          "nimi": "Valkoinen puu",
-          "v": "white_frm_wood_frp_w12xt22-mm",
-          "css": "#f3f1ec"
-        },
-        "luonnonpuu": {
-          "nimi": "Luonnonpuu",
-          "v": "natural-wood_frm_wood_frp_w12xt22-mm",
-          "css": "#c9a273"
-        },
-        "tummapuu": {
-          "nimi": "Tumma puu",
-          "v": "dark-wood_frm_wood_frp_w12xt22-mm",
-          "css": "#5a3b25"
-        },
-        "kupari": {
-          "nimi": "Kupari",
-          "v": "copper_frm_aluminum_frp_w10xt22-mm",
-          "css": "#b8734a"
-        }
-      }
+    "50x70": {
+     "mm": [
+      500,
+      700
+     ],
+     "hinta": 5900,
+     "kulu": 2348,
+     "uid": "flat_500x700-mm-20x28-inch_200-gsm-80lb-uncoated_4-0_{s}"
     }
+   },
+   "ryhma": "seina"
+  },
+  "kehys": {
+   "nimi": "Kehystetty juliste",
+   "kuvaus": "Juliste valmiiksi kehystettynä, edessä pleksilasi",
+   "reuna": 3,
+   "koot": {
+    "30x40": {
+     "mm": [
+      300,
+      400
+     ],
+     "hinta": 7900,
+     "kulu": 3982,
+     "uid": "frame_and_poster_product_frs_300x400-mm_frc_{v}_gt_plexiglass__pf_300x400-mm_pt_200-gsm-uncoated_cl_4-0_ct_none_prt_none_{s}"
+    },
+    "50x70": {
+     "mm": [
+      500,
+      700
+     ],
+     "hinta": 13500,
+     "kulu": 8571,
+     "uid": "frame_and_poster_product_frs_500x700-mm_frc_{v}_gt_plexiglass__pf_500x700-mm_pt_200-gsm-uncoated_cl_4-0_ct_none_prt_none_{s}"
+    }
+   },
+   "varit": {
+    "musta": {
+     "nimi": "Musta alumiini",
+     "v": "black_frm_aluminum_frp_w10xt22-mm",
+     "css": "#1b1b1b"
+    },
+    "mustapuu": {
+     "nimi": "Musta puu",
+     "v": "black_frm_wood_frp_w12xt22-mm",
+     "css": "#2a2522"
+    },
+    "valkoinen": {
+     "nimi": "Valkoinen puu",
+     "v": "white_frm_wood_frp_w12xt22-mm",
+     "css": "#f3f1ec"
+    },
+    "luonnonpuu": {
+     "nimi": "Luonnonpuu",
+     "v": "natural-wood_frm_wood_frp_w12xt22-mm",
+     "css": "#c9a273"
+    },
+    "tummapuu": {
+     "nimi": "Tumma puu",
+     "v": "dark-wood_frm_wood_frp_w12xt22-mm",
+     "css": "#5a3b25"
+    },
+    "kupari": {
+     "nimi": "Kupari",
+     "v": "copper_frm_aluminum_frp_w10xt22-mm",
+     "css": "#b8734a"
+    }
+   },
+   "ryhma": "seina"
+  },
+  "canvas": {
+   "nimi": "Canvastaulu",
+   "kuvaus": "Kangas pingotettuna FSC-puukehykselle (2 cm), valmis ripustettavaksi",
+   "reuna": 49,
+   "koot": {
+    "30x40": {
+     "mm": [
+      300,
+      400
+     ],
+     "hinta": 6900,
+     "kulu": 2763,
+     "uid": "canvas_300x400-mm-12x16-inch_canvas_wood-fsc-slim_4-0_{s}"
+    },
+    "50x70": {
+     "mm": [
+      500,
+      700
+     ],
+     "hinta": 10500,
+     "kulu": 5939,
+     "uid": "canvas_500x700-mm-20x28-inch_canvas_wood-fsc-slim_4-0_{s}"
+    }
+   },
+   "ryhma": "seina"
+  },
+  "ripustin": {
+   "nimi": "Juliste ripustimella",
+   "kuvaus": "Juliste puisilla ripustinlistoilla ylä- ja alareunassa",
+   "ryhma": "seina",
+   "reuna": 3,
+   "koot": {
+    "30x40": {
+     "mm": [
+      300,
+      400
+     ],
+     "hinta": 6200,
+     "kulu": 3312,
+     "uid": "wall_hanging_poster_310-mm_{v}_wood_w14xt20-mm_300x400-mm-12x16-inch_200-gsm-80lb-uncoated_4-0_ver",
+     "uidVaaka": "wall_hanging_poster_410-mm_{v}_wood_w14xt20-mm_300x400-mm-12x16-inch_200-gsm-80lb-uncoated_4-0_hor"
+    }
+   },
+   "varit": {
+    "luonnonpuu": {
+     "nimi": "Luonnonpuu",
+     "v": "natural-wood",
+     "css": "#c9a273"
+    },
+    "musta": {
+     "nimi": "Musta puu",
+     "v": "black",
+     "css": "#1f1c1a"
+    },
+    "valkoinen": {
+     "nimi": "Valkoinen puu",
+     "v": "white",
+     "css": "#f3f1ec"
+    }
+   }
+  },
+  "puu": {
+   "nimi": "Puutaulu",
+   "kuvaus": "Painatus suoraan 10 mm vanerille, puun syy kuultaa läpi",
+   "ryhma": "seina",
+   "reuna": 3,
+   "koot": {
+    "30x40": {
+     "mm": [
+      300,
+      400
+     ],
+     "hinta": 7500,
+     "kulu": 4032,
+     "uid": "wood_300x400-mm-12x16-inch_lined-plywood_10-mm_hor-grain_4-0_{s}"
+    }
+   }
+  },
+  "akryyli": {
+   "nimi": "Akryylitaulu",
+   "kuvaus": "Kirkas 4 mm akryyli, syvät ja kiiltävät värit",
+   "ryhma": "seina",
+   "reuna": 3,
+   "koot": {
+    "30x40": {
+     "mm": [
+      300,
+      400
+     ],
+     "hinta": 8900,
+     "kulu": 5246,
+     "uid": "acrylic_300x400-mm-12x16-inch_4-mm_4-0_{s}"
+    }
+   }
+  },
+  "muki": {
+   "nimi": "Muki",
+   "kuvaus": "11 oz keraaminen muki, kuva molemmin puolin. Kestää astianpesukoneen",
+   "ryhma": "lahja",
+   "tyyppi": "muki",
+   "eiSuuntaa": true,
+   "reuna": [
+    0,
+    2
+   ],
+   "dpi": 300,
+   "koot": {
+    "11oz": {
+     "mm": [
+      200,
+      96
+     ],
+     "nimi": "11 oz (330 ml)",
+     "hinta": 3500,
+     "kulu": 1297,
+     "uid": "mug_product_msz_11-oz_mmat_ceramic-{v}_cl_4-0"
+    }
+   },
+   "varit": {
+    "valkoinen": {
+     "nimi": "Valkoinen",
+     "v": "white",
+     "css": "#ffffff"
+    },
+    "musta": {
+     "nimi": "Musta sisältä",
+     "v": "black",
+     "css": "#1b1b1b",
+     "lisa": 400
+    },
+    "sininen": {
+     "nimi": "Sininen sisältä",
+     "v": "blue",
+     "css": "#2f5f9e",
+     "lisa": 400
+    },
+    "roosa": {
+     "nimi": "Roosa sisältä",
+     "v": "pink",
+     "css": "#e9a3b5",
+     "lisa": 400
+    }
+   }
+  },
+  "kortit": {
+   "nimi": "Kortit",
+   "kuvaus": "10 taitettua korttia kirjekuorineen, kaunis silkkipintainen kartonki",
+   "ryhma": "lahja",
+   "tyyppi": "kortti",
+   "eiSuuntaa": true,
+   "reuna": 4,
+   "dpi": 300,
+   "pdf": true,
+   "koot": {
+    "a6": {
+     "mm": [
+      105,
+      148
+     ],
+     "nimi": "A6, 10 kpl",
+     "hinta": 4500,
+     "kulu": 1876,
+     "uid": "pack_of_folded_cards_qt_10_pcs_pf_a6_upt_350-gsm-130lb-coated-silk_cl_4-4_ft_crease-ver_ct_none_prt_none_sft_none_ver_ept_standard"
+    },
+    "a5": {
+     "mm": [
+      148,
+      210
+     ],
+     "nimi": "A5, 10 kpl",
+     "hinta": 4900,
+     "kulu": 2196,
+     "uid": "pack_of_folded_cards_qt_10_pcs_pf_a5_upt_350-gsm-130lb-coated-silk_cl_4-4_ft_crease-ver_ct_none_prt_none_sft_none_ver_ept_standard"
+    }
+   }
+  },
+  "kalenteri": {
+   "nimi": "Seinäkalenteri 2027",
+   "kuvaus": "A4-seinäkalenteri: kansi ja 12 kuukautta omalla kuvallasi, suomalaiset pyhäpäivät merkittyinä",
+   "ryhma": "lahja",
+   "tyyppi": "kalenteri",
+   "eiSuuntaa": true,
+   "reuna": 4,
+   "dpi": 200,
+   "pdf": true,
+   "koot": {
+    "a4": {
+     "mm": [
+      210,
+      297
+     ],
+     "nimi": "A4",
+     "hinta": 4400,
+     "kulu": 1824,
+     "uid": "wall-calendars_pf_a4_pt_250-gsm-coated-silk_cl_4-4_bt_wire-with-hook-top_ver"
+    }
+   }
   }
+ }
 }

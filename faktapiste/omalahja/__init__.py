@@ -19,9 +19,13 @@ def julkinen_config():
     """Selaimelle vain tarvittava: ei Gelaton tuotetunnuksia eikä kustannuksia."""
     t = {}
     for k, v in CONFIG["tuotteet"].items():
-        t[k] = {"nimi": v["nimi"], "kuvaus": v["kuvaus"], "reuna": v["reuna"], "koot": {kk: {"mm": x["mm"], "hinta": x["hinta"]} for kk, x in v["koot"].items()}}
-        if "varit" in v: t[k]["varit"] = {vk: {"nimi": vv["nimi"], "css": vv["css"]} for vk, vv in v["varit"].items()}
+        t[k] = {kk: v[kk] for kk in ("nimi", "kuvaus", "reuna", "tyyppi", "eiSuuntaa", "dpi", "pdf", "ryhma") if kk in v}
+        t[k]["koot"] = {kk: {a: x[a] for a in ("mm", "hinta", "nimi") if a in x} for kk, x in v["koot"].items()}
+        if "varit" in v: t[k]["varit"] = {vk: {a: vv[a] for a in ("nimi", "css", "lisa") if a in vv} for vk, vv in v["varit"].items()}
     return {"avoinna": CONFIG["avoinna"], "dpi": CONFIG["dpi"], "maxPikselit": CONFIG["maxPikselit"], "tuotteet": t}
+
+def kokonimi(kk, k):
+    return k.get("nimi") or kk.replace("x", " × ") + " cm"
 
 FONTIT_URL = ("https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Amatic+SC:wght@700&family=Cinzel:wght@600&family=Cormorant+Garamond:wght@500"
               "&family=Dancing+Script:wght@700&family=EB+Garamond&family=Great+Vibes&family=Josefin+Sans:wght@300;400&family=Lato&family=Montserrat:wght@400;700"
@@ -123,6 +127,24 @@ details.osio[open]>summary::after{transform:rotate(-135deg) translateY(-2px)}
 .tuote-ikoni{width:30px;height:40px;display:block;margin-bottom:4px;background:#fff;box-shadow:0 4px 8px -4px rgba(0,0,0,.4)}
 .tuote-ikoni.canvas{box-shadow:2px 2px 0 rgba(0,0,0,.2),0 4px 8px -4px rgba(0,0,0,.4)}
 .tuote-ikoni.kehys{border:4px solid #2a2522}
+.tuote-ikoni.ripustin{border-top:4px solid #b98d5e;border-bottom:4px solid #b98d5e}
+.tuote-ikoni.puu{background:linear-gradient(135deg,#e7d2b0,#cfae80)}
+.tuote-ikoni.akryyli{background:linear-gradient(135deg,#fff 40%,#e6eef3 60%,#fff 70%)}
+.tuote-ikoni.muki{width:30px;height:28px;margin-top:8px;border-radius:2px 2px 7px 7px;position:relative}.tuote-ikoni.muki::after{content:"";position:absolute;right:-9px;top:6px;width:8px;height:12px;border:3px solid #fff;border-left:0;border-radius:0 8px 8px 0;box-shadow:2px 2px 4px -2px rgba(0,0,0,.4)}
+.tuote-ikoni.kortit{width:26px;height:36px;box-shadow:4px -3px 0 -1px #f1ece4,0 4px 8px -4px rgba(0,0,0,.4)}
+.tuote-ikoni.kalenteri{background:repeating-linear-gradient(90deg,#fff 0 5px,#fff 5px),#fff;border-top:5px dotted #555}
+.valinnat.tuotteet{grid-template-columns:repeat(3,minmax(0,1fr))}
+.taulu.ripustin{padding:10px 0}.taulu.ripustin::before,.taulu.ripustin::after{content:"";position:absolute;left:-4%;right:-4%;height:10px;background:var(--kehys);box-shadow:0 2px 3px rgba(0,0,0,.25)}.taulu.ripustin::before{top:0}.taulu.ripustin::after{bottom:0}
+.taulu.ripustin canvas{box-shadow:0 22px 36px -14px rgba(40,25,15,.4)}
+.taulu.puu canvas{box-shadow:4px 4px 0 #b08d62,0 22px 36px -14px rgba(40,25,15,.45);filter:sepia(.08)}
+.taulu.akryyli::after{content:"";position:absolute;inset:0;background:linear-gradient(125deg,rgba(255,255,255,.35) 0%,rgba(255,255,255,0) 35%,rgba(255,255,255,0) 70%,rgba(255,255,255,.18) 100%);pointer-events:none}
+.taulu.akryyli canvas{box-shadow:3px 3px 0 rgba(255,255,255,.6),4px 4px 0 rgba(0,0,0,.08),0 22px 36px -14px rgba(40,25,15,.45)}
+.taulu.muki{margin-right:22%}.taulu.muki canvas{border-radius:4px 4px 14px 14px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06),0 22px 30px -14px rgba(40,25,15,.45)}
+.taulu.muki::before{content:"";position:absolute;inset:0;border-radius:4px 4px 14px 14px;background:linear-gradient(90deg,rgba(0,0,0,.12),rgba(255,255,255,0) 18%,rgba(255,255,255,.22) 30%,rgba(255,255,255,0) 45%,rgba(0,0,0,0) 80%,rgba(0,0,0,.16));pointer-events:none}
+.taulu.muki::after{content:"";position:absolute;left:100%;top:18%;width:24%;height:52%;border:9px solid var(--kehys,#fff);border-left:0;border-radius:0 40% 40% 0;box-shadow:3px 4px 6px -3px rgba(0,0,0,.35)}
+.taulu.kortit canvas{box-shadow:6px -4px 0 -2px #efe9df,0 22px 30px -14px rgba(40,25,15,.4)}
+.taulu.kalenteri{padding-top:12px}.taulu.kalenteri::before{content:"";position:absolute;top:2px;left:8%;right:8%;height:8px;background:radial-gradient(circle,#666 2px,transparent 2.5px) 0 0/10px 8px}
+.taulu.kalenteri canvas{box-shadow:0 22px 36px -14px rgba(40,25,15,.4)}
 .valinnat.asettelut,.valinnat.kuviot,.valinnat.fontit,.valinnat.paletit{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:6px}
 .asettelu-k,.kuvake-k,.fontti-k,.paletti-k,.savy-k{display:flex;flex-direction:column;align-items:center;gap:7px;line-height:1.15}
 .asettelu-k small,.kuvake-k small,.fontti-k small,.paletti-k small,.savy-k small{font-size:.74rem;color:var(--mute);font-weight:600;overflow-wrap:anywhere}
@@ -213,7 +235,7 @@ def alin_hinta():
     return min(k["hinta"] for t in CONFIG["tuotteet"].values() for k in t["koot"].values())
 
 def hintataulukko():
-    rivit = "".join(f"<tr><td>{esc(t['nimi'])}</td><td>{kk.replace('x', ' × ')} cm</td><td>{euro(k['hinta'])}</td></tr>" for t in CONFIG["tuotteet"].values() for kk, k in t["koot"].items())
+    rivit = "".join(f"<tr><td>{esc(t['nimi'])}</td><td>{esc(kokonimi(kk, k))}</td><td>{euro(k['hinta'])}{' alkaen' if any(v.get('lisa') for v in t.get('varit', {}).values()) else ''}</td></tr>" for t in CONFIG["tuotteet"].values() for kk, k in t["koot"].items())
     return f'<table class="hinnat"><thead><tr><th>Tuote</th><th>Koko</th><th>Hinta</th></tr></thead><tbody>{rivit}</tbody></table>'
 
 HERO_ID = "photo-1618221195710-dd6b41faaea6"   # Unsplash: valoisa olohuone, tyhjä seinä (tarkistettu 5.11.2026)
@@ -342,6 +364,9 @@ ETUSIVU_CSS = """
 .hintarivi .pikku img{display:block;width:100%;height:auto}
 .hintarivi .pikku .canvas{box-shadow:3px 3px 0 rgba(0,0,0,.18),0 6px 10px -6px rgba(40,25,15,.45)}
 .hintarivi .pikku .kehyksessa{padding:7%;background:#2a2522}
+.hintarivi .pikku .ripustimessa{border-top:4px solid #b98d5e;border-bottom:4px solid #b98d5e}.hintarivi .pikku .puulla{filter:sepia(.25)}.hintarivi .pikku .akryyli{box-shadow:2px 2px 0 #fff,0 6px 10px -6px rgba(40,25,15,.45)}
+.hintarivi .pikku .mukissa{aspect-ratio:1.05;overflow:hidden;border-radius:3px 3px 10px 10px;position:relative}.hintarivi .pikku .mukissa img{height:100%;object-fit:cover}
+.hintarivi .pikku .korttina{width:80%!important;box-shadow:4px -3px 0 -1px #f1ece4,0 6px 10px -6px rgba(40,25,15,.45)}.hintarivi .pikku .kalenterina{border-top:4px dotted #666}
 .hintarivi h3{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:1.45rem;margin:0}
 .hintarivi .kuvaus{margin:2px 0 0;color:var(--mute);font-size:.95rem}
 .koot{grid-column:2;list-style:none;margin:10px 0 0;padding:0}
@@ -388,12 +413,13 @@ def etusivu():
                         for f, t, k, l, w, h, lk, kh in ESIMERKIT)
     ideat = "".join(f'<a class="idea" href="{l}"><div class="alusta"><span>{kuva(f, "", 1000, 1333)}</span></div><b>{esc(t)}</b></a>' for t, l, f in TILAISUUDET)
     t = CONFIG["tuotteet"]
-    pikku = {"juliste": ("nimi-vauva", ""), "canvas": ("kartta-tampere", "canvas"), "kehys": ("nimi-perhe", "kehyksessa")}
+    pikku = {"juliste": ("nimi-vauva", ""), "canvas": ("kartta-tampere", "canvas"), "kehys": ("nimi-perhe", "kehyksessa"), "ripustin": ("nimi-jae", "ripustimessa"), "puu": ("kartta-betlehem", "puulla"),
+             "akryyli": ("kartta-ylivieska", "akryyli"), "muki": ("nimi-haat", "mukissa"), "kortit": ("nimi-joulu", "korttina"), "kalenteri": ("kartta-helsinki", "kalenterina")}
     hinnat = ""
     for avain, x in t.items():
         kuvatiedosto, luokka = pikku.get(avain, ("nimi-perhe", ""))
-        koot = "".join(f"<li><span>{kk.replace('x', ' × ')} cm</span><b>{euro(k['hinta'])}</b></li>" for kk, k in x["koot"].items())
-        savyt = ('<ul class="savyt" aria-label="Kehysvärit">' + "".join(f'<li><i style="background:{v["css"]}"></i>{esc(v["nimi"])}</li>' for v in x["varit"].values()) + "</ul>") if "varit" in x else ""
+        koot = "".join(f"<li><span>{esc(kokonimi(kk, k))}</span><b>{euro(k['hinta'])}</b></li>" for kk, k in x["koot"].items())
+        savyt = ('<ul class="savyt" aria-label="Värit">' + "".join(f'<li><i style="background:{v["css"]}"></i>{esc(v["nimi"])}</li>' for v in x["varit"].values()) + "</ul>") if "varit" in x else ""
         hinnat += f'<div class="hintarivi ilmesty"><div class="pikku"><span class="{luokka}">{kuva(kuvatiedosto, "", 1000, 1333)}</span></div><div><h3>{esc(x["nimi"])}</h3><p class="kuvaus">{esc(x["kuvaus"])}.</p></div><ul class="koot">{koot}</ul>{savyt}</div>'
     tiedote = "" if CONFIG["avoinna"] else '<div class="tiedote">Tilaukset avautuvat pian – ehdit hyvin jouluun. <a href="/tee/nimijuliste/">Suunnittele jo nyt</a></div>'
     runko = f"""<section class="sankari">

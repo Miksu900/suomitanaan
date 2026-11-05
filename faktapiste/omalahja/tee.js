@@ -64,9 +64,9 @@
   // ---------- Tila ----------
   const OLETUS = MALLI === "kartta"
     ? { tuote: "juliste", koko: "50x70", vari: "musta", suunta: "pysty", lat: 60.1699, lon: 24.9384, sade: 2.5, teema: "klassinen", muoto: "koko", reunus: "valja", tekstiSij: "alla",
-        otsikko: "Helsinki", ala: "Suomi", koord: "", jae: "", viite: "", fontti: "moderni", paksuus: "normaali", kuvio: "ei", kuvioSij: "kulmat", kuvioKoko: "normaali", vainSuomi: true }
+        otsikko: "Helsinki", ala: "Suomi", koord: "", jae: "", viite: "", fontti: "moderni", paksuus: "normaali", kuvio: "ei", kuvioSij: "kulmat", kuvioKoko: "normaali", vainSuomi: true, sisa: "" }
     : { tuote: "juliste", koko: "30x40", vari: "musta", suunta: "pysty", asettelu: "keskitetty", fontti: "klassinen", paletti: "kerma", isot: false, kuvio: "lehva", kuvioSij: "yla", kuvioKoko: "normaali",
-        ...ASETTELUT.keskitetty.esim, jasenet: "", paino: "", pituus: "", klo: "", jae: "", viite: "" };
+        ...ASETTELUT.keskitetty.esim, jasenet: "", paino: "", pituus: "", klo: "", jae: "", viite: "", sisa: "" };
   const AVAIN = "omalahja-" + MALLI;
   let S = { ...OLETUS };
   try { const v = JSON.parse(localStorage.getItem(AVAIN) || "null"); if (v && typeof v === "object") S = { ...OLETUS, ...v }; } catch {}
@@ -100,7 +100,8 @@
     for (const [k, m] of Object.entries(enumit)) if (!Object.prototype.hasOwnProperty.call(m, o[k])) o[k] = OLETUS[k];
     if (!["pysty", "vaaka"].includes(o.suunta)) o.suunta = "pysty";
     if (!C.tuotteet[o.tuote] || !C.tuotteet[o.tuote].koot[o.koko]) { o.tuote = OLETUS.tuote; o.koko = OLETUS.koko; }
-    if (!C.tuotteet.kehys.varit[o.vari]) o.vari = Object.keys(C.tuotteet.kehys.varit)[0];
+    const tv = C.tuotteet[o.tuote].varit; if (tv && !tv[o.vari]) o.vari = Object.keys(tv)[0];
+    if (typeof o.sisa !== "string") o.sisa = "";
     if (MALLI === "kartta") { if (!isFinite(o.lat) || Math.abs(o.lat) > 85 || !isFinite(o.lon) || Math.abs(o.lon) > 180) { o.lat = OLETUS.lat; o.lon = OLETUS.lon; } o.sade = Math.min(16, Math.max(0.4, +o.sade || OLETUS.sade)); }
     return o;
   }
@@ -109,9 +110,11 @@
 
   const tuote = () => C.tuotteet[S.tuote];
   const koko = () => tuote().koot[S.koko];
-  const hinta = () => koko().hinta;
-  const tuoteNimi = () => `${tuote().nimi} ${S.koko.replace("x", "×")} cm${S.tuote === "kehys" ? ", " + tuote().varit[S.vari].nimi.toLowerCase() : ""}, ${S.suunta === "vaaka" ? "vaaka" : "pysty"}`;
-  const nakyva = () => { const [a, b] = koko().mm; return S.suunta === "vaaka" ? [b, a] : [a, b]; };
+  const vari = () => (tuote().varit || {})[S.vari];
+  const hinta = () => koko().hinta + ((vari() || {}).lisa || 0);
+  const kokoNimi = () => koko().nimi || S.koko.replace("x", "×") + " cm";
+  const tuoteNimi = () => `${tuote().nimi} ${kokoNimi()}${vari() ? ", " + vari().nimi.toLowerCase() : ""}${tuote().eiSuuntaa ? "" : S.suunta === "vaaka" ? ", vaaka" : ", pysty"}`;
+  const nakyva = () => { const [a, b] = koko().mm, t = tuote(); if (t.tyyppi === "muki") return [a / 2, b]; if (t.eiSuuntaa) return [a, b]; return S.suunta === "vaaka" ? [b, a] : [a, b]; };
   const fontti = () => FONTIT.find((f) => f.id === S.fontti) || FONTIT[0];
 
   // ---------- Fonttien lataus canvasia varten ----------
@@ -294,37 +297,116 @@
   function piirraEsikatselu() {
     const f = fontti(), lupaus = varmistaFontit(f); if (lupaus) lupaus.then(() => paivita());
     const [vw, vh] = nakyva(), tila = seina.getBoundingClientRect();
-    const kehysMm = S.tuote === "kehys" ? (S.koko === "30x40" ? 12 : 14) : 0, kerroin = 1 + (2 * kehysMm) / vw;
+    const kehysMm = S.tuote === "kehys" ? (S.koko === "30x40" ? 12 : 14) : 0, kerroin = 1 + (2 * kehysMm) / vw, mukiK = S.tuote === "muki" ? 1.28 : 1;
     const reuna = Math.max(18, Math.min(tila.width, tila.height) * 0.08);
     const maxW = Math.max(100, tila.width - 2 * reuna), maxH = Math.max(120, tila.height - 2 * reuna);
-    let w = maxW / kerroin, hh = (w * vh) / vw; if (hh * kerroin > maxH) { hh = maxH / kerroin; w = (hh * vw) / vh; }
+    let w = maxW / kerroin / mukiK, hh = (w * vh) / vw; if (hh * kerroin > maxH) { hh = maxH / kerroin; w = (hh * vw) / vh; }
     const dpr = Math.min(2, window.devicePixelRatio || 1);
     cv.width = Math.round(w * dpr); cv.height = Math.round(hh * dpr); cv.style.width = w + "px"; cv.style.height = hh + "px";
     taulu.className = "taulu " + S.tuote;
-    taulu.style.setProperty("--kehys", S.tuote === "kehys" ? tuote().varit[S.vari].css : "transparent");
+    taulu.style.setProperty("--kehys", vari() ? vari().css : "transparent");
     taulu.style.setProperty("--kp", S.tuote === "kehys" ? (w * (kerroin - 1)) / 2 + "px" : "0px");
     const c = cv.getContext("2d"); c.setTransform(1, 0, 0, 1, 0, 0); c.scale(cv.width / w, cv.height / hh);
     piirraSuunnitelma(c, w, hh);
   }
   addEventListener("resize", paivita);
 
-  // ---------- Painotiedosto ----------
+  // ---------- Painotiedosto (kuva tai monisivuinen PDF tuotteen mukaan) ----------
+  const reunat = () => { const r = tuote().reuna; return Array.isArray(r) ? r : [r, r]; };
   function painoMitat() {
-    const [vw, vh] = nakyva(), r = tuote().reuna, fw = vw + 2 * r, fh = vh + 2 * r;
-    let k = C.dpi / 25.4; if (fw * k * fh * k > C.maxPikselit) k = Math.sqrt(C.maxPikselit / (fw * fh));
-    return { vw, vh, r, fw, fh, k, W: Math.round(fw * k), H: Math.round(fh * k), dpi: Math.round(k * 25.4) };
+    const t = tuote(), [rx, ry] = reunat(); let fw, fh, vw, vh;
+    if (t.tyyppi === "muki") { [fw, fh] = koko().mm; vw = fw / 2; vh = fh; fw += 2 * rx; fh += 2 * ry; }
+    else if (t.tyyppi === "kortti") { [vw, vh] = koko().mm; fw = 2 * vw + 2 * rx; fh = vh + 2 * ry; }
+    else { [vw, vh] = nakyva(); fw = vw + 2 * rx; fh = vh + 2 * ry; }
+    let k = (t.dpi || C.dpi) / 25.4; if (fw * k * fh * k > C.maxPikselit) k = Math.sqrt(C.maxPikselit / (fw * fh));
+    return { vw, vh, rx, ry, fw, fh, k, W: Math.round(fw * k), H: Math.round(fh * k), dpi: Math.round(k * 25.4) };
+  }
+  const taustaVari = () => (MALLI === "kartta" ? (KA.TEEMAT[S.teema] || KA.TEEMAT.klassinen).bg : (PALETIT[S.paletti] || PALETIT.kerma).b);
+  const vaiVarit = () => (MALLI === "kartta" ? (() => { const t = KA.TEEMAT[S.teema] || KA.TEEMAT.klassinen; return { b: t.bg, i: t.teksti, a: t.korostus }; })() : PALETIT[S.paletti] || PALETIT.kerma);
+  const kanvas = (W, H) => { const c = document.createElement("canvas"); c.width = W; c.height = H; return c; };
+  const jpeg = (c, q = 0.92) => new Promise((ok) => c.toBlob(ok, "image/jpeg", q));
+  // Pieni PDF-kirjoitin: jokainen sivu on yksi JPEG-kuva (mm-koko)
+  async function teePdf(sivut) {
+    const osat = [], siirrot = []; let pituus = 0; const enc = new TextEncoder();
+    const lisaa = (x) => { const b = typeof x === "string" ? enc.encode(x) : x; osat.push(b); pituus += b.length; };
+    const obj = (n, sis) => { siirrot[n] = pituus; lisaa(`${n} 0 obj\n`); sis(); lisaa("\nendobj\n"); };
+    lisaa("%PDF-1.4\n%\xE2\xE3\xCF\xD3\n");
+    const n = sivut.length, sivuId = (i) => 3 + i * 3;
+    obj(1, () => lisaa("<< /Type /Catalog /Pages 2 0 R >>"));
+    obj(2, () => lisaa(`<< /Type /Pages /Count ${n} /Kids [${sivut.map((_, i) => sivuId(i) + " 0 R").join(" ")}] >>`));
+    for (let i = 0; i < n; i++) {
+      const s = sivut[i], wp = (s.wMm / 25.4) * 72, hp = (s.hMm / 25.4) * 72, id = sivuId(i);
+      obj(id, () => lisaa(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${wp.toFixed(2)} ${hp.toFixed(2)}] /Resources << /XObject << /Im${i} ${id + 2} 0 R >> >> /Contents ${id + 1} 0 R >>`));
+      const sis = `q ${wp.toFixed(2)} 0 0 ${hp.toFixed(2)} 0 0 cm /Im${i} Do Q`;
+      obj(id + 1, () => lisaa(`<< /Length ${sis.length} >>\nstream\n${sis}\nendstream`));
+      obj(id + 2, () => { lisaa(`<< /Type /XObject /Subtype /Image /Width ${s.wPx} /Height ${s.hPx} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${s.jpeg.length} >>\nstream\n`); lisaa(s.jpeg); lisaa("\nendstream"); });
+    }
+    const xref = pituus, kpl = 3 + n * 3;
+    lisaa(`xref\n0 ${kpl}\n0000000000 65535 f \n` + Array.from({ length: kpl - 1 }, (_, i) => String(siirrot[i + 1]).padStart(10, "0") + " 00000 n \n").join(""));
+    lisaa(`trailer\n<< /Size ${kpl} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`);
+    return new Blob(osat, { type: "application/pdf" });
+  }
+  async function sivu(m, piirto, q) { const c = kanvas(m.W, m.H); const x = c.getContext("2d"); piirto(x); const b = await jpeg(c, q); const u = new Uint8Array(await b.arrayBuffer()); c.width = c.height = 1; return { jpeg: u, wPx: m.W, hPx: m.H, wMm: m.fw, hMm: m.fh }; }
+  // Kalenterin kuukausisivu: kuva yläosaan, kuukausiruudukko alaosaan; pyhät ja sunnuntait korostettuina
+  const KUUT = ["Tammikuu", "Helmikuu", "Maaliskuu", "Huhtikuu", "Toukokuu", "Kesäkuu", "Heinäkuu", "Elokuu", "Syyskuu", "Lokakuu", "Marraskuu", "Joulukuu"];
+  function pyhat(v) {
+    const a = v % 19, b = Math.floor(v / 100), c = v % 100, d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3), hh = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - hh - k) % 7, m = Math.floor((a + 11 * hh + 22 * l) / 451);
+    const pk = Math.floor((hh + l - 7 * m + 114) / 31), pp = ((hh + l - 7 * m + 114) % 31) + 1, paas = new Date(v, pk - 1, pp);
+    const plus = (n) => { const x = new Date(paas); x.setDate(x.getDate() + n); return x; };
+    const lauantai = (kk, alku) => { for (let pv = alku; pv < alku + 7; pv++) { const x = new Date(v, kk, pv); if (x.getDay() === 6) return x; } };
+    const L = [[new Date(v, 0, 1), "Uudenvuodenpäivä"], [new Date(v, 0, 6), "Loppiainen"], [plus(-2), "Pitkäperjantai"], [paas, "Pääsiäispäivä"], [plus(1), "2. pääsiäispäivä"], [new Date(v, 4, 1), "Vappu"],
+      [plus(39), "Helatorstai"], [plus(49), "Helluntaipäivä"], [lauantai(5, 19), "Juhannuspäivä"], [lauantai(9, 31), "Pyhäinpäivä"], [new Date(v, 11, 6), "Itsenäisyyspäivä"], [new Date(v, 11, 24), "Jouluaatto"], [new Date(v, 11, 25), "Joulupäivä"], [new Date(v, 11, 26), "Tapaninpäivä"]];
+    const jaatto = lauantai(5, 19); jaatto.setDate(jaatto.getDate() - 1); L.push([jaatto, "Juhannusaatto"]);
+    return L;
+  }
+  function piirraKuukausi(c, x0, y0, W, H, vuosi, kk, v, f) {
+    const u = W / 100, pyh = pyhat(vuosi).filter(([d]) => d.getMonth() === kk);
+    c.fillStyle = v.i; c.textAlign = "left"; c.textBaseline = "alphabetic";
+    c.font = `${f.ow} ${u * 7}px "${f.o}", Georgia, serif`; c.fillText(KUUT[kk], x0, y0 + u * 8);
+    c.font = `${f.tw} ${u * 3}px "${f.t}", Georgia, serif`; c.fillStyle = v.a; c.textAlign = "right"; c.fillText(String(vuosi), x0 + W, y0 + u * 8);
+    const pv = ["ma", "ti", "ke", "to", "pe", "la", "su"], sx = W / 7, gy = y0 + u * 15, rivit = 6, sy = (H - (gy - y0) - u * 9) / rivit;
+    c.font = `700 ${u * 2.4}px "${f.t}", sans-serif`; c.textAlign = "center";
+    pv.forEach((p, i) => { c.fillStyle = i === 6 ? v.a : v.i; c.globalAlpha = 0.75; c.fillText(p.toUpperCase(), x0 + sx * (i + 0.5), gy); }); c.globalAlpha = 1;
+    c.strokeStyle = v.i; c.globalAlpha = 0.18; c.lineWidth = u * 0.12; c.beginPath(); c.moveTo(x0, gy + u * 1.6); c.lineTo(x0 + W, gy + u * 1.6); c.stroke(); c.globalAlpha = 1;
+    const eka = (new Date(vuosi, kk, 1).getDay() + 6) % 7, paivia = new Date(vuosi, kk + 1, 0).getDate();
+    for (let d = 1; d <= paivia; d++) {
+      const pos = eka + d - 1, sar = pos % 7, riv = Math.floor(pos / 7), cx = x0 + sx * (sar + 0.5), cy = gy + u * 3 + sy * (riv + 0.55);
+      const pyha = sar === 6 || pyh.some(([x]) => x.getDate() === d);
+      c.fillStyle = pyha ? v.a : v.i; c.font = `${pyha ? 700 : 400} ${u * 3.4}px "${f.t}", Georgia, serif`; c.fillText(String(d), cx, cy);
+      c.strokeStyle = v.i; c.globalAlpha = 0.1; c.beginPath(); c.moveTo(cx - sx * 0.42, cy + sy * 0.45); c.lineTo(cx + sx * 0.42, cy + sy * 0.45); c.stroke(); c.globalAlpha = 1;
+    }
+    if (pyh.length) { c.textAlign = "left"; c.fillStyle = v.i; c.globalAlpha = 0.8; c.font = `${f.tw} ${u * 2.2}px "${f.t}", Georgia, serif`;
+      c.fillText(pyh.sort((a, b) => a[0] - b[0]).map(([d, n]) => `${d.getDate()}.${kk + 1}. ${n}`).join("   ·   "), x0, y0 + H - u * 2, W); c.globalAlpha = 1; }
   }
   async function painoKuva() {
-    await (varmistaFontit(fontti()) || Promise.resolve());
+    await (varmistaFontit(fontti()) || Promise.resolve()); if (document.fonts) await document.fonts.ready;
     if (MALLI === "kartta") await odotaKartta();
-    const m = painoMitat(), cnv = document.createElement("canvas"); cnv.width = m.W; cnv.height = m.H;
-    const c = cnv.getContext("2d");
-    const bg = MALLI === "kartta" ? (KA.TEEMAT[S.teema] || KA.TEEMAT.klassinen).bg : (PALETIT[S.paletti] || PALETIT.kerma).b;
+    const t = tuote(), m = painoMitat(), bg = taustaVari(), v = vaiVarit(), f = fontti();
+    if (t.tyyppi === "kortti") {
+      const ulko = await sivu(m, (c) => { c.fillStyle = bg; c.fillRect(0, 0, m.W, m.H); c.save(); c.translate((m.rx + m.vw) * m.k, m.ry * m.k); piirraSuunnitelma(c, m.vw * m.k, m.vh * m.k); c.restore();
+        c.fillStyle = v.i; c.globalAlpha = 0.55; c.textAlign = "center"; c.font = `400 ${m.vw * m.k * 0.028}px "Nunito Sans", sans-serif`; c.fillText("omalahja.fi", (m.rx + m.vw / 2) * m.k, (m.ry + m.vh * 0.94) * m.k); });
+      const sisa = await sivu(m, (c) => { c.fillStyle = "#ffffff"; c.fillRect(0, 0, m.W, m.H);
+        const teksti = String(S.sisa || "").trim(); if (!teksti) return; const W = m.vw * m.k, u = W / 100;
+        c.save(); c.translate((m.rx + m.vw) * m.k, m.ry * m.k);
+        pino(c, [{ k: "t", teksti, perhe: f.kasi ? "o" : "t", koko: f.kasi ? 7 : 5, vari: "#2b2321", wrap: true, maxRivit: 10 }], { x: W * 0.12, y: m.vh * m.k * 0.2, w: W * 0.76, h: m.vh * m.k * 0.6 }, f, u); c.restore(); });
+      return { blob: await teePdf([ulko, sisa]), tyyppi: "application/pdf", ...m };
+    }
+    if (t.tyyppi === "kalenteri") {
+      const vuosi = 2027, sivut = [];
+      sivut.push(await sivu(m, (c) => { c.fillStyle = bg; c.fillRect(0, 0, m.W, m.H); c.translate(m.rx * m.k, m.ry * m.k); piirraSuunnitelma(c, m.vw * m.k, m.vh * m.k); }, 0.9));
+      for (let kk = 0; kk < 12; kk++) sivut.push(await sivu(m, (c) => {
+        c.fillStyle = bg; c.fillRect(0, 0, m.W, m.H); const W = m.vw * m.k, H = m.vh * m.k, u = W / 100;
+        c.save(); c.translate(m.rx * m.k, m.ry * m.k); c.save(); c.beginPath(); c.rect(0, 0, W, H * 0.5); c.clip(); piirraSuunnitelma(c, W, H * 0.5); c.restore();
+        piirraKuukausi(c, u * 8, H * 0.53, W - u * 16, H * 0.44, vuosi, kk, v, f); c.restore(); }, 0.9));
+      sivut.push(await sivu(m, (c) => { c.fillStyle = "#ffffff"; c.fillRect(0, 0, m.W, m.H); }, 0.9));
+      return { blob: await teePdf(sivut), tyyppi: "application/pdf", ...m };
+    }
+    const cnv = kanvas(m.W, m.H), c = cnv.getContext("2d");
     c.fillStyle = bg; c.fillRect(0, 0, m.W, m.H);
-    c.translate(m.r * m.k, m.r * m.k); piirraSuunnitelma(c, m.vw * m.k, m.vh * m.k);
-    const blob = await new Promise((ok) => cnv.toBlob(ok, "image/jpeg", 0.93));
-    cnv.width = cnv.height = 1;
-    return { blob, ...m };
+    if (t.tyyppi === "muki") { for (const x of [0, 1]) { c.save(); c.translate((m.rx + x * m.vw) * m.k, m.ry * m.k); piirraSuunnitelma(c, m.vw * m.k, m.vh * m.k); c.restore(); } }
+    else { c.translate(m.rx * m.k, m.ry * m.k); piirraSuunnitelma(c, m.vw * m.k, m.vh * m.k); }
+    const blob = await jpeg(cnv, 0.93); cnv.width = cnv.height = 1;
+    return { blob, tyyppi: "image/jpeg", ...m };
   }
   async function esikuva(leveys = 1000, laatu = 0.86) {
     await (varmistaFontit(fontti()) || Promise.resolve()); if (document.fonts) await document.fonts.ready;
@@ -408,13 +490,22 @@
   }
   function piirraPikkukuvat() { if (MALLI === "nimi") piirraRyhma("asettelu"); }
   function tuoteOsio() {
-    const tyyppiR = valinta("", "tuote", () => Object.entries(C.tuotteet).map(([k, t]) => [k, h("span", { class: "tuote-k" }, h("i", { class: "tuote-ikoni " + k, "aria-hidden": "true" }), h("b", {}, t.nimi), h("small", {}, "alk. " + euro(Math.min(...Object.values(t.koot).map((x) => x.hinta)))))]),
-      { luokka: "tuotteet", muutos: () => { if (!tuote().koot[S.koko]) S.koko = Object.keys(tuote().koot)[0]; piirraRyhma("koko"); varit.hidden = S.tuote !== "kehys"; kuvausEl.textContent = tuote().kuvaus + "."; } });
-    const kokoR = valinta("Koko", "koko", () => Object.entries(tuote().koot).map(([k, x]) => [k, h("span", { class: "koko-k" }, h("b", {}, k.replace("x", " × ") + " cm"), h("small", {}, euro(x.hinta)))]), { luokka: "segmentti" });
-    const varit = valinta("Kehyksen väri", "vari", () => Object.entries(C.tuotteet.kehys.varit).map(([k, x]) => [k, h("span", { class: "savy-k" }, h("i", { style: `background:${x.css}` }), h("small", {}, x.nimi))]), { luokka: "savyt" });
-    varit.hidden = S.tuote !== "kehys";
-    const kuvausEl = h("p", { class: "vihje" }, tuote().kuvaus + ".");
-    return osio("Tuote ja koko", true, tyyppiR, kuvausEl, kokoR, varit, valinta("Suunta", "suunta", () => [["pysty", "Pysty"], ["vaaka", "Vaaka"]], { luokka: "segmentti" }));
+    const alk = (t) => Math.min(...Object.values(t.koot).map((x) => x.hinta));
+    const tyyppiR = valinta("", "tuote", () => Object.entries(C.tuotteet).map(([k, t]) => [k, h("span", { class: "tuote-k" }, h("i", { class: "tuote-ikoni " + k, "aria-hidden": "true" }), h("b", {}, t.nimi), h("small", {}, "alk. " + euro(alk(t))))]),
+      { luokka: "tuotteet", muutos: () => { if (!tuote().koot[S.koko]) S.koko = Object.keys(tuote().koot)[0]; const tv = tuote().varit; if (tv) S.vari = Object.keys(tv)[0]; paivitaTuoteNakyma(); } });
+    const kokoR = valinta("Koko", "koko", () => Object.entries(tuote().koot).map(([k, x]) => [k, h("span", { class: "koko-k" }, h("b", {}, x.nimi || k.replace("x", " × ") + " cm"), h("small", {}, euro(x.hinta)))]), { luokka: "segmentti" });
+    const varit = valinta("Väri", "vari", () => Object.entries(tuote().varit || {}).map(([k, x]) => [k, h("span", { class: "savy-k" }, h("i", { style: `background:${x.css}` }), h("small", {}, x.nimi + (x.lisa ? " +" + euro(x.lisa) : "")))]), { luokka: "savyt" });
+    const suunta = valinta("Suunta", "suunta", () => [["pysty", "Pysty"], ["vaaka", "Vaaka"]], { luokka: "segmentti" });
+    const kuvausEl = h("p", { class: "vihje" });
+    function paivitaTuoteNakyma() {
+      const t = tuote(); piirraRyhma("koko"); piirraRyhma("vari");
+      varit.hidden = !t.varit; varit.querySelector(".ryhma-otsikko").textContent = t.tyyppi === "muki" ? "Mukin väri" : "Kehyksen väri";
+      suunta.hidden = !!t.eiSuuntaa; kokoR.hidden = Object.keys(t.koot).length < 2 && !!t.eiSuuntaa;
+      kuvausEl.textContent = t.kuvaus + "." + (t.tyyppi === "kalenteri" ? " Kuvasi tulee kanteen ja jokaisen kuukauden yläosaan." : t.tyyppi === "muki" ? " Sama kuva tulee mukin kummallekin puolelle." : t.tyyppi === "kortti" ? " Kuva tulee kortin etupuolelle, oma tervehdys sisäpuolelle." : "");
+      document.querySelectorAll('[data-kentta="sisa"]').forEach((e) => (e.hidden = t.tyyppi !== "kortti"));
+    }
+    setTimeout(paivitaTuoteNakyma, 0);
+    return osio("Tuote ja koko", true, tyyppiR, kuvausEl, kokoR, varit, suunta);
   }
   function pohjatOsio() {
     const lista = MALLI === "kartta" ? [["helsinki", "Helsinki"], ["ylivieska", "Ylivieska"], ["tampere", "Sydänkartta"], ["betlehem", "Betlehem"]]
@@ -432,6 +523,7 @@
       kentta("Yläteksti", "ala", "text", { max: 70 }),
       kentta("Päivämäärä", "pvm", "text", { max: 40, ph: "esim. 14.6.2025" }),
       kentta("Lisärivi", "lisa", "text", { max: 90 }),
+      kentta("Kortin sisäpuolen tervehdys", "sisa", "textarea", { rivit: 3, max: 240, ph: "esim. Siunattua joulua ja onnellista uutta vuotta!" }),
       kentta("Perheenjäsenet, yksi per rivi", "jasenet", "textarea", { rivit: 5, max: 300 }),
       h("div", { class: "rinnakkain", "data-kentta": "vauva" }, kentta("Paino", "paino", "text", { max: 14 }), kentta("Pituus", "pituus", "text", { max: 14 }), kentta("Kello", "klo", "text", { max: 10 })));
     const jaeValinta = h("select", { id: "jaevalinta", on: { change: (e) => { const j = JAKEET[+e.target.value]; if (!j || e.target.value === "") return; S.jae = j[0]; S.viite = j[1]; $("#k-jae").value = j[0]; $("#k-viite").value = j[1]; paivita(); } } },
@@ -505,7 +597,8 @@
     paivitaZoom();
     const tekstit = osio("Tekstit", true, kentta("Otsikko", "otsikko", "text", { max: 40 }), kentta("Alaotsikko", "ala", "text", { max: 60 }),
       kentta("Koordinaatit", "koord", "text", { max: 60, ph: "Lasketaan automaattisesti" }),
-      kentta("Jae tai oma lause", "jae", "textarea", { rivit: 2, max: 200 }), kentta("Jaeviite", "viite", "text", { max: 30 }));
+      kentta("Jae tai oma lause", "jae", "textarea", { rivit: 2, max: 200 }), kentta("Jaeviite", "viite", "text", { max: 30 }),
+      kentta("Kortin sisäpuolen tervehdys", "sisa", "textarea", { rivit: 3, max: 240, ph: "esim. Lämpimät terveiset kotiseudulta!" }));
     const tyyli = osio("Muokkaa tyyliä", false,
       valinta("Väriteema", "teema", () => Object.entries(KA.TEEMAT).map(([k, t]) => [k, h("span", { class: "paletti-k" }, h("i", { style: `background:linear-gradient(135deg,${t.bg} 0 50%,${t.vesi} 50% 75%,${t.tie} 75%)` }), h("small", {}, t.nimi))]),
         { luokka: "paletit", muutos: () => piirraRyhma("kuvio") }),
@@ -543,9 +636,10 @@
     return `Nimijuliste: ”${(S.nimi || "").replace(/\n/g, " / ")}”, asettelu ${ASETTELUT[S.asettelu].nimi}, fontti ${fontti().nimi}, värit ${PALETIT[S.paletti].nimi}, kuvio ${S.kuvio === "ei" ? "ei" : KV.K[S.kuvio].nimi}`;
   }
   function tarkistettavat() {
-    const r = MALLI === "kartta" ? [["Otsikko", S.otsikko], ["Alaotsikko", S.ala], ["Koordinaatit", S.koord || KA.koordinaatit(S.lat, S.lon)], ["Jae", S.jae], ["Jaeviite", S.viite]]
+    let r = MALLI === "kartta" ? [["Otsikko", S.otsikko], ["Alaotsikko", S.ala], ["Koordinaatit", S.koord || KA.koordinaatit(S.lat, S.lon)], ["Jae", S.jae], ["Jaeviite", S.viite]]
       : [["Nimi", S.nimi], ["Yläteksti", S.ala], ["Päivämäärä", S.pvm], ["Lisärivi", S.lisa], ...(S.asettelu === "perhe" ? [["Perheenjäsenet", S.jasenet]] : []),
         ...(S.asettelu === "vauva" ? [["Paino", S.paino], ["Pituus", S.pituus], ["Kello", S.klo]] : []), ["Jae", S.jae], ["Jaeviite", S.viite]];
+    if (S.tuote === "kortit") r.push(["Sisäpuolen tervehdys", S.sisa]);
     return r.filter(([, v]) => String(v || "").trim());
   }
   const kassa = $("#kassa"), lomake = $("#tilauslomake");
@@ -554,7 +648,7 @@
     $("#kassa-yht").textContent = `${tuoteNimi()} · ${euro(hinta())}`;
     $("#kassa-toimitus").textContent = "Perillä arviolta " + toimitusArvio() + " (8–14 arkipäivää)";
     const ul = $("#kassa-tekstit"); ul.innerHTML = ""; tarkistettavat().forEach(([k, v]) => ul.append(h("li", {}, h("span", {}, k), h("b", {}, String(v).replace(/\n/g, " / ")))));
-    const img = $("#kassa-kuva"); img.removeAttribute("src"); img.className = "kassa-kuva " + S.tuote; img.style.setProperty("--kehys", S.tuote === "kehys" ? tuote().varit[S.vari].css : "transparent");
+    const img = $("#kassa-kuva"); img.removeAttribute("src"); img.className = "kassa-kuva " + S.tuote; img.style.setProperty("--kehys", vari() ? vari().css : "transparent");
     $("#kassa .sulje").focus();
     try { img.src = await esikuva(700, 0.85); } catch { img.alt = "Esikatselu ei ole saatavilla"; }
   }
@@ -575,7 +669,7 @@
     try {
       const kuva = await painoKuva();
       viesti.textContent = `Lähetetään painotiedostoa (${(kuva.blob.size / 1e6).toFixed(1).replace(".", ",")} Mt)…`;
-      const r1 = await fetch("/api/tiedosto", { method: "POST", headers: { "content-type": "image/jpeg" }, body: kuva.blob }).then((r) => r.json());
+      const r1 = await fetch("/api/tiedosto", { method: "POST", headers: { "content-type": kuva.tyyppi }, body: kuva.blob }).then((r) => r.json());
       if (!r1.id) throw new Error(r1.virhe || "Tiedoston lähetys epäonnistui.");
       viesti.textContent = "Siirrytään maksamaan…";
       const r2 = await fetch("/api/tilaus", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({
@@ -599,5 +693,5 @@
   if (MALLI === "kartta") varmistaKartta(true);
   edellinen = JSON.stringify(S);
   paivita();
-  window.OLTesti = { S, painoKuva, painoMitat, paivita, esikuva, kartta: () => kartta, toimitusArvio };
+  window.OLTesti = { S, painoKuva, painoMitat, teePdf, paivita, esikuva, kartta: () => kartta, toimitusArvio };
 })();

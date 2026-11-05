@@ -20,9 +20,12 @@ const tallenna = (env, t) => env.VIDEOT.put(`omalahja/tilaukset/${t.nro}.json`, 
 export function tuoteTiedot(tuote, koko, vari, suunta) {
   const t = CONFIG.tuotteet[tuote]; if (!t) return null;
   const k = t.koot[koko]; if (!k) return null;
-  let uid = k.uid.replace("{s}", suunta === "vaaka" ? "hor" : "ver"), nimi = `${t.nimi} ${koko.replace("x", "×")} cm`;
-  if (uid.includes("{v}")) { const v = (t.varit || {})[vari]; if (!v) return null; uid = uid.replace("{v}", v.v); nimi += `, ${v.nimi.toLowerCase()}`; }
-  return { uid, nimi: nimi + (suunta === "vaaka" ? ", vaaka" : ", pysty"), hinta: k.hinta, kulu: k.kulu };
+  const vaaka = !t.eiSuuntaa && suunta === "vaaka";
+  let uid = (vaaka && k.uidVaaka ? k.uidVaaka : k.uid).replace("{s}", vaaka ? "hor" : "ver"), hinta = k.hinta, kulu = k.kulu;
+  let nimi = `${t.nimi} ${k.nimi || koko.replace("x", "×") + " cm"}`;
+  if (uid.includes("{v}") || t.varit) { const v = (t.varit || {})[vari]; if (!v) return null; uid = uid.replace("{v}", v.v); nimi += `, ${v.nimi.toLowerCase()}`; hinta += v.lisa || 0; }
+  if (!t.eiSuuntaa) nimi += vaaka ? ", vaaka" : ", pysty";
+  return { uid, nimi, hinta, kulu, pdf: !!t.pdf };
 }
 
 // Kuvatiedoston tarkistus: vain JPEG/PNG, mitat luetaan tiedoston otsakkeesta.
@@ -233,14 +236,15 @@ export async function omalahja(req, env, u, ctx) {
     const b = new Uint8Array(await req.arrayBuffer());
     if (b.length > 40e6) return json({ virhe: "Tiedosto on liian suuri." }, 413);
     if (b.length < 5000) return json({ virhe: "Tiedosto on liian pieni." }, 400);
-    const m = kuvanMitat(b);
-    if (!m) return json({ virhe: "Vain JPEG- tai PNG-kuvat kelpaavat." }, 415);
-    if (m.w < 1000 || m.h < 1000 || m.w > 12000 || m.h > 12000) return json({ virhe: "Kuvan mitat eivät kelpaa painoon." }, 400);
+    const pdf = b[0] === 0x25 && b[1] === 0x50 && b[2] === 0x44 && b[3] === 0x46; // %PDF
+    const m = pdf ? { tyyppi: "pdf", w: 0, h: 0 } : kuvanMitat(b);
+    if (!m) return json({ virhe: "Vain JPEG-, PNG- tai PDF-tiedostot kelpaavat." }, 415);
+    if (!pdf && (m.w < 1000 || m.h < 900 || m.w > 12000 || m.h > 12000)) return json({ virhe: "Kuvan mitat eivät kelpaa painoon." }, 400);
     const id = satunnainen(20) + "." + m.tyyppi;
-    await env.VIDEOT.put("omalahja/tiedostot/" + id, b, { httpMetadata: { contentType: m.tyyppi === "png" ? "image/png" : "image/jpeg" }, customMetadata: { luotu: new Date().toISOString(), w: String(m.w), h: String(m.h) } });
+    await env.VIDEOT.put("omalahja/tiedostot/" + id, b, { httpMetadata: { contentType: m.tyyppi === "png" ? "image/png" : m.tyyppi === "pdf" ? "application/pdf" : "image/jpeg" }, customMetadata: { luotu: new Date().toISOString(), w: String(m.w), h: String(m.h) } });
     return json({ id, url: `${SIVU}/api/tiedosto/${id}`, w: m.w, h: m.h });
   }
-  const tm = p.match(/^tiedosto\/([0-9a-f]{40}\.(jpg|png))$/);
+  const tm = p.match(/^tiedosto\/([0-9a-f]{40}\.(jpg|png|pdf))$/);
   if (tm && (req.method === "GET" || req.method === "HEAD")) {
     const o = await env.VIDEOT.get("omalahja/tiedostot/" + tm[1]);
     if (!o) return new Response("Ei löytynyt", { status: 404 });
@@ -261,7 +265,8 @@ export async function omalahja(req, env, u, ctx) {
     if (a.osoite.length < 4 || a.kaupunki.length < 2) return json({ virhe: "Tarkista osoite." }, 400);
     if (!/^\d{5}$/.test(a.postinro)) return json({ virhe: "Tarkista postinumero." }, 400);
     if (!d.hyvaksy) return json({ virhe: "Hyväksy toimitusehdot." }, 400);
-    if (!/^[0-9a-f]{40}\.(jpg|png)$/.test(d.tiedosto || "")) return json({ virhe: "Painotiedosto puuttuu." }, 400);
+    if (!/^[0-9a-f]{40}\.(jpg|png|pdf)$/.test(d.tiedosto || "")) return json({ virhe: "Painotiedosto puuttuu." }, 400);
+    if (tt.pdf !== d.tiedosto.endsWith(".pdf")) return json({ virhe: "Painotiedoston muoto ei sovi tuotteeseen." }, 400);
     const kuva = await env.VIDEOT.head("omalahja/tiedostot/" + d.tiedosto);
     if (!kuva) return json({ virhe: "Painotiedosto puuttuu. Yritä uudelleen." }, 400);
     const nro = "OL" + Date.now().toString(36).toUpperCase() + satunnainen(3).toUpperCase();

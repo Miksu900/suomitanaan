@@ -19,6 +19,12 @@ jobs:
         if: inputs.tila == 'katalogit' || inputs.tila == 'tiedot'
         env: { GK: "${{ secrets.GELATO_API_KEY }}", UIDS: "${{ inputs.uids }}", HAUT: "${{ inputs.haut }}" }
         run: python3 kauppa/omalahja_tuotteet.py ${{ inputs.tila }}
+      - name: Luonnostilaukset uusille tuotteille (live-suunnittelija)
+        if: inputs.tila == 'luonnokset'
+        env: { CLOUDFLARE_API_TOKEN: "${{ secrets.CLOUDFLARE_API_TOKEN }}" }
+        run: |
+          npm i -s playwright@1.48.2 >/dev/null 2>&1 && npx playwright install --with-deps chromium >/dev/null 2>&1
+          HALLINTA=$(printf '%s' "$CLOUDFLARE_API_TOKEN-faktapiste" | sha256sum | cut -c1-40) node kauppa/omalahja_luonnokset.mjs
       - name: Luonnostilaus
         if: inputs.tila == 'luonnos'
         env:
