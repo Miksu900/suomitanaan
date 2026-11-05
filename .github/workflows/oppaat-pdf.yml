@@ -39,4 +39,5 @@ jobs:
           curl -sS -X POST https://faktapiste.fi/api/hallinta/holvi -H "x-avain: $H" -H 'content-type: application/json' -d '{"nimi":"oppaat-rsa","arvo":""}' >/dev/null
       - name: Siivoa
         if: inputs.vaihe == 'siivoa'
-        run: curl -sS -X DELETE -H "Authorization: Bearer ${{ github.token }}" https://api.github.com/repos/${{ github.repository }}/git/refs/heads/oppaat-salattu -o /dev/null -w "%{http_code}"
+        run: |
+          curl -sS -X DELETE -H "Authorization: Bearer ${{ github.token }}" https://api.github.com/repos/${{ github.repository }}/git/refs/heads/oppaat-salattu -o /dev/null -w "%{http_code}"
