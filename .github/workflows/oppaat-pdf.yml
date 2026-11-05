@@ -1,0 +1,38 @@
+name: Oppaat – PDF:t R2:een
+# Oppaiden PDF:t siirretään salattuina (RSA+AES). Yksityinen avain pysyy Faktapisteen holvissa, joten julkisesta reposta niitä ei voi lukea.
+on:
+  workflow_dispatch:
+    inputs:
+      vaihe: { description: "avain = luo avainpari, lataa = pura ja vie R2:een", required: true, default: "avain" }
+jobs:
+  t:
+    runs-on: ubuntu-latest
+    env:
+      CF: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: oppaat-salattu, fetch-depth: 1 }
+        if: inputs.vaihe == 'lataa'
+      - name: Avainpari
+        if: inputs.vaihe == 'avain'
+        run: |
+          H=$(printf '%s' "$CF-faktapiste" | sha256sum | cut -c1-40)
+          openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:3072 -out y.pem 2>/dev/null
+          openssl pkey -in y.pem -pubout -out j.pem
+          curl -sS -X POST https://faktapiste.fi/api/hallinta/holvi -H "x-avain: $H" -H 'content-type: application/json' -d "$(jq -n --rawfile a y.pem '{nimi:"oppaat-rsa",arvo:$a}')" | jq -c .
+          echo "JULKINEN_ALKU"; base64 -w0 j.pem; echo; echo "JULKINEN_LOPPU"
+      - name: Pura ja vie R2:een
+        if: inputs.vaihe == 'lataa'
+        run: |
+          set -e
+          H=$(printf '%s' "$CF-faktapiste" | sha256sum | cut -c1-40)
+          curl -sS -X POST https://faktapiste.fi/api/hallinta/holvi -H "x-avain: $H" -H 'content-type: application/json' -d '{"nimi":"oppaat-rsa"}' | jq -r .arvo > y.pem
+          openssl pkeyutl -decrypt -inkey y.pem -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256 -in salattu/avain.bin -out avain.hex
+          A=$(cat avain.hex); ACC=$(curl -sS -H "Authorization: Bearer $CF" https://api.cloudflare.com/client/v4/accounts | jq -r '.result[0].id')
+          for f in salattu/*.enc; do
+            n=$(basename "$f" .enc)
+            openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -pass "pass:$A" -in "$f" -out "$n.pdf"
+            CLOUDFLARE_API_TOKEN=$CF CLOUDFLARE_ACCOUNT_ID=$ACC npx --yes wrangler@4.152.0 r2 object put "faktapiste-videot/oppaat/$n.pdf" --file "$n.pdf" --content-type application/pdf --remote >/dev/null
+            echo "::notice title=$n::$(stat -c %s $n.pdf) tavua, $(head -c 5 $n.pdf)"
+          done
+          curl -sS -X POST https://faktapiste.fi/api/hallinta/holvi -H "x-avain: $H" -H 'content-type: application/json' -d '{"nimi":"oppaat-rsa","arvo":""}' >/dev/null
