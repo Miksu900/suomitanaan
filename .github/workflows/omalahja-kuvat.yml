@@ -45,6 +45,7 @@ jobs:
               await p.close(); }
             await b.close(); })();'
       - name: Tallenna haaraan
+        if: always()
         run: |
           cd out && git init -q -b omalahja-tmp && git add -A && git -c user.name=bot -c user.email=bot@x commit -qm "${{ inputs.tila }}"
           git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" omalahja-tmp

@@ -11,7 +11,7 @@ for (const [malli, id] of LISTA) {
   p.on("pageerror", (e) => console.log("VIRHE", id, e.message));
   await p.addInitScript(() => { try { localStorage.clear(); } catch {} });
   const polku = malli === "nimi" ? "nimijuliste" : "kartta";
-  await p.goto(`https://omalahja.fi/tee/${polku}/?esim=${id}&v=${Date.now()}`, { waitUntil: "networkidle" });
+  try { await p.goto(`https://omalahja.fi/tee/${polku}/?esim=${id}&v=${Date.now()}`, { waitUntil: "load", timeout: 60000 }); } catch (e) { console.log("::warning title=" + id + "::" + e.message.slice(0, 120)); await p.close(); continue; }
   await p.waitForTimeout(1500);
   let d = null;
   for (let yritys = 0; yritys < 3 && !d; yritys++) {
