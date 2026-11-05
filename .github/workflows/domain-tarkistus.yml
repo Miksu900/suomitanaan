@@ -1,0 +1,16 @@
+name: Domain-tarkistus
+on:
+  workflow_dispatch:
+    inputs:
+      domainit: { description: "Domainit välilyönnillä", required: true }
+jobs:
+  t:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          sudo apt-get install -y -qq whois >/dev/null 2>&1 || true
+          for d in ${{ inputs.domainit }}; do
+            ns=$(dig +short NS $d | tr '\n' ' ')
+            w=$(whois $d 2>/dev/null | grep -iE 'status|Domain not found|No match|NOT FOUND|registrar:|expires' | head -4 | tr '\n' ' ')
+            echo "::notice title=$d::NS=[$ns] $w"
+          done
