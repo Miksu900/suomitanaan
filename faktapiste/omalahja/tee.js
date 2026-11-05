@@ -70,6 +70,25 @@
   const AVAIN = "omalahja-" + MALLI;
   let S = { ...OLETUS };
   try { const v = JSON.parse(localStorage.getItem(AVAIN) || "null"); if (v && typeof v === "object") S = { ...OLETUS, ...v }; } catch {}
+  // Valmiit esimerkit (etusivun galleria linkittää: /tee/nimijuliste/?esim=perhe)
+  const ESIMERKIT = {
+    nimi: {
+      perhe: { asettelu: "perhe", paletti: "salvia", fontti: "elegantti", kuvio: "lehva", kuvioSij: "yla", kuvioKoko: "normaali", nimi: "Perhe Virtanen", ala: "Meidän koti", pvm: "Ylivieska 2026", lisa: "", jasenet: "Matti\nLiisa\nAino\nEero\nMusti", jae: "", viite: "" },
+      vauva: { asettelu: "vauva", paletti: "roosa", fontti: "kasiala", kuvio: "pilvet", kuvioSij: "yla", kuvioKoko: "normaali", nimi: "Aino", ala: "Tervetuloa maailmaan", pvm: "3.3.2026", paino: "3 450 g", pituus: "50 cm", klo: "14.25", lisa: "Oulu", jae: "", viite: "" },
+      haat: { asettelu: "haat", paletti: "valkoinen", fontti: "juhlava", kuvio: "laakeri", kuvioSij: "tausta", kuvioKoko: "normaali", nimi: "Aino & Eero", ala: "Menivät naimisiin", pvm: "14.6.2025", lisa: "Ylivieskan kirkko", jae: "", viite: "" },
+      jae: { asettelu: "jae", paletti: "kerma", fontti: "kasiala", kuvio: "kyyhky", kuvioSij: "yla", kuvioKoko: "normaali", nimi: "Perhe Virtanen", ala: "", pvm: "", lisa: "", jae: JAKEET[0][0], viite: JAKEET[0][1] },
+      joulu: { asettelu: "keskitetty", paletti: "metsa", fontti: "juhlava", kuvio: "lumi", kuvioSij: "kuvio", kuvioKoko: "normaali", nimi: "Hyvää joulua", ala: "Perhe Virtanen", pvm: "2026", lisa: "", jae: "", viite: "" },
+      muisto: { asettelu: "keskitetty", paletti: "hiili", fontti: "klassinen", kuvio: "oliivi", kuvioSij: "yla", kuvioKoko: "normaali", nimi: "Eino Virtanen", ala: "Rakkaudella muistaen", pvm: "1948–2026", lisa: "", jae: "Herra on minun paimeneni, ei minulta mitään puutu.", viite: "Ps. 23:1" },
+      kaste: { asettelu: "keskitetty", paletti: "meri", fontti: "leikkisa", kuvio: "kala", kuvioSij: "yla", kuvioKoko: "normaali", nimi: "Eero", ala: "Kastettu", pvm: "12.4.2026", lisa: "Ylivieskan kirkko", jae: "Älä pelkää, sillä minä olen lunastanut sinut, minä olen kutsunut sinut nimeltä; sinä olet minun.", viite: "Jes. 43:1" },
+    },
+    kartta: {
+      helsinki: { lat: 60.1699, lon: 24.9384, sade: 2.2, teema: "klassinen", muoto: "koko", reunus: "valja", tekstiSij: "alla", otsikko: "Helsinki", ala: "Suomi", koord: "", jae: "", viite: "", fontti: "moderni", kuvio: "ei", paksuus: "normaali" },
+      ylivieska: { lat: 64.0736, lon: 24.5341, sade: 1.8, teema: "yo", muoto: "ympyra", reunus: "valja", tekstiSij: "alla", otsikko: "Ylivieska", ala: "Koti", koord: "", jae: "", viite: "", fontti: "juhlava", kuvio: "ei", paksuus: "normaali" },
+      betlehem: { lat: 31.7049, lon: 35.2023, sade: 1.3, teema: "hiekka", muoto: "pyorea", reunus: "valja", tekstiSij: "alla", otsikko: "Betlehem", ala: "", koord: "", jae: "Sillä teille on tänä päivänä syntynyt Vapahtaja, joka on Kristus, Herra, Daavidin kaupungissa.", viite: "Luuk. 2:11", fontti: "juhlava", kuvio: "tahti", kuvioSij: "yla", paksuus: "normaali" },
+      tampere: { lat: 61.4981, lon: 23.761, sade: 2.2, teema: "ruusu", muoto: "sydan", reunus: "valja", tekstiSij: "alla", otsikko: "Tampere", ala: "Täällä kaikki alkoi", koord: "", jae: "", viite: "", fontti: "elegantti", kuvio: "ei", paksuus: "normaali" },
+    },
+  };
+  try { const e = new URLSearchParams(location.search).get("esim"); const ex = e && (ESIMERKIT[MALLI] || {})[e]; if (ex) S = { ...OLETUS, tuote: S.tuote, koko: S.koko, vari: S.vari, ...ex, kuvioValittu: true }; } catch {}
   const tallenna = () => { try { localStorage.setItem(AVAIN, JSON.stringify(S)); } catch {} };
   if (!C.tuotteet[S.tuote] || !C.tuotteet[S.tuote].koot[S.koko]) { S.tuote = "juliste"; S.koko = OLETUS.koko; }
 
@@ -472,5 +491,13 @@
   if (MALLI === "kartta") { rakennaKartta(); varmistaKartta(true); } else rakennaNimi();
   S._edAsettelu = S.asettelu;
   paivita();
-  window.OLTesti = { S, painoKuva, painoMitat, paivita, kartta: () => kartta };
+  // Esikatselukuva näkyvästä alueesta (etusivun esimerkkikuvat), leveys pikseleinä
+  async function esikuva(leveys = 1000, laatu = 0.86) {
+    await (varmistaFontit(fontti()) || Promise.resolve()); if (document.fonts) await document.fonts.ready;
+    if (MALLI === "kartta") await odotaKartta();
+    const [vw, vh] = nakyva(), c = document.createElement("canvas"); c.width = leveys; c.height = Math.round((leveys * vh) / vw);
+    piirraSuunnitelma(c.getContext("2d"), c.width, c.height);
+    return c.toDataURL("image/jpeg", laatu);
+  }
+  window.OLTesti = { S, painoKuva, painoMitat, paivita, esikuva, kartta: () => kartta };
 })();
