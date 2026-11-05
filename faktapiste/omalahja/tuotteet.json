@@ -1,0 +1,114 @@
+{
+  "avoinna": false,
+  "dpi": 150,
+  "maxPikselit": 16000000,
+  "tuotteet": {
+    "juliste": {
+      "nimi": "Juliste",
+      "kuvaus": "Mattapintainen 200 g/m² julistepaperi",
+      "reuna": 3,
+      "koot": {
+        "30x40": {
+          "mm": [
+            300,
+            400
+          ],
+          "hinta": 4500,
+          "kulu": 1940,
+          "uid": "flat_300x400-mm-12x16-inch_200-gsm-80lb-uncoated_4-0_{s}"
+        },
+        "50x70": {
+          "mm": [
+            500,
+            700
+          ],
+          "hinta": 5900,
+          "kulu": 2348,
+          "uid": "flat_500x700-mm-20x28-inch_200-gsm-80lb-uncoated_4-0_{s}"
+        }
+      }
+    },
+    "canvas": {
+      "nimi": "Canvastaulu",
+      "kuvaus": "Kangas pingotettuna FSC-puukehykselle (2 cm), valmis ripustettavaksi",
+      "reuna": 49,
+      "koot": {
+        "30x40": {
+          "mm": [
+            300,
+            400
+          ],
+          "hinta": 6900,
+          "kulu": 2763,
+          "uid": "canvas_300x400-mm-12x16-inch_canvas_wood-fsc-slim_4-0_{s}"
+        },
+        "50x70": {
+          "mm": [
+            500,
+            700
+          ],
+          "hinta": 10500,
+          "kulu": 5939,
+          "uid": "canvas_500x700-mm-20x28-inch_canvas_wood-fsc-slim_4-0_{s}"
+        }
+      }
+    },
+    "kehys": {
+      "nimi": "Kehystetty juliste",
+      "kuvaus": "Juliste valmiiksi kehystettynä, edessä pleksilasi",
+      "reuna": 3,
+      "koot": {
+        "30x40": {
+          "mm": [
+            300,
+            400
+          ],
+          "hinta": 7900,
+          "kulu": 3982,
+          "uid": "frame_and_poster_product_frs_300x400-mm_frc_{v}_gt_plexiglass__pf_300x400-mm_pt_200-gsm-uncoated_cl_4-0_ct_none_prt_none_{s}"
+        },
+        "50x70": {
+          "mm": [
+            500,
+            700
+          ],
+          "hinta": 13500,
+          "kulu": 8571,
+          "uid": "frame_and_poster_product_frs_500x700-mm_frc_{v}_gt_plexiglass__pf_500x700-mm_pt_200-gsm-uncoated_cl_4-0_ct_none_prt_none_{s}"
+        }
+      },
+      "varit": {
+        "musta": {
+          "nimi": "Musta alumiini",
+          "v": "black_frm_aluminum_frp_w10xt22-mm",
+          "css": "#1b1b1b"
+        },
+        "mustapuu": {
+          "nimi": "Musta puu",
+          "v": "black_frm_wood_frp_w12xt22-mm",
+          "css": "#2a2522"
+        },
+        "valkoinen": {
+          "nimi": "Valkoinen puu",
+          "v": "white_frm_wood_frp_w12xt22-mm",
+          "css": "#f3f1ec"
+        },
+        "luonnonpuu": {
+          "nimi": "Luonnonpuu",
+          "v": "natural-wood_frm_wood_frp_w12xt22-mm",
+          "css": "#c9a273"
+        },
+        "tummapuu": {
+          "nimi": "Tumma puu",
+          "v": "dark-wood_frm_wood_frp_w12xt22-mm",
+          "css": "#5a3b25"
+        },
+        "kupari": {
+          "nimi": "Kupari",
+          "v": "copper_frm_aluminum_frp_w10xt22-mm",
+          "css": "#b8734a"
+        }
+      }
+    }
+  }
+}
