@@ -37,6 +37,18 @@ YHTEISOT = ["sine.fi", "tatar.fi", "rabita.fi", "islamkeskus.fi", "islam.fi", "m
 SYOTTEET += [("yhteiso", f"https://{d}{p}") for d in YHTEISOT for p in ("/feed/", "/rss")]
 SYOTTEET += [("yhteiso", GN + urllib.parse.quote(f'"{n}"')) for n in ["Suomen Islamilainen Neuvosto", "Suomen Islam-seurakunta", "Helsingin Islamkeskus", "Rabita", "Suomen islamilainen yhdyskunta"]]
 
+def gn(q, kieli):
+    hl, gl = {"en": ("en-GB", "GB"), "sv": ("sv", "SE"), "de": ("de", "DE"), "fr": ("fr", "FR"), "nl": ("nl", "NL"), "da": ("da", "DK"), "no": ("no", "NO")}[kieli]
+    return f"https://news.google.com/rss/search?hl={hl}&gl={gl}&ceid={gl}:{hl.split('-')[0]}&q=" + urllib.parse.quote(q)
+EUROOPPA = [("media", gn(q + " when:1d", kl)) for kl, q in [
+    ("en", "Islam Europe"), ("en", "Muslims Europe"), ("en", "mosque Europe"), ("en", "Islamism Europe"), ("en", "Muslim Brotherhood Europe"),
+    ("en", "Islam UK"), ("en", "mosque UK"), ("sv", "islam Sverige"), ("sv", "moské"), ("sv", "islamism"), ("de", "Islam Deutschland"),
+    ("de", "Moschee"), ("de", "Islamismus"), ("fr", "islam France"), ("fr", "mosquée"), ("fr", "islamisme"), ("nl", "islam Nederland"),
+    ("nl", "moskee"), ("da", "islam Danmark"), ("da", "moské Danmark"), ("no", "islam Norge")]]
+EUROOPPA += [("viranomainen", gn(f"site:{d} (islam OR muslim OR mosque OR islamist OR Islamismus OR islamism)", "en")) for d in
+             ["europa.eu", "europol.europa.eu", "fra.europa.eu", "europarl.europa.eu", "consilium.europa.eu", "coe.int", "osce.org",
+              "sakerhetspolisen.se", "regeringen.se", "verfassungsschutz.de", "bmi.bund.de", "pet.dk", "pst.no", "gov.uk", "interieur.gouv.fr", "aivd.nl"]]
+AIHE_EU = re.compile(r"islam|muslim|moské|moske|mosque|moschee|mosquée|moskee|imam|ramadan|halal|koran|quran|coran|sharia|charia|hijab|burka|niqab|jihad|musulman|salafi", re.I)
 AIHE = re.compile(r"rukousti|rukoushuo|islam|muslim|moskei|moske|imaam|ramadan|ramazan|halal|koraan|hijab|burka|niqab|sharia|islamilai|uskonnonvapau|eid\b|tataari", re.I)
 SUOMI = re.compile(r"suom|helsin|espoo|vantaa|tampere|turku|turun|oulu|jyväsky|kuopio|lahti|pori|vaasa|joensuu|lappeenran|rovanie|kotka|seinäjo|eduskun|yle\b|poliisi|ministeri|kunta|kaupun|koulu|kela|migri|thl|opetushallit|seurakun|kirkko|supo", re.I)
 LUOKAT = {"media": "Media", "viranomainen": "Viranomainen", "kunta": "Kunnat", "yhteiso": "Muslimiyhteisöt"}
@@ -49,12 +61,12 @@ def pvm(s):
     except Exception: return datetime.datetime.now(datetime.timezone.utc).isoformat()[:16]
 
 def kohteet(loki):
-    for luokka, s in SYOTTEET:
+    for luokka, s, alue in [(l, u, "fi") for l, u in SYOTTEET] + [(l, u, "eu") for l, u in EUROOPPA]:
         try: x = hae(s)
         except Exception as e:
             if luokka == "yhteiso" and "news.google" not in s: continue
             loki.append(f"VIRHE {s[:80]}: {str(e)[:60]}"); continue
-        its = re.findall(r"<item>([\s\S]*?)</item>", x)[:80]
+        its = re.findall(r"<item>([\s\S]*?)</item>", x)[:(40 if alue == "eu" else 80)]
         if luokka == "yhteiso" and "news.google" not in s: loki.append(f"YHTEISÖSYÖTE OK {s} ({len(its)})")
         for it in its:
             g = lambda t: html.unescape(re.sub(r"<!\[CDATA\[|\]\]>|<[^>]+>", " ", (re.search(rf"<{t}[^>]*>([\s\S]*?)</{t}>", it) or [None, ""])[1])).strip()
@@ -64,10 +76,12 @@ def kohteet(loki):
             if "news.google" in s: kuvaus = ""
             teksti = otsikko + " " + kuvaus
             if not linkki: continue
-            if luokka == "yhteiso" and "news.google" not in s: pass                     # yhteisön oma sivu: kaikki tiedotteet
+            if alue == "eu":
+                if not AIHE_EU.search(teksti): continue
+            elif luokka == "yhteiso" and "news.google" not in s: pass                     # yhteisön oma sivu: kaikki tiedotteet
             elif not AIHE.search(teksti): continue
             elif "news.google" in s and luokka == "media" and not SUOMI.search(teksti + " " + lahde): continue
-            yield {"o": re.sub(r"\s+", " ", otsikko), "k": kuvaus, "l": lahde, "u": linkki, "t": pvm(g("pubDate")), "c": luokka}
+            yield {"o": re.sub(r"\s+", " ", otsikko), "k": kuvaus, "l": lahde, "u": linkki, "t": pvm(g("pubDate")), "c": luokka, "a": alue}
 
 def sivu(arkisto, nyt):
     data = json.dumps(arkisto, ensure_ascii=False).replace("</", "<\\/")
@@ -87,9 +101,10 @@ article a{{color:var(--f);font-weight:600;text-decoration:none}} article a:hover
 details{{background:var(--s);border:1px solid var(--l);border-radius:10px;padding:12px 14px}} summary{{cursor:pointer;font-weight:600}}
 table{{border-collapse:collapse;width:100%;font-size:.92rem}} td,th{{text-align:left;vertical-align:top;padding:7px 6px;border-bottom:1px solid var(--l)}} .tw{{overflow-x:auto}}
 </style></head><body><main>
-<header style="display:grid;gap:8px"><h1>Islam ja muslimit Suomessa</h1>
-<p class="p">Julkiset uutiset, viranomaisten ja kuntien tiedot (esim. hankkeet ja kaavat) sekä muslimiyhteisöjen omat tiedotteet yhdessä paikassa. Päivittyy noin kolmen tunnin välein. Päivitetty {nyt}. Sivu on vain sinun käytössäsi.</p></header>
+<header style="display:grid;gap:8px"><h1>Islam ja muslimit Suomessa ja Euroopassa</h1>
+<p class="p">Julkiset uutiset, viranomaisten ja kuntien tiedot (esim. hankkeet ja kaavat) sekä muslimiyhteisöjen omat tiedotteet yhdessä paikassa. Päivittyy tunnin välein; ulkomaiset otsikot on käännetty suomeksi. Päivitetty {nyt}. Sivu on vain sinun käytössäsi.</p></header>
 <input id="haku" type="search" placeholder="Hae otsikoista ja lähteistä, esim. moskeija, Turku, poliisi" aria-label="Haku">
+<div class="chips" id="alueet"><button data-a="" aria-pressed="true">Suomi + Eurooppa</button><button data-a="fi" aria-pressed="false">Suomi</button><button data-a="eu" aria-pressed="false">Eurooppa</button></div>
 <div class="chips" id="chips"><button data-c="" aria-pressed="true">Kaikki</button><button data-c="media" aria-pressed="false">Media</button><button data-c="viranomainen" aria-pressed="false">Viranomaiset</button><button data-c="kunta" aria-pressed="false">Kunnat ja hankkeet</button><button data-c="yhteiso" aria-pressed="false">Muslimiyhteisöt</button></div>
 <p class="p" id="maara"></p><div id="lista" style="display:grid;gap:10px"></div>
 <details><summary>Kristinusko ja islam – vertailu</summary><div class="tw"><table>
@@ -107,17 +122,35 @@ table{{border-collapse:collapse;width:100%;font-size:.92rem}} td,th{{text-align:
 <tr><td>Kannattajia</td><td>n. 2,3 mrd</td><td>n. 2 mrd</td></tr></table></div>
 <p class="p">Suomessa arviolta noin 130 000 muslimitaustaista (tutkija-arvio, MTV Uutiset). Laajempi vertailu: Claude-sivu "Kristinusko ja islam".</p></details>
 </main><script>
-const D={data};const C={{media:"Media",viranomainen:"Viranomainen",kunta:"Kunta",yhteiso:"Muslimiyhteisö"}};let luokka="";
+const D={data};const C={{media:"Media",viranomainen:"Viranomainen",kunta:"Kunta",yhteiso:"Muslimiyhteisö"}};let luokka="",alue="";
 const L=document.getElementById("lista"),H=document.getElementById("haku"),M=document.getElementById("maara");
 function pv(t){{const d=new Date(t+"Z");return d.toLocaleDateString("fi-FI",{{weekday:"long",day:"numeric",month:"numeric",year:"numeric"}})}}
-function nayta(){{const q=H.value.trim().toLowerCase();const r=D.filter(x=>(!luokka||x.c===luokka)&&(!q||(x.o+" "+x.l+" "+x.k).toLowerCase().includes(q)));
-M.textContent=r.length+" juttua"+(q||luokka?" (suodatettu)":"")+" · koko arkisto";L.textContent="";let ed="";
+function nayta(){{const q=H.value.trim().toLowerCase();const r=D.filter(x=>(!luokka||x.c===luokka)&&(!alue||(x.a||"fi")===alue)&&(!q||(x.o+" "+(x.oo||"")+" "+x.l+" "+x.k).toLowerCase().includes(q)));
+M.textContent=r.length+" juttua"+(q||luokka||alue?" (suodatettu)":"")+" · koko arkisto";L.textContent="";let ed="";
 for(const x of r){{const p=pv(x.t);if(p!==ed){{const h=document.createElement("h2");h.textContent=p.charAt(0).toUpperCase()+p.slice(1);L.append(h);ed=p}}
 const a=document.createElement("article");const l=document.createElement("a");l.href=x.u;l.target="_blank";l.rel="noopener noreferrer";l.textContent=x.o;
-const m=document.createElement("div");m.className="meta";const t=document.createElement("span");t.className="tag "+x.c;t.textContent=C[x.c];const s=document.createElement("span");s.textContent=x.l;m.append(t,s);a.append(m,l);
-if(x.k){{const k=document.createElement("p");k.className="k";k.textContent=x.k;a.append(k)}}L.append(a)}}}}
-H.addEventListener("input",nayta);document.querySelectorAll("#chips button").forEach(b=>b.onclick=()=>{{luokka=b.dataset.c;document.querySelectorAll("#chips button").forEach(x=>x.setAttribute("aria-pressed",x===b));nayta()}});nayta();
+const m=document.createElement("div");m.className="meta";const t=document.createElement("span");t.className="tag "+x.c;t.textContent=C[x.c];const s=document.createElement("span");s.textContent=(x.a==="eu"?"🇪🇺 ":"")+x.l;m.append(t,s);a.append(m,l);
+if(x.oo){{const o=document.createElement("p");o.className="k";o.textContent="Alkuperäinen: "+x.oo;a.append(o)}}if(x.k){{const k=document.createElement("p");k.className="k";k.textContent=x.k;a.append(k)}}L.append(a)}}}}
+H.addEventListener("input",nayta);document.querySelectorAll("#chips button").forEach(b=>b.onclick=()=>{{luokka=b.dataset.c;document.querySelectorAll("#chips button").forEach(x=>x.setAttribute("aria-pressed",x===b));nayta()}});document.querySelectorAll("#alueet button").forEach(b=>b.onclick=()=>{{alue=b.dataset.a;document.querySelectorAll("#alueet button").forEach(x=>x.setAttribute("aria-pressed",x===b));nayta()}});nayta();
 </script></body></html>"""
+
+def kaanna(uudet):
+    """Kääntää ulkomaiset otsikot suomeksi (Claude Haiku); alkuperäinen jää kenttään oo."""
+    eu = [x for x in uudet if x.get("a") == "eu" and "oo" not in x]
+    ak = os.environ.get("AK", "").strip()
+    for i in range(0, len(eu), 40):
+        osa = eu[i:i + 40]
+        if not ak: return
+        d = json.dumps({"model": "claude-haiku-4-5", "max_tokens": 4000,
+            "system": "Käännä jokainen uutisotsikko suomeksi tarkasti ja neutraalisti, lisäämättä mitään. Vastaa pelkkänä JSON-listana merkkijonoja samassa järjestyksessä.",
+            "messages": [{"role": "user", "content": json.dumps([x["o"] for x in osa], ensure_ascii=False)}]}).encode()
+        try:
+            r = json.loads(urllib.request.urlopen(urllib.request.Request("https://api.anthropic.com/v1/messages", d,
+                {"x-api-key": ak, "anthropic-version": "2023-06-01", "content-type": "application/json"}), timeout=90).read())
+            t = r["content"][0]["text"]; lista = json.loads(t[t.index("["):t.rindex("]") + 1])
+            if len(lista) == len(osa):
+                for x, f in zip(osa, lista): x["oo"], x["o"] = x["o"], str(f)
+        except Exception as e: print("KÄÄNNÖSVIRHE", e)
 
 def laheta(t):
     d = json.dumps({"chat_id": "1893930799", "text": t, "parse_mode": "HTML", "disable_web_page_preview": True}).encode()
@@ -135,6 +168,7 @@ if __name__ == "__main__":
     for x in kohteet(loki):
         if avain(x) in nahty or x["u"] in nahty: continue
         nahty.update([avain(x), x["u"]]); uudet.append(x); arkisto.append(x)
+    kaanna(uudet)
     arkisto = sorted(arkisto, key=lambda x: x["t"], reverse=True)[:30000]   # arkisto säilyy, vanhatkin jutut
     nyt = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=2))).strftime("%-d.%-m.%Y klo %H.%M")
     hallinta = hashlib.sha256((os.environ["CF"].strip() + "-faktapiste").encode()).hexdigest()[:40]
@@ -155,10 +189,21 @@ if __name__ == "__main__":
     for l in loki: print(l)
     print(f"::notice title=Uskontovahti::{len(uudet)} uutta, arkistossa {len(arkisto)}")
     tunti = datetime.datetime.now(datetime.timezone.utc).hour
+    rivi = lambda x: f"• {html.escape(x['o'])} <i>({html.escape(x['l'])})</i>"
+    # Pikahälytys: uudet Suomen jutut heti (ei vanhojen juttujen haussa)
+    if os.environ.get("TAYSI") != "1":
+        tuore = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=2)).isoformat()[:16]
+        heti = [x for x in uudet if x.get("a") != "eu" and x["t"] >= tuore and x["u"] not in lahetetyt][:12]
+        if heti:
+            laheta("🔔 <b>Uutta: islam ja muslimit Suomessa</b>\n\n" + "\n".join(f"{rivi(x)}\n{x['u']}" for x in heti)[:3500])
+            lahetetyt.update(x["u"] for x in heti)
     if os.environ.get("KOONTI") == "1" or (os.environ.get("TAPAHTUMA") == "schedule" and tunti in (5, 6)):
-        tuoreet = [x for x in arkisto if x["u"] not in lahetetyt][:25]
         pv = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=2))).strftime("%-d.%-m.")
-        rivit = [f"• {html.escape(x['o'])} <i>({html.escape(x['l'])})</i>" for x in tuoreet]
-        laheta(f"🕌⛪ <b>Islam ja muslimit Suomessa – {pv}</b>\n{len(tuoreet)} uutta juttua.\n\n" + "\n".join(rivit)[:3300] + f"\n\n📖 <a href=\"{url}\">Avaa koko seurantasivu</a>")
+        raja = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=1)).isoformat()[:16]
+        fi = [x for x in arkisto if x.get("a") != "eu" and x["t"] >= raja][:15]
+        eu = [x for x in arkisto if x.get("a") == "eu" and x["t"] >= raja]
+        euv = [x for x in eu if x["c"] == "viranomainen"][:5] + [x for x in eu if x["c"] != "viranomainen"][:10]
+        laheta(f"🕌⛪ <b>Islam Suomessa ja Euroopassa – {pv}</b>\n\n<b>Suomi ({len(fi)})</b>\n" + ("\n".join(map(rivi, fi)) or "Ei uutta.")[:1700]
+               + f"\n\n<b>Eurooppa ({len(eu)})</b>\n" + ("\n".join(map(rivi, euv)) or "Ei uutta.")[:1500] + f"\n\n📖 <a href=\"{url}\">Avaa koko seurantasivu</a>")
         lahetetyt.update(x["u"] for x in arkisto)
     json.dump({"arkisto": arkisto, "lahetetyt": sorted(lahetetyt)[-5000:]}, open(tila, "w"), ensure_ascii=False)

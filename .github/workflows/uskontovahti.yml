@@ -2,7 +2,7 @@ name: Uskontovahti
 # Miikan oma päivittäinen koonti: julkiset uutiset islamista ja muslimeista Suomessa -> Telegram
 on:
   schedule:
-    - cron: "37 2-20/3 * * *"   # n. 3 tunnin välein; aamun ajo (5.37 UTC) lähettää koonnin Telegramiin
+    - cron: "37 * * * *"   # tunnin välein: uudet Suomen jutut heti Telegramiin, aamun ajo (5.37 UTC) lähettää koonnin
   workflow_dispatch:
     inputs:
       koonti: { description: "1 = lähetä koonti Telegramiin nyt", required: false, default: "" }
@@ -20,6 +20,7 @@ jobs:
       - env:
           TG: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           CF: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          AK: ${{ secrets.ANTHROPIC_API_KEY }}
           KOONTI: ${{ inputs.koonti }}
           TAPAHTUMA: ${{ github.event_name }}
           TAYSI: ${{ inputs.taysi }}
