@@ -8,7 +8,7 @@ def api(url, data=None):
 kat = api("https://product.gelatoapis.com/v3/catalogs")
 print("KATALOGIT:", json.dumps([c.get("catalogUid") for c in kat.get("data", kat if isinstance(kat, list) else [])])[:1500] if "VIRHE" not in kat else kat)
 for cat in ["posters", "framed-posters", "mugs", "canvas"]:
-    h = api(f"https://product.gelatoapis.com/v3/catalogs/{cat}/products:search", {"limit": 200, "offset": 0})
+    h = api(f"https://product.gelatoapis.com/v3/catalogs/{cat}/products:search", {"limit": 100, "offset": 0})
     if "VIRHE" in h: print(cat, h); continue
     ps = h.get("products", [])
     print(f"\n== {cat}: {len(ps)} tuotetta (näyte) ==")
@@ -19,4 +19,13 @@ for cat in ["posters", "framed-posters", "mugs", "canvas"]:
         hh = hinnat[0]["price"] if isinstance(hinnat, list) and hinnat else hinnat
         print(uid, "| hinta FI:", hh)
 sm = api("https://shipment.gelatoapis.com/v1/shipment-methods?country=FI")
-print("\nTOIMITUSTAVAT FI:", json.dumps(sm)[:1200])
+print("\nTOIMITUSTAVAT FI:", [(m["name"], m["type"]) for m in sm.get("shipmentMethods", []) if "FI" in m.get("supportedCountries", [])])
+# Tarjouslaskenta: tuote + toimitus Ylivieskaan
+for uid in [x for x in os.environ.get("TUOTTEET", "").split() if x]:
+    q = api("https://order.gelatoapis.com/v4/orders:quote", {"orderReferenceId": "testi-1", "customerReferenceId": "netvo", "currency": "EUR",
+        "recipient": {"country": "FI", "firstName": "Testi", "lastName": "Asiakas", "addressLine1": "Riihikatu 3", "city": "Ylivieska", "postCode": "84100", "email": "info@netvo.fi"},
+        "products": [{"itemReferenceId": "1", "productUid": uid, "quantity": 1, "files": [{"type": "default", "url": "https://faktapiste.fi/og.png"}]}]})
+    if "VIRHE" in q: print("QUOTE", uid, q); continue
+    for qu in q.get("quotes", []):
+        print("QUOTE", uid, "| tuotanto:", qu.get("fulfillmentCountry"), "| tuotteet:", [(pp.get("price"), pp.get("currency")) for pp in qu.get("products", [])],
+              "| toimitus:", [(m.get("name"), m.get("price"), m.get("minDeliveryDays"), m.get("maxDeliveryDays")) for m in qu.get("shipmentMethods", [])][:4])
