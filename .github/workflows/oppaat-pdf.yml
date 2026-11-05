@@ -3,7 +3,8 @@ name: Oppaat – PDF:t R2:een
 on:
   workflow_dispatch:
     inputs:
-      vaihe: { description: "avain = luo avainpari, lataa = pura ja vie R2:een", required: true, default: "avain" }
+      vaihe: { description: "avain = luo avainpari, lataa = pura ja vie R2:een, siivoa = poista väliaikainen haara", required: true, default: "avain" }
+permissions: { contents: write }
 jobs:
   t:
     runs-on: ubuntu-latest
@@ -36,3 +37,6 @@ jobs:
             echo "::notice title=$n::$(stat -c %s $n.pdf) tavua, $(head -c 5 $n.pdf)"
           done
           curl -sS -X POST https://faktapiste.fi/api/hallinta/holvi -H "x-avain: $H" -H 'content-type: application/json' -d '{"nimi":"oppaat-rsa","arvo":""}' >/dev/null
+      - name: Siivoa
+        if: inputs.vaihe == 'siivoa'
+        run: curl -sS -X DELETE -H "Authorization: Bearer ${{ github.token }}" https://api.github.com/repos/${{ github.repository }}/git/refs/heads/oppaat-salattu -o /dev/null -w "%{http_code}"
