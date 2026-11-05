@@ -1,0 +1,54 @@
+name: Salattu posti liitteillä
+# Luottamukselliset liitteet (esim. tiliotteet) siirretään salattuina (RSA+AES) väliaikaisessa haarassa ja lähetetään Brevolla osoitteesta info@netvo.fi.
+on:
+  workflow_dispatch:
+    inputs:
+      vaihe: { description: "avain / laheta / siivoa", required: true, default: "avain" }
+      to: { description: "Vastaanottaja", required: false }
+      aihe: { description: "Aihe", required: false }
+      runko: { description: "Teksti", required: false }
+permissions: { contents: write }
+jobs:
+  t:
+    runs-on: ubuntu-latest
+    env:
+      CF: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: posti-salattu, fetch-depth: 1 }
+        if: inputs.vaihe == 'laheta'
+      - name: Avainpari
+        if: inputs.vaihe == 'avain'
+        run: |
+          H=$(printf '%s' "$CF-faktapiste" | sha256sum | cut -c1-40)
+          openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:3072 -out y.pem 2>/dev/null
+          openssl pkey -in y.pem -pubout -out j.pem
+          curl -sS -X POST https://faktapiste.fi/api/hallinta/holvi -H "x-avain: $H" -H 'content-type: application/json' -d "$(jq -n --rawfile a y.pem '{nimi:"posti-rsa",arvo:$a}')" | jq -c .
+          echo "JULKINEN_ALKU"; base64 -w0 j.pem; echo; echo "JULKINEN_LOPPU"
+      - name: Pura ja lähetä
+        if: inputs.vaihe == 'laheta'
+        env:
+          BREVO: ${{ secrets.BREVO_API_KEY }}
+          TO: ${{ inputs.to }}
+          AIHE: ${{ inputs.aihe }}
+          RUNKO: ${{ inputs.runko }}
+        run: |
+          set -e
+          H=$(printf '%s' "$CF-faktapiste" | sha256sum | cut -c1-40)
+          curl -sS -X POST https://faktapiste.fi/api/hallinta/holvi -H "x-avain: $H" -H 'content-type: application/json' -d '{"nimi":"posti-rsa"}' | jq -r .arvo > y.pem
+          openssl pkeyutl -decrypt -inkey y.pem -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256 -in salattu/avain.bin -out avain.hex
+          A=$(cat avain.hex); mkdir out; echo '[]' > l.json
+          for f in salattu/*.enc; do
+            n=$(basename "$f" .enc)
+            openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -pass "pass:$A" -in "$f" -out "out/$n"
+            jq --arg n "$n" --rawfile c <(base64 -w0 "out/$n") '. + [{name:$n, content:$c}]' l.json > l2.json && mv l2.json l.json
+            echo "::notice title=$n::$(stat -c %s out/$n) tavua, $(head -c 5 out/$n)"
+          done
+          B=$(jq -n --arg to "$TO" --arg s "$AIHE" --arg t "$RUNKO" --slurpfile l l.json '{sender:{email:"info@netvo.fi",name:"Miika Koskela | Netvo"},replyTo:{email:"info@netvo.fi",name:"Miika Koskela"},to:[{email:$to}],bcc:[{email:"miika.koskela990@gmail.com"}],subject:$s,textContent:$t,attachment:$l[0]}')
+          echo "::notice title=Lähetetty::$TO $(curl -sS -X POST https://api.brevo.com/v3/smtp/email -H "api-key: $BREVO" -H 'content-type: application/json' -d "$B")"
+          curl -sS -X POST https://faktapiste.fi/api/hallinta/holvi -H "x-avain: $H" -H 'content-type: application/json' -d '{"nimi":"posti-rsa","arvo":""}' >/dev/null
+          rm -rf out y.pem avain.hex l.json
+      - name: Siivoa
+        if: inputs.vaihe == 'siivoa'
+        run: |
+          curl -sS -X DELETE -H "Authorization: Bearer ${{ github.token }}" https://api.github.com/repos/${{ github.repository }}/git/refs/heads/posti-salattu -o /dev/null -w "%{http_code}"
