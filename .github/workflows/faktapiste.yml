@@ -93,7 +93,6 @@ jobs:
           sleep 10
           U=https://faktapiste.${{ steps.cf.outputs.sub }}.workers.dev
           HALLINTA=$(printf '%s' "$CLOUDFLARE_API_TOKEN-faktapiste" | sha256sum | cut -c1-40)
-          # HUOM: GitHub-salaisuudet VISMAPAY_API_KEY ja VISMAPAY_PRIVATE_KEY on tallennettu ristiin, siksi ne vaihdetaan tässä (testattu 5.11.2026).
           echo "::notice title=Testi::workers.dev $(curl -s -o /dev/null -w '%{http_code}' $U/)  palvelut $(curl -s -o /dev/null -w '%{http_code}' $U/palvelut/)  faktapiste.fi $(curl -s -o /dev/null -w '%{http_code}' https://faktapiste.fi/ || true)"
           echo "::notice title=Kauppa::oppaat $(curl -s -o /dev/null -w '%{http_code}' https://netvo.fi/oppaat/ || true) toimitusehdot $(curl -s -o /dev/null -w '%{http_code}' https://netvo.fi/toimitusehdot/ || true) maksutavat $(curl -s https://netvo.fi/api/kauppa/maksutavat | jq -c '[.tavat[]?.nimi] | length')"
           echo "::notice title=Netvo::etusivu $(curl -s -o /dev/null -w '%{http_code}' https://netvo.fi/ || true)  ehdot $(curl -s -o /dev/null -w '%{http_code}' https://netvo.fi/ehdot/ || true)  malli $(curl -s -o /dev/null -w '%{http_code}' https://netvo.fi/mallit/parturi/ || true)"
@@ -113,7 +112,6 @@ jobs:
         run: |
           U=https://faktapiste.${{ steps.cf.outputs.sub }}.workers.dev
           HALLINTA=$(printf '%s' "$CLOUDFLARE_API_TOKEN-faktapiste" | sha256sum | cut -c1-40)
-          # HUOM: GitHub-salaisuudet VISMAPAY_API_KEY ja VISMAPAY_PRIVATE_KEY on tallennettu ristiin, siksi ne vaihdetaan tässä (testattu 5.11.2026).
           L=$(curl -sS -X POST -H "x-avain: $HALLINTA" -H 'content-type: application/json' -d '{"max": ${{ inputs.kutsu }}}' $U/api/hallinta/kutsu | jq -r .linkki)
           curl -sS -X POST "https://api.telegram.org/bot$TG/sendMessage" -d chat_id=1893930799 --data-urlencode "text=🔑 Faktapisteen beta-kutsulinkki (${{ inputs.kutsu }} käyttäjää): $L" | jq -c .ok
           if [ -n "${{ inputs.salaus }}" ]; then printf '%s' "${{ inputs.salaus }}" | base64 -d > jul.pem; echo "::notice title=Salattu::$(printf '%s' "$L" | openssl pkeyutl -encrypt -pubin -inkey jul.pem | base64 -w0)"; fi
