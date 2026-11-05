@@ -77,7 +77,8 @@ jobs:
           } > wrangler.toml
           npx --yes wrangler@4.152.0 deploy
           HALLINTA=$(printf '%s' "$CLOUDFLARE_API_TOKEN-faktapiste" | sha256sum | cut -c1-40)
-          jq -n --arg a "${{ secrets.ANTHROPIC_API_KEY }}" --arg b "${{ secrets.BREVO_API_KEY }}" --arg t "${{ secrets.TELEGRAM_BOT_TOKEN }}" --arg h "$HALLINTA" --arg ms "${{ secrets.MSADS_CLIENT_SECRET }}" --arg el "${{ secrets.ELEVENLABS_API_KEY }}" --arg vk "${{ secrets.VISMAPAY_API_KEY }}" --arg vp "${{ secrets.VISMAPAY_PRIVATE_KEY }}" \
+          # HUOM: GitHub-salaisuudet VISMAPAY_API_KEY ja VISMAPAY_PRIVATE_KEY on tallennettu ristiin, siksi ne vaihdetaan tässä (testattu 5.11.2026).
+          jq -n --arg a "${{ secrets.ANTHROPIC_API_KEY }}" --arg b "${{ secrets.BREVO_API_KEY }}" --arg t "${{ secrets.TELEGRAM_BOT_TOKEN }}" --arg h "$HALLINTA" --arg ms "${{ secrets.MSADS_CLIENT_SECRET }}" --arg el "${{ secrets.ELEVENLABS_API_KEY }}" --arg vk "${{ secrets.VISMAPAY_PRIVATE_KEY }}" --arg vp "${{ secrets.VISMAPAY_API_KEY }}" \
             '{ANTHROPIC_API_KEY:$a, BREVO_API_KEY:$b, TELEGRAM_BOT_TOKEN:$t, TG_CHAT:"1893930799", HALLINTA:$h, MSADS_CLIENT_SECRET:$ms, ELEVENLABS_API_KEY:$el, VISMAPAY_API_KEY:$vk, VISMAPAY_PRIVATE_KEY:$vp}' > /tmp/s.json
           npx --yes wrangler@4.152.0 secret bulk /tmp/s.json; rm /tmp/s.json
           # Tyhjennä Cloudflaren välimuisti, jotta uudet sivut näkyvät heti (muuten vanha HTML voi jäädä reunavälimuistiin)
@@ -92,6 +93,7 @@ jobs:
           sleep 10
           U=https://faktapiste.${{ steps.cf.outputs.sub }}.workers.dev
           HALLINTA=$(printf '%s' "$CLOUDFLARE_API_TOKEN-faktapiste" | sha256sum | cut -c1-40)
+          # HUOM: GitHub-salaisuudet VISMAPAY_API_KEY ja VISMAPAY_PRIVATE_KEY on tallennettu ristiin, siksi ne vaihdetaan tässä (testattu 5.11.2026).
           echo "::notice title=Testi::workers.dev $(curl -s -o /dev/null -w '%{http_code}' $U/)  palvelut $(curl -s -o /dev/null -w '%{http_code}' $U/palvelut/)  faktapiste.fi $(curl -s -o /dev/null -w '%{http_code}' https://faktapiste.fi/ || true)"
           echo "::notice title=Kauppa::oppaat $(curl -s -o /dev/null -w '%{http_code}' https://netvo.fi/oppaat/ || true) toimitusehdot $(curl -s -o /dev/null -w '%{http_code}' https://netvo.fi/toimitusehdot/ || true) maksutavat $(curl -s https://netvo.fi/api/kauppa/maksutavat | jq -c '[.tavat[]?.nimi] | length')"
           echo "::notice title=Netvo::etusivu $(curl -s -o /dev/null -w '%{http_code}' https://netvo.fi/ || true)  ehdot $(curl -s -o /dev/null -w '%{http_code}' https://netvo.fi/ehdot/ || true)  malli $(curl -s -o /dev/null -w '%{http_code}' https://netvo.fi/mallit/parturi/ || true)"
@@ -111,6 +113,7 @@ jobs:
         run: |
           U=https://faktapiste.${{ steps.cf.outputs.sub }}.workers.dev
           HALLINTA=$(printf '%s' "$CLOUDFLARE_API_TOKEN-faktapiste" | sha256sum | cut -c1-40)
+          # HUOM: GitHub-salaisuudet VISMAPAY_API_KEY ja VISMAPAY_PRIVATE_KEY on tallennettu ristiin, siksi ne vaihdetaan tässä (testattu 5.11.2026).
           L=$(curl -sS -X POST -H "x-avain: $HALLINTA" -H 'content-type: application/json' -d '{"max": ${{ inputs.kutsu }}}' $U/api/hallinta/kutsu | jq -r .linkki)
           curl -sS -X POST "https://api.telegram.org/bot$TG/sendMessage" -d chat_id=1893930799 --data-urlencode "text=🔑 Faktapisteen beta-kutsulinkki (${{ inputs.kutsu }} käyttäjää): $L" | jq -c .ok
           if [ -n "${{ inputs.salaus }}" ]; then printf '%s' "${{ inputs.salaus }}" | base64 -d > jul.pem; echo "::notice title=Salattu::$(printf '%s' "$L" | openssl pkeyutl -encrypt -pubin -inkey jul.pem | base64 -w0)"; fi
