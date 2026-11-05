@@ -6,6 +6,8 @@ HAUT = os.environ.get("HAUT", "empty frame wall|scandinavian interior wall|blank
 def get(u):
     return urllib.request.urlopen(urllib.request.Request(u, headers=UA), timeout=40).read()
 ehd, nahty = [], set()
+IDS = [x.strip() for x in os.environ.get("IDS", "").split(",") if x.strip()]
+if IDS: ehd = [{"id": x, "haku": "lista"} for x in IDS]; HAUT = []
 for q in HAUT:
     loydot = []
     try:
