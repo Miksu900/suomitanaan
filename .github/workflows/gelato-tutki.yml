@@ -6,4 +6,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - env: { GK: "${{ secrets.GELATO_API_KEY }}" }
-        run: python3 kauppa/gelato_tutki.py
+        run: python3 kauppa/gelato_tutki2.py
