@@ -49,16 +49,20 @@ a{color:var(--accent)}.mute{color:var(--mute)}
 .kortti{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:8px;text-decoration:none;color:inherit}
 a.kortti:hover{border-color:var(--accent)}.kortti h3{font-size:1.3rem;margin:0}.kortti p{margin:0;color:var(--mute)}.hinta{font-family:Fraunces,serif;font-size:1.3rem;color:var(--ink)}
 .kortti .nappi{align-self:flex-start;margin-top:auto}
-.nappi{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 20px;border-radius:12px;border:0;background:var(--accent);color:#fff;font:700 1rem "Nunito Sans",system-ui,sans-serif;text-decoration:none;cursor:pointer}
+.nappi{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 24px;border-radius:99px;border:0;background:var(--accent);color:#fff;font:700 1rem "Nunito Sans",system-ui,sans-serif;letter-spacing:.01em;text-decoration:none;cursor:pointer;transition:background .2s,transform .2s}
+.nappi:hover{filter:brightness(.94)}.nappi:active{transform:translateY(1px)}
+:focus-visible{outline:2px solid var(--accent2);outline-offset:3px}
 @media (prefers-color-scheme:dark){.nappi{color:#1d1715}}
 .nappi.pieni{min-height:44px;min-width:44px;padding:0 12px;background:var(--card);color:var(--ink);border:1px solid var(--line)}
 .nappi:disabled{opacity:.55;cursor:wait}
 .teksti{max-width:760px;padding:36px 0 64px}
 table.hinnat{border-collapse:collapse;width:100%;font-size:.95rem}table.hinnat td,table.hinnat th{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left}
-footer.ala{background:var(--card);border-top:1px solid var(--line);padding:40px 0 28px;font-size:.93rem;color:var(--mute);margin-top:24px}footer.ala a{color:var(--mute);text-decoration:none}footer.ala a:hover{color:var(--accent)}
-footer.ala .w{max-width:1200px}.ala-sar{display:grid;gap:24px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
-footer.ala .logo{color:var(--accent)}footer.ala h4{font-family:Fraunces,Georgia,serif;color:var(--ink);font-size:1.05rem;margin:0 0 8px}footer.ala ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
-.ala-pohja{border-top:1px solid var(--line);margin-top:28px;padding-top:16px;font-size:.85rem;display:flex;flex-wrap:wrap;gap:6px 18px}
+footer.ala{background:#1e2b27;color:#c9c3b8;padding:72px 0 32px;font-size:.95rem;margin-top:0}footer.ala a{color:#e9e3d8;text-decoration:none}footer.ala a:hover{color:#e9bf85}
+@media (prefers-color-scheme:dark){footer.ala{background:#141c19}}
+footer.ala .w{max-width:1200px}.ala-sar{display:grid;gap:36px 28px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+footer.ala .logo{color:#fff8ef;font-size:2.2rem}footer.ala .logo svg{color:#a8473a;width:34px;height:34px}footer.ala p{margin:12px 0 0;line-height:1.6;max-width:22em}
+footer.ala h4{font-family:"Nunito Sans",sans-serif;font-variant-caps:all-small-caps;letter-spacing:.09em;color:#e9bf85;font-size:1.02rem;font-weight:700;margin:0 0 12px}footer.ala ul{list-style:none;margin:0;padding:0;display:grid;gap:9px}
+.ala-pohja{border-top:1px solid #ffffff1f;margin-top:48px;padding-top:20px;font-size:.85rem;display:flex;flex-wrap:wrap;gap:6px 22px;color:#9e988e}
 """
 
 TEE_CSS = """
@@ -161,26 +165,27 @@ def unsplash(pid, w, q=72):
 def srcset(pid, leveydet=(640, 960, 1280, 1920, 2560)):
     return ", ".join(f"{unsplash(pid, w)} {w}w" for w in leveydet)
 
-# Esimerkkikuvat (renderöity omalla suunnittelijalla, faktapiste/omalahja/kuvat/). (tiedosto, otsikko, kuvaus, linkki, leveys, korkeus)
+# Esimerkkikuvat (renderöity omalla suunnittelijalla, faktapiste/omalahja/kuvat/). (tiedosto, otsikko, kuvaus, linkki, leveys, korkeus, luokat, kehys)
 ESIMERKIT = [
-    ("nimi-perhe", "Perhejuliste", "Koko perheen nimet ja lehvä", "/tee/nimijuliste/?esim=perhe", 1000, 1333),
-    ("kartta-helsinki", "Helsinki", "Kotikaupunki klassisena karttana", "/tee/kartta/?esim=helsinki", 1000, 1400),
-    ("nimi-vauva", "Vauvajuliste", "Nimi, syntymäaika, paino ja pituus", "/tee/nimijuliste/?esim=vauva", 1000, 1333),
-    ("kartta-betlehem", "Betlehem", "Raamatun paikka ja jae", "/tee/kartta/?esim=betlehem", 1000, 1400),
-    ("nimi-haat", "Hääjuliste", "Hääpäivän muisto laakeriseppeleellä", "/tee/nimijuliste/?esim=haat", 1000, 1333),
-    ("kartta-ylivieska", "Ylivieska", "Ympyräkartta yön sävyissä", "/tee/kartta/?esim=ylivieska", 1000, 1400),
-    ("nimi-jae", "Raamatunlause", "Rakas jae kauniisti kirjoitettuna", "/tee/nimijuliste/?esim=jae", 1000, 1333),
-    ("kartta-tampere", "Sydänkartta", "Paikka, jossa kaikki alkoi", "/tee/kartta/?esim=tampere", 1000, 1400),
+    ("nimi-perhe", "Perhejuliste", "Koko perheen nimet ja lehvä", "/tee/nimijuliste/?esim=perhe", 1000, 1333, "nimet", "puu"),
+    ("kartta-helsinki", "Helsinki", "Kotikaupunki klassisena karttana", "/tee/kartta/?esim=helsinki", 1000, 1400, "kartat", "musta"),
+    ("nimi-vauva", "Vauvajuliste", "Nimi, syntymäaika, paino ja pituus", "/tee/nimijuliste/?esim=vauva", 1000, 1333, "nimet", "valk"),
+    ("kartta-betlehem", "Betlehem", "Raamatun paikka ja jouluevankeliumin jae", "/tee/kartta/?esim=betlehem", 1000, 1400, "kartat raamattu", "puu"),
+    ("nimi-haat", "Hääjuliste", "Hääpäivä laakeriseppeleen keskellä", "/tee/nimijuliste/?esim=haat", 1000, 1333, "nimet", "musta"),
+    ("kartta-ylivieska", "Ylivieska", "Ympyräkartta yön sävyissä", "/tee/kartta/?esim=ylivieska", 1000, 1400, "kartat", "valk"),
+    ("nimi-jae", "Raamatunlause", "Psalmi kaunokirjoituksella", "/tee/nimijuliste/?esim=jae", 1000, 1333, "nimet raamattu", "puu"),
+    ("kartta-tampere", "Sydänkartta", "Paikka, josta kaikki alkoi", "/tee/kartta/?esim=tampere", 1000, 1400, "kartat", "valk"),
+    ("nimi-kaste", "Kastejuliste", "Nimi, kastepäivä ja siunaava jae", "/tee/nimijuliste/?esim=kaste", 1000, 1333, "nimet raamattu", "musta"),
 ]
-TILAISUUDET = [("Joulu", "Lämmin lahja koko perheelle", "/tee/nimijuliste/?esim=joulu", "nimi-joulu"),
-               ("Häät", "Nimet ja hääpäivä talteen", "/tee/nimijuliste/?esim=haat", "nimi-haat"),
-               ("Vauva", "Tervetuloa maailmaan", "/tee/nimijuliste/?esim=vauva", "nimi-vauva"),
-               ("Kotikaupunki", "Rakkain paikka kartalla", "/tee/kartta/?esim=helsinki", "kartta-helsinki"),
-               ("Rippijuhlat ja kaste", "Nimi ja siunaava jae", "/tee/nimijuliste/?esim=kaste", "nimi-kaste"),
-               ("Muistolahja", "Rakkaudella muistaen", "/tee/nimijuliste/?esim=muisto", "nimi-muisto")]
+TILAISUUDET = [("Joulu", "/tee/nimijuliste/?esim=joulu", "nimi-joulu"), ("Häät", "/tee/nimijuliste/?esim=haat", "nimi-haat"),
+               ("Vauva", "/tee/nimijuliste/?esim=vauva", "nimi-vauva"), ("Kotikaupunki", "/tee/kartta/?esim=helsinki", "kartta-helsinki"),
+               ("Rippijuhlat ja kaste", "/tee/nimijuliste/?esim=kaste", "nimi-kaste"), ("Muistolahja", "/tee/nimijuliste/?esim=muisto", "nimi-muisto")]
+KARTTA_SEINA_ID = "photo-1513694203232-719a280e022f"  # Unsplash: tyhjä vaalea seinä, musta sohva ja lipasto (tarkistettu 5.11.2026)
 
 ETUSIVU_CSS = """
-.tiedote{background:#3d2a22;color:#fbefe2;text-align:center;font-size:.9rem;font-weight:600;padding:9px 16px;line-height:1.4}
+:root{--seina:#e9e1d5;--kuusi:#1e2b27;--puolukka:#7a2e2e;--hunaja:#e9bf85;--hius:#d9cfc1}
+@media (prefers-color-scheme:dark){:root{--seina:#2a2420;--kuusi:#141c19;--hius:#3d342e}}
+""" + """.tiedote{background:#3d2a22;color:#fbefe2;text-align:center;font-size:.9rem;font-weight:600;padding:9px 16px;line-height:1.4}
 .tiedote a{color:#f4c98d;white-space:nowrap}
 .sankari{position:relative;isolation:isolate;min-height:min(92svh,860px);display:flex;align-items:stretch;color:#fff8ef;overflow:hidden;background:#3a2c24}
 .sankari-kuva{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:60% 50%;z-index:-2}
@@ -209,71 +214,128 @@ ETUSIVU_CSS = """
  .sankari::before{background:linear-gradient(90deg,rgba(32,22,16,.82) 0%,rgba(32,22,16,.62) 42%,rgba(32,22,16,.18) 75%,rgba(32,22,16,.1) 100%)}
  .mockup{height:560px}.kehys.k1{width:50%;left:4%;top:2%}.kehys.k2{width:43%;right:2%;top:20%}
 }
-.osa{padding:64px 0}.osa .w{max-width:1200px}
-.osa-otsikko{max-width:40em;margin-bottom:28px}.osa-otsikko h2{font-size:clamp(1.8rem,5vw,2.6rem);margin:0 0 8px}.osa-otsikko p{margin:0;color:var(--mute);font-size:1.05rem}
-.ylateksti.tumma{color:var(--accent)}
-.galleria{display:grid;gap:18px;grid-template-columns:repeat(2,minmax(0,1fr))}
-@media (min-width:900px){.galleria{grid-template-columns:repeat(4,minmax(0,1fr));gap:26px}}
-.esim{text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:10px}
-.esim-kuva{background:var(--seina);border-radius:14px;padding:12% 14%;display:flex;align-items:center;justify-content:center;transition:transform .25s}
-.esim-kuva img{width:100%;height:auto;display:block;box-shadow:0 1px 2px #0003,0 10px 24px #0003;background:#fff}
-.esim:hover .esim-kuva{transform:translateY(-3px)}
-.esim b{font-family:Fraunces,Georgia,serif;font-size:1.08rem;line-height:1.2}.esim span{color:var(--mute);font-size:.88rem;line-height:1.35}.esim i{font-style:normal;color:var(--accent);font-weight:700;font-size:.88rem}
-.vaiheet{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));counter-reset:v}
-.vaihe{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px}
-.vaihe::before{counter-increment:v;content:counter(v);display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:var(--tint);color:var(--accent);font-family:Fraunces,serif;font-size:1.3rem;font-weight:650;margin-bottom:12px}
-.vaihe h3{font-size:1.25rem;margin:0 0 6px}.vaihe p{margin:0;color:var(--mute)}
-.taustaosa{background:var(--card);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-.suunnittelijat{display:grid;gap:20px}
-@media (min-width:860px){.suunnittelijat{grid-template-columns:1fr 1fr}}
-.iso-kortti{display:grid;grid-template-columns:minmax(0,1fr);border-radius:22px;overflow:hidden;background:var(--bg);border:1px solid var(--line);text-decoration:none;color:inherit}
-.iso-kortti .kuvat{background:var(--seina);display:flex;gap:6%;justify-content:center;align-items:center;padding:30px 8%;min-height:260px}
-.iso-kortti .kuvat img{width:42%;height:auto;box-shadow:0 1px 2px #0003,0 14px 30px #0004}
-.iso-kortti .kuvat img:nth-child(2){transform:translateY(14px)}
-.iso-kortti .teksti-osa{padding:22px 24px 26px}.iso-kortti h3{font-size:1.6rem;margin:0 0 8px}.iso-kortti p{margin:0 0 16px;color:var(--mute)}
-.muodot{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
-.muoto{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px}
-.muoto h3{font-size:1.3rem;margin:0 0 4px}.muoto p{margin:0 0 14px;color:var(--mute);font-size:.95rem}
-.muoto ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}.muoto li{display:flex;justify-content:space-between;border-top:1px dashed var(--line);padding-top:6px}
-.muoto li b{font-family:Fraunces,serif;font-size:1.1rem}
-.muoto .vari-pallot{display:flex;gap:6px;margin-top:12px}.muoto .vari-pallot i{width:18px;height:18px;border-radius:50%;box-shadow:inset 0 0 0 1px #0003}
-.tilaisuudet{display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr))}
-@media (min-width:900px){.tilaisuudet{grid-template-columns:repeat(6,minmax(0,1fr))}}
-.tilaisuus{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:18px 10px;border-radius:16px;background:var(--card);border:1px solid var(--line);text-decoration:none;color:inherit}
-.tilaisuus img{width:64px;height:84px;object-fit:cover;object-position:top;border-radius:4px;box-shadow:0 6px 14px #0003}
-.tilaisuus b{font-family:Fraunces,serif;font-size:1.05rem;line-height:1.2}.tilaisuus span{font-size:.82rem;color:var(--mute);line-height:1.3}
-.luottamus{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
-.luotto{display:flex;gap:14px;align-items:flex-start}.luotto svg{flex:none;width:40px;height:40px;color:var(--accent)}
-.luotto h3{font-size:1.1rem;margin:2px 0 4px}.luotto p{margin:0;color:var(--mute);font-size:.95rem}
-.loppu{padding:60px 0 64px;text-align:center}.loppu .w{max-width:1200px}
-.loppu h2{font-size:clamp(1.9rem,6vw,2.8rem);margin:0 0 8px}.loppu p{margin:0;color:var(--mute);font-weight:600}
-.loppu-seina{position:relative;max-width:1100px;margin:26px auto 28px;aspect-ratio:4/5;border-radius:20px;overflow:hidden;background:#e9e4dc}
-.loppu-kuva{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%}
-.seinakehys{position:absolute;left:50%;top:5%;width:27%;transform:translateX(-50%);margin:0;background:linear-gradient(135deg,#d6b48a,#b98d5e 50%,#caa275);padding:2.2%;box-shadow:0 2px 3px #0004,0 14px 26px #0004}
-.seinakehys img{display:block;width:100%;height:auto}
-@media (min-width:700px){.loppu-seina{aspect-ratio:3/2}.seinakehys{width:14%;padding:1.1%}}
-
+""" + """
+.js .ilmesty{opacity:0;transform:translateY(14px);transition:opacity .9s ease,transform .9s cubic-bezier(.2,.7,.2,1)}
+.js .ilmesty.nakyy{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.js .ilmesty{opacity:1;transform:none;transition:none}}
+.osio{padding:clamp(72px,11vw,140px) 0}.osio .w{max-width:1200px}
+.osio h2{font-family:Fraunces,Georgia,serif;font-weight:400;font-variation-settings:"opsz" 144;font-size:clamp(2.1rem,6.4vw,4rem);line-height:1.04;letter-spacing:-.025em;margin:0;text-wrap:balance}
+.osio .johdanto{font-size:1.08rem;line-height:1.6;color:var(--mute);max-width:30em;margin:18px 0 0}
+.pienet{font-variant-caps:all-small-caps;letter-spacing:.09em;font-weight:700;font-size:1.02rem;color:var(--puolukka);margin:0 0 14px}
+@media (prefers-color-scheme:dark){.pienet{color:var(--accent)}}
+.linkki{color:var(--ink);font-weight:700;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:5px;text-decoration-color:var(--puolukka)}
+.linkki:hover{color:var(--puolukka)}
+/* Esimerkit: seinä ja vaakarulla */
+.seinaosa{background:var(--seina);background-image:radial-gradient(120% 80% at 20% 0%,#ffffff55,transparent 60%),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.3 0 0 0 0 0.25 0 0 0 0 0.2 0 0 0 .06 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
+.otsikkorivi{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:24px 40px}
+.suodin{display:flex;gap:22px;margin-top:34px;flex-wrap:wrap}
+.suodin button{background:none;border:0;padding:6px 0;font:600 1rem "Nunito Sans",sans-serif;color:var(--mute);cursor:pointer;border-bottom:1.5px solid transparent;min-height:40px}
+.suodin button[aria-pressed="true"]{color:var(--ink);border-bottom-color:var(--puolukka)}
+.selaa{display:none;gap:10px}
+.selaa button{width:48px;height:48px;border-radius:50%;border:1px solid var(--hius);background:transparent;color:var(--ink);font-size:1.2rem;cursor:pointer}
+.selaa button:hover{border-color:var(--ink)}
+@media (min-width:900px){.selaa{display:flex}}
+.rulla{display:flex;gap:clamp(28px,5vw,64px);overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:max(18px,calc((100vw - 1200px)/2 + 18px));padding:44px max(18px,calc((100vw - 1200px)/2 + 18px)) 20px;scrollbar-width:none;overscroll-behavior-x:contain}
+.rulla::-webkit-scrollbar{display:none}
+.juliste{flex:0 0 min(74vw,330px);scroll-snap-align:start;text-decoration:none;color:inherit;display:flex;flex-direction:column}
+.juliste[hidden]{display:none}
+.juliste .seinakehys2{background:#1d1a18;padding:3.2%;box-shadow:0 1px 1px rgba(0,0,0,.08),0 8px 12px -6px rgba(40,25,15,.25),0 30px 50px -18px rgba(40,25,15,.45);transition:transform .5s cubic-bezier(.2,.7,.2,1)}
+.seinakehys2.puu{background:linear-gradient(135deg,#d8b78e,#b78b5c 55%,#c9a174)}.seinakehys2.valk{background:#f6f3ee}
+.seinakehys2 img{display:block;width:100%;height:auto;box-shadow:inset 0 0 0 1px #0001}
+.juliste:hover .seinakehys2{transform:translateY(-4px)}
+.juliste h3{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:1.35rem;margin:26px 0 4px;letter-spacing:-.01em}
+.juliste p{margin:0 0 10px;color:var(--mute);font-size:.95rem;line-height:1.45}
+.juliste .linkki{font-size:.92rem;margin-top:auto}
+/* Vaiheet */
+.vaiheet2{list-style:none;margin:56px 0 0;padding:0;display:grid;gap:44px;position:relative}
+.vaiheet2::before{content:"";position:absolute;left:27px;top:8px;bottom:8px;width:1px;background:var(--hius)}
+.vaiheet2 li{display:grid;grid-template-columns:56px 1fr;gap:22px;position:relative;align-content:start;align-items:start}
+.numero{font-family:Fraunces,Georgia,serif;font-weight:300;font-variation-settings:"opsz" 144;font-size:3.4rem;line-height:1;height:1em;color:var(--puolukka);background:var(--bg);text-align:center;padding:4px 0;box-sizing:content-box}
+@media (prefers-color-scheme:dark){.numero{color:var(--accent)}}
+.vaiheet2 h3{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:1.5rem;margin:6px 0 6px}.vaiheet2 p{margin:0;color:var(--mute);max-width:24em}
+@media (min-width:860px){
+ .vaiheet2{grid-template-columns:repeat(3,1fr);gap:48px}
+ .vaiheet2::before{left:0;right:0;top:44px;bottom:auto;width:auto;height:1px}
+ .vaiheet2 li{grid-template-columns:1fr;gap:18px}.numero{font-size:5.2rem;text-align:left;padding:0 18px 0 0;justify-self:start}
+}
+/* Suunnittelijapaneelit */
+.paneelit{display:grid;grid-template-columns:minmax(0,1fr)}
+@media (min-width:860px){.paneelit{grid-template-columns:1fr 1fr}}
+.paneeli{position:relative;isolation:isolate;overflow:hidden;aspect-ratio:4/5;color:#fff8ef;text-decoration:none;display:flex;align-items:flex-end;background:#d9d4cc}
+.paneeli>img.tausta{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;transition:transform 1.2s cubic-bezier(.2,.7,.2,1)}
+.paneeli:hover>img.tausta{transform:scale(1.03)}
+.paneeli::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,transparent 45%,rgba(22,18,15,.25) 62%,rgba(22,18,15,.8) 100%)}
+.paneeli figure{position:absolute;margin:0;transform:translateX(-50%);padding:1.6%;box-shadow:0 1px 2px rgba(0,0,0,.18),0 10px 18px -8px rgba(30,20,10,.4),0 26px 40px -16px rgba(30,20,10,.45)}
+.paneeli figure img{display:block;width:100%;height:auto}
+.paneeli .teksti-osa{padding:0 clamp(22px,4vw,48px) clamp(26px,4vw,44px);max-width:34em}
+.paneeli h3{font-family:Fraunces,Georgia,serif;font-weight:400;font-variation-settings:"opsz" 144;font-size:clamp(2rem,5vw,3rem);line-height:1.05;margin:0 0 10px;letter-spacing:-.02em}
+.paneeli p{margin:0 0 20px;color:#f3e9de;line-height:1.55}
+.nappi.vaalea{background:#fff8ef;color:#2b2321;border-radius:99px;min-height:50px;padding:0 24px}
+.paneeli:hover .nappi.vaalea{background:var(--hunaja)}
+/* Hinnat */
+.hinnasto{display:grid;gap:48px}
+@media (min-width:900px){.hinnasto{grid-template-columns:.8fr 1.2fr;gap:80px;align-items:start}.hinnasto .otsikko{position:sticky;top:40px}}
+.hintarivi{display:grid;grid-template-columns:76px minmax(0,1fr);gap:8px 22px;padding:30px 0;border-top:1px solid var(--hius)}
+.hintarivi:last-child{border-bottom:1px solid var(--hius)}
+.hintarivi .pikku{grid-row:span 2;align-self:start;background:var(--seina);padding:10px;display:flex;justify-content:center}
+.hintarivi .pikku span{display:block;width:100%;box-shadow:0 6px 10px -6px rgba(40,25,15,.45)}
+.hintarivi .pikku img{display:block;width:100%;height:auto}
+.hintarivi .pikku .canvas{box-shadow:3px 3px 0 rgba(0,0,0,.18),0 6px 10px -6px rgba(40,25,15,.45)}
+.hintarivi .pikku .kehyksessa{padding:7%;background:#2a2522}
+.hintarivi h3{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:1.45rem;margin:0}
+.hintarivi .kuvaus{margin:2px 0 0;color:var(--mute);font-size:.95rem}
+.koot{grid-column:2;list-style:none;margin:10px 0 0;padding:0}
+.koot li{display:flex;align-items:baseline;gap:10px;padding:7px 0;font-size:1.02rem}
+.koot li::after{content:"";order:1;flex:1;border-bottom:1px dotted var(--hius);transform:translateY(-4px)}
+.koot li b{order:2;font-family:Fraunces,Georgia,serif;font-weight:500;font-size:1.2rem}
+.savyt{grid-column:2;display:flex;flex-wrap:wrap;gap:14px 18px;margin-top:14px;list-style:none;padding:0}
+.savyt li{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:.78rem;color:var(--mute);width:58px;text-align:center;line-height:1.2}
+.savyt i{width:30px;height:30px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.18),0 1px 2px rgba(0,0,0,.12)}
+.hinta-huom{color:var(--mute);font-size:.95rem;margin:18px 0 0}
+/* Lahjaideat */
+.ideat .rulla{padding-top:36px}
+.idea{flex:0 0 min(42vw,200px);scroll-snap-align:start;text-decoration:none;color:inherit}
+.idea .alusta{background:var(--seina);aspect-ratio:1;display:flex;align-items:center;justify-content:center}
+.idea .alusta span{width:46%;background:#fff;padding:3%;box-shadow:0 1px 1px rgba(0,0,0,.08),0 10px 16px -8px rgba(40,25,15,.45);transition:transform .5s cubic-bezier(.2,.7,.2,1)}
+.idea:hover .alusta span{transform:translateY(-3px)}
+.idea .alusta img{display:block;width:100%;height:auto}
+.idea b{display:block;font-family:Fraunces,Georgia,serif;font-weight:500;font-size:1.12rem;margin-top:12px}
+/* Luottamus */
+.luottorivi{list-style:none;margin:0;padding:34px 0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 22px;border-top:1px solid var(--hius);border-bottom:1px solid var(--hius)}
+@media (min-width:900px){.luottorivi{grid-template-columns:repeat(4,1fr)}}
+.luottorivi li{display:flex;flex-direction:column;gap:10px;font-size:.95rem;line-height:1.4;color:var(--mute)}
+.luottorivi svg{width:30px;height:30px;color:var(--ink)}
+.luottorivi b{color:var(--ink);font-weight:700}
+/* Loppu */
+.loppu2{text-align:center}
+.loppu2 h2{max-width:14em;margin:0 auto}
+.loppu2 .napit{justify-content:center;margin-top:34px}
+.nappi.tumma{background:var(--puolukka);color:#fff;border-radius:99px;min-height:54px;padding:0 28px;font-size:1.05rem}
+.nappi.tumma:hover{background:#63231f}
 """
 
 LUOTTO_IKONIT = {
-    "paino": '<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="5" width="22" height="30" rx="2"/><path d="M14 13h12M14 19h12M14 25h7"/></svg>',
-    "laatu": '<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 5l4.5 9.2 10 1.5-7.3 7 1.8 10L20 28l-9 4.7 1.8-10-7.3-7 10-1.5z"/></svg>',
-    "maksu": '<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="17" width="22" height="16" rx="3"/><path d="M14 17v-5a6 6 0 0 1 12 0v5M20 23v4"/></svg>',
-    "suomi": '<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="9" width="30" height="22" rx="2"/><path d="M5 20h30M15 9v22" stroke-width="4"/></svg>',
+    "paino": '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.25" aria-hidden="true"><path d="M8 12V4h16v8M8 22H5V12h22v10h-3"/><path d="M8 18h16v10H8z"/></svg>',
+    "laatu": '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.25" aria-hidden="true"><rect x="7" y="4" width="18" height="24"/><rect x="10" y="7" width="12" height="15"/><path d="M12 18l3-4 2 2.5 1.5-1.5 2 3"/></svg>',
+    "maksu": '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.25" aria-hidden="true"><rect x="7" y="14" width="18" height="13" rx="1.5"/><path d="M11 14V10a5 5 0 0 1 10 0v4M16 19v3"/></svg>',
+    "suomi": '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.25" aria-hidden="true"><path d="M16 4c-4 5-9 7-9 14a9 9 0 0 0 18 0c0-7-5-9-9-14z"/><path d="M16 28V14M16 20l4-3M16 23l-4-3"/></svg>',
 }
 
 def etusivu():
     a = euro(alin_hinta())
-    kuva = lambda nimi, alt, w, h, lisa="": f'<img src="/kuvat/{nimi}.jpg" alt="{esc(alt)}" width="{w}" height="{h}" loading="lazy" decoding="async"{lisa}>'
-    galleria = "".join(f'<a class="esim" href="{l}"><div class="esim-kuva">{kuva(f, t + " – esimerkki", w, h)}</div><b>{esc(t)}</b><span>{esc(k)}</span><i>Muokkaa omaksi →</i></a>' for f, t, k, l, w, h in ESIMERKIT)
-    tilaisuudet = "".join(f'<a class="tilaisuus" href="{l}">{kuva(f, "", 1000, 1333)}<b>{esc(t)}</b><span>{esc(k)}</span></a>' for t, k, l, f in TILAISUUDET)
+    kuva = lambda nimi, alt, w, h: f'<img src="/kuvat/{nimi}.jpg" alt="{esc(alt)}" width="{w}" height="{h}" loading="lazy" decoding="async">'
+    julisteet = "".join(f'<a class="juliste ilmesty" data-luokat="{lk}" href="{l}"><div class="seinakehys2 {kh}">{kuva(f, t + ": esimerkkijuliste", w, h)}</div><h3>{esc(t)}</h3><p>{esc(k)}</p><span class="linkki">Muokkaa omaksi</span></a>'
+                        for f, t, k, l, w, h, lk, kh in ESIMERKIT)
+    ideat = "".join(f'<a class="idea" href="{l}"><div class="alusta"><span>{kuva(f, "", 1000, 1333)}</span></div><b>{esc(t)}</b></a>' for t, l, f in TILAISUUDET)
     t = CONFIG["tuotteet"]
-    muodot = ""
+    pikku = {"juliste": ("nimi-vauva", ""), "canvas": ("kartta-tampere", "canvas"), "kehys": ("nimi-perhe", "kehyksessa")}
+    hinnat = ""
     for avain, x in t.items():
-        rivit = "".join(f"<li><span>{kk.replace('x', ' × ')} cm</span><b>{euro(k['hinta'])}</b></li>" for kk, k in x["koot"].items())
-        pallot = ('<div class="vari-pallot" aria-label="Kehysvärit">' + "".join(f'<i style="background:{v["css"]}" title="{esc(v["nimi"])}"></i>' for v in x["varit"].values()) + "</div>") if "varit" in x else ""
-        muodot += f'<div class="muoto"><h3>{esc(x["nimi"])}</h3><p>{esc(x["kuvaus"])}.</p><ul>{rivit}</ul>{pallot}</div>'
-    tiedote = "" if CONFIG["avoinna"] else '<div class="tiedote">Tilaukset avautuvat pian – ehdit hyvin jouluun. <a href="/tee/nimijuliste/">Suunnittele jo nyt →</a></div>'
+        kuvatiedosto, luokka = pikku.get(avain, ("nimi-perhe", ""))
+        koot = "".join(f"<li><span>{kk.replace('x', ' × ')} cm</span><b>{euro(k['hinta'])}</b></li>" for kk, k in x["koot"].items())
+        savyt = ('<ul class="savyt" aria-label="Kehysvärit">' + "".join(f'<li><i style="background:{v["css"]}"></i>{esc(v["nimi"])}</li>' for v in x["varit"].values()) + "</ul>") if "varit" in x else ""
+        hinnat += f'<div class="hintarivi ilmesty"><div class="pikku"><span class="{luokka}">{kuva(kuvatiedosto, "", 1000, 1333)}</span></div><div><h3>{esc(x["nimi"])}</h3><p class="kuvaus">{esc(x["kuvaus"])}.</p></div><ul class="koot">{koot}</ul>{savyt}</div>'
+    tiedote = "" if CONFIG["avoinna"] else '<div class="tiedote">Tilaukset avautuvat pian – ehdit hyvin jouluun. <a href="/tee/nimijuliste/">Suunnittele jo nyt</a></div>'
     runko = f"""<section class="sankari">
 <img class="sankari-kuva" src="{unsplash(HERO_ID, 1280)}" srcset="{srcset(HERO_ID)}" sizes="100vw" alt="" fetchpriority="high" decoding="async">
 <div class="sankari-sis"><div>
@@ -285,38 +347,53 @@ def etusivu():
 <div class="mockup" aria-hidden="true"><figure class="kehys k1 puu"><img src="/kuvat/nimi-perhe.jpg" alt="" width="1000" height="1333" decoding="async"></figure><figure class="kehys k2"><img src="/kuvat/kartta-helsinki.jpg" alt="" width="1000" height="1400" decoding="async"></figure></div>
 </div></section>
 
-<section class="osa"><div class="w"><div class="osa-otsikko"><p class="ylateksti tumma">Esimerkkejä</p><h2>Tehty omalla suunnittelijallamme</h2><p>Valitse esimerkki ja muokkaa siitä oma: vaihda nimet, värit, fontti ja koristekuvio.</p></div>
-<div class="galleria">{galleria}</div></div></section>
+<section class="osio seinaosa" aria-labelledby="esim-otsikko"><div class="w"><div class="otsikkorivi"><div><p class="pienet">Esimerkkejä</p><h2 id="esim-otsikko" class="ilmesty">Valitse pohja,<br>tee siitä oma</h2>
+<p class="johdanto">Jokainen esimerkki on tehty samalla suunnittelijalla, jota sinäkin käytät. Avaa se ja vaihda nimet, värit, fontti ja kuvio.</p></div>
+<div class="selaa"><button type="button" data-suunta="-1" aria-label="Edelliset esimerkit">‹</button><button type="button" data-suunta="1" aria-label="Seuraavat esimerkit">›</button></div></div>
+<div class="suodin" role="group" aria-label="Näytä esimerkit"><button type="button" data-suodin="kaikki" aria-pressed="true">Kaikki</button><button type="button" data-suodin="nimet" aria-pressed="false">Nimet</button><button type="button" data-suodin="kartat" aria-pressed="false">Kartat</button><button type="button" data-suodin="raamattu" aria-pressed="false">Raamattu</button></div></div>
+<div class="rulla" id="esimerkit">{julisteet}</div></section>
 
-<section class="osa taustaosa"><div class="w"><div class="osa-otsikko"><p class="ylateksti tumma">Näin se toimii</p><h2>Kolme helppoa vaihetta</h2></div>
-<div class="vaiheet"><div class="vaihe"><h3>Suunnittele</h3><p>Kirjoita nimet tai hae paikka. Valitse fontti, värit ja kuvio – esikatselu päivittyy heti.</p></div>
-<div class="vaihe"><h3>Tilaa</h3><p>Valitse juliste, canvastaulu tai kehystetty juliste ja maksa turvallisesti verkkopankilla, mobiilimaksulla tai kortilla.</p></div>
-<div class="vaihe"><h3>Saat kotiin</h3><p>Tuote painetaan juuri sinulle ja toimitetaan kotiin tai noutopisteeseen 8–14 arkipäivässä.</p></div></div></div></section>
+<section class="osio" aria-labelledby="vaiheet-otsikko"><div class="w"><h2 id="vaiheet-otsikko" class="ilmesty">Näin lahja syntyy</h2>
+<ol class="vaiheet2"><li class="ilmesty"><span class="numero">1</span><div><h3>Suunnittele</h3><p>Kirjoita nimet tai hae paikka. Valitse fontti, värit ja kuvio, ja katso esikatselusta, miltä juliste näyttää.</p></div></li>
+<li class="ilmesty"><span class="numero">2</span><div><h3>Tilaa</h3><p>Valitse juliste, canvastaulu tai kehystetty juliste. Maksa verkkopankilla, mobiilimaksulla tai kortilla.</p></div></li>
+<li class="ilmesty"><span class="numero">3</span><div><h3>Saat kotiin</h3><p>Painamme tuotteen juuri sinulle. Se tulee kotiin tai noutopisteeseen 8–14 arkipäivässä.</p></div></li></ol></div></section>
 
-<section class="osa"><div class="w"><div class="osa-otsikko"><p class="ylateksti tumma">Suunnittelijat</p><h2>Valitse, mistä aloitat</h2></div>
-<div class="suunnittelijat">
-<a class="iso-kortti" href="/tee/nimijuliste/"><div class="kuvat">{kuva("nimi-haat", "Hääjuliste-esimerkki", 1000, 1333)}{kuva("nimi-vauva", "Vauvajuliste-esimerkki", 1000, 1333)}</div><div class="teksti-osa"><h3>Nimijuliste</h3><p>Perheen, lapsen tai hääparin nimet. Yhdeksän asettelua, kymmenen fonttiparia, kaksitoista väripalettia ja yli 20 koristekuviota – myös Raamatunlause.</p><span class="nappi">Suunnittele nimijuliste</span></div></a>
-<a class="iso-kortti" href="/tee/kartta/"><div class="kuvat">{kuva("kartta-ylivieska", "Karttajuliste-esimerkki Ylivieskasta", 1000, 1400)}{kuva("kartta-betlehem", "Karttajuliste-esimerkki Betlehemistä", 1000, 1400)}</div><div class="teksti-osa"><h3>Karttajuliste</h3><p>Kotikaupunki, mökkiranta tai rakas paikka maailmalla. Kaksitoista väriteemaa, sydän- ja ympyräkartat sekä valmiit Raamatun paikat.</p><span class="nappi">Suunnittele karttajuliste</span></div></a>
-</div></div></section>
+<section class="paneelit" aria-label="Suunnittelijat">
+<a class="paneeli" href="/tee/nimijuliste/"><img class="tausta" src="{unsplash(SEINA_ID, 1280)}" srcset="{srcset(SEINA_ID, (640, 960, 1280, 1920))}" sizes="(min-width:860px) 50vw, 100vw" alt="" loading="lazy" decoding="async" style="object-position:50% 50%">
+<figure class="puu" style="left:50%;top:7%;width:22%;background:linear-gradient(135deg,#d8b78e,#b78b5c 55%,#c9a174)">{kuva("nimi-haat", "Hääjuliste seinällä", 1000, 1333)}</figure>
+<div class="teksti-osa"><h3>Nimijuliste</h3><p>Perheen, lapsen tai hääparin nimet. Yhdeksän asettelua, kymmenen fonttiparia ja yli 20 koristekuviota – myös Raamatunlause.</p><span class="nappi vaalea">Suunnittele nimijuliste</span></div></a>
+<a class="paneeli" href="/tee/kartta/"><img class="tausta" src="{unsplash(KARTTA_SEINA_ID, 1280)}" srcset="{srcset(KARTTA_SEINA_ID, (640, 960, 1280, 1920))}" sizes="(min-width:860px) 50vw, 100vw" alt="" loading="lazy" decoding="async" style="object-position:42.5% 50%">
+<figure style="left:42.5%;top:12%;width:27%;background:#1d1a18">{kuva("kartta-ylivieska", "Karttajuliste seinällä", 1000, 1400)}</figure>
+<div class="teksti-osa"><h3>Karttajuliste</h3><p>Kotikaupunki, mökkiranta tai rakas paikka maailmalla. Sydän- ja ympyräkartat sekä valmiit Raamatun paikat.</p><span class="nappi vaalea">Suunnittele karttajuliste</span></div></a>
+</section>
 
-<section class="osa taustaosa"><div class="w"><div class="osa-otsikko"><p class="ylateksti tumma">Tuotteet ja hinnat</p><h2>Juliste, canvas tai valmiiksi kehystetty</h2><p>Hinnat sisältävät arvonlisäveron ja toimituksen Suomeen.</p></div>
-<div class="muodot">{muodot}</div></div></section>
+<section class="osio" aria-labelledby="hinnat-otsikko"><div class="w hinnasto"><div class="otsikko"><p class="pienet">Hinnat</p><h2 id="hinnat-otsikko" class="ilmesty">Paperille, kankaalle tai kehykseen</h2>
+<p class="johdanto">Hinnat sisältävät arvonlisäveron ja toimituksen Suomeen. Jokainen tuote painetaan tilauksesta.</p></div>
+<div>{hinnat}</div></div></section>
 
-<section class="osa"><div class="w"><div class="osa-otsikko"><p class="ylateksti tumma">Lahjaideoita</p><h2>Jokaiseen juhlaan ja muistoon</h2></div>
-<div class="tilaisuudet">{tilaisuudet}</div></div></section>
+<section class="osio ideat seinaosa" aria-labelledby="ideat-otsikko"><div class="w"><h2 id="ideat-otsikko" class="ilmesty">Jokaiseen juhlaan ja muistoon</h2></div>
+<div class="rulla">{ideat}</div>
+<div class="w"><ul class="luottorivi" style="margin-top:72px">
+<li>{LUOTTO_IKONIT["paino"]}<span><b>Painettu tilauksesta EU:ssa.</b> Ei varastoa eikä hukkaa.</span></li>
+<li>{LUOTTO_IKONIT["laatu"]}<span><b>Laadukkaat materiaalit.</b> 200 g/m² paperi, canvas ja pleksilasi.</span></li>
+<li>{LUOTTO_IKONIT["maksu"]}<span><b>Turvallinen maksu.</b> Visma Pay: pankki, mobiili tai kortti.</span></li>
+<li>{LUOTTO_IKONIT["suomi"]}<span><b>Suomalainen yritys.</b> {YRITYS}, Ylivieska.</span></li></ul></div></section>
 
-<section class="osa taustaosa"><div class="w"><div class="luottamus">
-<div class="luotto">{LUOTTO_IKONIT["paino"]}<div><h3>Painettu tilauksesta EU:ssa</h3><p>Jokainen tuote valmistetaan juuri sinulle – ei varastoa, ei hukkaa.</p></div></div>
-<div class="luotto">{LUOTTO_IKONIT["laatu"]}<div><h3>Laadukkaat materiaalit</h3><p>Mattapintainen 200 g/m² julistepaperi, pingotettu canvas ja pleksilasiset kehykset.</p></div></div>
-<div class="luotto">{LUOTTO_IKONIT["maksu"]}<div><h3>Turvallinen maksu</h3><p>Maksut välittää Visma Pay: verkkopankki, mobiilimaksu tai kortti.</p></div></div>
-<div class="luotto">{LUOTTO_IKONIT["suomi"]}<div><h3>Suomalainen yritys</h3><p>{YRITYS}, Ylivieska. Palvelemme suomeksi: {EMAIL}.</p></div></div>
-</div></div></section>
-
-<section class="loppu"><div class="w"><h2>Tee lahja, joka jää seinälle</h2><p>{'Tilaukset avautuvat pian – suunnittele jo nyt.' if not CONFIG['avoinna'] else 'Toimitus 8–14 arkipäivässä.'}</p>
-<div class="loppu-seina"><img class="loppu-kuva" src="{unsplash(SEINA_ID, 1280)}" srcset="{srcset(SEINA_ID, (640, 960, 1280, 1920))}" sizes="(min-width:1140px) 1100px, 100vw" alt="Juliste kehyksessä sohvan yläpuolella" loading="lazy" decoding="async">
-<figure class="seinakehys">{kuva("nimi-jae", "", 1000, 1333)}</figure></div>
-<a class="nappi iso" href="/tee/nimijuliste/" style="background:var(--accent);color:#fff">Suunnittele oma lahja</a></div></section>"""
-    paa = f'<link rel="preload" as="image" href="{unsplash(HERO_ID, 1280)}" imagesrcset="{srcset(HERO_ID)}" imagesizes="100vw" fetchpriority="high"><style>{ETUSIVU_CSS}</style>'
+<section class="osio loppu2"><div class="w"><h2 class="ilmesty">Tee lahja, joka jää seinälle</h2>
+<p class="johdanto" style="margin-inline:auto">{'Tilaukset avautuvat pian. Suunnitelmasi säilyy, joten voit aloittaa jo nyt.' if not CONFIG['avoinna'] else 'Toimitus 8–14 arkipäivässä.'}</p>
+<div class="napit"><a class="nappi tumma" href="/tee/nimijuliste/">Suunnittele nimijuliste</a><a class="nappi tumma" style="background:transparent;color:var(--ink);border:1px solid var(--ink)" href="/tee/kartta/">Tee karttajuliste</a></div></div></section>
+<script>
+document.documentElement.classList.add("js");
+(function(){{var r=document.getElementById("esimerkit");
+document.querySelectorAll(".suodin button").forEach(function(b){{b.addEventListener("click",function(){{var s=b.dataset.suodin;
+document.querySelectorAll(".suodin button").forEach(function(x){{x.setAttribute("aria-pressed",String(x===b))}});
+r.querySelectorAll(".juliste").forEach(function(j){{j.hidden=!(s==="kaikki"||(" "+j.dataset.luokat+" ").indexOf(" "+s+" ")>=0)}});r.scrollTo({{left:0,behavior:"smooth"}})}})}});
+document.querySelectorAll(".selaa button").forEach(function(b){{b.addEventListener("click",function(){{r.scrollBy({{left:+b.dataset.suunta*r.clientWidth*.8,behavior:"smooth"}})}})}});
+var el=document.querySelectorAll(".ilmesty");if(!("IntersectionObserver" in window)){{el.forEach(function(e){{e.classList.add("nakyy")}});return}}
+var io=new IntersectionObserver(function(es){{es.forEach(function(e){{if(e.isIntersecting){{e.target.classList.add("nakyy");io.unobserve(e.target)}}}})}},{{rootMargin:"0px 0px -8% 0px",threshold:.08}});
+el.forEach(function(e){{io.observe(e)}})}})();
+</script>"""
+    paa = f'<script>document.documentElement.classList.add("js")</script><link rel="preload" as="image" href="{unsplash(HERO_ID, 1280)}" imagesrcset="{srcset(HERO_ID)}" imagesizes="100vw" fetchpriority="high"><style>{ETUSIVU_CSS}</style>'
     return sivu("Omalahja – personoidut julisteet ja taulut suomeksi", "Personoidut nimijulisteet ja karttajulisteet suomeksi. Valitse fontti, värit ja kuviot – painetaan tilauksesta ja toimitetaan kotiin.", runko, "/",
                 lisapaa=paa, ylapalkki=tiedote, header_luokka="paalla")
 
