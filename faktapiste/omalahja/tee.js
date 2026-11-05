@@ -353,12 +353,13 @@
       const ac = new AbortController(), oma = { ac, n }; lataus = oma;
       naytaLataus("Ladataan karttaa…");
       oma.hidas = setTimeout(() => { if (lataus === oma) naytaLataus("Ladataan karttaa… ison alueen aineisto voi viedä hetken."); }, 9000);
+      oma.hidas2 = setTimeout(() => { if (lataus === oma) naytaLataus("Karttapalvelu on juuri nyt hidas. Yritetään edelleen…"); }, 35000);
       let d = null;
-      for (let yritys = 0; yritys < 2 && !d; yritys++) {
+      for (let yritys = 0; yritys < 1 && !d; yritys++) {
         try { d = await KA.lataa(n.lat, n.lon, n.sade, ac.signal); }
         catch (e) { if (ac.signal.aborted && lataus !== oma) return; if (yritys === 0) await new Promise((r) => setTimeout(r, 1500)); }
       }
-      clearTimeout(oma.hidas);
+      clearTimeout(oma.hidas); clearTimeout(oma.hidas2);
       if (lataus !== oma) return;
       lataus = null;
       if (d) { kartta = d; naytaLataus(""); paivita(); } else naytaLataus("Kartan lataus ei onnistunut. Tarkista yhteys ja yritä uudelleen.", true);

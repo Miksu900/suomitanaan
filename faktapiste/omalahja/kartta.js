@@ -67,16 +67,30 @@
     const dlat = ((sade * kerroin) / 6371) * (180 / PI), dlon = dlat / Math.cos((lat * PI) / 180);
     return { s: lat - dlat * 1.45, n: lat + dlat * 1.45, w: lon - dlon, e: lon + dlon };
   }
+  // Lataus: ensin omalahja.fi (välimuisti / esilaskettu). Jos se ei vastaa 8 sekunnissa, haetaan rinnalla suoraan Overpassista selaimesta.
   async function lataa(lat, lon, sade, signaali) {
-    const ac = new AbortController(), aika = setTimeout(() => ac.abort(), 70000);
+    const ac = new AbortController(), aika = setTimeout(() => ac.abort(), 120000);
     if (signaali) signaali.addEventListener("abort", () => ac.abort());
-    try {
-      const r = await fetch(`/api/kartta/alue?lat=${lat.toFixed(4)}&lon=${lon.toFixed(4)}&sade=${sade}`, { signal: ac.signal });
-      if (!r.ok) throw new Error("kartta " + r.status);
-      const j = await r.json();
-      return { ...jasenna(j.osm.elements || [], j.ruutu.taso), rajat: j.ruutu.rajat, taso: j.ruutu.taso, lat, lon, sade };
-    } finally { clearTimeout(aika); }
+    const q = `lat=${lat.toFixed(4)}&lon=${lon.toFixed(4)}&sade=${sade}`;
+    const muunna = (j) => ({ ...jasenna(j.osm.elements || [], j.ruutu.taso), rajat: j.ruutu.rajat, taso: j.ruutu.taso, lat, lon, sade });
+    const kautta = fetch(`/api/kartta/alue?${q}`, { signal: ac.signal }).then(async (r) => { if (!r.ok) throw new Error("kartta " + r.status); return muunna(await r.json()); });
+    const suoraan = (async () => {
+      await new Promise((ok, ei) => { const t = setTimeout(ok, 8000); kautta.then(() => { clearTimeout(t); ei(new Error("ei tarvita")); }, () => { clearTimeout(t); ok(); }); });
+      const k = await fetch(`/api/kartta/kysely?${q}`, { signal: ac.signal }).then((r) => r.json());
+      for (const url of ["https://overpass-api.de/api/interpreter", "https://overpass.private.coffee/api/interpreter"]) {
+        try {
+          const r = await fetch(url, { method: "POST", body: "data=" + encodeURIComponent(k.kysely), headers: { "content-type": "application/x-www-form-urlencoded" }, signal: ac.signal });
+          if (!r.ok) continue; const osm = await r.json(); if (!osm.elements) continue;
+          return muunna({ ruutu: k.ruutu, osm });
+        } catch (e) { if (ac.signal.aborted) throw e; }
+      }
+      throw new Error("overpass");
+    })();
+    try { return await Promise.any([kautta, suoraan]); }
+    catch { throw new Error("kartta"); }
+    finally { clearTimeout(aika); ac.abort(); }
   }
+
 
   const LUOKKA = { motorway: 3.4, trunk: 3.2, primary: 2.7, secondary: 2.3, tertiary: 1.9, motorway_link: 1.8, trunk_link: 1.8, primary_link: 1.6, secondary_link: 1.5, tertiary_link: 1.4,
     unclassified: 1.25, residential: 1.2, living_street: 1.05, pedestrian: 0.9, service: 0.75, footway: 0.45, path: 0.45, cycleway: 0.5, track: 0.5, steps: 0.4 };

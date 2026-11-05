@@ -117,7 +117,7 @@ async function kasittelePaluu(env, p) {
 // ---- Karttadata: Overpass ja Nominatim Workerin kautta, välimuistissa (Cache API + R2) ----
 const UA = "Omalahja/1.0 (+https://omalahja.fi; info@omalahja.fi)";
 const KARTTA_TASOT = [0.6, 1, 1.6, 2.5, 4, 6.5, 10, 16];
-const OVERPASS = ["https://overpass-api.de/api/interpreter", "https://overpass.private.coffee/api/interpreter", "https://overpass.kumi.systems/api/interpreter"];
+const OVERPASS = [["https://overpass-api.de/api/interpreter", 0], ["https://overpass.private.coffee/api/interpreter", 3000], ["https://overpass.kumi.systems/api/interpreter", 9000]];
 export function karttaRuutu(lat, lon, sade) {
   const ti = Math.max(0, KARTTA_TASOT.findIndex((x) => x >= sade * 0.999)), t = ti < 0 ? KARTTA_TASOT.length - 1 : ti, taso = KARTTA_TASOT[t === -1 ? 7 : t];
   const askelLat = (taso * 0.6) / 111.32, i = Math.round(lat / askelLat), la = i * askelLat;
@@ -141,7 +141,7 @@ async function haeOverpass(kysely) {
   // Porrastetut rinnakkaiset pyynnöt peileihin: seuraava käynnistyy, jos edellinen ei ole vastannut 9 sekunnissa.
   const ohjaimet = [];
   const yksi = (url, viive) => new Promise((ok, ei) => setTimeout(async () => {
-    const ac = new AbortController(); ohjaimet.push(ac); const aika = setTimeout(() => ac.abort(), 45000);
+    const ac = new AbortController(); ohjaimet.push(ac); const aika = setTimeout(() => ac.abort(), 85000);
     try {
       const r = await fetch(url, { method: "POST", body: "data=" + encodeURIComponent(kysely), headers: { "content-type": "application/x-www-form-urlencoded", "user-agent": UA, accept: "application/json" }, signal: ac.signal });
       if (!r.ok) throw new Error(url + " " + r.status);
@@ -151,7 +151,7 @@ async function haeOverpass(kysely) {
       ok({ b, url });
     } catch (e) { clearTimeout(aika); ei(e); }
   }, viive));
-  try { const t = await Promise.any(OVERPASS.map((u, k) => yksi(u, k * 9000))); ohjaimet.forEach((a) => a.abort()); return t; }
+  try { const t = await Promise.any(OVERPASS.map(([u, viive]) => yksi(u, viive))); ohjaimet.forEach((a) => a.abort()); return t; }
   catch (e) { throw new Error("overpass: " + (e.errors || []).map((x) => x.message).join(" | ")); }
 }
 async function karttaAlue(env, u, ctx) {
@@ -169,6 +169,32 @@ async function karttaAlue(env, u, ctx) {
   const runko = new Uint8Array(alku.length + t.b.length + 1); runko.set(alku); runko.set(t.b, alku.length); runko[runko.length - 1] = 0x7d;
   ctx && ctx.waitUntil(Promise.all([env.VIDEOT.put(avain, runko, { httpMetadata: { contentType: "application/json" } }), valimuisti.put(cu, new Response(runko, { headers: otsakkeet }))]));
   return new Response(runko, { headers: { ...otsakkeet, "x-lahde": t.url.split("/")[2] } });
+}
+function karttaKaare(lat, lon, sade) { return karttaRuutu(lat, lon, Math.min(sade, 16)); }
+const karttaAvain = (r) => `omalahja/kartta/v1/${r.t}/${r.i}_${r.j}.json`;
+function karttaKysely(u) {
+  const lat = +u.searchParams.get("lat"), lon = +u.searchParams.get("lon"), sade = +u.searchParams.get("sade");
+  if (!isFinite(lat) || !isFinite(lon) || !(sade > 0)) return json({ virhe: "lat, lon ja sade" }, 400);
+  const r = karttaKaare(lat, lon, sade);
+  return new Response(JSON.stringify({ ruutu: { taso: r.taso, lat: r.lat, lon: r.lon, rajat: r.rajat }, avain: `${r.t}/${r.i}_${r.j}`, kysely: overpassKysely(r) }),
+    { headers: { "content-type": "application/json; charset=utf-8", "cache-control": "public, max-age=86400" } });
+}
+// Ylläpito: esilasketun Overpass-vastauksen tallennus (GitHub Actions hakee datan ja lähettää sen tänne)
+async function karttaTallenna(req, env, u) {
+  const lat = +u.searchParams.get("lat"), lon = +u.searchParams.get("lon"), sade = +u.searchParams.get("sade");
+  if (!isFinite(lat) || !isFinite(lon) || !(sade > 0)) return json({ virhe: "lat, lon ja sade" }, 400);
+  const b = new Uint8Array(await req.arrayBuffer());
+  if (b.length < 50 || b.length > 60e6 || b[0] !== 0x7b) return json({ virhe: "virheellinen data" }, 400);
+  const r = karttaKaare(lat, lon, sade);
+  const alku = new TextEncoder().encode(`{"ruutu":${JSON.stringify({ taso: r.taso, lat: r.lat, lon: r.lon, rajat: r.rajat, lahde: "esilaskettu" })},"osm":`);
+  const runko = new Uint8Array(alku.length + b.length + 1); runko.set(alku); runko.set(b, alku.length); runko[runko.length - 1] = 0x7d;
+  await env.VIDEOT.put(karttaAvain(r), runko, { httpMetadata: { contentType: "application/json" } });
+  await caches.default.delete(new Request(`https://omalahja.fi/_kartta/v1/${r.t}/${r.i}_${r.j}`));
+  return json({ ok: true, ruutu: `${r.t}/${r.i}_${r.j}`, koko: runko.length });
+}
+async function karttaOnko(env, u) {
+  const r = karttaKaare(+u.searchParams.get("lat"), +u.searchParams.get("lon"), +u.searchParams.get("sade"));
+  const o = await env.VIDEOT.head(karttaAvain(r)); return json({ on: !!o, koko: o ? o.size : 0, ruutu: `${r.t}/${r.i}_${r.j}` });
 }
 async function karttaHaku(env, u, ctx) {
   const q = (u.searchParams.get("q") || "").trim().slice(0, 120), fi = u.searchParams.get("fi") === "1";
@@ -197,6 +223,7 @@ export async function omalahja(req, env, u, ctx) {
 
   if (p === "kartta/alue" && req.method === "GET") return karttaAlue(env, u, ctx);
   if (p === "kartta/haku" && req.method === "GET") return karttaHaku(env, u, ctx);
+  if (p === "kartta/kysely" && req.method === "GET") return karttaKysely(u);
   if (p === "tila") return json({ ok: true, avoinna: !!CONFIG.avoinna, maksu: vp, gelato: !!env.GELATO_API_KEY, posti: !!env.BREVO_API_KEY, telegram: !!env.TELEGRAM_BOT_TOKEN });
 
   // Painotiedoston lataus (selain renderöi suunnitelman painoresoluutiolla)
@@ -273,6 +300,8 @@ export async function omalahja(req, env, u, ctx) {
   if (p.startsWith("hallinta/")) {
     if (!tarkista(env, req)) return json({ virhe: "Ei oikeutta." }, 403);
     const nro = u.searchParams.get("nro") || "";
+    if (p === "hallinta/kartta" && req.method === "PUT") return karttaTallenna(req, env, u);
+    if (p === "hallinta/kartta" && req.method === "GET") return karttaOnko(env, u);
     if (p === "hallinta/tilaus") { const t = await lue(env, nro); return t ? json(t) : json({ virhe: "Ei löytynyt." }, 404); }
     if (p === "hallinta/tilaukset") {
       const l = await env.VIDEOT.list({ prefix: "omalahja/tilaukset/", limit: 200 });
