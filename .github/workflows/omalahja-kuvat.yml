@@ -1,0 +1,49 @@
+name: Omalahja kuvat
+# Etusivun kuvat: haku (Unsplash-ehdokkaat), esimerkit (renderöi esimerkkituotteet live-suunnittelijalla), kaappaus (live-kuvakaappaukset).
+# Tulokset haaraan omalahja-tmp (väliaikainen, poistetaan tarkistuksen jälkeen).
+on:
+  workflow_dispatch:
+    inputs:
+      tila: { description: "haku | esimerkit | kaappaus", required: true, default: "haku" }
+      haut: { description: "Hakusanat |-merkillä eroteltuina (haku)", required: false, default: "" }
+      tarkka: { description: "Photo-id:t pilkuilla isoina esikatseluina (haku)", required: false, default: "" }
+permissions: { contents: write }
+jobs:
+  aja:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unsplash-ehdokkaat
+        if: inputs.tila == 'haku'
+        env: { HAUT: "${{ inputs.haut }}", TARKKA: "${{ inputs.tarkka }}" }
+        run: |
+          pip install -q pillow
+          if [ -z "$HAUT" ]; then unset HAUT; fi
+          if [ -n "$TARKKA" ]; then mkdir -p out; for id in ${TARKKA//,/ }; do curl -sS -o "out/$id.jpg" "https://images.unsplash.com/$id?auto=format&fit=crop&w=1200&q=70&fm=jpg"; done; else python3 kauppa/omalahja_kuvahaku.py; fi
+      - name: Esimerkkituotteet
+        if: inputs.tila == 'esimerkit'
+        run: |
+          npm i -s playwright@1.48.2 sharp@0.33.5 >/dev/null 2>&1 && npx playwright install --with-deps chromium >/dev/null 2>&1
+          mkdir -p out && node kauppa/omalahja_esimerkit.mjs
+      - name: Live-kuvakaappaukset
+        if: inputs.tila == 'kaappaus'
+        run: |
+          npm i -s playwright@1.48.2 >/dev/null 2>&1 && npx playwright install --with-deps chromium >/dev/null 2>&1
+          mkdir -p out && node -e '
+          const { chromium } = require("playwright");
+          (async () => { const b = await chromium.launch();
+            for (const [w, h] of [[390, 900], [1280, 800]]) {
+              const p = await b.newPage({ viewport: { width: w, height: h }, deviceScaleFactor: w < 500 ? 2 : 1 });
+              await p.goto("https://omalahja.fi/?v=" + Date.now(), { waitUntil: "networkidle" });
+              const hh = await p.evaluate(() => document.body.scrollHeight);
+              for (let y = 0; y < hh; y += 400) { await p.evaluate((y) => scrollTo(0, y), y); await p.waitForTimeout(150); }
+              await p.evaluate(() => scrollTo(0, 0)); await p.waitForTimeout(1500);
+              await p.screenshot({ path: `out/etusivu-${w}.png` });
+              await p.screenshot({ path: `out/etusivu-${w}-koko.jpg`, fullPage: true, type: "jpeg", quality: 70 });
+              console.log("::notice title=Vaakavieritys " + w + "::" + await p.evaluate(() => document.documentElement.scrollWidth));
+              await p.close(); }
+            await b.close(); })();'
+      - name: Tallenna haaraan
+        run: |
+          cd out && git init -q -b omalahja-tmp && git add -A && git -c user.name=bot -c user.email=bot@x commit -qm "${{ inputs.tila }}"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" omalahja-tmp
