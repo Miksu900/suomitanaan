@@ -1,3 +1,4 @@
+import { kauppa } from "./kauppa.js";
 // Faktapiste-keskustelu: Cloudflare Worker + SQLite Durable Object.
 // Staattiset sivut tulevat public/-kansiosta, /api/* ohjataan Durable Objectille "main".
 import { DurableObject } from "cloudflare:workers";
@@ -72,6 +73,7 @@ export default {
     if (u.hostname === "www.faktapiste.fi") return Response.redirect("https://faktapiste.fi" + u.pathname + u.search, 301);
     if (u.hostname === "www.netvo.fi") return Response.redirect("https://netvo.fi" + u.pathname + u.search, 301);
     if (u.pathname === "/api/kauppias") return kauppias(req, env);
+    if (u.hostname === "netvo.fi" && u.pathname.startsWith("/api/kauppa/")) return kauppa(req, env, u);
     if (u.hostname === "netvo.fi") {
       const np = "/netvo" + (u.pathname === "/" ? "/" : u.pathname);
       const r = await env.ASSETS.fetch(new Request(u.origin + np + u.search));

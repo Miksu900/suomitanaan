@@ -197,7 +197,7 @@ footer.jalka{{background:#0f1014;color:#9a9ca3;text-align:center;padding:40px 16
 <footer class="jalka"><p style="font-family:Fraunces,Georgia,serif;font-size:1.5rem;color:#fff;margin:0 0 8px">Net<span style="color:#4ade80">vo</span></p>
 <p>Nettisivut ja verkkokaupat suomalaisille pienyrityksille.</p>
 <p style="font-size:1.05rem;color:#fff">{esc(YHTEYS)}</p>
-<p><a href="/ehdot/">Sopimusehdot</a> · <a href="/tietosuoja/">Tietosuoja</a> · Kuvat: Unsplash · Netvo on osa Faktapisteen palveluita.</p></footer>
+<p><a href="/oppaat/">Oppaat</a> · <a href="/ehdot/">Sopimusehdot</a> · <a href="/toimitusehdot/">Toimitusehdot</a> · <a href="/tietosuoja/">Tietosuoja</a> · Kuvat: Unsplash · Netvo on osa Faktapisteen palveluita.</p></footer>
 <script>(function(){{var o=new IntersectionObserver(function(es){{es.forEach(function(e){{if(e.isIntersecting){{e.target.classList.add('nak');o.unobserve(e.target)}}}})}},{{threshold:.1}});document.querySelectorAll('.ilm').forEach(function(x){{o.observe(x)}});setTimeout(function(){{document.querySelectorAll('.ilm').forEach(function(x){{x.classList.add('nak')}})}},2500)}})();</script>
 <script src="https://kauppa.netvo.fi/tuki.js" defer></script>{SEURANTA}
 </body></html>"""
@@ -300,10 +300,11 @@ def tietosuojasivu():
                 ("Chat", "Kysy meiltä -chattiin kirjoittamasi viesti välitetään tekoälypalvelulle vastauksen muodostamista varten. Keskusteluja ei tallenneta palvelimellemme; laskemme vain viestien määrän."),
                 ("Mainonnan mittaus", "Google Ads -tagi kirjaa, jos mainoksen kautta tullut kävijä painaa puhelin- tai sähköpostilinkkiä tai lähettää chat-viestin. Evästeitä käytetään tähän vain, jos hyväksyt ne."),
                 ("Esimerkkisivut", "esimerkkikauppojen ostoskori tallentuu vain selaimeesi. Puhuva kauppias -esimerkissä puheesi muutetaan tekstiksi selaimessa, ja kysymys välitetään tekoälypalveluille vastauksen ja puheen tuottamiseksi. Niitä ei tallenneta."),
+                ("Verkkokauppa (oppaat)", "kun ostat oppaan, käsittelemme sähköpostiosoitteesi, tilauksen tiedot ja maksun tilan. Maksutiedot käsittelee Visma Pay; emme näe korttitietojasi."),
                 ("Tekniset lokitiedot", "palvelin käsittelee laitteesi IP-osoitteen ja selaimen tiedot sivuston toimittamiseksi ja tietoturvaa varten.")],
         tarkoitus="Tietoja käsitellään yhteydenottoihin vastaamiseen, asiakassuhteen hoitamiseen ja laskutukseen (sopimus ja sopimusta edeltävät toimet), kirjanpitolain velvoitteisiin (lakisääteinen velvoite), sivuston toimivuuteen ja tietoturvaan (oikeutettu etu) sekä mainonnan mittaamiseen (suostumus).",
         kasittelijat=[("Cloudflare, Inc.", "palvelimet ja tietoturva"), ("Anthropic PBC", "chatin ja Puhuvan kauppiaan tekoälyvastaukset"), ("ElevenLabs", "Puhuvan kauppiaan puhe"),
-                      ("Google LLC", "Google Ads -mainonnan mittaus ja Google Fonts -kirjasimet"), ("Google Workspace / Gmail", "sähköpostiviestintä"), ("Kirjanpitäjä", "kirjanpito ja laskutusaineisto")],
+                      ("Google LLC", "Google Ads -mainonnan mittaus ja Google Fonts -kirjasimet"), ("Google Workspace / Gmail", "sähköpostiviestintä"), ("Visma Payments Oy", "verkkokaupan maksunvälitys"), ("Brevo (Sendinblue SAS)", "tilausvahvistusten lähetys"), ("Kirjanpitäjä", "kirjanpito ja laskutusaineisto")],
         sailytys="Yhteydenotot säilytetään niin kauan kuin asian hoitaminen vaatii, enintään kaksi vuotta. Asiakkuuden tiedot säilytetään asiakkuuden ajan ja kirjanpitoaineisto kirjanpitolain mukaisen ajan (yleensä 6–10 vuotta). Mainonnan mittaustiedot säilyvät Googlen asetusten mukaisesti.",
         evasteet="Mainonnan mittauksen evästeet otetaan käyttöön vain, jos hyväksyt ne sivun alareunan ilmoituksesta. Valintasi tallentuu selaimeesi, ja voit muuttaa sitä tyhjentämällä sivuston tallennetut tiedot. Ilman hyväksyntää Google saa vain evästeettömän, yksilöimättömän tiedon käynnistä.")
     return _sivu("Tietosuojaseloste – Netvo", "Netvon tietosuojaseloste: mitä tietoja käsitellään ja miksi.", f'<section class="osio"><div class="w teksti">{ts}</div></section>', "/tietosuoja/")
@@ -318,11 +319,13 @@ def rakenna_nettikoti(root):
     (root / "netvo" / "ehdot" / "index.html").write_text(ehtosivu(), encoding="utf-8")
     (root / "netvo" / "tietosuoja").mkdir(exist_ok=True)
     (root / "netvo" / "tietosuoja" / "index.html").write_text(tietosuojasivu(), encoding="utf-8")
+    from .oppaat import rakenna as rakenna_oppaat
+    rakenna_oppaat(root, _sivu)
     (root / "netvo" / "llms.txt").write_text(llms_txt(), encoding="utf-8")
     (root / "netvo" / "robots.txt").write_text("User-agent: *\nAllow: /\nDisallow: /mallit/\n\nSitemap: https://netvo.fi/sitemap.xml\n", encoding="utf-8")
     import datetime as _dt
     _pv = _dt.date.today().isoformat()
-    (root / "netvo" / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + "".join(f"<url><loc>https://netvo.fi{u}</loc><lastmod>{_pv}</lastmod></url>" for u in ["/", "/ehdot/", "/tietosuoja/"]) + "</urlset>", encoding="utf-8")
+    (root / "netvo" / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + "".join(f"<url><loc>https://netvo.fi{u}</loc><lastmod>{_pv}</lastmod></url>" for u in ["/", "/oppaat/", "/ehdot/", "/toimitusehdot/", "/tietosuoja/"]) + "</urlset>", encoding="utf-8")
     for d in DEMOT:
         kansio = root / "netvo" / "mallit" / d["slug"]
         kansio.mkdir(parents=True, exist_ok=True)
