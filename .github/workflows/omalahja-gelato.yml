@@ -1,0 +1,35 @@
+name: Omalahja Gelato
+# Gelato-selvitys ja luonnostilaustesti (orderType draft, poistetaan heti). Ei koskaan oikeaa tilausta.
+on:
+  workflow_dispatch:
+    inputs:
+      tila: { description: "tutki | luonnos", required: false, default: "tutki" }
+      uids: { description: "Lisä-UIDt hinnoiteltavaksi (pilkuilla)", required: false, default: "" }
+jobs:
+  aja:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Selvitys
+        if: inputs.tila == 'tutki'
+        env: { GK: "${{ secrets.GELATO_API_KEY }}", UIDS: "${{ inputs.uids }}" }
+        run: python3 kauppa/omalahja_gelato.py tutki
+      - name: Luonnostilaus
+        if: inputs.tila == 'luonnos'
+        env:
+          GK: ${{ secrets.GELATO_API_KEY }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          pip install -q pillow
+          python3 -c "
+          from PIL import Image, ImageDraw
+          im = Image.new('RGB', (1820, 2410), (251, 246, 239)); d = ImageDraw.Draw(im)
+          d.rectangle([120, 120, 1700, 2290], outline=(122, 46, 46), width=12); d.text((700, 1150), 'OMALAHJA TESTI', fill=(122, 46, 46))
+          im.save('testi.jpg', quality=90)"
+          R=$(curl -sS -X POST -H 'content-type: image/jpeg' --data-binary @testi.jpg https://omalahja.fi/api/tiedosto)
+          echo "::notice title=Lataus::$(echo "$R" | jq -c '{ok: (.url != null), virhe}')"
+          F=$(echo "$R" | jq -r .url)
+          echo "::notice title=Tiedoston haku::$(curl -sS -o /dev/null -w '%{http_code} %{content_type} %{size_download}B' "$F")"
+          TIEDOSTO="$F" python3 kauppa/omalahja_gelato.py luonnos
+          HALLINTA=$(printf '%s' "$CLOUDFLARE_API_TOKEN-faktapiste" | sha256sum | cut -c1-40)
+          echo "::notice title=Worker-luonnostesti::$(curl -sS -X POST -H "x-avain: $HALLINTA" -H 'content-type: application/json' -d "{\"tiedosto\":\"$F\"}" https://omalahja.fi/api/hallinta/luonnostesti | head -c 1500)"
