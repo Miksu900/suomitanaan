@@ -1,0 +1,14 @@
+name: Omalahja zone
+on: { workflow_dispatch: {} }
+jobs:
+  z:
+    runs-on: ubuntu-latest
+    steps:
+      - env: { CF: "${{ secrets.CLOUDFLARE_API_TOKEN }}" }
+        run: |
+          API=https://api.cloudflare.com/client/v4; h=(-sS -H "Authorization: Bearer $CF" -H "content-type: application/json")
+          ACC=$(curl "${h[@]}" "$API/accounts" | jq -r '.result[0].id')
+          Z=$(curl "${h[@]}" "$API/zones?name=omalahja.fi")
+          if [ "$(echo "$Z" | jq '.result|length')" = "0" ]; then Z=$(curl "${h[@]}" -X POST "$API/zones" -d "{\"name\":\"omalahja.fi\",\"account\":{\"id\":\"$ACC\"},\"type\":\"full\"}"); R=$(echo "$Z" | jq '.result'); else R=$(echo "$Z" | jq '.result[0]'); fi
+          echo "::notice title=Zone::$(echo "$R" | jq -c '{status, ns: .name_servers}') $(echo "$Z" | jq -c '.errors')"
+          whois omalahja.fi 2>/dev/null | grep -iE 'registrar|nserver|status' | head -6 | tr '\n' ' ' | sed 's/^/::notice title=Whois::/'; echo
