@@ -84,8 +84,8 @@ jobs:
           npx --yes wrangler@4.152.0 deploy
           HALLINTA=$(printf '%s' "$CLOUDFLARE_API_TOKEN-faktapiste" | sha256sum | cut -c1-40)
           # HUOM: GitHub-salaisuudet VISMAPAY_API_KEY ja VISMAPAY_PRIVATE_KEY on tallennettu ristiin, siksi ne vaihdetaan tässä (testattu 5.11.2026).
-          jq -n --arg a "${{ secrets.ANTHROPIC_API_KEY }}" --arg b "${{ secrets.BREVO_API_KEY }}" --arg t "${{ secrets.TELEGRAM_BOT_TOKEN }}" --arg h "$HALLINTA" --arg ms "${{ secrets.MSADS_CLIENT_SECRET }}" --arg el "${{ secrets.ELEVENLABS_API_KEY }}" --arg vk "${{ secrets.VISMAPAY_PRIVATE_KEY }}" --arg vp "${{ secrets.VISMAPAY_API_KEY }}" \
-            '{ANTHROPIC_API_KEY:$a, BREVO_API_KEY:$b, TELEGRAM_BOT_TOKEN:$t, TG_CHAT:"1893930799", HALLINTA:$h, MSADS_CLIENT_SECRET:$ms, ELEVENLABS_API_KEY:$el, VISMAPAY_API_KEY:$vk, VISMAPAY_PRIVATE_KEY:$vp}' > /tmp/s.json
+          jq -n --arg a "${{ secrets.ANTHROPIC_API_KEY }}" --arg b "${{ secrets.BREVO_API_KEY }}" --arg t "${{ secrets.TELEGRAM_BOT_TOKEN }}" --arg h "$HALLINTA" --arg ms "${{ secrets.MSADS_CLIENT_SECRET }}" --arg el "${{ secrets.ELEVENLABS_API_KEY }}" --arg vk "${{ secrets.VISMAPAY_PRIVATE_KEY }}" --arg vp "${{ secrets.VISMAPAY_API_KEY }}" --arg gk "${{ secrets.GELATO_API_KEY }}" \
+            '{ANTHROPIC_API_KEY:$a, BREVO_API_KEY:$b, TELEGRAM_BOT_TOKEN:$t, TG_CHAT:"1893930799", HALLINTA:$h, MSADS_CLIENT_SECRET:$ms, ELEVENLABS_API_KEY:$el, VISMAPAY_API_KEY:$vk, VISMAPAY_PRIVATE_KEY:$vp, GELATO_API_KEY:$gk}' > /tmp/s.json
           npx --yes wrangler@4.152.0 secret bulk /tmp/s.json; rm /tmp/s.json
           # Tyhjennä Cloudflaren välimuisti, jotta uudet sivut näkyvät heti (muuten vanha HTML voi jäädä reunavälimuistiin)
           for ZN in faktapiste.fi netvo.fi omalahja.fi; do
@@ -101,6 +101,7 @@ jobs:
           HALLINTA=$(printf '%s' "$CLOUDFLARE_API_TOKEN-faktapiste" | sha256sum | cut -c1-40)
           echo "::notice title=Testi::workers.dev $(curl -s -o /dev/null -w '%{http_code}' $U/)  palvelut $(curl -s -o /dev/null -w '%{http_code}' $U/palvelut/)  faktapiste.fi $(curl -s -o /dev/null -w '%{http_code}' https://faktapiste.fi/ || true)"
           echo "::notice title=Kauppa::oppaat $(curl -s -o /dev/null -w '%{http_code}' https://netvo.fi/oppaat/ || true) toimitusehdot $(curl -s -o /dev/null -w '%{http_code}' https://netvo.fi/toimitusehdot/ || true) maksutavat $(curl -s https://netvo.fi/api/kauppa/maksutavat | jq -c '[.tavat[]?.nimi] | length')"
+          echo "::notice title=Omalahja::etusivu $(curl -s -o /dev/null -w '%{http_code}' https://omalahja.fi/ || true) nimijuliste $(curl -s -o /dev/null -w '%{http_code}' https://omalahja.fi/tee/nimijuliste/ || true) kartta $(curl -s -o /dev/null -w '%{http_code}' https://omalahja.fi/tee/kartta/ || true) tee.js $(curl -s -o /dev/null -w '%{http_code}' https://omalahja.fi/tee.js || true) tila $(curl -s https://omalahja.fi/api/tila | head -c 200)"
           echo "::notice title=Netvo::etusivu $(curl -s -o /dev/null -w '%{http_code}' https://netvo.fi/ || true)  ehdot $(curl -s -o /dev/null -w '%{http_code}' https://netvo.fi/ehdot/ || true)  malli $(curl -s -o /dev/null -w '%{http_code}' https://netvo.fi/mallit/parturi/ || true)"
           echo "::notice title=Linkkitesti::$(curl -s -o /dev/null -w '%{http_code} %{redirect_url}' -H 'Sec-Fetch-Mode: navigate' -H 'Sec-Fetch-Dest: document' -H 'Accept: text/html' 'https://faktapiste.fi/api/vahvista?t=testi')"
           echo "::notice title=Sisäänluku::$(curl -sS -X POST -H "x-avain: $HALLINTA" $U/api/hallinta/sisaanluku | head -c 600)"

@@ -1,4 +1,5 @@
 import { kauppa } from "./kauppa.js";
+import { omalahja } from "./omalahja.js";
 // Faktapiste-keskustelu: Cloudflare Worker + SQLite Durable Object.
 // Staattiset sivut tulevat public/-kansiosta, /api/* ohjataan Durable Objectille "main".
 import { DurableObject } from "cloudflare:workers";
@@ -74,6 +75,7 @@ export default {
     if (u.hostname === "www.netvo.fi") return Response.redirect("https://netvo.fi" + u.pathname + u.search, 301);
     if (u.pathname === "/api/kauppias") return kauppias(req, env);
     if (u.hostname === "www.omalahja.fi") return Response.redirect("https://omalahja.fi" + u.pathname + u.search, 301);
+    if (u.hostname === "omalahja.fi" && u.pathname.startsWith("/api/")) return omalahja(req, env, u, ctx);
     if (u.hostname === "omalahja.fi") {
       const op = "/omalahja" + (u.pathname === "/" ? "/" : u.pathname);
       const r = await env.ASSETS.fetch(new Request(u.origin + op + u.search));
