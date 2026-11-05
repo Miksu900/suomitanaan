@@ -163,7 +163,8 @@ async function karttaAlue(env, u, ctx) {
   const c = await valimuisti.match(cu); if (c) { const h = new Headers(c.headers); h.set("x-lahde", "cache"); return new Response(c.body, { headers: h }); }
   const o = await env.VIDEOT.get(avain);
   if (o) { const vas = new Response(o.body, { headers: { ...otsakkeet, "x-lahde": "r2" } }); ctx && ctx.waitUntil(valimuisti.put(cu, vas.clone())); return vas; }
-  let t; try { t = await haeOverpass(overpassKysely(r)); } catch (e) { console.log(String(e)); return json({ virhe: "Karttapalvelu ei vastannut. Yritä hetken päästä uudelleen." }, 503); }
+  let t; const alkuAika = Date.now();
+  try { t = await haeOverpass(overpassKysely(r)); } catch (e) { console.log(String(e)); return json({ virhe: "Karttapalvelu ei vastannut. Yritä hetken päästä uudelleen.", syy: String(e).slice(0, 300), ms: Date.now() - alkuAika }, 503); }
   const alku = new TextEncoder().encode(`{"ruutu":${JSON.stringify({ taso: r.taso, lat: r.lat, lon: r.lon, rajat: r.rajat, lahde: t.url.split("/")[2] })},"osm":`);
   const runko = new Uint8Array(alku.length + t.b.length + 1); runko.set(alku); runko.set(t.b, alku.length); runko[runko.length - 1] = 0x7d;
   ctx && ctx.waitUntil(Promise.all([env.VIDEOT.put(avain, runko, { httpMetadata: { contentType: "application/json" } }), valimuisti.put(cu, new Response(runko, { headers: otsakkeet }))]));
