@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
-          for u in https://faktapiste.fi/islam/ https://netvo.fi/kotivara/ https://faktapiste.fi/; do
+          for u in https://omalahja.fi/ https://omalahja.fi/toimitusehdot/ https://www.omalahja.fi/ https://faktapiste.fi/; do
             echo "::notice title=$u::$(curl -sS -o /tmp/s -w '%{http_code} %{size_download}B' "$u") $(grep -o '<title>[^<]*' /tmp/s | head -1)"
           done
           curl -sS https://faktapiste.fi/api/julkinen/islam.json -o /tmp/d.json -w '%{http_code}\n'
