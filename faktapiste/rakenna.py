@@ -371,7 +371,7 @@ kirjoita("/laskurit/", sivu("/laskurit/", "Laskurit – ilmaiset laskurit rahaan
     + ["", "## Lisää", "", f"- [Keskustelu]({SITE}/)", f"- [Laskurit]({SITE}/laskurit/): ilmaiset laskurit rahaan, asumiseen ja sähköön", f"- [Tietoa]({SITE}/tietoa/)", ""]), encoding="utf-8")
 (ROOT / "robots.txt").write_text(f"User-agent: *\nAllow: /\nSitemap: {SITE}/sitemap.xml\n", encoding="utf-8")
 (ROOT / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
-    + "".join(f"<url><loc>{SITE}{p}</loc></url>" for p in ["/", "/palvelut/", "/tietoa/", "/tietosuoja/", "/yksityisyys/", "/laskurit/"] + [f"/laskurit/{l['slug']}/" for l in LASKURIT]) + "</urlset>", encoding="utf-8")
+    + "".join(f"<url><loc>{SITE}{p}</loc></url>" for p in ["/", "/palvelut/", "/tietoa/", "/tietosuoja/", "/yksityisyys/", "/laskurit/", "/islam/"] + [f"/laskurit/{l['slug']}/" for l in LASKURIT]) + "</urlset>", encoding="utf-8")
 # ---- Nettikoti: /nettikoti/ (oma brändi, esikatselu Faktapisteen alustalla) ----
 from nettisivut import rakenna_nettikoti
 _n = rakenna_nettikoti(ROOT)

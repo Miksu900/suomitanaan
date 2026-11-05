@@ -202,6 +202,14 @@ if __name__ == "__main__":
     r = urllib.request.Request("https://faktapiste.fi/api/hallinta/oma", json.dumps({"nimi": "uskonto", "html": h}).encode(),
                                {"content-type": "application/json", "x-avain": hallinta, **UA})
     print("::notice title=Sivu::" + urllib.request.urlopen(r, timeout=30).read().decode()[:200])
+    # Julkinen sivu faktapiste.fi/islam/: kaikki jutut JSON-datana (yli vuoden vanhoista ilman kuvausta)
+    vuosi = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=365)).isoformat()[:16]
+    jutut = [{k: x[k] for k in ("o", "oo", "k", "l", "u", "t", "c", "a", "m") if x.get(k) and not (k == "k" and x["t"] < vuosi)} for x in arkisto]
+    try:
+        r = urllib.request.Request("https://faktapiste.fi/api/hallinta/julkinen", json.dumps({"paivitetty": nyt, "jutut": jutut}, ensure_ascii=False, separators=(",", ":")).encode(),
+                                   {"content-type": "application/json", "x-avain": hallinta, **UA})
+        print("::notice title=Julkinen sivu::" + urllib.request.urlopen(r, timeout=60).read().decode()[:200])
+    except Exception as e: print("::warning title=Julkinen sivu::" + str(e)[:200])
     for l in loki: print(l)
     print(f"::notice title=Uskontovahti::{len(uudet)} uutta, arkistossa {len(arkisto)}")
     tunti = datetime.datetime.now(datetime.timezone.utc).hour

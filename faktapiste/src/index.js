@@ -90,6 +90,18 @@ export default {
       return Response.redirect("https://netvo.fi" + rest + u.search, 301);
     }
     if (u.pathname === "/api/video" && req.method === "POST") return lataaVideo(req, env, u);
+    // Julkinen islam-uutisseuranta (faktapiste.fi/islam/): data R2:ssa, päivitetään tunnin välein Uskontovahdista.
+    if (u.pathname === "/api/julkinen/islam.json" && env.VIDEOT) {
+      const o = await env.VIDEOT.get("julkinen/islam.json");
+      if (!o) return new Response('{"jutut":[]}', { headers: { "content-type": "application/json; charset=utf-8" } });
+      return new Response(o.body, { headers: { "content-type": "application/json; charset=utf-8", "cache-control": "public, max-age=300" } });
+    }
+    if (u.pathname === "/api/hallinta/julkinen" && req.method === "POST" && env.VIDEOT && env.HALLINTA && req.headers.get("x-avain") === env.HALLINTA) {
+      const t = await req.text();
+      try { JSON.parse(t); } catch { return new Response('{"virhe":"json"}', { status: 400 }); }
+      await env.VIDEOT.put("julkinen/islam.json", t, { httpMetadata: { contentType: "application/json; charset=utf-8" } });
+      return new Response(JSON.stringify({ ok: true, koko: t.length }), { headers: { "content-type": "application/json" } });
+    }
     if (u.pathname.startsWith("/api/")) return env.FP.get(env.FP.idFromName("main")).fetch(req);
     const jm = u.pathname.match(/^\/p\/(\d+)\/?$/);
     if (jm) return jakosivu(env, u, +jm[1]);
