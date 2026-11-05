@@ -73,6 +73,13 @@ export default {
     if (u.hostname === "www.faktapiste.fi") return Response.redirect("https://faktapiste.fi" + u.pathname + u.search, 301);
     if (u.hostname === "www.netvo.fi") return Response.redirect("https://netvo.fi" + u.pathname + u.search, 301);
     if (u.pathname === "/api/kauppias") return kauppias(req, env);
+    if (u.hostname === "www.omalahja.fi") return Response.redirect("https://omalahja.fi" + u.pathname + u.search, 301);
+    if (u.hostname === "omalahja.fi") {
+      const op = "/omalahja" + (u.pathname === "/" ? "/" : u.pathname);
+      const r = await env.ASSETS.fetch(new Request(u.origin + op + u.search));
+      if (/\.(txt|xml)$/.test(u.pathname) && r.ok) { const h = new Headers(r.headers); h.set("content-type", (u.pathname.endsWith(".xml") ? "application/xml" : "text/plain") + "; charset=utf-8"); return new Response(r.body, { status: r.status, headers: h }); }
+      return r;
+    }
     if (u.hostname === "netvo.fi" && u.pathname.startsWith("/api/kauppa/")) return kauppa(req, env, u);
     if (u.hostname === "netvo.fi") {
       const np = "/netvo" + (u.pathname === "/" ? "/" : u.pathname);

@@ -375,4 +375,6 @@ kirjoita("/laskurit/", sivu("/laskurit/", "Laskurit – ilmaiset laskurit rahaan
 # ---- Nettikoti: /nettikoti/ (oma brändi, esikatselu Faktapisteen alustalla) ----
 from nettisivut import rakenna_nettikoti
 _n = rakenna_nettikoti(ROOT)
+from omalahja import rakenna as rakenna_omalahja
+rakenna_omalahja(ROOT)
 print("Faktapiste rakennettu:", ROOT, "| Nettikoti-malleja:", _n)

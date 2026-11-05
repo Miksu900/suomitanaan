@@ -31,6 +31,8 @@ jobs:
           echo "::notice title=faktapiste.fi Cloudflaressa::$T"
           N=$(curl "${h[@]}" "$API/zones?name=netvo.fi" | jq -r '.result[0].status // "puuttuu"'); echo "netvo=$N" >> $GITHUB_OUTPUT
           echo "::notice title=netvo.fi Cloudflaressa::$N"
+          O=$(curl "${h[@]}" "$API/zones?name=omalahja.fi" | jq -r '.result[0].status // "puuttuu"'); echo "omalahja=$O" >> $GITHUB_OUTPUT
+          echo "::notice title=omalahja.fi Cloudflaressa::$O"
       - name: Sivut
         run: python3 faktapiste/rakenna.py
       - name: Julkaise
@@ -57,6 +59,10 @@ jobs:
               if [ -n "$R" ]; then R="$R, "; fi
               R="$R{ pattern = \"netvo.fi\", custom_domain = true }, { pattern = \"www.netvo.fi\", custom_domain = true }"
             fi
+            if [ "${{ steps.cf.outputs.omalahja }}" = "active" ]; then
+              if [ -n "$R" ]; then R="$R, "; fi
+              R="$R{ pattern = \"omalahja.fi\", custom_domain = true }, { pattern = \"www.omalahja.fi\", custom_domain = true }"
+            fi
             if [ -n "$R" ]; then echo "routes = [ $R ]"; fi
             echo '[vars]'
             echo 'KIRJAUTUMINEN = "${{ vars.FP_KIRJAUTUMINEN || 'auki' }}"'
@@ -82,7 +88,7 @@ jobs:
             '{ANTHROPIC_API_KEY:$a, BREVO_API_KEY:$b, TELEGRAM_BOT_TOKEN:$t, TG_CHAT:"1893930799", HALLINTA:$h, MSADS_CLIENT_SECRET:$ms, ELEVENLABS_API_KEY:$el, VISMAPAY_API_KEY:$vk, VISMAPAY_PRIVATE_KEY:$vp}' > /tmp/s.json
           npx --yes wrangler@4.152.0 secret bulk /tmp/s.json; rm /tmp/s.json
           # Tyhjennä Cloudflaren välimuisti, jotta uudet sivut näkyvät heti (muuten vanha HTML voi jäädä reunavälimuistiin)
-          for ZN in faktapiste.fi netvo.fi; do
+          for ZN in faktapiste.fi netvo.fi omalahja.fi; do
             Z=$(curl -sS -H "Authorization: Bearer $CF" "$API/zones?name=$ZN" | jq -r '.result[0].id // empty')
             if [ -n "$Z" ]; then P=$(curl -sS -X POST "$API/zones/$Z/purge_cache" -H "Authorization: Bearer $CF" -H "content-type: application/json" -d '{"purge_everything":true}'); echo "::notice title=Välimuisti $ZN::$(echo "$P" | jq -c '{success, errors}')"; fi
           done
