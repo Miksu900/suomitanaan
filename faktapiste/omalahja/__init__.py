@@ -245,15 +245,14 @@ ETUSIVU_CSS = """
 .luottamus{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
 .luotto{display:flex;gap:14px;align-items:flex-start}.luotto svg{flex:none;width:40px;height:40px;color:var(--accent)}
 .luotto h3{font-size:1.1rem;margin:2px 0 4px}.luotto p{margin:0;color:var(--mute);font-size:.95rem}
-.loppu{position:relative;isolation:isolate;overflow:hidden;color:#2b2321;background:#e9e4dc}
-.loppu-kuva{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 70%;z-index:-2}
-.loppu .w{max-width:1200px;min-height:560px;display:flex;flex-direction:column;align-items:center;padding-top:48px;padding-bottom:40px;text-align:center}
-.loppu h2{font-size:clamp(1.9rem,6vw,2.8rem);margin:0 0 10px;color:#2b2321}
-.loppu p{margin:0 0 20px;color:#4b3f39;font-weight:600}
-.seinakehys{width:min(36%,190px);margin:8px auto 0;background:linear-gradient(135deg,#d6b48a,#b98d5e 50%,#caa275);padding:2.4%;box-shadow:0 2px 3px #0004,0 16px 30px #0005}
+.loppu{padding:60px 0 64px;text-align:center}.loppu .w{max-width:1200px}
+.loppu h2{font-size:clamp(1.9rem,6vw,2.8rem);margin:0 0 8px}.loppu p{margin:0;color:var(--mute);font-weight:600}
+.loppu-seina{position:relative;max-width:1100px;margin:26px auto 28px;aspect-ratio:4/5;border-radius:20px;overflow:hidden;background:#e9e4dc}
+.loppu-kuva{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%}
+.seinakehys{position:absolute;left:50%;top:5%;width:27%;transform:translateX(-50%);margin:0;background:linear-gradient(135deg,#d6b48a,#b98d5e 50%,#caa275);padding:2.2%;box-shadow:0 2px 3px #0004,0 14px 26px #0004}
 .seinakehys img{display:block;width:100%;height:auto}
-.loppu .nappi.iso{margin-top:auto;background:#7a2e2e;color:#fff}
-@media (prefers-color-scheme:dark){.loppu{background:#2b2420}}
+@media (min-width:700px){.loppu-seina{aspect-ratio:3/2}.seinakehys{width:14%;padding:1.1%}}
+
 """
 
 LUOTTO_IKONIT = {
@@ -313,10 +312,10 @@ def etusivu():
 <div class="luotto">{LUOTTO_IKONIT["suomi"]}<div><h3>Suomalainen yritys</h3><p>{YRITYS}, Ylivieska. Palvelemme suomeksi: {EMAIL}.</p></div></div>
 </div></div></section>
 
-<section class="loppu"><img class="loppu-kuva" src="{unsplash(SEINA_ID, 1280)}" srcset="{srcset(SEINA_ID, (640, 960, 1280, 1920))}" sizes="100vw" alt="" loading="lazy" decoding="async">
-<div class="w"><h2>Tee lahja, joka jää seinälle</h2><p>{'Tilaukset avautuvat pian – suunnittele jo nyt.' if not CONFIG['avoinna'] else 'Toimitus 8–14 arkipäivässä.'}</p>
-<figure class="seinakehys">{kuva("nimi-jae", "Raamatunlause-juliste kehyksessä", 1000, 1333)}</figure>
-<a class="nappi iso" href="/tee/nimijuliste/">Suunnittele oma lahja</a></div></section>"""
+<section class="loppu"><div class="w"><h2>Tee lahja, joka jää seinälle</h2><p>{'Tilaukset avautuvat pian – suunnittele jo nyt.' if not CONFIG['avoinna'] else 'Toimitus 8–14 arkipäivässä.'}</p>
+<div class="loppu-seina"><img class="loppu-kuva" src="{unsplash(SEINA_ID, 1280)}" srcset="{srcset(SEINA_ID, (640, 960, 1280, 1920))}" sizes="(min-width:1140px) 1100px, 100vw" alt="Juliste kehyksessä sohvan yläpuolella" loading="lazy" decoding="async">
+<figure class="seinakehys">{kuva("nimi-jae", "", 1000, 1333)}</figure></div>
+<a class="nappi iso" href="/tee/nimijuliste/" style="background:var(--accent);color:#fff">Suunnittele oma lahja</a></div></section>"""
     paa = f'<link rel="preload" as="image" href="{unsplash(HERO_ID, 1280)}" imagesrcset="{srcset(HERO_ID)}" imagesizes="100vw" fetchpriority="high"><style>{ETUSIVU_CSS}</style>'
     return sivu("Omalahja – personoidut julisteet ja taulut suomeksi", "Personoidut nimijulisteet ja karttajulisteet suomeksi. Valitse fontti, värit ja kuviot – painetaan tilauksesta ja toimitetaan kotiin.", runko, "/",
                 lisapaa=paa, ylapalkki=tiedote, header_luokka="paalla")
