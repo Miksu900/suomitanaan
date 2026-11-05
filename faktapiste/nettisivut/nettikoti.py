@@ -321,6 +321,8 @@ def rakenna_nettikoti(root):
     (root / "netvo" / "tietosuoja" / "index.html").write_text(tietosuojasivu(), encoding="utf-8")
     from .oppaat import rakenna as rakenna_oppaat
     rakenna_oppaat(root, _sivu)
+    from .kotivara import rakenna as rakenna_kotivara
+    rakenna_kotivara(root, _sivu)
     (root / "netvo" / "llms.txt").write_text(llms_txt(), encoding="utf-8")
     (root / "netvo" / "robots.txt").write_text("User-agent: *\nAllow: /\nDisallow: /mallit/\n\nSitemap: https://netvo.fi/sitemap.xml\n", encoding="utf-8")
     import datetime as _dt
