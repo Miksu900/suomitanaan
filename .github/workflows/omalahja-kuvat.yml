@@ -4,7 +4,7 @@ name: Omalahja kuvat
 on:
   workflow_dispatch:
     inputs:
-      tila: { description: "haku | esimerkit | kaappaus", required: true, default: "haku" }
+      tila: { description: "haku | esimerkit | kaappaus | siivoa", required: true, default: "haku" }
       haut: { description: "Hakusanat |-merkillä eroteltuina (haku)", required: false, default: "" }
       tarkka: { description: "Photo-id:t pilkuilla isoina esikatseluina (haku)", required: false, default: "" }
       ids: { description: "Photo-id:t pilkuilla kontaktiarkeiksi (haku)", required: false, default: "" }
@@ -44,8 +44,11 @@ jobs:
               console.log("::notice title=Vaakavieritys " + w + "::" + await p.evaluate(() => document.documentElement.scrollWidth));
               await p.close(); }
             await b.close(); })();'
+      - name: Poista väliaikainen haara
+        if: inputs.tila == 'siivoa'
+        run: git push "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" --delete omalahja-tmp
       - name: Tallenna haaraan
-        if: always()
+        if: always() && inputs.tila != 'siivoa'
         run: |
           cd out && git init -q -b omalahja-tmp && git add -A && git -c user.name=bot -c user.email=bot@x commit -qm "${{ inputs.tila }}"
           git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" omalahja-tmp
