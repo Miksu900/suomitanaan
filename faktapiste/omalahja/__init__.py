@@ -139,7 +139,7 @@ details.osio[open]>summary::after{transform:rotate(-135deg) translateY(-2px)}
 .taulu.puu canvas{box-shadow:4px 4px 0 #b08d62,0 22px 36px -14px rgba(40,25,15,.45);filter:sepia(.08)}
 .taulu.akryyli::after{content:"";position:absolute;inset:0;background:linear-gradient(125deg,rgba(255,255,255,.35) 0%,rgba(255,255,255,0) 35%,rgba(255,255,255,0) 70%,rgba(255,255,255,.18) 100%);pointer-events:none}
 .taulu.akryyli canvas{box-shadow:3px 3px 0 rgba(255,255,255,.6),4px 4px 0 rgba(0,0,0,.08),0 22px 36px -14px rgba(40,25,15,.45)}
-.taulu.muki{margin-right:22%}.taulu.muki canvas{border-radius:4px 4px 14px 14px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06),0 22px 30px -14px rgba(40,25,15,.45)}
+.taulu.muki{margin-right:22%;background:transparent}.taulu.muki canvas{border-radius:4px 4px 14px 14px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06),0 22px 30px -14px rgba(40,25,15,.45)}
 .taulu.muki::before{content:"";position:absolute;inset:0;border-radius:4px 4px 14px 14px;background:linear-gradient(90deg,rgba(0,0,0,.12),rgba(255,255,255,0) 18%,rgba(255,255,255,.22) 30%,rgba(255,255,255,0) 45%,rgba(0,0,0,0) 80%,rgba(0,0,0,.16));pointer-events:none}
 .taulu.muki::after{content:"";position:absolute;left:100%;top:18%;width:24%;height:52%;border:9px solid var(--kehys,#fff);border-left:0;border-radius:0 40% 40% 0;box-shadow:3px 4px 6px -3px rgba(0,0,0,.35)}
 .taulu.kortit canvas{box-shadow:6px -4px 0 -2px #efe9df,0 22px 30px -14px rgba(40,25,15,.4)}
@@ -200,7 +200,7 @@ body.kassa-auki{overflow:hidden}
  .lava{height:calc(100vh - 0px);top:0;border-bottom:0;border-right:1px solid var(--hius)}
  body.iso-esikatselu .lava{height:100vh}
  .sarake{padding:44px 48px 150px;max-width:620px}
- .pohjat-osio{margin:0 -48px 8px;padding:0 48px}.pohjat{margin:0 -48px;padding:12px 48px 18px}
+ .pohjat-osio{margin:0 0 8px;padding:0}.pohjat{margin:0;padding:12px 2px 18px}
  .alapalkki{left:auto;width:max(400px,35vw);border-left:1px solid var(--hius)}
  .tee{grid-template-columns:minmax(0,1fr) max(400px,35vw)}
  .sarake{max-width:none}
@@ -586,7 +586,7 @@ def yhteystiedot():
 def toimitusehdot():
     runko = f"""<div class="w teksti"><h1>Toimitus- ja maksuehdot</h1><p class="mute">Voimassa {PV} alkaen.</p>
 <h2>Myyjä</h2><p>{YRITYS} (Y-tunnus {YTUNNUS}), {OSOITE}. Sähköposti {EMAIL}, puhelin {PUH}. Verkkokaupan nimi on Omalahja.</p>
-<h2>Tuotteet ja hinnat</h2><p>Myymme personoituja painotuotteita: julisteita, canvastauluja ja kehystettyjä julisteita (esimerkiksi nimijulisteet ja karttajulisteet). Tuotteet valmistetaan asiakkaan verkkokaupassa tekemän suunnitelman mukaan. Hinnat ovat euroja ja sisältävät arvonlisäveron 25,5 % sekä toimituksen Suomeen.</p>
+<h2>Tuotteet ja hinnat</h2><p>Myymme personoituja painotuotteita: julisteita, canvastauluja, kehystettyjä julisteita, julisteita ripustimella, puu- ja akryylitauluja, mukeja, taitettuja kortteja kirjekuorineen sekä seinäkalentereita (esimerkiksi nimijulisteet ja karttajulisteet). Tuotteet valmistetaan asiakkaan verkkokaupassa tekemän suunnitelman mukaan. Hinnat ovat euroja ja sisältävät arvonlisäveron 25,5 % sekä toimituksen Suomeen.</p>
 {hintataulukko()}
 <p>Tuotteiden värit voivat poiketa hieman näytöllä näkyvistä väreistä näyttöjen eroista johtuen. Karttajulisteiden karttatiedot ovat OpenStreetMapin avointa dataa (© OpenStreetMap contributors), ja ne voivat sisältää puutteita.</p>
 <h2>Tilaus</h2><p>Tilaus syntyy, kun maksu on hyväksytty. Saat tilausvahvistuksen sähköpostiisi. Tarkista personointitiedot (nimet, päivämäärät, tekstit ja kartan rajaus) huolellisesti esikatselusta ennen tilaamista, sillä tuote valmistetaan juuri niiden mukaan.</p>

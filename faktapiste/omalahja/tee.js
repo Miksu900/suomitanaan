@@ -631,6 +631,7 @@
   function paivitaHinta() {
     $("#hinta").textContent = euro(hinta()); $("#tuotenimi").textContent = tuoteNimi();
     const t = $("#toimitus"); if (t) t.textContent = "Perillä arviolta " + toimitusArvio();
+    const h1 = document.querySelector(".otsake h1"); if (h1) h1.textContent = { muki: "Oma muki", kortit: "Omat kortit", kalenteri: "Oma kalenteri 2027" }[S.tuote] || (MALLI === "kartta" ? "Karttajuliste" : "Nimijuliste");
   }
   function kuvaus() {
     if (MALLI === "kartta") return `Karttajuliste: ${S.otsikko} (${S.lat.toFixed(4)}, ${S.lon.toFixed(4)}), ${(S.sade * 2).toFixed(1)} km, teema ${KA.TEEMAT[S.teema].nimi}, muoto ${KARTTAMUODOT[S.muoto]}`;
