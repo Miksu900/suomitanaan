@@ -3,7 +3,7 @@ name: Omalahja Gelato
 on:
   workflow_dispatch:
     inputs:
-      tila: { description: "tutki | luonnos", required: false, default: "tutki" }
+      tila: { description: "tutki | luonnos | tarkista", required: false, default: "tutki" }
       uids: { description: "Lisä-UIDt hinnoiteltavaksi (pilkuilla)", required: false, default: "" }
 jobs:
   aja:
@@ -33,3 +33,15 @@ jobs:
           TIEDOSTO="$F" python3 kauppa/omalahja_gelato.py luonnos
           HALLINTA=$(printf '%s' "$CLOUDFLARE_API_TOKEN-faktapiste" | sha256sum | cut -c1-40)
           echo "::notice title=Worker-luonnostesti::$(curl -sS -X POST -H "x-avain: $HALLINTA" -H 'content-type: application/json' -d "{\"tiedosto\":\"$F\"}" https://omalahja.fi/api/hallinta/luonnostesti | head -c 1500)"
+      - name: Sivujen ja rajapinnan tarkistus
+        if: inputs.tila == 'tarkista'
+        run: |
+          for u in / /tee/nimijuliste/ /tee/kartta/ /toimitusehdot/ /tietosuoja/ /yhteystiedot/ /kiitos/ /tee.js /kuviot.js /kartta.js /sitemap.xml; do
+            echo "::notice title=omalahja.fi$u::$(curl -sS -o /tmp/s -w '%{http_code} %{size_download}B' "https://omalahja.fi$u") $(grep -o '<title>[^<]*' /tmp/s | head -1)"
+          done
+          echo "::notice title=Etusivun sisältö::$(curl -sS https://omalahja.fi/ | grep -o 'Suunnittele oma\|Tulossa valikoimaan' | head -2 | tr '\n' ' ')"
+          echo "::notice title=API tila::$(curl -sS https://omalahja.fi/api/tila)"
+          echo "::notice title=Ei-kuva hylätään::$(curl -sS -X POST -H 'content-type: image/jpeg' --data-binary @README.md -w ' %{http_code}' https://omalahja.fi/api/tiedosto 2>/dev/null | head -c 200)"
+          echo "::notice title=Tilaus suljettu::$(curl -sS -X POST -H 'content-type: application/json' -d '{}' -w ' %{http_code}' https://omalahja.fi/api/tilaus)"
+          echo "::notice title=Hallinta ilman avainta::$(curl -sS -X POST -w ' %{http_code}' 'https://omalahja.fi/api/hallinta/gelato?nro=OLX')"
+          echo "::notice title=Netvo-kauppa ennallaan::$(curl -sS https://netvo.fi/api/kauppa/maksutavat | jq -c '[.tavat[]?.nimi] | length')"
