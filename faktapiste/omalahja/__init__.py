@@ -294,7 +294,7 @@ ETUSIVU_CSS = """
 .hinta-huom{color:var(--mute);font-size:.95rem;margin:18px 0 0}
 /* Lahjaideat */
 .ideat .rulla{padding-top:36px}
-.idea{flex:0 0 min(42vw,200px);scroll-snap-align:start;text-decoration:none;color:inherit}
+.idea{flex:0 0 min(38vw,200px);scroll-snap-align:start;text-decoration:none;color:inherit}
 .idea .alusta{background:var(--seina);aspect-ratio:1;display:flex;align-items:center;justify-content:center}
 .idea .alusta span{width:46%;background:#fff;padding:3%;box-shadow:0 1px 1px rgba(0,0,0,.08),0 10px 16px -8px rgba(40,25,15,.45);transition:transform .5s cubic-bezier(.2,.7,.2,1)}
 .idea:hover .alusta span{transform:translateY(-3px)}
@@ -360,10 +360,10 @@ def etusivu():
 
 <section class="paneelit" aria-label="Suunnittelijat">
 <a class="paneeli" href="/tee/nimijuliste/"><img class="tausta" src="{unsplash(SEINA_ID, 1280)}" srcset="{srcset(SEINA_ID, (640, 960, 1280, 1920))}" sizes="(min-width:860px) 50vw, 100vw" alt="" loading="lazy" decoding="async" style="object-position:50% 50%">
-<figure class="puu" style="left:50%;top:7%;width:22%;background:linear-gradient(135deg,#d8b78e,#b78b5c 55%,#c9a174)">{kuva("nimi-haat", "Hääjuliste seinällä", 1000, 1333)}</figure>
+<figure class="puu" style="left:50%;top:5%;width:27%;background:linear-gradient(135deg,#d8b78e,#b78b5c 55%,#c9a174)">{kuva("nimi-haat", "Hääjuliste seinällä", 1000, 1333)}</figure>
 <div class="teksti-osa"><h3>Nimijuliste</h3><p>Perheen, lapsen tai hääparin nimet. Yhdeksän asettelua, kymmenen fonttiparia ja yli 20 koristekuviota – myös Raamatunlause.</p><span class="nappi vaalea">Suunnittele nimijuliste</span></div></a>
 <a class="paneeli" href="/tee/kartta/"><img class="tausta" src="{unsplash(KARTTA_SEINA_ID, 1280)}" srcset="{srcset(KARTTA_SEINA_ID, (640, 960, 1280, 1920))}" sizes="(min-width:860px) 50vw, 100vw" alt="" loading="lazy" decoding="async" style="object-position:42.5% 50%">
-<figure style="left:42.5%;top:12%;width:27%;background:#1d1a18">{kuva("kartta-ylivieska", "Karttajuliste seinällä", 1000, 1400)}</figure>
+<figure style="left:42.5%;top:9%;width:31%;background:#1d1a18">{kuva("kartta-ylivieska", "Karttajuliste seinällä", 1000, 1400)}</figure>
 <div class="teksti-osa"><h3>Karttajuliste</h3><p>Kotikaupunki, mökkiranta tai rakas paikka maailmalla. Sydän- ja ympyräkartat sekä valmiit Raamatun paikat.</p><span class="nappi vaalea">Suunnittele karttajuliste</span></div></a>
 </section>
 
@@ -373,7 +373,7 @@ def etusivu():
 
 <section class="osio ideat seinaosa" aria-labelledby="ideat-otsikko"><div class="w"><h2 id="ideat-otsikko" class="ilmesty">Jokaiseen juhlaan ja muistoon</h2></div>
 <div class="rulla">{ideat}</div>
-<div class="w"><ul class="luottorivi" style="margin-top:72px">
+<div class="w"><ul class="luottorivi" style="margin-top:56px">
 <li>{LUOTTO_IKONIT["paino"]}<span><b>Painettu tilauksesta EU:ssa.</b> Ei varastoa eikä hukkaa.</span></li>
 <li>{LUOTTO_IKONIT["laatu"]}<span><b>Laadukkaat materiaalit.</b> 200 g/m² paperi, canvas ja pleksilasi.</span></li>
 <li>{LUOTTO_IKONIT["maksu"]}<span><b>Turvallinen maksu.</b> Visma Pay: pankki, mobiili tai kortti.</span></li>
