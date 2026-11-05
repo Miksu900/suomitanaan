@@ -105,6 +105,7 @@
     if (MALLI === "kartta") { if (!isFinite(o.lat) || Math.abs(o.lat) > 85 || !isFinite(o.lon) || Math.abs(o.lon) > 180) { o.lat = OLETUS.lat; o.lon = OLETUS.lon; } o.sade = Math.min(16, Math.max(0.4, +o.sade || OLETUS.sade)); }
     return o;
   }
+  try { const tq = new URLSearchParams(location.search).get("tuote"); const tt = tq && C.tuotteet[tq]; if (tt) { S.tuote = tq; if (!tt.koot[S.koko]) S.koko = Object.keys(tt.koot)[0]; if (tt.varit) S.vari = Object.keys(tt.varit)[0]; } } catch {}
   S = puhdista(S);
   const tallenna = () => { try { localStorage.setItem(AVAIN, JSON.stringify(S)); } catch {} };
 

@@ -447,7 +447,7 @@ def etusivu():
 <section class="paneelit" aria-label="Suunnittelijat">
 <a class="paneeli" href="/tee/nimijuliste/"><img class="tausta" src="{unsplash(SEINA_ID, 1280)}" srcset="{srcset(SEINA_ID, (640, 960, 1280, 1920))}" sizes="(min-width:860px) 50vw, 100vw" alt="" loading="lazy" decoding="async" style="object-position:50% 50%">
 <figure class="puu" style="left:50%;top:5%;width:27%;background:linear-gradient(135deg,#d8b78e,#b78b5c 55%,#c9a174)">{kuva("nimi-haat", "Hääjuliste seinällä", 1000, 1333)}</figure>
-<div class="teksti-osa"><h3>Nimijuliste</h3><p>Perheen, lapsen tai hääparin nimet. Yhdeksän asettelua, kymmenen fonttiparia ja yli 20 koristekuviota – myös Raamatunlause.</p><span class="nappi vaalea">Suunnittele nimijuliste</span></div></a>
+<div class="teksti-osa"><h3>Nimijuliste</h3><p>Nimet, päivämäärä ja kaunis kuvio julisteeseen, mukiin, kortteihin tai kalenteriin – myös Raamatunlause.</p><span class="nappi vaalea">Suunnittele nimijuliste</span></div></a>
 <a class="paneeli" href="/tee/kartta/"><img class="tausta" src="{unsplash(KARTTA_SEINA_ID, 1280)}" srcset="{srcset(KARTTA_SEINA_ID, (640, 960, 1280, 1920))}" sizes="(min-width:860px) 50vw, 100vw" alt="" loading="lazy" decoding="async" style="object-position:42.5% 50%">
 <figure style="left:42.5%;top:9%;width:31%;background:#1d1a18">{kuva("kartta-ylivieska", "Karttajuliste seinällä", 1000, 1400)}</figure>
 <div class="teksti-osa"><h3>Karttajuliste</h3><p>Kotikaupunki, mökkiranta tai rakas paikka maailmalla. Sydän- ja ympyräkartat sekä valmiit Raamatun paikat.</p><span class="nappi vaalea">Suunnittele karttajuliste</span></div></a>
@@ -534,7 +534,15 @@ VALITSIN_CSS = """
 .polku h2{font-family:Fraunces,Georgia,serif;font-weight:400;font-size:2rem;margin:20px 0 4px;letter-spacing:-.015em}
 .polku p{margin:0 0 12px;color:var(--mute)}
 .polku .hinta-alk{font-weight:700}
-.suositut{margin-top:56px}.suositut h3{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:1.3rem;margin:0 0 14px}
+.lahjarivi{margin-top:56px}.lahjarivi h3{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:1.3rem;margin:0 0 14px}
+.lahjarivi>div{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.lahjarivi a{display:flex;gap:14px;align-items:center;padding:14px;border-radius:16px;background:var(--seina);text-decoration:none;color:var(--ink);min-height:72px}
+.lahjarivi a:hover{box-shadow:0 0 0 1.5px var(--ink)}.lahjarivi span{display:flex;flex-direction:column;line-height:1.25}.lahjarivi small{color:var(--mute);font-weight:600}
+.tuote-mini{width:30px;height:38px;flex:none;background:#fff;box-shadow:0 4px 8px -4px rgba(0,0,0,.4);position:relative}
+.tuote-mini.muki{height:28px;border-radius:2px 2px 7px 7px}.tuote-mini.muki::after{content:"";position:absolute;right:-9px;top:6px;width:8px;height:12px;border:3px solid #fff;border-left:0;border-radius:0 8px 8px 0}
+.tuote-mini.kortit{width:26px;height:36px;box-shadow:4px -3px 0 -1px #f1ece4,0 4px 8px -4px rgba(0,0,0,.4)}.tuote-mini.kalenteri{border-top:5px dotted #555}
+.tuote-mini.ripustin{border-top:4px solid #b98d5e;border-bottom:4px solid #b98d5e}.tuote-mini.puu{background:linear-gradient(135deg,#e7d2b0,#cfae80)}.tuote-mini.akryyli{background:linear-gradient(135deg,#fff 40%,#e6eef3 60%,#fff 70%)}
+.suositut{margin-top:40px}.suositut h3{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:1.3rem;margin:0 0 14px}
 .suositut div{display:flex;flex-wrap:wrap;gap:10px}
 .suositut a{display:inline-flex;align-items:center;gap:10px;padding:6px 16px 6px 6px;border-radius:99px;border:1px solid var(--hius);text-decoration:none;color:var(--ink);font-weight:600;min-height:48px}
 .suositut a:hover{border-color:var(--ink)}.suositut img{width:28px;height:36px;object-fit:cover;box-shadow:0 2px 5px rgba(0,0,0,.25)}
@@ -549,6 +557,7 @@ def valitsin():
     runko = f"""<section class="valitsin"><div class="w"><h1>Mitä haluat tehdä?</h1><p class="johd">Valitse aihe. Saat valmiin, kauniin pohjan, johon riittää vaihtaa nimet tai paikka.</p>
 <div class="polut">{pol("/tee/nimijuliste/", "nimi-perhe", "nimi-vauva", "Nimijuliste", "Perheen, lapsen tai hääparin nimet, päivämäärä ja halutessasi Raamatunlause.")}
 {pol("/tee/kartta/", "kartta-helsinki", "kartta-betlehem", "Karttajuliste", "Kotikaupunki, mökkiranta tai rakas paikka maailmalla – myös Raamatun paikat.")}</div>
+<div class="lahjarivi"><h3>Lahjaksi myös</h3><div>{"".join(f'<a href="{l}"><i class="tuote-mini {k}"></i><span><b>{esc(n)}</b><small>alk. {euro(min(x["hinta"] for x in CONFIG["tuotteet"][k]["koot"].values()))}</small></span></a>' for k, n, l in [("muki", "Muki", "/tee/nimijuliste/?esim=perhe&tuote=muki"), ("kortit", "Joulukortit", "/tee/nimijuliste/?esim=joulu&tuote=kortit"), ("kalenteri", "Seinäkalenteri 2027", "/tee/kartta/?esim=helsinki&tuote=kalenteri"), ("ripustin", "Juliste ripustimella", "/tee/nimijuliste/?esim=jae&tuote=ripustin"), ("puu", "Puutaulu", "/tee/kartta/?esim=betlehem&tuote=puu"), ("akryyli", "Akryylitaulu", "/tee/kartta/?esim=ylivieska&tuote=akryyli")])}</div></div>
 <div class="suositut"><h3>Suosituimmat pohjat</h3><div>{"".join(f'<a href="{l}"><img src="/kuvat/{k}.jpg" alt="">{esc(t)}</a>' for k, t, l in suositut)}</div></div></div></section>"""
     return sivu("Mitä haluat tehdä? – Omalahja", "Valitse nimijuliste tai karttajuliste ja aloita valmiista pohjasta.", runko, "/tee/", lisapaa=f"<style>{VALITSIN_CSS}</style>")
 
