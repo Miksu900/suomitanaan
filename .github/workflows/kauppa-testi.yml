@@ -6,7 +6,8 @@ jobs:
     steps:
       - env: { K: "${{ secrets.VISMAPAY_API_KEY }}", P: "${{ secrets.VISMAPAY_PRIVATE_KEY }}" }
         run: |
-          echo "::notice title=Avaimet::api ${#K} merkkiä, private ${#P} merkkiä"
+          K=$(printf '%s' "$K" | tr -d '[:space:]'); P=$(printf '%s' "$P" | tr -d '[:space:]')
+          echo "::notice title=Avaimet::api ${#K} merkkiä, private ${#P} merkkiä, private-merkit: $(printf '%s' "$P" | sed 's/[A-Za-z0-9]//g' | head -c 10 | od -c | head -1)"
           A=$(printf '%s' "$K" | openssl dgst -sha256 -hmac "$P" -hex | sed 's/.*= //' | tr a-f A-F)
           for V in 2 w3.1; do echo "::notice title=Maksutavat v$V::$(curl -sS -X POST https://www.vismapay.com/pbwapi/merchant_payment_methods -H 'content-type: application/json' -d "{\"version\":\"$V\",\"api_key\":\"$K\",\"currency\":\"EUR\",\"authcode\":\"$A\"}" | jq -c '{result, n:(.payment_methods|length), eka:.payment_methods[0]}' | head -c 400)"; done
           echo "::notice title=Netvo maksutavat::$(curl -sS https://netvo.fi/api/kauppa/maksutavat | head -c 300)"
