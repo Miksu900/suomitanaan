@@ -1,0 +1,9 @@
+name: Gelato-tutkimus
+on: { workflow_dispatch: {} }
+jobs:
+  aja:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - env: { GK: "${{ secrets.GELATO_API_KEY }}" }
+        run: python3 kauppa/gelato_tutki.py
