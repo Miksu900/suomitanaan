@@ -4382,15 +4382,6 @@
 "pienyritys": "iso",
 "selko": "Liikenneturva kilpailuttaa erilaisia mainostoimistopalveluja omiin tarpeisiinsa. Palveluiden tarkka sisältö on kuvattu liitteessä 1. Ilmoituksessa ei ole mainittu työn kestoa tai aikataulua."
 },
-"56156": {
-"ala": "IT ja ohjelmistot",
-"kunta": "Kullaa",
-"maakunta": "Satakunta",
-"otsikko": "Kaivinkonesimulaattori ja ohjelmisto, Kullaa",
-"perustelu": "Kyseessä on laitekokonaisuus, jossa yhdistyvät simulaattorilaitteisto, koneohjausjärjestelmä ja ohjelmisto, mikä vaatii erikoistuneen ja laajan toimittajan.",
-"pienyritys": "iso",
-"selko": "Länsirannikon Koulutus Oy WinNova hankkii liikkuvan kaivinkonesimulaattorin, jossa on ohjausjärjestelmä, VR/XR-lasit, lisenssit ja ohjelmisto. Laite toimitetaan Sahalahdentie Kullaa -osoitteeseen, ja siihen kuuluu asennus, suomenkielinen käyttökoulutus ja vuoden päivitykset. Sopimuksen kesto ja määräaika eivät selviä ilmoituksesta."
-},
 "56168": {
 "ala": "Sosiaali- ja terveyspalvelut",
 "kunta": "Jyväskylä",
@@ -4580,15 +4571,6 @@
 "pienyritys": "iso",
 "selko": "Vantaan kaupunki hankkii pääurakoitsijan Kaivokselan koulun perusparannukseen: sisäpuolinen korjaus, ruokasalin ja keittiön siirto, kaksi uutta hissiä ja pihan muutoksia. Urakoitsija vastaa myös työmaan johdosta ja toimii pääurakoitsijana sivu-urakoiden (putki, ilmanvaihto, sähkö, automaatio) lisäksi. Koulu on suljettuna rakentamisen ajan."
 },
-"57168": {
-"ala": "Konsultointi ja asiantuntijat",
-"kunta": "",
-"maakunta": "Uusimaa",
-"otsikko": "Maantie 152 tiesuunnitelman laatija, Hämeenlinnanväylä–Tuusulanväylä (Uusimaa)",
-"perustelu": "Tiesuunnittelu on asiantuntijapalvelu, johon voi tarjota pieni suunnittelutoimisto tai osakumppanuus, mutta laajuus ja vaadittava pätevyys voivat rajata tarjoajat suuriin suunnittelutoimistoihin.",
-"pienyritys": "ehka",
-"selko": "Uudenmaan elinvoimakeskus hankkii tiesuunnittelijan laatimaan tiesuunnitelman noin 13 km pituiselle uudelle poikittaiselle tieyhteydelle Hämeenlinnanväylän (vt 3) ja Tuusulanväylän (kt 45) välille. Tiesuunnitelma on osa Kehä 4:n hanketta. Kestoa tai arvioitua arvoa ei ilmoitettu."
-},
 "57195": {
 "ala": "Rakentaminen ja korjaus",
 "kunta": "Helsinki",
@@ -4633,15 +4615,6 @@
 "perustelu": "Osakohteet ja tarjous useammalle osakohteelle voivat sopia pienille palveluntuottajille, mutta arvo on 76 miljoonaa euroa ja vaatimukset (mitoitus, erityisosaaminen) voivat rajata pieniä toimijoita pois.",
 "pienyritys": "ehka",
 "selko": "Vantaan ja Keravan kaupungit hankkivat yksityisiltä palveluntuottajilta vammaisten asumispalveluja Uudenmaan alueella ja sen rajakunnissa. Palveluja hankitaan tarpeen mukaan ilman kiinteitä asiakasmääriä, ja hankinta on jaettu 28 osakohteeseen, joihin voi tarjota yhteen tai useampaan. Hankinta on dynaaminen tarjousmenettely."
-},
-"57549": {
-"ala": "Kiinteistöhuolto ja siivous",
-"kunta": "Kemi",
-"maakunta": "Lappi",
-"otsikko": "Siivouspalvelujen yhteishankinta 2027–2029 Kemi ja Tornio",
-"perustelu": "Kohteita on useita eri paikoissa ja työ on jaettavissa osiin, mutta laaja yhteishankinta ja monen rakennuksen kokonaisuus voi vaatia suuremman toimijan kapasiteettia.",
-"pienyritys": "ehka",
-"selko": "Kemi-Tornionlaakson koulutuskuntayhtymä Lappia, sen tytäryhtiö Lappiahalli Oy ja Lapin ammattikorkeakoulu Oy hankkivat yhteisesti siivouspalveluja. Palvelu sisältää ylläpito- ja perussiivouksen sekä erikseen tilattavia lisäpalveluja useissa kohteissa Kemissä, Torniossa ja Louella. Ylläpitosiivoukset tehdään pääosin arkisin klo 6–18."
 },
 "5755": {
 "ala": "Ajoneuvot ja koneet",
@@ -4886,15 +4859,6 @@
 "pienyritys": "iso",
 "selko": "Kokkolan Energia Oy hankkii uuden talouden ja toiminnanohjauksen järjestelmäkokonaisuuden, mukaan lukien ohjelmistot, käyttöönoton, koulutuksen ja jatkuvan tuen. Ensisijaisesti haetaan pilvipalvelua (SaaS), jonka tiedot säilytetään EU- tai ETA-alueella. Arvioitu arvo on noin 1,5 miljoonaa euroa, ja hankinta on pääosin kokonaistoimitus."
 },
-"58282": {
-"ala": "Kalusteet ja tarvikkeet",
-"kunta": "",
-"maakunta": "",
-"otsikko": "Sähkötarvikkeiden puitejärjestely 2026–2030, Senaatti-kiinteistöt",
-"perustelu": "Arvo on suuri (noin 6 miljoonaa euroa) ja puitejärjestely on valtakunnallinen, mutta sähkötarvikkeiden toimittajana pienyritys voi tarjota joitakin tuoteryhmiä, jos se täyttää turvallisuus- ja valmiusvaatimukset.",
-"pienyritys": "ehka",
-"selko": "Senaatti-kiinteistöt hankkii sähkötarvikkeita kiinteistöjen ylläpitoon, korjauksiin ja investointeihin sopimuskaudella 7.12.2026–28.2.2030. Tuotteita ovat esimerkiksi valaisimet, kaapelit, kytkimet, pistorasiat, keskukset ja suojalaitteet. Hankinnassa perustetaan puitejärjestely, johon kaikki vaatimukset täyttävät tarjoajat hyväksytään, ja vuonna 2027 järjestetään lisäksi erillinen kevennetty kilpailutus valmiussopimuksesta."
-},
 "58290": {
 "ala": "Konsultointi ja asiantuntijat",
 "kunta": "Riihimäki",
@@ -5021,24 +4985,6 @@
 "pienyritys": "iso",
 "selko": "Rajavartiolaitos hakee urakoitsijaa polttonesteiden jakeluaseman rakentamiseen Karttimoon. Työ sisältää vanhojen rakenteiden purkamisen, uuden suoja-alustan viemäröintineen ja ympäristösuojauksineen, maanrakennustyöt sekä säiliöiden, laitteiden ja sähkötöiden asennuksen. Vaitiolositoumus on lähetettävä 2.11.2026 klo 15:00 mennessä, jotta pääsee tarjouspyynnön turvaluokiteltuihin liitteisiin."
 },
-"58460": {
-"ala": "Rakentaminen ja korjaus",
-"kunta": "",
-"maakunta": "Keski-Suomi",
-"otsikko": "Sairaala Novan UPS-järjestelmän elinkaarihuolto ja päivystyshuolto, Jyväskylä",
-"perustelu": "Kokonaisuus koskee sairaalan kriittistä UPS-järjestelmää, ei jaeta osiin, ja valitaan vain yksi toimittaja, mikä vaatii todennäköisesti suuren huoltotoimijan.",
-"pienyritys": "iso",
-"selko": "Keski-Suomen hyvinvointialue etsii yhtä toimittajaa huoltamaan Sairaala Novan UPS-varavirtajärjestelmää. Elinkaarihuolto alkaa 14.12.2026 ja on tehtävä loppuun mennessä 30.4.2027. Lisäksi on mahdollinen optio päivystyshuollosta, joka alkaisi 1.1.2027 ja olisi ensin vuoden määräaikainen, sitten toistaiseksi voimassa."
-},
-"58471": {
-"ala": "Konsultointi ja asiantuntijat",
-"kunta": "Helsinki",
-"maakunta": "Uusimaa",
-"otsikko": "Helsingin ulkovalaistuksen, liikennevalojen ja valokuituverkon suunnittelupalvelut (puitesopimus)",
-"perustelu": "Osa-alueet ovat erikoistuneita ja arvo on suuri (7,3 M€ koko kaudelle), mutta yksittäisen osa-alueen tai minikilpailutusten kautta pienempi asiantuntijayritys voisi kilpailla.",
-"pienyritys": "ehka",
-"selko": "Helsingin kaupunki hankkii suunnittelu- ja asiantuntijapalveluja ulkovalaistukseen, liikennevaloihin, sähkötekniikkaan ja valokuituverkkoon. Hankinta on jaettu viiteen osa-alueeseen, ja tarjouksen voi jättää yhdestä tai useammasta. Sopimuskausi on 1.1.2027–31.12.2028, ja tilaajalla on optio jatkaa vuosilla 2029–2030."
-},
 "58488": {
 "ala": "Rakentaminen ja korjaus",
 "kunta": "Espoo",
@@ -5047,15 +4993,6 @@
 "perustelu": "Kyseessä on 45 asunnon kokonaisurakka KVR-periaatteella, mikä vaatii yleensä suuren rakennusliikkeen kykyjä, vaikka osa-alueita voisi mahdollisesti tarjota alihankkijana.",
 "pienyritys": "iso",
 "selko": "Espoon Asunnot Oy hakee toimittajaa rakentamaan Vermonpolku 3:een vuokratalokohteen KVR-urakkana (suunnittelu ja rakentaminen). Kohteeseen tulee yksi kolmikerroksinen kerrostalo, kolme kaksikerroksista rivitaloa sekä talousrakennukset ja pihat, yhteensä 45 asuntoa ja 24 autopaikkaa. Arvioitua arvoa tai aikataulua ei ilmoitettu."
-},
-"58492": {
-"ala": "Ajoneuvot ja koneet",
-"kunta": "",
-"maakunta": "Uusimaa",
-"otsikko": "Nostolava-autojen ja puomitikasautojen tarkastuksen hankinta, Länsi-Uusimaa",
-"perustelu": "Tarjota voi erikseen tarkastusosaan, mutta nostolava-autot ovat isoja ajoneuvohankintoja, joihin yleensä tarvitaan suuren valmistajan tai maahantuojan kykyä.",
-"pienyritys": "ehka",
-"selko": "Länsi-Uudenmaan hyvinvointialue hankkii Länsi-Uudenmaan pelastuslaitokselle kaksi uutta nostolava-autoa: yhden vuonna 2027 ja toisen vuonna 2028, sekä mahdollisuuden kolmanteen. Lisäksi kahdelle olemassa olevalle puomitikasautolle tehdään perusteellinen määräaikaistarkastus. Sopimus on toistaiseksi voimassa ja hankinta on jaettu kahteen osaan, joihin tarjota voi joko yhdessä tai molemmissa."
 },
 "58502": {
 "ala": "Rakentaminen ja korjaus",
@@ -5120,14 +5057,14 @@
 "pienyritys": "ehka",
 "selko": "Kaustisen kunta hankkii rakennusmateriaaleja ja -tarvikkeita kunnan rakennustöihin vuodelle 2027. Hankinta tehdään yhden toimittajan kanssa 12 kuukauden puitesopimuksena, ja toimittajalla pitää olla noutopiste enintään 50 km päässä Kaustisen keskustasta. Yleisimmät tarvikkeet pitää pystyä noutamaan saman työpäivän aikana, ja suuremmat erät toimitetaan työkohteisiin."
 },
-"58550": {
-"ala": "Sosiaali- ja terveyspalvelut",
-"kunta": "",
-"maakunta": "",
-"otsikko": "Intraoraaliskannerit suun terveydenhuoltoon, Ylioppilaiden terveydenhoitosäätiö",
-"perustelu": "Yksi kokonaishankinta ilman osatarjouksia vaatii laitetoimittajalta suurta kykyä ja toimitusvolyymiä, joten se on tyypillisesti suuremmille toimijoille sopiva.",
-"pienyritys": "iso",
-"selko": "Ylioppilaiden terveydenhoitosäätiö hankkii intraoraaliskannereita suun terveydenhuoltoonsa hampaiston digitaaliseen jäljentämiseen ja purennan kuvaamiseen. Hankinta on kokonaishankinta, johon valitaan yksi toimittaja, eikä osatarjouksia tai vaihtoehtoisia tarjouksia sallita. Sopimus alkaa tavoitteellisesti 1.12.2026 ja on voimassa 31.12.2028 saakka, optiona kaksi vuoden jatkoa vuosille 2029 ja 2030."
+"58556": {
+"ala": "Rakentaminen ja korjaus",
+"kunta": "Kaustinen",
+"maakunta": "Keski-Pohjanmaa",
+"otsikko": "Kaustisen kunta: rakennusammattimiestyöt 2027 (puitesopimus)",
+"perustelu": "Paikalliset pienet rakennusurakoitsijat voivat tarjota tuntiveloitteisia korjaustöitä, ja puitejärjestelyyn valitaan enintään kolme toimittajaa.",
+"pienyritys": "sopii",
+"selko": "Kaustisen kunta hankkii vuodelle 2027 korjaus-, kunnossapito- ja rakennustöitä kiinteistöihinsä tuntiveloitteisina töinä. Enintään kolme urakoitsijaa valitaan puitejärjestelyyn halvimman tuntihinnan mukaan, ja työt tilataan satunnaisesti tarpeen mukaan. Sopimus on voimassa 1.1.–31.12.2027."
 },
 "58572": {
 "ala": "Kiinteistöhuolto ja siivous",
@@ -5201,15 +5138,6 @@
 "pienyritys": "ehka",
 "selko": "Fimlab Laboratoriot Oy kilpailuttaa laboratorion näytteenottoputkia, näytteen erottelussa käytettäviä putkia, virtsanäyteastian ja virtsansiirtoadapterin useille hyvinvointialueille. Hankinta on jaettu 20 osa-alueeseen, ja jokaiseen valitaan yksi toimittaja. Sopimuskesto on 24 kuukautta, ja sopimus alkaa 1.1.2027 ja voi jatkua toistaiseksi."
 },
-"58674": {
-"ala": "Muut",
-"kunta": "Joensuu",
-"maakunta": "Pohjois-Karjala",
-"otsikko": "Vakuutusturvan hankinta – Joensuun Ellin Kodit Oy",
-"perustelu": "Koko yrityksen vakuutusturvan hankinta on laaja kokonaisuus, joka todennäköisesti vaatii vakuutusyhtiön tai suuren vakuutusvälittäjän kaltaisen toimijan.",
-"pienyritys": "iso",
-"selko": "Joensuun Ellin Kodit Oy kilpailuttaa vakuutusturvan ja siihen liittyvät palvelut. Ensimmäinen vakuutuskausi on 1.1.2027–31.12.2027, työtapaturma- ja ammattitautivakuutukset alkavat 1.4.2027. Sen jälkeen vakuutukset ovat voimassa vuoden kerrallaan."
-},
 "58676": {
 "ala": "Muut",
 "kunta": "",
@@ -5236,24 +5164,6 @@
 "perustelu": "Kaikkien tuotteiden tarjoaminen kerralla ja noin 800 000 euron arvo vaativat todennäköisesti suuremman toimijan, vaikka puitejärjestely kahdelle toimittajalle antaa pienemmällekin mahdollisuuden.",
 "pienyritys": "ehka",
 "selko": "Tampereen Infra Oy pyytää tarjouksia sähkötarvikkeista omaan käyttöönsä. Tarjoajan täytyy tarjota kaikki tarjouslomakkeella (liite 3) pyydetyt tuotteet, osatarjouksia ei hyväksytä. Hankinnan arvioitu arvo on noin 800 000 euroa ilman arvonlisäveroa, ja se tehdään puitejärjestelynä enintään kahdelle toimittajalle, ilman takuuta tilausmääristä."
-},
-"58691": {
-"ala": "Kalusteet ja tarvikkeet",
-"kunta": "",
-"maakunta": "",
-"otsikko": "Finavia: näyttömonitorien puitejärjestely lentoasemille 2026",
-"perustelu": "Suuri määrä monitoreja, avoin menettely, sähköinen huutokauppa ja kansallinen toimittajavaatimus viittaavat suurille toimijoille, joten pienelle yritykselle tämä on vaikea.",
-"pienyritys": "iso",
-"selko": "Finavia kilpailuttaa kaksi toimittajaa toimittamaan näyttömonitoreja lentoasemilleen. Määrä on arviolta 1000–2000 kappaletta, mutta tilaukset tehdään tarpeen mukaan eikä määriä ole sitovasti luvattu. Sopimus on ensin kaksi vuotta, ja sitä voi jatkaa jopa kuudella optiovuodella."
-},
-"58696": {
-"ala": "Kuljetus ja logistiikka",
-"kunta": "Uusikaupunki",
-"maakunta": "Varsinais-Suomi",
-"otsikko": "Suurkuormajätteen siirtokuormauspalvelut, Uusikaupunki",
-"perustelu": "Palvelu on paikallinen kuljetus- ja kuormaustyö, mutta mittakaava ja vaatimukset (esim. kalusto ja alueen laajuus) voivat rajata pienen yrityksen mukaan, joten sopivuus riippuu tarjouspyynnön tarkemmista ehdoista.",
-"pienyritys": "ehka",
-"selko": "Lounais-Suomen Jätehuolto Oy etsii palveluntuottajaa siirtämään Uudessakaupungissa kerättyä sekajätettä ja lajittelemattomia karkeajätteitä siirtokuormaukseen. Kyse on jätteen kuormaamisesta ja siirrosta, ja tarkat ehdot löytyvät tarjouspyynnön sopimusluonnoksesta. Kestoa tai aikataulua ei ilmoituksessa kerrota."
 },
 "58697": {
 "ala": "Kalusteet ja tarvikkeet",
@@ -5299,15 +5209,6 @@
 "perustelu": "Vaatii laajan alueen ja useiden EU- ja kansallisten ohjelmien arviointiosaamista, joten se sopii todennäköisesti suuremmille tutkimus- ja konsultointiyhtiöille.",
 "pienyritys": "iso",
 "selko": "Maa- ja metsätalousministeriö hakee yritystä tekemään arvioinnin siitä, miten maatalous-, kalatalous-, alue- ja kansalliset ohjelmat ovat edistäneet Itä-Suomen elinvoimaisuutta. Arviointi kohdistuu Etelä-Karjalaan, Etelä-Savoon, Kainuuseen, Kymenlaaksoon, Pohjois-Karjalaan ja Pohjois-Savoon. Aikataulua tai kestoa ei ilmoituksessa kerrota."
-},
-"58708": {
-"ala": "IT ja ohjelmistot",
-"kunta": "",
-"maakunta": "Uusimaa",
-"otsikko": "Kokonaisarkkitehtuurin työkalu SaaS-palveluna (Business Finland)",
-"perustelu": "Kyseessä on SaaS-ohjelmistopalvelu, jonka toteuttaminen vaatii erikoistunutta ohjelmistotoimittajaa, eikä työ ole pienelle paikalliselle yritykselle tyypillinen.",
-"pienyritys": "iso",
-"selko": "Business Finland hankkii ohjelmistopalvelun, jolla kuvataan ja hallitaan organisaation kokonaisarkkitehtuuria. Palvelu tuetaan tiedonhallintalain mukaista tiedonhallintamallia. Arvioitu enimmäisarvo on 100 000 € (alv 0 %) ja sopimus on toistaiseksi voimassa."
 },
 "58718": {
 "ala": "Rakentaminen ja korjaus",
@@ -5543,15 +5444,6 @@
 "pienyritys": "iso",
 "selko": "Helsingin kaupunki hakee urakoitsijaa rakentamaan kaksi asuinkerrostaloa ja piha-alueen Hermanninrantaan (Albumikatu 3). Urakkaan kuuluu kokonaissuunnittelu, rakennustyöt sekä kaikki LVIAS- ja pihatyöt, asuntoala noin 11 040 m² ja liiketila noin 55 m². Työt on tarkoitus aloittaa huhtikuussa 2028 ja viimeistään kesäkuussa 2028."
 },
-"58831": {
-"ala": "Sähkö, LVI ja talotekniikka",
-"kunta": "Helsinki",
-"maakunta": "Uusimaa",
-"otsikko": "Rele- ja hybridimoduulijärjestelmä Musiikkitalolle, Helsinki",
-"perustelu": "Kyseessä on sähkötekninen laitetoimitus teatterisaleihin, joka voi olla pienelle sähköalan yritykselle sopiva, mutta vaatii todennäköisesti erikoisosaamista ja kokemusta teatteri- tai konserttisalien valaistustekniikasta.",
-"pienyritys": "ehka",
-"selko": "Taideyliopisto hankkii uuden rele- ja hybridimoduulijärjestelmän Musiikkitalon Organo-, Camerata-, Sonore- ja Black Box -salien himmenninkaappien tilalle. Hankinnan arvioitu arvo on 110 000 euroa. Tarkemmat vaatimukset ja aikataulu löytyvät tarjouspyynnöstä ja sen liitteistä."
-},
 "58832": {
 "ala": "Konsultointi ja asiantuntijat",
 "kunta": "Espoo",
@@ -5587,15 +5479,6 @@
 "perustelu": "Työkonepalvelut voivat sopia paikalliselle yritykselle, mutta vaadittava kalusto ja sopimuksen kesto voivat rajata pienten toimijoiden mahdollisuuksia.",
 "pienyritys": "ehka",
 "selko": "Siilinjärven kunta kilpailuttaa työkonepalveluita. Sopimus on voimassa 1.1.2027–31.12.2028, ja sitä voidaan jatkaa optiovuosina 2029–2030. Talvikunnossapitotöitä ja erikseen kilpailutettavia urakoita tämä ei koske."
-},
-"58854": {
-"ala": "Rakentaminen ja korjaus",
-"kunta": "",
-"maakunta": "Pohjois-Savo",
-"otsikko": "Sisäilmatutkimukset Pohjois-Savon hyvinvointialueen tiloihin 2027–2028",
-"perustelu": "Tutkimukset ovat alueellisia ja tilakohtaisia, mutta puitesopimus ja laaja alue sekä mahdolliset tytäryhtiöiden tilaukset vaativat usein suurempaa toimijaa, joten pienyrityksen kannattaa arvioida oman kapasiteettinsa ja mahdollisen yhteistarjouksen tarve.",
-"pienyritys": "ehka",
-"selko": "Pohjois-Savon hyvinvointialue hakee yritystä tekemään sisäilmatutkimuksia omistamiinsa ja hallinnoimiinsa tiloihin. Sopimus on voimassa 1.1.2027–31.12.2028, ja vuosille 2029 ja 2030 on mahdollisuus jatkaa erikseen sovittavilla optioilla. Ilmoitus on puitesopimus."
 },
 "58855": {
 "ala": "Kuljetus ja logistiikka",
@@ -5714,15 +5597,6 @@
 "pienyritys": "ehka",
 "selko": "Helsingin kaupunki hankkii avaintenhallintapalvelua sen palvelukiinteistöjen mekaanisille ja elektromekaanisille lukoille sekä lukostotietojen hallintaan. Hankinta on puitejärjestely, johon valitaan kaksi toimittajaa, ja sopimus on kaksi vuotta sekä kaksi yhden vuoden optiokautta. Arvioitu enimmäisarvo on 2,0 milj. euroa ilman arvonlisäveroa."
 },
-"58921": {
-"ala": "IT ja ohjelmistot",
-"kunta": "Jyväskylä",
-"maakunta": "Keski-Suomi",
-"otsikko": "Tietoliikenneyhteyksien vuokraus Jyväskylä, CSC Oy",
-"perustelu": "Kuituyhteyksien vuokraus vaatii valokuituverkon ja tietoliikenneinfran, joten tarjoajalla on oltava laajaa verkko-osaamista ja kapasiteettia; arvo 150 000 euroa on myös suuri.",
-"pienyritys": "iso",
-"selko": "CSC - Tieteen tietotekniikan keskus Oy hankkii tietoliikenneyhteyksiä eri toimipisteiden välille Jyväskylässä. Kyseessä on kaksi yhteysväliä, joissa käytetään SM-mustakuitupareja. Tarjouskilpailun määräaika on 7.10.2026."
-},
 "58923": {
 "ala": "Muut",
 "kunta": "",
@@ -5749,15 +5623,6 @@
 "perustelu": "Lakisääteinen kaupungin ja konsernin tilintarkastus vaatii yleensä tilintarkastusyhteisön resurssit ja pätevyyden, joten työ on käytännössä suuremmille toimijoille sopiva.",
 "pienyritys": "iso",
 "selko": "Rovaniemen kaupunki hakee tilintarkastajaa kaupungin ja sen tytäryhteisöjen lakisääteiseen hallinnon ja talouden tarkastukseen. Mukana ovat myös hanketarkastukset ja erityistoimeksiannot. Sopimuskausi kattaa tilikaudet 2027–2029."
-},
-"58927": {
-"ala": "Kiinteistöhuolto ja siivous",
-"kunta": "",
-"maakunta": "",
-"otsikko": "Siviilipalveluskeskuksen pesulapalvelut, noudot ja palautukset",
-"perustelu": "Pesulapalvelu on paikallinen ja säännöllinen, mutta noin 70 000 euron arvo ja kilometrimittainen nouto- ja palautuslogistiikka voivat edellyttää pienyritykseltä suurta kapasiteettia, joten sopivuus riippuu toimijan kapasiteetista ja sijainnista.",
-"pienyritys": "ehka",
-"selko": "Siviilipalveluskeskus ostaa pesulapalvelut liinavaatteille ja muille tekstiileille: noudon, pesun, kuivauksen, mankeloinnin ja palautuksen. Pyykkiä noudetaan perjantaisin klo 12–16 noin 1–2 viikon välein, arviolta 50–300 kg viikossa. Sopimus alkaa 1.1.2027 ja on voimassa toistaiseksi."
 },
 "58934": {
 "ala": "Muut",
@@ -6209,15 +6074,6 @@
 "pienyritys": "iso",
 "selko": "Helsingin kaupungin asunnot Oy (Heka) etsii huoltoyritystä asuintalojen hisseille. Palveluun kuuluvat vuosihuollot ja korjaukset, osa hinnoitellaan yksikköhintojen mukaan ja osa tarjouksen perusteella. Helsingin alueelle on jaettu viisi huoltoaluetta, ja jokaiseen valitaan oma toimittaja. Sopimus on kaksi vuotta, ja siihen on mahdollisuus kahdelle optiovuodelle (1 + 1)."
 },
-"59109": {
-"ala": "Konsultointi ja asiantuntijat",
-"kunta": "Laitila",
-"maakunta": "Varsinais-Suomi",
-"otsikko": "Kaavoituksen asiantuntijapalvelut 2027–2028, Laitila",
-"perustelu": "Puitejärjestely ja yksittäiset toimeksiannot voivat sopia pienelle kaavoitus- tai suunnittelutoimistolle, mutta laajuus ja vaadittu kapasiteetti voivat rajata pieniä toimijoita.",
-"pienyritys": "ehka",
-"selko": "Laitilan kaupunki hankkii kaavoitukseen ja maankäytön suunnitteluun liittyviä asiantuntijapalveluita vuosille 2027–2028. Palvelut tilataan puitejärjestelyllä yksittäisiin toimeksiantoihin, kuten kaavojen laatimiseen, selvityksiin ja osallistumismenettelyihin. Kaupunki ei sitoudu tiettyyn ostomäärään."
-},
 "59113": {
 "ala": "Maa-, metsä- ja ympäristötyöt",
 "kunta": "Mäntsälä",
@@ -6335,15 +6191,6 @@
 "pienyritys": "iso",
 "selko": "Nivalan kaupunki hakee urakoitsijaa rakentamaan Nivalan taajamaan noin 450 metriä Kytökankaantien jatketta, mukana katu ja erillinen kevyen liikenteen väylä. Työ sisältää maa-ainekset, maarakennustyöt sekä sadevesi- ja salaojaputkitukset koneenohjausmallin mukaan. Urakka toteutetaan vuonna 2026 yksikköhintaurakkana."
 },
-"59188": {
-"ala": "Rakentaminen ja korjaus",
-"kunta": "Espoo",
-"maakunta": "Uusimaa",
-"otsikko": "Espoon Otaniemi: Aalto-yliopiston tutkimuslaitoksen muutostyöt (Tietotie 2A)",
-"perustelu": "Kyseessä on kiinteähintainen kokonaisurakka monialaisine LVIS- ja rakennustöineen rakennuksen käyttötarkoituksen muutoksessa, mikä vaatii yleensä isomman rakennusliikkeen tai useamman toimijan yhteistyötä.",
-"pienyritys": "iso",
-"selko": "Aalto-yliopistokiinteistöt Oy hakee urakoitsijaa remontoimaan Tietotie 2A:n rakennuksen tiloja Otaniemessä Espoossa. Pohjakerroksen toimistosta tehdään kiltatila ja uusi esteetön wc-suihkutila, 1. kerroksen pukuhuone muutetaan neuvottelu- ja toimistotiloiksi ja 2. kerroksen keittiö-ruokalasta tulee kahvio-seminaaritila. Työhön kuuluvat myös väliseinät, ilmanvaihto, valaistus ja pintaremontti; kohteena on kiinteähintainen kokonaisurakka. Kesto ja aikataulu eivät selviä ilmoituksesta."
-},
 "59201": {
 "ala": "Sähkö, LVI ja talotekniikka",
 "kunta": "Helsinki",
@@ -6443,15 +6290,6 @@
 "pienyritys": "ehka",
 "selko": "Tampereen ammattikorkeakoulu ja Tampereen yliopisto hankkivat siivous- ja puhtaanapitopalveluita useille kampuksilleen. Hankinta on puitejärjestely, johon valitaan enintään viisi toimittajaa, ja varsinaiset työt kilpaillaan erikseen. Sopimuskausi on neljä vuotta alkaen arviolta 1.1.2027."
 },
-"59231": {
-"ala": "IT ja ohjelmistot",
-"kunta": "",
-"maakunta": "Uusimaa",
-"otsikko": "Rekrytointijärjestelmän hankinta Länsi-Uudenmaan hyvinvointialueelle",
-"perustelu": "Kyseessä on laajamittainen monialainen ohjelmistoratkaisu noin miljoonan euron arvosta, joka vaatii todennäköisesti suuren toimijan kyvykkyyksiä.",
-"pienyritys": "iso",
-"selko": "Länsi-Uudenmaan hyvinvointialue hankkii rekrytointijärjestelmän, joka kattaa koko rekrytointiprosessin rekrytointiluvan laatimisesta työsuhteen aloitukseen asti. Hankinnan ennakoitu arvo on 950 000 euroa (alv 0 %). Tarkempi kuvaus on tarjouspyynnön liitteessä 2."
-},
 "59242": {
 "ala": "Ajoneuvot ja koneet",
 "kunta": "",
@@ -6533,15 +6371,6 @@
 "pienyritys": "ehka",
 "selko": "Laukaan kunta etsii yksityisiä palveluntuottajia esiopetuksen ostopalveluihin. Palvelu kestää 1.8.2027–31.5.2029 ja se toteutetaan dynaamisen hankintajärjestelmän kautta, jolloin yksittäiset palvelut kilpailutetaan erikseen. Arvioitu vuosittainen arvo on noin 410 000 euroa ilman arvonlisäveroa."
 },
-"59271": {
-"ala": "Koulutus ja kulttuuri",
-"kunta": "",
-"maakunta": "",
-"otsikko": "Ajoneuvoalan sähköinen opetusmateriaali ja verkkoympäristö",
-"perustelu": "Kyse on digitaalisesta oppimateriaalista, jonka laatua arvioidaan tutkinnon perusteiden mukaan, ja sopimukseen valitaan vain yksi toimittaja, mikä rajaa pienten yritysten mahdollisuuksia.",
-"pienyritys": "ehka",
-"selko": "Koulutuskuntayhtymä OSAO hankkii sähköisen opetusmateriaalin ja verkko-oppimisympäristön ajoneuvoalan opetukseen. Materiaali pitää päivittää ja pitää ajan tasalla, ja sen pitää toimia yleisimmillä internet-selaimilla. Sopimus alkaa 1.1.2027 ja on voimassa toistaiseksi, ja siihen valitaan yksi toimittaja."
-},
 "59281": {
 "ala": "Muut",
 "kunta": "Lappeenranta",
@@ -6577,15 +6406,6 @@
 "perustelu": "Valtakunnallinen jakelu kaikkiin Manner-Suomen talouksiin kahdessa viikossa vaatii suuren postijakeluverkoston, joten pienen yrityksen on vaikea tarjota kokonaisuutta yksin.",
 "pienyritys": "iso",
 "selko": "Sisäministeriö hankkii palvelun, jossa varautumisopas jaetaan postilaatikkoihin kaikkiin Manner-Suomen kotitalouksiin ja yrityksiin osoitteettomana postina. Jakelu tehdään tammikuussa 2027 kahden viikon aikana koko Manner-Suomen alueella. Sopimus on määräaikainen ja kestää, kunnes kaikki velvoitteet on täytetty."
-},
-"59293": {
-"ala": "Konsultointi ja asiantuntijat",
-"kunta": "Sipoo",
-"maakunta": "Uusimaa",
-"otsikko": "Lupapäätösten valmistelu haja-asutusalueelle, puitejärjestely Sipoo 2026–2028",
-"perustelu": "Lupapäätösten valmistelu on asiantuntijapalvelu, johon pieni lupa-asiantuntijayritys voi tarjota, mutta puitejärjestelyn laajuus ja kolmen toimittajan rajaus voivat suosia suurempia toimijoita. Arvioitu arvo ei ole tiedossa.",
-"pienyritys": "ehka",
-"selko": "Sipoon kunta hankkii ulkopuolista apua haja-asutusalueen rakentamislupien päätösten valmisteluun. Puitejärjestelyyn valitaan kolme palveluntuottajaa, ja sopimuskausi on 2026–2028."
 },
 "59294": {
 "ala": "Rakentaminen ja korjaus",
@@ -6902,15 +6722,6 @@
 "pienyritys": "iso",
 "selko": "Vantaan kaupungin osittain omistamaan liike- ja toimistokiinteistöön Korsontie 2:ssa Vantaalla etsitään toimittajaa vuonna 1984 asennetun kevyen henkilöhissin uusimiseen. Työ sisältää suunnittelun, valmistuksen, toimituksen, asennuksen sekä suojaus-, purku- ja jätteiden poiskuljetustyöt. Tarjoukseen tulee liittää toteutusaikataulu, urakkarajaliite, referenssit ja luottoluokitusselvitys. Kohteen esittely on 19.10.2026 klo 13:00–14:30, ilmoittautuminen sähköpostilla etukäteen."
 },
-"59419": {
-"ala": "Rakentaminen ja korjaus",
-"kunta": "Espoo",
-"maakunta": "Uusimaa",
-"otsikko": "Vermonpolku 3 purku-urakka, Espoo",
-"perustelu": "Purkutyö on paikallinen, mutta rivitalojen purku voi vaatia suurempaa urakoitsijaa ja kalustoa, eikä arvoa ole ilmoitettu.",
-"pienyritys": "ehka",
-"selko": "Espoon Asunnot Oy hakee urakoitsijaa purkamaan rivitaloja ja piharakennuksia osoitteessa Vermonpolku 3, Espoo (Leppävaara). Kohteen kesto ja aikataulu eivät ilmoituksessa selviä."
-},
 "59423": {
 "ala": "Rakentaminen ja korjaus",
 "kunta": "Vantaa",
@@ -7109,15 +6920,6 @@
 "pienyritys": "iso",
 "selko": "Liedon kaupunki ja sen kuusi kiinteistöyhtiötä kilpailuttavat sähkönmyyntisopimuksen. Sähkö laskutetaan kuukausittain, ja hinta muodostuu myyjän marginaaleista sekä sähkön pörssihinnasta. Sopimuksen kesto ei ilmoituksessa selviä."
 },
-"59497": {
-"ala": "IT ja ohjelmistot",
-"kunta": "Turku",
-"maakunta": "Varsinais-Suomi",
-"otsikko": "Joukkoliikenteen suunnittelujärjestelmän hankinta, Turku",
-"perustelu": "Kyseessä on ohjelmistohankinta, jossa kokonaisuus on laaja ja useampi osa-alue yhdelle toimittajalle, mikä vaatii yleensä suuren ohjelmistotoimittajan.",
-"pienyritys": "iso",
-"selko": "Turun kaupunki hankkii joukkoliikenteen suunnittelujärjestelmän. Hankinta koostuu kolmesta osasta: seudullisen joukkoliikenteen suunnittelujärjestelmä sekä kaksi optiota, eli Turun Kaupunkiliikenne Oy:n suunnittelujärjestelmä ja liikennöintisopimusten hallinta. Yksi toimittaja valitaan, ja sama toimittaja saa myös optiot. Arvioitu arvo ja aikataulu eivät selviä ilmoituksesta."
-},
 "59498": {
 "ala": "Konsultointi ja asiantuntijat",
 "kunta": "",
@@ -7307,15 +7109,6 @@
 "pienyritys": "ehka",
 "selko": "Ruokavirasto hankkii käännöspalveluita, erityisesti suomen kielestä ruotsiin ja englantiin sekä kielentarkistusta. Palvelu sisältää uusien asiakirjojen kääntämistä ja jo käännettyjen tekstien päivittämistä ja korjaamista. Kesto ja aikataulu eivät ilmoituksessa selviä."
 },
-"59550": {
-"ala": "Sähkö, LVI ja talotekniikka",
-"kunta": "Lohja",
-"maakunta": "Uusimaa",
-"otsikko": "Pianojen ja flyygeleiden viritys- ja huoltopalvelut, Lohja",
-"perustelu": "Puitesopimukseen valitaan kaksi palveluntuottajaa, työt ovat paikallisia ja tilaukset tehdään tarpeen mukaan, mikä sopii hyvin pienelle soitinhuoltoyritykselle.",
-"pienyritys": "sopii",
-"selko": "Lohjan kaupunki hankkii pianojen ja flyygeleiden viritys-, säätö- ja huoltopalveluita musiikkiopiston, koulujen ja muiden yksiköiden soittimille puitesopimuksella. Soittimia on noin 80 eri toimipisteissä, ja töitä tehdään tarpeen mukaan, pääosin aamupäivisin, viikonloppuisin ja loma-aikoina. Sopimuksen arvioitu arvo on 105 000 euroa."
-},
 "59552": {
 "ala": "Muut",
 "kunta": "",
@@ -7450,15 +7243,6 @@
 "perustelu": "Osa-alueisiin jako ja paikallinen toimitusalue voivat sopia pienelle siivousyritykselle, mutta laajat kohteet, kohdekäyntivelvoite ja mahdollisesti suuri kokonaisuus voivat rajata kilpailun isommille toimijoille.",
 "pienyritys": "ehka",
 "selko": "Varsinais-Suomen hyvinvointialue hankkii siivouspalveluita omiin kohteisiinsa Turussa, Salossa ja lähikunnissa. Hankinta on jaettu kolmeen osa-alueeseen (Turun pohjoinen, Turun eteläinen ja Salo), ja kullekin valitaan yksi palveluntuottaja. Tarjoajan edustajan on osallistuttava kohdekäynteihin viikolla 44, ilmoittautuminen viimeistään 23.10.2026."
-},
-"59616": {
-"ala": "Kalusteet ja tarvikkeet",
-"kunta": "Espoo",
-"maakunta": "Uusimaa",
-"otsikko": "27 paloturva- ja kemikaalikaappia, Espoo Kivenlahti (VTT)",
-"perustelu": "Toimitus on yhdessä kohteessa, mutata 27 kaapin ja 8 eri tyypin laajuus sekä vaadittu asennus ja takuu vaativat todennäköisesti kalustotoimittajalta suurempaa kapasiteettia, joten pienelle yritykselle sopivuus riippuu kyvystä tarjota kokonaisuus tai osa siitä.",
-"pienyritys": "ehka",
-"selko": "VTT Oy hankkii 27 paloturva- ja kemikaalikaappia kahdeksaa eri tyyppiä Espoon Kivenlahdessa sijaitsevaan VTT Cleantech Gardeniin. Hintaan kuuluu kaappien kuljetus käyttöpaikoille, purku, tasaus, irto-osien asennus ja pakkausjätteen vienti. Tuotteilla pitää olla vähintään kahden vuoden takuu. Aikataulu ei ilmoituksessa selviä."
 },
 "59620": {
 "ala": "Konsultointi ja asiantuntijat",
@@ -7802,15 +7586,6 @@
 "pienyritys": "ehka",
 "selko": "Kuntien Hankintapalvelut KuHa Oy hankkii teknisen alan tarvikkeita ja välineitä toimitettuna Tampereen kehyskuntiin (Kangasala, Lempäälä, Nokia, Orivesi, Pirkkala, Vesilahti ja Ylöjärvi). Tilaaja tilaa tavarat tarpeensa mukaan. Aikataulua tai kestoa ei ilmoitettu."
 },
-"59736": {
-"ala": "Ajoneuvot ja koneet",
-"kunta": "Helsinki",
-"maakunta": "Uusimaa",
-"otsikko": "Jakeluauto kuormakorilla 18 t, uusi tai käytetty – Helsinki",
-"perustelu": "Yksittäinen 18 tonnin kuorma-auto, jota ei jaeta osiin, vaatii yleensä suuren autokauppiaan tai merkkiedustajan kykyä toimittaa ajoneuvo.",
-"pienyritys": "iso",
-"selko": "Helsingin pelastuslaitos aikoo hankkia vuoden 2026 aikana enintään yhden jakelukuorma-auton, jossa on kuormakori ja kokonaispaino 18 tonnia. Autoa käytetään kappaletavaran kuljetukseen. Hankinta tehdään yhtenä kokonaisuutena, eikä sitä ole jaettu osiin."
-},
 "5974": {
 "ala": "Sosiaali- ja terveyspalvelut",
 "kunta": "",
@@ -7828,15 +7603,6 @@
 "perustelu": "Työt ovat paikallisia ja osissa, mutta puitesopimus vaatii kaluston, kuvaajakortin ja nopean reagoinnin, mikä voi olla haastavaa pienelle yritykselle.",
 "pienyritys": "ehka",
 "selko": "Orimattilan kaupunki hankkii viemäreiden imu- ja huuhtelupalveluja sekä TV-kuvauksia puitesopimuksella 1.1.2027–31.12.2028, ja sopimukselle on optio jatkaa kaudelle 2029–2030. Työt tehdään kaupungin alueella pienistä, muutaman tunnin mittaisista töistä muutamaan päivään, ja TV-kuvauksen tulee tehdä VVY:n tulkintaohjeen mukaan."
-},
-"59741": {
-"ala": "Muut",
-"kunta": "",
-"maakunta": "Lappi",
-"otsikko": "Tarvikehankinta, Lappi",
-"perustelu": "Ilmoituksesta ei selviä, mitä tarvikkeita hankitaan, joten sopivuutta ei voi arvioida luotettavasti.",
-"pienyritys": "ehka",
-"selko": "Hankinnassa ostetaan tarvikkeita. Hankintayksikön nimi, tarkka tuote ja aikataulu eivät ilmoituksen perusteella selviä. Arvioitu arvo ei ole tiedossa."
 },
 "59746": {
 "ala": "Rakentaminen ja korjaus",
@@ -7999,15 +7765,6 @@
 "perustelu": "Valaisimet ja optiikat ovat tavaratoimitus, joka voi sopia pienelle valaistusalan toimijalle, mutta laajuus (170 000 €) ja tekniset vaatimukset sekä näyttelyprojektin tiukka aikataulu voivat rajata osallistumista.",
 "pienyritys": "ehka",
 "selko": "Museovirasto hankkii Kansallismuseon näyttelykäyttöön kohdevalaisimia ja niihin sopivia vaihdettavia optiikoita. Valaisimien tulee sopia museon olemassa oleviin ERCO-valokiskoihin ja niissä tulee olla vähintään 5 vuoden takuu. Toimitus tehdään viimeistään 29.1.2027, ja tarkka aikataulu sovitaan valitun toimittajan kanssa."
-},
-"59801": {
-"ala": "Muut",
-"kunta": "Tampere",
-"maakunta": "Pirkanmaa",
-"otsikko": "Kankaat ja ompelutarvikkeet Tampereelle ja Pirkanmaalle",
-"perustelu": "Puitesopimus, jossa on enintään kuusi toimittajaa, ja tilaukset tehdään tarpeen mukaan, mikä voi sopia pienelle toimijalle, mutta arvo (noin 800 000 euroa) ja laaja tuotevalikoima voivat vaatia suuremman toimijan.",
-"pienyritys": "ehka",
-"selko": "Tuomi Logistiikka Oy hankkii kankaita, perusompelutarvikkeita ja ompelupalveluita myymälästä tai verkkokaupasta Tampereen kaupungille sekä Pirkanmaan ja Kanta-Hämeen hyvinvointialueille. Hankinta on puitesopimus, johon valitaan enintään kuusi toimittajaa, ja sopimus on voimassa 1.1.–31.12.2027 optiokausineen. Tilausmääriä ei ole taattu."
 },
 "59802": {
 "ala": "Kalusteet ja tarvikkeet",
@@ -8270,15 +8027,6 @@
 "pienyritys": "ehka",
 "selko": "Porin evankelis-luterilainen seurakuntayhtymä hakee korjaajaa Keski-Porin kirkon julkisivuihin. Työhön kuuluvat tornin valurautarakenteet, tiilijulkisivut, laastilistat ja koristeosat, kiviportaat ja luiska sekä muut suunnitelmassa esitetyt kohteet. Hankinnan arvioitu arvo on noin 500 000 euroa."
 },
-"59886": {
-"ala": "Muut",
-"kunta": "",
-"maakunta": "Uusimaa",
-"otsikko": "Vartiointi- ja turvallisuuspalvelut, Länsi-Uudenmaan hyvinvointialue",
-"perustelu": "Koko alueen laaja palvelukokonaisuus ja 12 miljoonan euron arvo viittaavat suuren toimijan tarpeeseen, vaikka palvelut tuotetaan pääasiassa salassa pidettävissä kohteissa.",
-"pienyritys": "iso",
-"selko": "Länsi-Uudenmaan hyvinvointialue hankkii vartiointi- ja turvallisuuspalveluita koko alueelleen, kuten hallinto- ja tukipalveluita, hälytyskeskuspalveluita, vartiointia, järjestyksenvalvontaa, etävalvontaa ja turvatarkastuksia. Sopimus valitaan yhdelle toimittajalle ja yhdelle varatoimittajalle, ja se on voimassa toistaiseksi. Hankinnan arvioitu arvo on 12 miljoonaa euroa."
-},
 "59887": {
 "ala": "Konsultointi ja asiantuntijat",
 "kunta": "Pelkosenniemi",
@@ -8323,15 +8071,6 @@
 "perustelu": "Erikoisajoneuvo pelastustoimeen vaatii alustan ja päällirakenteen valmistusta ja integrointia sekä laajaa varustelua, mikä sopii paremmin suurelle ajoneuvovalmistajalle tai -integraattorille.",
 "pienyritys": "iso",
 "selko": "Pohjois-Savon pelastuslaitos hankkii CBRN-auton eli kemiallisiin, biologisiin, radiologisiin ja ydinvaarallisiin tilanteisiin tarkoitetun ajoneuvon. Hankintaan kuuluvat ajoneuvon alusta, päällirakenne sekä auton varusteet ja laitteet. Tarkemmat vaatimukset ja aikataulu löytyvät tarjouspyynnön liitteistä."
-},
-"59901": {
-"ala": "Sähkö, LVI ja talotekniikka",
-"kunta": "Espoo",
-"maakunta": "Uusimaa",
-"otsikko": "Hissien ja nostinlaitteiden vuosihuollot ja hälytyspalvelu, Espoo 2027–2030",
-"perustelu": "Vaatii hissi- ja nostinlaitehuoltoon pätevää henkilöstöä, 24/7-hälytyspalvelua ja neljän vuoden sopimuksen, mikä sopii paremmin suuremmalle hissihuoltoyritykselle kuin pienelle toimijalle.",
-"pienyritys": "iso",
-"selko": "Espoon seurakuntayhtymä hakee toimittajaa hissien ja nostinlaitteiden vuosihuoltoihin, vuositarkastuksiin ja hälytyskeskuspalveluun. Sopimus on voimassa vuodet 2027–2030, eli neljä vuotta. Jokaiselle laitteelle tehdään kaksi huoltokäyntiä vuodessa, ja tarjoajan täytyy myös järjestää laitteiden määräaikaistarkastukset."
 },
 "59904": {
 "ala": "Sähkö, LVI ja talotekniikka",
@@ -8386,15 +8125,6 @@
 "perustelu": "Kattilan tulistimien uusiminen vaatii erikoisosaamista ja suuren voimalaitoksen teknistä toimitusvalmiutta, joten työ sopii todennäköisesti suurille laitetoimittajille.",
 "pienyritys": "iso",
 "selko": "Vantaan Energia Oy hankkii uudet tulistimet Jätevoimalan (JV1) jätekattiloihin. Tulistimien uusinta tehdään hankinta-asiakirjojen mukaisesti. Ilmoituksessa ei ole mainittu arvioitua arvoa eikä aikataulua."
-},
-"59922": {
-"ala": "Kalusteet ja tarvikkeet",
-"kunta": "",
-"maakunta": "",
-"otsikko": "Suurkeittiölaitteiden ja -kalusteiden hankinta ja asennus vankiloihin",
-"perustelu": "Hankinta koskee useita vankiloita eri puolilla Suomea ja sisältää suurkeittiölaitteita sekä asennusta, mikä vaatii laajan toimijan ja on todennäköisesti jaettu osiin, joihin pienyritys voisi tarjota vain osan.",
-"pienyritys": "iso",
-"selko": "Rikosseuraamuslaitos hankkii suurkeittiölaitteita ja -kalusteita useisiin vankiloihin, mukaan lukien Turun vankilan keittiöremontin yhteydessä. Hankintaan kuuluvat laitteiden asennus ja vanhojen laitteiden poisvienti."
 },
 "59923": {
 "ala": "Sosiaali- ja terveyspalvelut",
@@ -8629,15 +8359,6 @@
 "perustelu": "Puitesopimus on tarjouskilpailun kautta tehtävä, ei sido määriin ja tehdään jopa viiden toimittajan kanssa, joten paikallinen rautakauppa voi realistisesti päästä mukaan.",
 "pienyritys": "sopii",
 "selko": "Heinolan Tilapalvelut Oy hankkii rautakauppatarvikkeita Heinolan kaupungin ja sen konserniyhtiöiden tarpeisiin. Sopimus on kaksivuotinen (2027–2028), ja sitä voi jatkaa yhdellä optiovuodella (2029). Tilaaja ei sitoudu tiettyihin hankintamääriin, ja sopimus tehdään enintään viiden toimittajan kanssa."
-},
-"59982": {
-"ala": "Rakentaminen ja korjaus",
-"kunta": "Riihimäki",
-"maakunta": "Kanta-Häme",
-"otsikko": "Pääkonttorin moduulitoimistorakennus, Riihimäki",
-"perustelu": "Vähintään 1100 m²:n kaksikerroksinen toimistorakennus kokonaisurakkana vaatii todennäköisesti suuremman rakennusalan toimijan, vaikka osa töistä voitaisiin mahdollisesti aliurakoida.",
-"pienyritys": "iso",
-"selko": "Business Riihimäki hakee urakoitsijaa kaksikerroksisen moduulipohjaisen toimistorakennuksen rakentamiseen Riihimäelle, vähintään 1100 m². Rakennustyöt alkavat marraskuussa 2026 ja toimisto on suunniteltu luovutettavaksi toukokuussa 2027. Hankinnassa valitaan halvin urakkahinta ja laatua arvioidaan erikseen."
 },
 "59986": {
 "ala": "Sähkö, LVI ja talotekniikka",
@@ -8962,15 +8683,6 @@
 "perustelu": "Laaja kokonaisuus, arvo noin 3,2 miljoonaa euroa ja jatkuvat palvelut vaativat todennäköisesti suuren IT-palveluntarjoajan, eikä osatarjouksia sallita.",
 "pienyritys": "iso",
 "selko": "Kaiku24 Oy hankkii perustietotekniikkapalveluja: loppukäyttäjätukea, palvelinalustan käyttöä, tietoliikennepalveluja, palvelujen käyttöönoton projektin sekä SOC-palvelun ja raportointiympäristön hallintaa. Palvelut ovat jatkuvia ja sopimus on voimassa toistaiseksi allekirjoituksesta alkaen. Valitaan yksi toimittaja ja yksi varatoimittaja, eikä osatarjouksia hyväksytä."
-},
-"60102": {
-"ala": "Kalusteet ja tarvikkeet",
-"kunta": "Kouvola",
-"maakunta": "Kymenlaakso",
-"otsikko": "Kouvolan teatterin irtokalusteet (lämpiöt ja ravintola)",
-"perustelu": "Hankinta on paikallinen, mutta siinä on useita kalustelajeja (sohvat, tuolit, pöydät, elektroniikka, terassin kalusteet), joiden osiin jakaminen ratkaisee, pystyykö pienyritys tarjoamaan niistä osan.",
-"pienyritys": "ehka",
-"selko": "Kouvolan kaupunki pyytää tarjouksia uusista irtokalusteista Kouvolan teatteriin, pääosin lämpiöihin ja ravintolaan. Kalusteet toimitetaan ja asennetaan teatterin peruskorjauksen ja laajennuksen kahteen vaiheeseen: A-vaihe huhtikuussa 2027 (henkilökunnan lämpiö maaliskuussa 2027) ja B-vaihe elokuussa 2028."
 },
 "60104": {
 "ala": "Konsultointi ja asiantuntijat",
@@ -9584,15 +9296,6 @@
 "pienyritys": "ehka",
 "selko": "Tampereen Infra Oy hakee yhtä sopimuskumppania, joka tekee kiinteiden toimitilojen, siirrettävien työmaasuojien ja uimarantojen pukuhuoneiden siivouksen Tampereella. Hankinta on arvoltaan noin 600 000 euroa sisältäen mahdolliset optiot, eikä sitä ole jaettu osiin. Tarkemmat kohteet ja aikataulut ovat tarjouspyynnön liitteissä."
 },
-"60262": {
-"ala": "Konsultointi ja asiantuntijat",
-"kunta": "Helsinki",
-"maakunta": "Uusimaa",
-"otsikko": "Kuntotutkimukset ja -arviot Helsingin asunnoille (12 osa-aluetta)",
-"perustelu": "Osa-alueet ovat erillisiä, mutta vaativat vahvaa rakennusalan asiantuntemusta ja pätevyyttä, ja puitejärjestelyssä valitaan enintään kolme toimittajaa per osa-alue.",
-"pienyritys": "ehka",
-"selko": "Helsingin kaupungin asunnot Oy (Heka) etsii konsultteja kuntotutkimuksiin ja -arvioihin peruskorjausikäisiin rakennuksiin. Hankinta on jaettu 12 osa-alueeseen, esimerkiksi yleinen kuntoarvio, salaojatutkimus, radonmittaus ja lämpökuvaus. Sopimuskausi on 2 vuotta, ja siihen voi tulla optiovuodet 1 + 1."
-},
 "60263": {
 "ala": "Kalusteet ja tarvikkeet",
 "kunta": "",
@@ -9709,15 +9412,6 @@
 "perustelu": "Puitejärjestely pienurakoille ja kohdekohtaiset minikilpailutukset ovat pienelle rakennusyritykselle realistisia tarjoamismahdollisuuksia.",
 "pienyritys": "sopii",
 "selko": "Naantalin kaupunki hankkii rakennusurakointitöitä vuosille 2027–2029, mahdollisesti kahden optiovuoden kanssa. Työt ovat pienurakoita, kuten rakennus-, maalaus-, matto-, tasoite-, vedeneristys-, laatoitus- ja teräsrakennetöitä. Työmääriä ei ole ennalta tiedossa, eikä kaupunki takaa tiettyä määrää töitä."
-},
-"60292": {
-"ala": "Rakentaminen ja korjaus",
-"kunta": "Haapajärvi",
-"maakunta": "Pohjois-Pohjanmaa",
-"otsikko": "Jukolan päiväkodin laajennus, vaihe 3, Haapajärvi",
-"perustelu": "Arvo noin 800 000 euroa ja KVR-urakka (suunnittelu ja rakentaminen yhdessä) vaatii yleensä rakennusliikkeeltä suunnittelu- ja rakennusosaamista, mikä voi rajata pienet toimijat ulos, vaikka alihankintamahdollisuudet voivat olla pienyritykselle kiinnostavia.",
-"pienyritys": "iso",
-"selko": "Haapajärven kaupunki hakee urakoitsijaa, joka rakentaa Jukolan päiväkodin laajennuksen KVR-urakkana (suunnittelu ja rakentaminen). Rakennuttaja on jo hakenut rakennuslupaa viitesuunnitelmien pohjalta."
 },
 "60295": {
 "ala": "Konsultointi ja asiantuntijat",
@@ -9989,15 +9683,6 @@
 "pienyritys": "ehka",
 "selko": "Senaatti-kiinteistöt hankkii asiantuntija- ja konsultointipalveluja tietovarastoon ja analytiikkaympäristöön liittyen. Palvelu kattaa suunnittelun, toteutuksen, ylläpidon ja kehittämisen sekä datan laadun ja integraatioiden kehittämisen. Kesto ja arvo eivät ole ilmoituksessa tiedossa."
 },
-"60376": {
-"ala": "Konsultointi ja asiantuntijat",
-"kunta": "",
-"maakunta": "Uusimaa",
-"otsikko": "Yle hakee kahta inhouse-rekrytointikonsulttia, Helsinki",
-"perustelu": "Vaatii kaksi kokoaikaista konsulttia, varahenkilöt ja pitkän sopimuskauden, mikä käytännössä edellyttää suuren rekrytointiyrityksen resursseja.",
-"pienyritys": "iso",
-"selko": "Yleisradio Oy etsii yhtä rekrytointikumppania, joka tarjoaa kaksi kokoaikaista inhouse-rekrytointikonsulttia, yhden suomen- ja yhden ruotsinkielisen. Konsultit työskentelevät Ylen tiloissa 37,5 tuntia viikossa, ja jokaisella on oltava varahenkilö. Sopimus on voimassa vuoden kerrallaan ja jatkuu sen jälkeen toistaiseksi."
-},
 "60377": {
 "ala": "IT ja ohjelmistot",
 "kunta": "",
@@ -10006,15 +9691,6 @@
 "perustelu": "Kyse on ohjelmistohankinnasta arvoltaan noin 500 000 euroa, mikä on useimmille pienyrityksille suuri kokonaisuus, mutta toimittaja valitaan yhdeksi, joten pieni toimija voi tarjota vain, jos sillä on tarvittava järjestelmä ja kyvykkyys.",
 "pienyritys": "ehka",
 "selko": "Istekki Oy hankkii ensihoidon laskutusjärjestelmän. Tilaaja valitsee yhden toimittajan, jonka kanssa tehdään sopimus. Hankintamäärät ovat arvioita, eikä tilaajalla ole velvoitetta ostaa tiettyä määrää."
-},
-"60380": {
-"ala": "Ruoka ja ateriapalvelut",
-"kunta": "Tampere",
-"maakunta": "Pirkanmaa",
-"otsikko": "Tukkuelintarvikkeiden puitehankinta Pirkanmaalla",
-"perustelu": "Arvioitu arvo on 52 miljoonaa euroa ja hankinta kattaa laajoja tukkutoimituksia monelle tilaajalle, mikä vaatii suuren toimijan kykyjä.",
-"pienyritys": "iso",
-"selko": "Tuomi Logistiikka Oy hankkii tukkuelintarvikkeita yhteishankintana usealle organisaatiolle, kuten kaupungeille, kunnille ja hyvinvointialueelle. Hankinnassa valitaan kaksi toimittajaa puitejärjestelyyn, ja toimittajat jakavat tuoterivit keskenään. Myös lisätarpeisiin ja sesonkitapahtumiin tehdään kevennettyjä kilpailutuksia puitejärjestelyn sisällä."
 },
 "60386": {
 "ala": "Konsultointi ja asiantuntijat",
@@ -10259,15 +9935,6 @@
 "pienyritys": "iso",
 "selko": "Rajavartiolaitos kilpailuttaa Ratas-rajatarkastussovelluksen ylläpito- ja kehityspalvelut. Palveluun kuuluu jatkuva ylläpito, häiriöiden ratkaisu, tietoturvan ylläpito ja pienimuotoiset muutokset. Myöhempää kehitystä ovat integraatio ETIAS-järjestelmään ja käyttäjätunnistuksen uusiminen. Aikataulua tai kestoa ei ilmoitettu, arvo ei ole tiedossa."
 },
-"60452": {
-"ala": "Rakentaminen ja korjaus",
-"kunta": "Virolahti",
-"maakunta": "Kymenlaakso",
-"otsikko": "Hurpun merivartioaseman kokonaisurakka, Virolahti",
-"perustelu": "Kokonaisurakka uudisrakentamisena ja purkuna vaatii todennäköisesti suuren rakennusliikkeen kykyä, joten pienen yrityksen on vaikea tarjota kokonaisuutena.",
-"pienyritys": "iso",
-"selko": "Senaatti-kiinteistöt hankkii kokonaisurakkana uuden merivartioaseman rakentamisen Hurpun alueelle Virolahdelle. Urakkaan kuuluu myös vanhan aseman purku suunnitelmien mukaisesti. Asiakirjat ovat saatavilla Buildercom-linkistä 2.11.2026 alkaen."
-},
 "60453": {
 "ala": "Maa-, metsä- ja ympäristötyöt",
 "kunta": "Helsinki",
@@ -10348,6 +10015,15 @@
 "perustelu": "Noin 500 000 euron arvoinen LVI-urakka päiväkodissa vaatii yleensä ison tai keskisuuren urakoitsijan, ellei työ ole jaettu pienempiin osiin.",
 "pienyritys": "iso",
 "selko": "Turun kaupunki hakee urakoitsijaa Arkeologinkadun päiväkodin ilmanvaihdon peruskorjaukseen tarjouspyyntöasiakirjojen mukaisesti. Arvioitu arvo on noin 500 000 euroa. Ilmoituksessa ei kerrota tarkkaa aikataulua tai kestoa."
+},
+"60484": {
+"ala": "Rakentaminen ja korjaus",
+"kunta": "Hämeenlinna",
+"maakunta": "Kanta-Häme",
+"otsikko": "Käyttövesiputkien saneeraus, Virvelinranta, Hämeenlinna",
+"perustelu": "Putkisaneeraus on yleensä LVI-alan työ, joka voi sopia pienelle yritykselle, mutta laajuus ja mahdollinen osiin jako ilmoituksesta ei selviä.",
+"pienyritys": "ehka",
+"selko": "Kiinteistö Oy Hämeenlinnan Virvelinrannan kiinteistössä uusitaan käyttövesiputkia. Ilmoituksessa ei kerrota tarkemmin työn laajuutta, aikataulua eikä kestoa. Arvioitu arvo ei ole tiedossa."
 },
 "60486": {
 "ala": "Muut",
@@ -11276,6 +10952,15 @@
 "pienyritys": "ehka",
 "selko": "Tampereen ammattikorkeakoulu ja Tampereen korkeakoulusäätiö hankkivat sähkö-, LVI- ja kylmätekniikan korjaus-, muutos-, huolto- ja asennustöitä kiinteistöihin kaikilla kampuksillaan. Töitä tilataan tapauskohtaisesti, ja puitesopimuskausi on neljä vuotta. Hankinta jakautuu kahteen osa-alueeseen, joissa kummassakin valitaan viisi toimittajaa."
 },
+"60710": {
+"ala": "Markkinointi ja viestintä",
+"kunta": "Helsinki",
+"maakunta": "Uusimaa",
+"otsikko": "Kansainväliset PR-palvelut Helsinki Biennaalille ja HAMille, Helsinki",
+"perustelu": "Kansainvälinen PR-palvelu ja monialueinen kohde vaativat todennäköisesti kokemusta ja resursseja, mutta jatkuva ja projektikohtainen tuki voi joillekin pienille viestintätoimistoille olla mahdollinen.",
+"pienyritys": "ehka",
+"selko": "HAM Helsingin taidemuseo hankkii kansainvälisiä PR- ja mediasuhdepalveluita, joiden tavoitteena on vahvistaa Helsinki Biennaalin ja museon näkyvyyttä ulkomailla. Palvelut kattavat strategisen suunnittelun, mediayhteistyön ja neuvonnan alueilla Eurooppa, Pohjois-Amerikka ja Aasia. Sopimuskausi ja tarvittavien palvelujen määrä vaihtelevat, ja tarkemmat vaatimukset ovat tarjouspyynnössä. Arvioitua arvoa ei ole ilmoitettu."
+},
 "60721": {
 "ala": "Muut",
 "kunta": "",
@@ -11311,15 +10996,6 @@
 "perustelu": "Tarjouksen voi tehdä yhteen osa-alueeseen, mutta arvioitu arvo on 5 milj. euroa ja tehtävät ovat asiantuntijapalveluja, joten pienen yrityksen on todennäköisesti tehtävä yhteistyötä tai keskityttävä yhteen tarkkaan osa-alueeseen.",
 "pienyritys": "ehka",
 "selko": "HSL hankkii liikenteen suunnittelu- ja selvityspalveluja puitejärjestelynä. Kolme osa-aluetta: liikennejärjestelmäsuunnittelu, joukkoliikennesuunnittelu ja vaikutusten arviointi. Tarjouksen voi tehdä yhteen tai useampaan osa-alueeseen, ja jokaiseen osa-alueeseen valitaan enintään 7 toimittajaa. Aikataulua tai kestoa ei tekstistä selviä."
-},
-"60743": {
-"ala": "Ajoneuvot ja koneet",
-"kunta": "",
-"maakunta": "",
-"otsikko": "Sotilaskalusteet (sängyt, päädyt, kaapit) Senaatti-kiinteistöt",
-"perustelu": "Laaja neljän osa-alueen kokonaisuus, jonka kokonaisarvo on lähes 9,2 miljoonaa euroa, vaatii todennäköisesti suuren toimijan, vaikka osa-alueet on jaettu erikseen.",
-"pienyritys": "iso",
-"selko": "Hankitaan sotilaskalusteita neljään osa-alueeseen: sotilassänkyjä (vakio ja 220 cm), sängynpäätyjä, sotilaskaappeja ja pöytäkalusteita. Kukin osa-alue kilpaillaan erikseen ja jokaiseen valitaan yksi toimittaja. Kuljetus ja asennus sisältyvät hintaan. Kokonaisarvo on noin 9,16 miljoonaa euroa (alv 0 %). Aikataulua tai kestoa ei ilmoituksessa mainita."
 },
 "60750": {
 "ala": "Muut",
@@ -11365,6 +11041,15 @@
 "perustelu": "Ilmoituksesta ei selviä, mitä tarvikkeita ostetaan, joten sopivuutta ei voi arvioida luotettavasti.",
 "pienyritys": "ehka",
 "selko": "Ilmoituksessa ilmoitetaan hankinnan lajiksi tarvikkeet (supplies). Hankintayksikkö, tarkempi kuvaus ja aikataulu eivät ole ilmoituksessa mukana. Arvioitu arvo ei ole tiedossa."
+},
+"60761": {
+"ala": "Konsultointi ja asiantuntijat",
+"kunta": "",
+"maakunta": "",
+"otsikko": "Filmiskannerin rahoitusleasing – Taide- ja kulttuurivirasto",
+"perustelu": "Kyseessä on suuren rahoitusyhtiön tarjoama leasingsopimus noin 565 000 € arvosta, joten pienen yrityksen on vaikea tarjota siihen.",
+"pienyritys": "iso",
+"selko": "Taide- ja kulttuurivirasto kilpailuttaa rahoitusleasingin Scanity 2 -filmiskannerin hankintaan. Skanneri on elokuva-arkistojen erityislaite, ja laitteen hankintahinta on 443 700 € ilman arvonlisäveroa. Hankinta kohdistuu pelkästään rahoitukseen, ei itse laitteeseen."
 },
 "60764": {
 "ala": "Konsultointi ja asiantuntijat",
@@ -12032,6 +11717,24 @@
 "pienyritys": "ehka",
 "selko": "Salon kaupunki etsii urakoitsijaa uusimaan Mustamäen koulun välituntipihan piharakenteet, pihavarusteet ja kalusteet osoitteessa Mustamäentie 103, Halikko. Kyseessä on kokonaisurakka, jossa urakoitsija vastaa kaikista työvaiheista, materiaaleista ja työmaan johtamisesta. Aikataulua tai kestoa ei ilmoituksessa ole mainittu."
 },
+"60926": {
+"ala": "Kalusteet ja tarvikkeet",
+"kunta": "Tampere",
+"maakunta": "Pirkanmaa",
+"otsikko": "Betoniputket ja betoniset kaivonosat, Tampere",
+"perustelu": "Koko hankinta on tarjottava kerralla, osatarjoukset eivät ole sallittuja ja arvo on noin 3 milj. euroa, mikä vaatii yleensä suuremman toimijan.",
+"pienyritys": "iso",
+"selko": "Tampereen Infra Oy hankkii betoniputkia ja betonisia kaivonosia sekä tarvittaessa vähän valurautaisia kansia ja nosto- ja asennustyökalujen vuokrausta. Hankinta on puitejärjestely, jossa valitaan enintään kaksi toimittajaa, eikä tilaaja sitoudu tiettyihin määriin. Hankinnan ennakoitu arvo on noin 3 000 000 euroa, ja osatarjoukset eivät ole sallittuja."
+},
+"60929": {
+"ala": "Rakentaminen ja korjaus",
+"kunta": "Virolahti",
+"maakunta": "Kymenlaakso",
+"otsikko": "Majoitusrakennuksen purku, Hurppu (Virolahti)",
+"perustelu": "Purkutyö on paikallista ja voi sopia pienelle purkualan yritykselle, mutta arvo ja laajuus eivät ole tiedossa, joten kokoluokka voi olla liian suuri.",
+"pienyritys": "ehka",
+"selko": "Senaatti-kiinteistöt hakee urakoitsijaa vanhan majoitusrakennuksen purkuun Hurpun merivartioasemalla Virolahdella. Purku tehdään hankeasiakirjojen (suunnitelmien) mukaan. Kestoa tai aikataulua ilmoituksessa ei ole mainittu."
+},
 "60930": {
 "ala": "IT ja ohjelmistot",
 "kunta": "",
@@ -12608,6 +12311,15 @@
 "pienyritys": "iso",
 "selko": "Koulutuskuntayhtymä OSAO hankkii mainostuotteita ja mainostekstiilejä sekä niiden merkintä-, painatus- ja toimituspalveluita. Sopimus on voimassa 1.1.2027–31.12.2028, ja siinä on mahdollisuus kahteen yhden vuoden optiokauteen. Hankinta on yksi kokonaisuus, eikä sitä jaeta osiin."
 },
+"61072": {
+"ala": "Rakentaminen ja korjaus",
+"kunta": "Virrat",
+"maakunta": "Pirkanmaa",
+"otsikko": "Virtain pelastus- ja ensihoitoaseman vuokrahankinta",
+"perustelu": "Vaatii rakennuttajalta ja investorilta suuren hankkeen rahoituksen, suunnittelun ja rakentamisen, joten se sopii vain suurelle toimijalle.",
+"pienyritys": "iso",
+"selko": "Pirkanmaan hyvinvointialue hankkii Virtasta pelastus- ja ensihoitoaseman vuokralle. Vuokranantaja rakentaa kohteen Virtan kaupungin osoittamalle tontille ja vastaa suunnittelusta, rakennuttamisesta ja ylläpidosta. Hyvinvointialue vuokraa tilat vähintään 20 vuodeksi."
+},
 "61073": {
 "ala": "Kiinteistöhuolto ja siivous",
 "kunta": "Ilomantsi",
@@ -12716,6 +12428,15 @@
 "pienyritys": "iso",
 "selko": "Helsingin kaupungin Stara-liikelaitos hankkii yhden 18 tonnin lakaisuajoneuvon, jossa on apumoottori. Tarjoukset pyydetään tarjouspyynnön ja sen liitteiden mukaisesti. Kyseessä on tavarahankinta, ja sopimuksen kesto ja toimitusaika selviävät vain liitteistä."
 },
+"61109": {
+"ala": "Kuljetus ja logistiikka",
+"kunta": "Mustasaari",
+"maakunta": "Pohjanmaa",
+"otsikko": "Ruokakuljetukset Mustasaaressa 2027 (valmistuskeittiöistä jakelukeittiöihin)",
+"perustelu": "Työ on jaettu alueisiin ja kuljetetaan paikallisesti omilla lämpölaatikoilla, joten pieni paikallinen kuljetusyrittäjä voi tarjota alueelle.",
+"pienyritys": "sopii",
+"selko": "Mustasaaren kunta etsii yrityksiä kuljettamaan ruokaa valmistuskeittiöistä jakelukeittiöihin. Työ on jaettu alueisiin, ja sopimus tehdään kullekin alueelle erikseen. Sopimuskausi on 1.1.2027–31.12.2027, ja sopimukseen kuuluu yksi optiovuosi."
+},
 "61111": {
 "ala": "Ajoneuvot ja koneet",
 "kunta": "Helsinki",
@@ -12761,6 +12482,15 @@
 "pienyritys": "ehka",
 "selko": "Kokkolan kaupunki hakee urakoitsijaa Koivurinteen päiväkodin peruskorjaukseen ja parannustöihin. Kyse on kokonaisurakasta, jossa pääurakoitsija vastaa koko hankkeesta ja aliurakoiden yhteensovittamisesta. Töiden tarkka laajuus ja aikataulu on kuvattu tarjouspyynnön liitteissä."
 },
+"61118": {
+"ala": "IT ja ohjelmistot",
+"kunta": "",
+"maakunta": "Uusimaa",
+"otsikko": "Rekrytointijärjestelmän hankinta, Länsi-Uudenmaan hyvinvointialue",
+"perustelu": "Kyseessä on laaja, noin miljoonan euron ohjelmistohankinta monialaiseen käyttöön, joka vaatii todennäköisesti suuren toimittajan.",
+"pienyritys": "iso",
+"selko": "Länsi-Uudenmaan hyvinvointialue hakee tarjouksia rekrytointijärjestelmästä, joka kattaa koko rekrytointiprosessin rekrytointiluvan laatimisesta työsuhteen aloitukseen asti. Järjestelmän pitää soveltua laajoihin ja monialaisiin rekrytointitarpeisiin. Ennakoitu arvo on 950 000 euroa ilman arvonlisäveroa."
+},
 "61123": {
 "ala": "Rakentaminen ja korjaus",
 "kunta": "Helsinki",
@@ -12769,6 +12499,15 @@
 "perustelu": "Kokonaisurakka rakennus-, sähkö-, LVI- ja automaatiotöineen vaatii todennäköisesti suuren pääurakoitsijan, ja käytössä olevan kohteen melurajoitukset sekä pakollinen paikan päällä tutustuminen lisäävät vaatimuksia.",
 "pienyritys": "iso",
 "selko": "Yle hakee kokonaisurakoitsijaa Mediatalon 3. kerroksen tilamuutoksiin ja osittaiseen peruskorjaukseen Pasilassa (Uutiskatu 5, Helsinki). Työ sisältää rakennus-, sähkö-, ilmanvaihto-, putki- ja rakennusautomaatiotöitä, ja se tehdään kolmessa vaiheessa rakennuksen ollessa käytössä, joten melurajoitukset on huomioitava. Työt alkavat helmikuussa 2027 ja valmistuvat viimeistään 3.12.2027."
+},
+"61125": {
+"ala": "Muut",
+"kunta": "",
+"maakunta": "Lappi",
+"otsikko": "Palveluhankinta, Lappi (FI19A), arvo noin 250 000 €",
+"perustelu": "Kuvausta ei ole, joten sopivuutta ei voi arvioida; 250 000 euron arvo voi olla liian suuri pienelle yritykselle, ellei työ ole jaettu osiin.",
+"pienyritys": "ehka",
+"selko": "Hankinnassa ostetaan palveluja, mutta ilmoituksessa ei ole kuvausta siitä, mitä tarkalleen. Arvioitu arvo on noin 250 000 euroa. Aikataulua tai kestoa ei ilmoitettu."
 },
 "61127": {
 "ala": "Koulutus ja kulttuuri",
@@ -12796,6 +12535,15 @@
 "perustelu": "Pienet paikalliset LVI-korjaukset ja -asennukset Hattulan alueella sopivat hyvin paikalliselle pienyritykselle, jos yritys pystyy vastaamaan pitkäaikaisesta sopimuksesta.",
 "pienyritys": "sopii",
 "selko": "Hattulan kunta hakee toimittajaa pieniin LVI-töihin (lämmitys-, vesi- ja ilmanvaihtotyöt) kunnan alueella vuosina 2027–2029. Sopimukseen voi kuulua myös pieniä purkutöitä, ja sopimusta on mahdollista jatkaa vuodella vuoteen 2030 asti."
+},
+"61134": {
+"ala": "IT ja ohjelmistot",
+"kunta": "",
+"maakunta": "",
+"otsikko": "Kiertokapula Oy: ICT-perustietotekniikkapalvelut (koko Suomi)",
+"perustelu": "Laaja kokonaisuus, joka ei ole jaettu osiin, ja 1,2 miljoonan euron arvo vaativat suuren ICT-palveluntarjoajan, joten pienen yrityksen on vaikea tarjota kokonaisuutena.",
+"pienyritys": "iso",
+"selko": "Kiertokapula Oy hakee yhtä toimittajaa kattamaan laajan kokonaisuuden ICT-perustietotekniikkapalveluita: käyttäjätuen, työasemien elinkaaren, palvelinten ja verkkojen hallinnan, pilvipalvelut, tietoliikenteen, tietoturvan, asiantuntijapalvelut ja palvelunhallinnan. Sopimus kestää 3 vuotta ja jatkuu sen jälkeen toistaiseksi; tavoitteena on aloittaa 15.1.2027. Hankinta ei ole jaettu osiin, ja valinta tehdään hinnan (60 p.) ja laadun (40 p.) perusteella."
 },
 "61135": {
 "ala": "Sähkö, LVI ja talotekniikka",
@@ -12851,6 +12599,24 @@
 "pienyritys": "ehka",
 "selko": "Tornion kaupunki hankkii käyttölisenssit turvapostiratkaisuun, jota se käyttää luottamuksellisen sähköpostin lähettämiseen. Lisenssien mukana tulee ohjelmiston ylläpito, päivitykset, tietoturvapäivitykset ja tekninen tuki. Lisenssimäärä on arviolta 130 kpl, ja se voi muuttua sopimuskauden aikana."
 },
+"61149": {
+"ala": "Konsultointi ja asiantuntijat",
+"kunta": "Helsinki",
+"maakunta": "Uusimaa",
+"otsikko": "Kuntotutkimuksia Helsingin asuntokohteisiin (puitekilpailutus, 12 osa-aluetta)",
+"perustelu": "Osa-alueet ovat erikoistuneita ja kilpailutus on puitejärjestely, joten pienellä asiantuntijayrityksellä voi olla mahdollisuus yhteen tai useampaan osa-alueeseen, mutta vaadittu ammattitaito ja laajuus voivat rajata kilpailun isommille toimijoille.",
+"pienyritys": "ehka",
+"selko": "Helsingin kaupungin asunnot Oy (Heka) kilpailuttaa konsultteja rakennusten kuntotutkimuksiin ja -arvioihin, joita tilataan pääsääntöisesti peruskorjausiässä oleviin kohteisiin. Hankinta on jaettu 12 osa-alueeseen, esim. yleinen kuntoarvio, salaojatutkimus, haitta-ainekartoitus, radonmittaus ja lämpökuvaus. Puitesopimus on kaksi vuotta, ja siinä on optio 1+1 vuotta; per osa-alue valitaan enintään kolme konsulttiyritystä."
+},
+"61152": {
+"ala": "IT ja ohjelmistot",
+"kunta": "Kullaa",
+"maakunta": "Satakunta",
+"otsikko": "Kaivinkonesimulaattori ja ohjelmisto, Kullaa",
+"perustelu": "Kyseessä on laitteisto- ja ohjelmistokokonaisuus (simulaattori, lisenssit, ohjausjärjestelmä), joka vaatii erikoistunutta toimittajaa; pienen yrityksen on vaikea tarjota sitä yksin, vaikka arvo on alle 100 000 euroa.",
+"pienyritys": "iso",
+"selko": "Hankintayksikkö etsii liikkuvaa kaivinkonesimulaattoria koulutuskäyttöön. Mukana ovat ajoneuvomaiset ohjaimet, VR/XR-lasit, Novatron Xsite 3D -ohjausjärjestelmä, lisenssit, suomenkielinen käyttötuki ja ensimmäisen vuoden päivitykset. Toimitus, asennus ja koulutus tehdään Kullaan Sahalahdentielle. Aikataulua ei ilmoituksessa mainita."
+},
 "61156": {
 "ala": "Rakentaminen ja korjaus",
 "kunta": "Tampere",
@@ -12859,6 +12625,15 @@
 "perustelu": "Paikallinen kaivu- ja putkityö kaupungin alueella voi sopia pienelle yritykselle, mutta vesi- ja viemärityö kaupunkialueella voi vaatia suuren toimijan kokemusta ja kapasiteettia.",
 "pienyritys": "ehka",
 "selko": "Tampereen kaupunki kilpailuttaa urakan, jossa rakennetaan vesijohto, jätevesiviemäri ja hulevesiviemärit Hakametsän alueelle Tampereella, noin 3 km keskustasta itään. Työt tehdään jäähallin pihalla ja lähikaduilla, ja urakka on tarkoitus viedä suunnitelmien mukaan valmiiksi. Aikataulu ja arvioitu arvo eivät ole ilmoituksessa tiedossa."
+},
+"61157": {
+"ala": "Sosiaali- ja terveyspalvelut",
+"kunta": "Lappeenranta",
+"maakunta": "Etelä-Karjala",
+"otsikko": "Selkäytimen takajuostestimulaattorit, Lappeenranta (Etelä-Karjala)",
+"perustelu": "Lääketieteellisiä laitteita koskeva puitesopimus vaatii todennäköisesti laitevalmistajan tai -maahantuojan kykyjä, kuten teknistä tukea, takuu- ja varaosapalveluja sekä kansainvälistä toimitusketjua.",
+"pienyritys": "iso",
+"selko": "Etelä-Karjalan hyvinvointialue hankkii selkäytimen takajuostestimulaattoreita kipupoliklinikalle Lappeenrantaan, ja myös niiden lisätarvikkeita sekä ladattavia ja ei-ladattavia malleja. Sopimus alkaa 1.2.2027 ja on voimassa 31.1.2029 asti, jonka jälkeen se jatkuu toistaiseksi. Tilaaja valitsee kolme toimittajaa, eikä määrää ole sitoutettu."
 },
 "61159": {
 "ala": "Rakentaminen ja korjaus",
@@ -12869,6 +12644,15 @@
 "pienyritys": "iso",
 "selko": "Kunta etsii urakoitsijaa purkamaan vanhan 1-kerroksisen koulurakennuksen (noin 1500 m²) ja saunarakennuksen (noin 100 m²) osoitteessa Sammalkankaantie 280. Rakennuksissa on asbestia ja PCB:tä, joten purkutyö ja jätteiden vienti hyväksyttyihin vastaanottopaikkoihin on tehtävä luvallisesti. Tarjoajan on käytävä kohteessa paikan päällä ennen tarjouksen jättämistä."
 },
+"61164": {
+"ala": "Ajoneuvot ja koneet",
+"kunta": "Kuopio",
+"maakunta": "Pohjois-Savo",
+"otsikko": "Linja-autokuljetukset seurakunnan leirikeskuksiin, Kuopio",
+"perustelu": "Hankinta on jaettu neljään osa-alueeseen paikkakunnittain, ja yksi osa-alue voi olla pienelle paikalliselle linja-autoyrittäjälle realistinen, vaikka arvo kokonaisuutena on suuri.",
+"pienyritys": "sopii",
+"selko": "Kuopion seurakuntayhtymä hakee linja-autokuljetuksia henkilöille Kuopion keskustasta, Järvi-Kuopion kunnista sekä Karttulasta ja Maanignasta Poukamaan ja Rytkyn leirikeskuksiin. Sopimus on yksi vuosi (1.2.2027–31.1.2028), ja siihen on kaksi optiovuotta, joten enimmillään se kestää vuoteen 2030 asti. Hankinta on jaettu neljään osa-alueeseen, ja jokaiseen valitaan yksi toimittaja."
+},
 "61165": {
 "ala": "Sähkö, LVI ja talotekniikka",
 "kunta": "Lempäälä",
@@ -12877,6 +12661,303 @@
 "perustelu": "Hankinta on jaettu viiteen osa-alueeseen ja tehdään puitejärjestelyllä, jossa valitaan kolme toimittajaa per osa-alue, ja töitä tilataan tarpeen mukaan pieninä urakoina, mikä sopii paikalliselle pienyritykselle.",
 "pienyritys": "sopii",
 "selko": "Lempäälän kunta ja sen tytäryhtiöt hankkivat talotekniikan korjaus- ja kunnossapitotöitä kiinteistöihinsä. Töitä ostetaan tuntihinnoilla ja pieninä kokonaishintaisina urakoina (alle 60 000 euroa, alv 0 %). Sopimuskausi on 1.1.2027–31.12.2028, ja sitä voi jatkaa kahdella vuodella (1.1.2029–31.12.2030)."
+},
+"61166": {
+"ala": "Ajoneuvot ja koneet",
+"kunta": "",
+"maakunta": "Pohjois-Pohjanmaa",
+"otsikko": "Pelastustoimen palopuvut – Pohjois-Pohjanmaa ja Keski-Pohjanmaa",
+"perustelu": "Osa-alueisiin jaettu hankinta voi mahdollistaa pienemmän toimittajan tarjouksen yhteen osaan, mutta laajuus ja alueelliset sopimukset puoltavat isompaa toimijaa.",
+"pienyritys": "ehka",
+"selko": "Pohjois-Pohjanmaan ja Keski-Pohjanmaan hyvinvointialueet hankkivat pelastuslaitoksille palopukuja viidessä osassa: palopuvut valjailla, kolme kalvopukumallia (myös naisten mitoitus) ja tekninen pelastuspuku sekä maastopalopuku. Sopimus on voimassa 28.2.2029 asti, alkaen aikaisintaan 1.3.2027, ja siinä on mahdollisuus kahteen vuoden mittaiseen jatkokauteen. Tarjouksen voi jättää yhteen tai useampaan osaan, eikä määrä ole sitova."
+},
+"61170": {
+"ala": "Konsultointi ja asiantuntijat",
+"kunta": "Laitila",
+"maakunta": "Varsinais-Suomi",
+"otsikko": "Rakennuttajakonsultti- ja valvontapalvelut kerrostalohankkeeseen, Laitila",
+"perustelu": "Työ on paikallinen, mutta laaja ja vaatii rakennuttamisen ja työmaavalvonnan kokemusta sekä omia työvälineitä, joten sopii parhaiten pienelle rakennuttajakonsulttitoimistolle, jolla on vahvaa alan osaamista.",
+"pienyritys": "ehka",
+"selko": "Laitilan Talot Oy hakee rakennuttajakonsulttia ja työmaavalvojaa noin 25–35 asunnon kerrostalon rakentamiseen Laitilan keskustaan. Palveluun kuuluvat hankkeen suunnittelu, KVR-urakan kilpailutus ja työmaavalvonta suunnitteluvaiheesta takuuaikaan asti. Hankintayksikkö valitsee yhden palveluntuottajan."
+},
+"61172": {
+"ala": "Rakentaminen ja korjaus",
+"kunta": "Haapajärvi",
+"maakunta": "Pohjois-Pohjanmaa",
+"otsikko": "Jukolan päiväkodin laajennus, vaihe 3 – Haapajärvi",
+"perustelu": "KVR-urakka rakennuksen laajennukseen noin 800 000 euron arvosta vaatii yleensä rakennusliikkeeltä, jolla on suunnittelu- ja rakentamiskapasiteettia, joten pienelle yritykselle se on todennäköisesti liian suuri kokonaisuus ellei se toimi aliurakoitsijana.",
+"pienyritys": "iso",
+"selko": "Haapajärven kaupunki hakee urakoitsijaa Jukolan päiväkodin laajennukseen. Urakka tehdään KVR-periaatteella eli suunnittelu, rakentaminen ja muut vaiheet kootaan yhdelle toimittajalle hankinta-asiakirjojen mukaisesti. Arvioitu arvo on noin 800 000 euroa."
+},
+"61176": {
+"ala": "Muut",
+"kunta": "",
+"maakunta": "Keski-Suomi",
+"otsikko": "Sähköenergian hankinta asunnoille ja kiinteistöille, Ääneseutu",
+"perustelu": "Sähköenergian toimitus noin miljoonan kilowattitunnin vuosikulutukselle vaatii kokonaisuutena suuren sähkökaupan toimijan, vaikka pieni yritys voi harvoin tarjota sitä yksin.",
+"pienyritys": "iso",
+"selko": "Ääneseudun Asunnot Oy kilpailuttaa sähköenergian toimitusta huoneistoihinsa ja kiinteistöihinsä. Arvioitu kulutus on noin 1 000 000 kWh vuodessa, ja mukana on noin 63 käyttöpaikkaa. Siirtomaksut ja verkkoyhtiön verot eivät kuulu kilpailutettavaan hintaan."
+},
+"61179": {
+"ala": "Konsultointi ja asiantuntijat",
+"kunta": "",
+"maakunta": "Uusimaa",
+"otsikko": "Päästömittaukset Espoossa ja Kirkkonummella 2027–2031 (Fortum)",
+"perustelu": "Päästömittaukset ovat asiantuntijapalvelu, johon pieni erikoistunut yritys voi tarjota, mutta suuren sopimuksen laajuus ja kilpailutuksen muoto voivat rajata mukaan vain isommat toimijat.",
+"pienyritys": "ehka",
+"selko": "Fortum Power and Heat Oy kilpailuttaa päästömittauksia kaukolämpö- ja kylmäliiketoimintaan Espoon ja Kirkkonummen alueella. Sopimus koskee vuosia 2027–2031. Tämä on esivalinta, eli ensin valitaan sopivat tarjoajat, joita kutsutaan myöhemmin tarjoamaan."
+},
+"61188": {
+"ala": "Ajoneuvot ja koneet",
+"kunta": "",
+"maakunta": "",
+"otsikko": "Sotilaskalusteet (sängyt, päädyt, kaapit) – Senaatti-kiinteistöt, Suomi",
+"perustelu": "Kyse on noin 9,16 miljoonan euron kokonaisarvoisesta kalustehankinnasta neljälle toimittajalle, mikä vaatii todennäköisesti suuren valmistajan tai jakelijan kapasiteetin ja tuotantomäärät.",
+"pienyritys": "iso",
+"selko": "Senaatti-kiinteistöt hankkii Puolustusvoimille sotilaskalusteita neljässä osassa: sotilassänkyjä (vakio ja 220 cm), sängynpäätyjä, sotilaskaappeja sekä pöytäkalusteita. Jokaiseen osaan valitaan yksi toimittaja, ja kuljetus ja asennus sisältyvät hintaan. Kiinteistöjen ja logistiikkalaitoksen tilaukset tehdään omilla sopimuksillaan, ja aikataulua ei ilmoituksessa mainita."
+},
+"61189": {
+"ala": "Rakentaminen ja korjaus",
+"kunta": "Virolahti",
+"maakunta": "Kymenlaakso",
+"otsikko": "Hurpun merivartioaseman kokonaisurakka, Virolahti",
+"perustelu": "Kokonaisurakka uudisrakentamisena ja purkuna vaatii todennäköisesti suuren rakennusliikkeen, ellei pieni yritys voi toimia aliurakoitsijana.",
+"pienyritys": "iso",
+"selko": "Senaatti-kiinteistöt hakee urakoitsijaa uuden merivartioaseman rakentamiseen Hurpun kohteeseen. Urakkaan kuuluu myös vanhan aseman purku suunnitelmien mukaan. Asiakirjat ovat saatavilla Buildercom-palvelussa 2.11.2026 alkaen."
+},
+"61193": {
+"ala": "Sosiaali- ja terveyspalvelut",
+"kunta": "",
+"maakunta": "Uusimaa",
+"otsikko": "HbA1c-vieritestauslaitteet ja tarvikkeet HUS-alueelle",
+"perustelu": "Laitteet ja tarvikkeet toimitetaan laajalle hoitoyksikköverkostolle ja vaativat laitevalmistajalta tai suurelta toimijalta teknistä tukea, verifiointia ja potilastietojärjestelmäliitäntöjä.",
+"pienyritys": "iso",
+"selko": "HUS-yhtymä hankkii HbA1c-vieritestauslaitteita tarvikkeineen HUS Diagnostiikkakeskuksen hoitoyksiköille ja laboratorioille. Hankinta on 4 vuoden sopimus, jonka jälkeen se jatkuu toistaiseksi. Tilaajalla ei ole ostovelvoitetta eikä vähimmäistilausmäärää."
+},
+"61194": {
+"ala": "Rakentaminen ja korjaus",
+"kunta": "Kankaanpää",
+"maakunta": "Satakunta",
+"otsikko": "Ovi- ja ikkunasaneeraus, Kankaanpää ja Honkajoki (2027)",
+"perustelu": "Osat ovat rajattuja kohdekohtaisia töitä, mutta Jalavankadun 138 ikkunan urakka ja sisältyvä LVI-työ vaativat todennäköisesti kokeneen rakennusliikkeen, joten pieni yritys voi tarjota vain Kankaistonpellon osaan.",
+"pienyritys": "ehka",
+"selko": "Kankaanpään Asunnonhankinta Oy hakee toimittajia kahteen osaan jaettuun saneeraukseen. Osa 1 koskee Kankaistonpellon rivitaloyhtiön 48 ulko-ovea ja 72 terassi- tai parvekeovea Kankaanpäässä. Osa 2 koskee Jalavankadun kaksi kerrostaloa Kankaanpäässä, joissa vaihdetaan 138 ikkunaa, 3 yleistilojen ovea, 8 tuuletusparvekkeen ovea ja 28 parvekeovea. Työt tehdään vuoden 2027 aikana."
+},
+"61196": {
+"ala": "Ajoneuvot ja koneet",
+"kunta": "",
+"maakunta": "",
+"otsikko": "Terveydenhuollon instrumentit ja tarvikkeet, DPS (Sansia Oy)",
+"perustelu": "Järjestelmään voi liittyä koko voimassaoloajan ja tuoteryhmät ovat laajoja, mutta erikoisinstrumenteissa ja hyvinvointialueiden tarpeissa tarvitaan usein suuren toimijan tuotevalikoimaa ja logistiikkaa.",
+"pienyritys": "ehka",
+"selko": "Sansia Oy perustaa dynaamisen hankintajärjestelmän, jonka kautta sen omistaja-asiakkaat, kuten hyvinvointialueet, voivat ostaa terveydenhuollon instrumentteja, tarvikkeita ja välineitä. Mukana ovat mm. moni- ja kertakäyttöiset instrumentit, erikoisalojen välineet, optiset apuvälineet ja luuppivalot. Järjestelmään voi hakeutua koko voimassaoloajan osallistumishakemuksella, ja järjestelmä päättyy 31.12.2036."
+},
+"61200": {
+"ala": "Kalusteet ja tarvikkeet",
+"kunta": "",
+"maakunta": "Pohjois-Savo",
+"otsikko": "Kaksi sähkösäätöistä tutkimuspöytää, Pohjois-Savo",
+"perustelu": "Kahden pöydän hankinta on pieni, mutta lääkinnällisten laitteiden vaatimukset ja mahdollinen toimitus- ja asennusvelvoite voivat rajata tarjoajia.",
+"pienyritys": "ehka",
+"selko": "Pohjois-Savon hyvinvointialueen naistentautien poliklinikka hankkii kaksi sähkösäätöistä tutkimuspöytää kolposkopiatutkimuksiin. Pöydät hankitaan vuosina 2026–2027, ja alueella on lisäksi oikeus ostaa enintään kaksi lisää optiona sopimuskauden aikana."
+},
+"61201": {
+"ala": "Rakentaminen ja korjaus",
+"kunta": "Helsinki",
+"maakunta": "Uusimaa",
+"otsikko": "Aallonvaimenninlaituri Helsinkiin, suunnittelu ja asennus",
+"perustelu": "Kyse on suunnittelu-, valmistus- ja asennusurakasta kokonaishintaurakkana, jossa vaaditaan vahvaa rakennus- ja meriteknistä osaamista ja kantokykyä, joten se sopii paremmin isommalle toimijalle tai konsortiolle.",
+"pienyritys": "iso",
+"selko": "Rajavartiolaitos hakee tarjoajaa aallonvaimenninlaiturin suunnitteluun, valmistukseen, kuljetukseen ja asennukseen Helsinkiin. Työ tehdään kokonaishintaurakkana urakka-asiakirjojen mukaisesti. Ilmoituksessa ei mainita aikataulua eikä kestoa."
+},
+"61202": {
+"ala": "Markkinointi ja viestintä",
+"kunta": "Loviisa",
+"maakunta": "Uusimaa",
+"otsikko": "Viestintä- ja markkinointipalvelut, Loviisan kaupunki",
+"perustelu": "Osa-alueisiin voi tarjota erikseen ja puitejärjestelyyn valitaan useita toimittajia, mutta kokonaisarvo ja laajuus voivat vaatia suuremman toimijan.",
+"pienyritys": "ehka",
+"selko": "Loviisan kaupunki etsii viestintä- ja markkinointipalveluja kahteen osa-alueeseen: viestintään ja markkinointiin. Tarjoaja voi tarjota toiseen tai molempiin. Sopimus alkaa arviolta 1.2.2027, kestää 2 vuotta ja siihen sisältyy kaksi yhden vuoden optiokautta. Kokonaisarvo on 600 000 €."
+},
+"61205": {
+"ala": "Ajoneuvot ja koneet",
+"kunta": "",
+"maakunta": "Etelä-Savo",
+"otsikko": "Opetuskuorma-auto kuljettajakoulutukseen, Samiedu (Sansia Oy)",
+"perustelu": "Yksittäinen ajoneuvo ilman ilmoitettua arvoa, mutta kuorma-autojen toimittaminen vaatii yleensä merkkiedustusta ja huoltoverkostoa, joten pienelle yritykselle sopii lähinnä jälleenmyyjänä tai alihankkijana toimiminen.",
+"pienyritys": "ehka",
+"selko": "Sansia Oy hankkii yhden opetuskuorma-auton ammatilliseen kuljettajakoulutukseen Itä-Savon koulutuskuntayhtymä Samiedulle. Auton on sovelluttava C-ajokortin opetukseen, kuorma-auton tekniikan opetukseen ja kuorman käsittelyn harjoitteluun. Arvioitu ajomäärä on 10 000–20 000 km vuodessa. Aikataulua tai arvoa ei ilmoitettu."
+},
+"61207": {
+"ala": "Markkinointi ja viestintä",
+"kunta": "",
+"maakunta": "Keski-Pohjanmaa",
+"otsikko": "Keski-Pohjanmaan hyvinvointialue: painotuotteiden puitehankinta 2027–2029",
+"perustelu": "Puitejärjestely valitsee vain 2–4 toimittajaa ja vaatii tarjouksen useimmin tilattavista tuotteista, mikä voi olla raskasta pienelle yritykselle, mutta minikilpailut tarjoavat mahdollisuuden hankkia tilauksia myös muina aikoina.",
+"pienyritys": "ehka",
+"selko": "Keski-Pohjanmaan hyvinvointialue Soite hankkii painotuotteita (painotuotteet = esim. painotyöt ja painetut tuotteet). Sopimuskausi on 1.1.2027–31.12.2029, ja vuodelle 2030 on mahdollinen optio. Hankinta on usean toimittajan puitejärjestely, johon valitaan 2–4 toimittajaa."
+},
+"61210": {
+"ala": "Kalusteet ja tarvikkeet",
+"kunta": "Tampere",
+"maakunta": "Pirkanmaa",
+"otsikko": "Kankaat ja ompelutarvikkeet Tampere ja Pirkanmaa, Kanta-Häme",
+"perustelu": "Puitesopimuksessa on enintään kuusi toimittajaa ja tilaukset tehdään tarpeen mukaan, mikä sopii hyvin pienelle ompelu- tai kangasalan yritykselle, vaikka ennakoitu arvo on noin 800 000 euroa koko kaudelta.",
+"pienyritys": "sopii",
+"selko": "Hankinnassa ostetaan kankaita, perusompelutarvikkeita ja ompelupalveluita Tampereen kaupungille, Pirkanmaan hyvinvointialueelle ja Kanta-Hämeen hyvinvointialueelle, myymälästä tai verkkokaupasta. Sopimuskausi on 1.1.2027–31.12.2027, ja sen jälkeen voi olla optiokausi. Puitesopimukseen valitaan enintään kuusi toimittajaa, eikä tilaaja sitoudu tiettyihin määriin."
+},
+"61212": {
+"ala": "Kuljetus ja logistiikka",
+"kunta": "Tornio",
+"maakunta": "Lappi",
+"otsikko": "Satunnaiset päiväkuljetukset (DPS), Tornio",
+"perustelu": "Yksittäiset kuljetukset kilpailutetaan erikseen ja järjestelmään voi hakea mukaan vain tilatakseilla tai pikkubusseilla, ja ehdokasmäärää ei rajoiteta.",
+"pienyritys": "sopii",
+"selko": "Tornion kaupunkikonserni perustaa dynaamisen hankintajärjestelmän satunnaisille päiväkuljetuksille, joissa käytetään tilatakseja, pikkubusseja tai linja-autoja. Järjestelmä on voimassa 1.1.2027–31.12.2034 ja se on koko ajan avoin uusille hyväksytyille toimittajille. Yksittäiset kuljetukset kilpailutetaan erikseen ja tilataan sähköisen hankintajärjestelmän kautta."
+},
+"61216": {
+"ala": "Konsultointi ja asiantuntijat",
+"kunta": "Tuusula",
+"maakunta": "Uusimaa",
+"otsikko": "Isännöinti ja taloushallinto Tuusulan sote-keskukselle ja pysäköintilaitokselle",
+"perustelu": "Kokonaisuus on yksi sopimus molemmille kohteille, ja se vaatii kiinteistöjen isännöintiin ja taloushallintoon ammattimaista, laajaa toimijaa, joten pieni yritys ei todennäköisesti pysty tarjoamaan yksin.",
+"pienyritys": "iso",
+"selko": "Keski-Uudenmaan hyvinvointialue ja Tuusulan kunta etsivät yhtä palveluntuottajaa hoitamaan kahden uuden kiinteistöosakeyhtiön isännöinnin ja taloushallinnon: sote-keskuksen (9 275 brm2, Rykmentin puistotie 7) ja Varuskunnan aukion pysäköintilaitoksen (563 autopaikkaa, Rykmentin puistotie 5), Tuusula. Taloushallinto alkaa joulukuussa 2026 ja isännöinti syksyllä 2027, ja sopimukset ovat toistaiseksi voimassa; sote-keskus otetaan käyttöön toukokuussa 2029."
+},
+"61217": {
+"ala": "Konsultointi ja asiantuntijat",
+"kunta": "Juuka",
+"maakunta": "Pohjois-Karjala",
+"otsikko": "Retulahden alueen suunnittelu, vaihe 2, Juuan kunta",
+"perustelu": "Suunnittelupalvelu paikalliselle alueelle voi sopia pienelle suunnittelutoimistolle, mutta infrasuunnittelu voi vaatia suuremman toimijan osaamista ja kapasiteettia.",
+"pienyritys": "ehka",
+"selko": "Juuan kunta hankkii Retulahden alueen vaiheen 2 rakentamis- ja infrasuunnittelun, pohjana voimassa oleva asemakaava. Kohteen esittely on Teamsissa 10.11.2026 klo 12.00 alkaen (ilmoittautuminen 9.11.2026 klo 15.00 mennessä) ja paikan päällä tutustuminen Retuniementie 36, Juuka 17.11.2026 klo 10.00 (ilmoittautuminen 16.11.2026 klo 15.00 mennessä). Tarjous tehdään suomeksi ja on sitova."
+},
+"61219": {
+"ala": "Ajoneuvot ja koneet",
+"kunta": "",
+"maakunta": "Pirkanmaa",
+"otsikko": "Suojavaatteet opiskelijoille ja henkilökunnalle, Hämeenkyrö–Tampere",
+"perustelu": "Hankinta on jaettu osiin ja tarjous voi koskea vain yhtä osaa, mutta sovitustilaisuuksien järjestäminen useilla paikkakunnilla ja laaja toimitusvalmius vaativat isompaa toimijaa; osa-alueet ja logopainatus voivat silti sopia paikalliselle pienyritykselle.",
+"pienyritys": "ehka",
+"selko": "SASKY koulutuskuntayhtymä hankkii opiskelijoilleen ja henkilökunnalleen suojavaatteita 1.1.2027–31.12.2028, ja lisäksi on kaksi yhden vuoden optiokautta. Hankinta on jaettu kolmeen osaan: teolliset suojavaatteet tekniikan ja liikenteen aloille, palvelualojen suojavaatteet sekä logopainatus; tarjous pitää jättää logopainatukseen ja vähintään yhteen muista osista. Tarjoajan pitää järjestää sovitukset opetuspisteissä elokuussa ja tuottaa toimitukset 1 viikossa tilauksesta."
+},
+"61223": {
+"ala": "Muut",
+"kunta": "",
+"maakunta": "Lappi",
+"otsikko": "Palveluhankinta, Lappi",
+"perustelu": "Ilmoituksessa ei ole tarpeeksi tietoa palvelun sisällöstä, joten sopivuutta ei voi arvioida luotettavasti.",
+"pienyritys": "ehka",
+"selko": "Hankinnassa on kyse palveluiden ostosta. Arvioitua arvoa ei ole ilmoitettu, eikä ilmoituksessa ole kuvausta siitä, mitä palveluita tarvitaan tai millä aikataululla."
+},
+"61224": {
+"ala": "Konsultointi ja asiantuntijat",
+"kunta": "",
+"maakunta": "",
+"otsikko": "Laboratoriovaakojen akkreditoitu kalibrointi ja huolto, Tullilaboratorio",
+"perustelu": "Vaatii akkreditoidun kalibrointipalvelun ja laboratoriotason osaamista, joten sopii todennäköisesti vain erikoistuneille suuremmille toimijoille.",
+"pienyritys": "iso",
+"selko": "Tullilaboratorion 21 laboratoriovaakaa (analyysi-, yläkuppi- ja lattiavaakoja) kalibroidaan akkreditoidusti kerran kahdessa vuodessa kalibrointisuunnitelman mukaan. Vaakojen määrä ja tyypit voivat muuttua sopimuskauden aikana."
+},
+"61231": {
+"ala": "Rakentaminen ja korjaus",
+"kunta": "Joutseno",
+"maakunta": "Etelä-Karjala",
+"otsikko": "Joutsenon vastaanottokeskuksen uusi asiointitila: rakennusurakka, huolto ja valvonta",
+"perustelu": "Kyseessä on avaimet käteen -rakennusurakka suunnittelusta ylläpitoon, mikä vaatii yleensä suuren rakennusliikkeen tai konsortion, vaikka valvonta-osa voisi olla pienemmälle toimijalle sopiva.",
+"pienyritys": "iso",
+"selko": "Maahanmuuttovirasto hankkii Joutsenon vastaanottokeskuksen alueelle uuden siirrettävän asiointitilan. Hankinta on jaettu kahteen osaan: rakennusurakkaan (suunnittelu, rakentaminen ja huolto) sekä rakennusvalvonta- ja turvallisuuskoordinaattoripalveluihin. Aikataulua tai kestoa ei ilmoitettu."
+},
+"61238": {
+"ala": "Rakentaminen ja korjaus",
+"kunta": "Espoo",
+"maakunta": "Uusimaa",
+"otsikko": "Kulkurinmäki 1/Mustanotko 3: katon ja julkisivun korjaus ja maalaus, Espoo",
+"perustelu": "Yhden kiinteistön rajattu korjaus- ja maalaustyö Espoossa on tyypillinen pienen rakennusalan yrityksen kohde, vaikka kattotöissä vaaditaan turvallisuusosaamista.",
+"pienyritys": "sopii",
+"selko": "Espoon Asunnot Oy hakee urakoitsijaa yhden kiinteistön konesaumakattojen paikkakorjauksiin ja pinnoitukseen sekä betonijulkisivujen pesuun, huoltomaalaukseen ja pieniin paikkakorjauksiin. Urakkaan kuuluu enintään 15 pientä paikkakorjausta, joiden kukin on enintään 100 cm² ja enintään 20 mm syvä. Ruosteisesta teräksestä johtuva lisätyö laskutetaan erikseen. Aikataulua ja kestoa ei ilmoituksessa mainita."
+},
+"61239": {
+"ala": "Kiinteistöhuolto ja siivous",
+"kunta": "Tohmajärvi",
+"maakunta": "Pohjois-Karjala",
+"otsikko": "Tohmajärven kunnan teknisen päivystyksen palvelut 2027–2028",
+"perustelu": "Päivystyspalvelu on paikallinen ja voisi sopia pienelle paikalliselle toimijalle, mutta laajuus ja vesihuoltolaitoksen vaatimukset voivat rajata pienyritykset ulos.",
+"pienyritys": "ehka",
+"selko": "Tohmajärven kunta kilpailuttaa kiinteistöjen ja vesihuoltolaitoksen teknisen päivystyksen. Sopimus olisi voimassa 1.1.2027–31.12.2028, ja sitä voi jatkaa kahdella yhden vuoden optiolla. Tarjous tehdään suomeksi ja se on sitova."
+},
+"61246": {
+"ala": "Muut",
+"kunta": "",
+"maakunta": "Lappi",
+"otsikko": "Tarvikehankinta, Lappi (FI19B)",
+"perustelu": "Tarvikehankinnat voivat sopia pienyrityksille, mutta ilmoituksesta ei selviä tavaroiden laatua tai laajuutta.",
+"pienyritys": "ehka",
+"selko": "Hankinnassa ostetaan tarvikkeita. Ilmoituksessa ei ole tarkempaa kuvausta tavaroista eikä aikataulua. Arvioitua arvoa ei ole ilmoitettu."
+},
+"61247": {
+"ala": "Rakentaminen ja korjaus",
+"kunta": "Huittinen",
+"maakunta": "Satakunta",
+"otsikko": "Sallilan uusi koulu- ja päiväkotirakennus, Huittinen",
+"perustelu": "Kokonaisurakka, jossa on suunnittelu, siirtokelpoisten moduulien toimitus ja nosto sekä tiukka aikataulu ja korkeat viivästyssakot, vaatii yleensä suuren rakennusliikkeen.",
+"pienyritys": "iso",
+"selko": "Huittisten kaupunki hakee toimittajaa rakentamaan uuden siirtokelpoisen koulu- ja päiväkotirakennuksen Sallilantie 63:een, Vampulaan (Huittinen), kokonaisurakkana, johon kuuluu suunnittelu, toimitus, asennus, perustukset ja pihat. Rakentaminen tehdään 19.7.–26.11.2027, ja tilat pitää luovuttaa valmiina viimeistään 26.11.2027."
+},
+"61248": {
+"ala": "Rakentaminen ja korjaus",
+"kunta": "Kristiinankaupunki",
+"maakunta": "Pohjanmaa",
+"otsikko": "Vesivahingon korjaus ja vesikaton uusiminen, Kristiinankaupunki",
+"perustelu": "Yksittäinen pienehkö korjaus- ja kattotyö yhdessä paikallisessa rakennuksessa sopii hyvin paikalliselle pienelle rakennusalan yritykselle.",
+"pienyritys": "sopii",
+"selko": "Kristiinankaupunki etsii urakoitsijaa korjaamaan vesivahingon ja uusimaan vesikaton Lapväärtin urheilukentän huoltorakennuksessa (Finngärdinkuja 11). Rakennus on yksikerroksinen. Arvioitu arvo ja aikataulu eivät ilmoituksessa selviä."
+},
+"61258": {
+"ala": "Ajoneuvot ja koneet",
+"kunta": "",
+"maakunta": "Pohjois-Karjala",
+"otsikko": "Käytetty pyöräkuormaaja, Riveria, Pohjois-Karjala",
+"perustelu": "Yksittäisen käytetyn koneen myynti sopii periaatteessa pienelle koneliikkeelle, mutta hankinnan arvo ei ole tiedossa ja kilpailu voi olla kovaa.",
+"pienyritys": "ehka",
+"selko": "Pohjois-Karjalan koulutuskuntayhtymä Riveria ostaa käytetyn pyöräkuormaajan opetuskäyttöön kaivos-, maanrakennus- ja infrarakennusalalle. Koneen vuosimallin tulee olla vähintään 2015 ja sillä saa olla enintään 10 000 ajettua tuntia. Tarjous on sitova ja tehdään suomeksi."
+},
+"61260": {
+"ala": "Rakentaminen ja korjaus",
+"kunta": "Kauhava",
+"maakunta": "Etelä-Pohjanmaa",
+"otsikko": "Alahärmän vanhan terveyskeskuksen purku, Kauhavan kaupunki",
+"perustelu": "Purkutyö on paikallinen, mutta kokonaisurakka ja mahdollisesti suuri kohde voivat vaatia suurempaa toimijaa tai aliurakointia.",
+"pienyritys": "ehka",
+"selko": "Kauhavan kaupunki hakee urakoitsijaa Alahärmän vanhan terveyskeskuksen purkamiseen Kanttorintie 5:ssä, Härmässä. Kyseessä on kokonaisurakka, ja työ tehdään tarjouspyyntöasiakirjojen mukaisesti. Urakan arvo ja aikataulu eivät ilmene ilmoituksesta."
+},
+"61262": {
+"ala": "Rakentaminen ja korjaus",
+"kunta": "Joensuu",
+"maakunta": "Pohjois-Karjala",
+"otsikko": "Latolankatu 15b, B- ja D-rappujen muutostyöt, Joensuu",
+"perustelu": "Paikallinen korjausurakka kaupungin asuinkiinteistössä, jonka voi toteuttaa pieni rakennusalan yritys.",
+"pienyritys": "sopii",
+"selko": "Joensuun Ellin Kodit Oy hankkii muutostöitä asuinkiinteistön Latolankatu 15b B- ja D-rappujen kolmioihin, mukaan lukien purkutyöt. Töiden laajuus on tarjouspyynnön ja urakka-asiakirjojen mukainen. Rakennuspaikan esittely on 16.11.2026 klo 14–15, ja tarjous tehdään suomeksi."
+},
+"61263": {
+"ala": "Kalusteet ja tarvikkeet",
+"kunta": "Seinäjoki",
+"maakunta": "Etelä-Pohjanmaa",
+"otsikko": "Kaasut, kaasupullot ja kylmäaineet Seinäjoen opetuspisteisiin",
+"perustelu": "Tilaukset tehdään tarpeen mukaan eri kunnissa ja osatarjoukset ovat mahdollisia, mutta kaasujen toimitus ja kylmäaineiden hankinta vaatii todennäköisesti vakiintunutta toimitusverkostoa ja mahdollisesti lääkinnällisten kaasujen käsittelyosaamista.",
+"pienyritys": "ehka",
+"selko": "Seinäjoen koulutuskuntayhtymä (Sedu) hakee toimittajaa opetuskäyttöön tarvittaville kaasuille, kaasupullojen ja pullopakettien vuokrille sekä kylmäaineille useisiin opetuspisteisiin Etelä-Pohjanmaalla. Sopimus alkaa 1.1.2027 ja kestää vuoden kerrallaan, enintään 31.12.2029 asti. Hankinta on jaettu kahteen osaan (kaasut ja vuokraus sekä kylmäaineet), ja tilaukset tehdään tarpeen mukaan."
+},
+"61272": {
+"ala": "Konsultointi ja asiantuntijat",
+"kunta": "Outokumpu",
+"maakunta": "Pohjois-Karjala",
+"otsikko": "Outokummun kaupungin ja tytäryhteisöjen tilintarkastus 2027–2030",
+"perustelu": "Arvioitu arvo on 120 000 euroa ja työ vaatii tilintarkastuslain mukaisen pätevyyden, joten sopii parhaiten tilintarkastusyhteisölle, jolla on riittävä kapasiteetti ja pätevyys.",
+"pienyritys": "ehka",
+"selko": "Outokummun kaupunki ja sen tytäryhteisöt hakevat tilintarkastuspalvelua tilikausille 2027–2030. Sopimuskausi on 1.8.2027–31.7.2031. Lisäksi pyydetään optiona tarkastuslautakunnan sihteerin tehtäviä, joita voidaan ottaa käyttöön myöhemmin sopimuskaudella."
 },
 "6181": {
 "ala": "Sosiaali- ja terveyspalvelut",
