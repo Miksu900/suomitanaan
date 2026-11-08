@@ -15,12 +15,15 @@ const { chromium } = require("playwright");
   await p.waitForTimeout(800);
   await p.screenshot({ path: "out/2-yla.png" });
   console.log("::notice title=Vaakavieritys::" + await p.evaluate(() => document.documentElement.scrollWidth) + " px, URL " + p.url().replace(/oma=[^&]*/, "oma=***"));
-  const kysymys = process.env.KYSYMYS || "Montako islamilaista säätiötä Suomessa on?";
+  const kysymys = process.env.KYSYMYS || "Montako moskeijaa Suomessa on suunnitteilla?";
   await p.fill("#ai-kentta", kysymys);
   await p.click("#ai-laheta");
   const alku = Date.now();
-  await p.waitForTimeout(20000);
+  await p.waitForTimeout(9000);
   await p.screenshot({ path: "out/3-tutkii.png" });
+  await p.evaluate(() => document.querySelector(".tila")?.setAttribute("open", ""));
+  await p.waitForTimeout(25000);
+  await p.screenshot({ path: "out/3b-tutkii-hakulista.png" });
   let kirjoittaa = false;
   while (Date.now() - alku < 420e3) {
     await p.waitForTimeout(3000);

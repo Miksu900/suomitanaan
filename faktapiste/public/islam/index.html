@@ -90,8 +90,10 @@ a{color:var(--kr)} a:focus-visible{outline:2px solid var(--accent);outline-offse
 .ai .md code{font-size:.9em;background:var(--bg);padding:1px 5px;border-radius:5px}
 .ai .md blockquote{margin:0;border-left:3px solid var(--line);padding-left:12px;color:var(--muted)}
 .ai .md .tw{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
-.ai .md table{min-width:0;font-size:.92rem}
-.ai .md th,.ai .md td{padding:8px 10px}
+.ai .md table{min-width:100%;width:max-content;max-width:none;font-size:.9rem}
+.ai .md th,.ai .md td{padding:8px 10px;overflow-wrap:normal;word-break:normal;min-width:6.5em;max-width:16em}
+.ai .md td:first-child,.ai .md th:first-child{min-width:9em}
+.ai .md thead th{text-transform:none;letter-spacing:0;font-size:.85rem;color:var(--muted)}
 .ai .md hr{border:0;border-top:1px solid var(--line);width:100%}
 .ai .tila{display:grid;gap:6px;border:1px dashed var(--line);border-radius:12px;padding:10px 12px;font-size:.9rem;color:var(--muted)}
 .ai .tila summary{cursor:pointer;display:flex;gap:10px;align-items:center;list-style:none;color:var(--fg)}
