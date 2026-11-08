@@ -10,6 +10,7 @@ export const RAJAT = { ipPaiva: 15, kaikkiPaiva: 150, kysymys: 1500, historia: 8
 const KIERROKSET = 10;
 // Koko tutkimuksen enimmäismäärät (kaikki kierrokset yhteensä); sen jälkeen malli kirjoittaa vastauksen ilman työkaluja.
 const BUDJETTI = { haut: 20, sivut: 14 };
+const AIKARAJA = 210e3; // tämän jälkeen ei uusia hakukierroksia, vaan vastaus kirjoitetaan
 
 const fiPv = ms => new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Helsinki" }).format(new Date(ms));
 async function tiiviste(s) { const d = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)); return [...new Uint8Array(d)].map(x => x.toString(16).padStart(2, "0")).join(""); }
@@ -39,7 +40,7 @@ MÄÄRITELMÄT, jotka pitää kertoa vastauksessa aina kun ne vaikuttavat lukuih
 - Erota rekisteröityjen jäsenten määrä muslimitaustaisten arvioidusta määrästä.
 
 VASTAUS:
-- Kirjoita suomeksi, selkeästi ja asiallisesti. Aloita lyhyellä suoralla vastauksella (keskeiset luvut lihavoituna), sitten perustelut ja erittelyt väliotsikoin (##), luetteloin tai taulukoin.
+- Kirjoita suomeksi, selkeästi ja asiallisesti. Käytä vain markdownia (ei HTML-tageja). Aloita lyhyellä suoralla vastauksella (keskeiset luvut lihavoituna), sitten perustelut ja erittelyt väliotsikoin (##), luetteloin tai taulukoin.
 - Anna jokaiselle luvulle päivämäärä tai vuosi ja lähde. Kerro epävarmuus ja määritelmät. Älä koskaan keksi lukuja, nimiä tai lähteitä. Jos tietoa ei löytynyt, sano se suoraan ja kerro, mistä sen voi selvittää (esim. mille viranomaiselle voi tehdä tietopyynnön).
 - Pysy neutraalina ja faktapohjaisena: kerro, mitä lähteet sanovat, älä ota poliittista kantaa. Kiistanalaisissa asioissa esitä eri osapuolten näkemykset lähteineen.
 - Lopeta osioon "## Lähteet": numeroitu luettelo markdown-linkkeinä muodossa [Sivun nimi – julkaisija, pvm](https://osoite). Käytä vain osoitteita, jotka oikeasti löysit tutkimuksen aikana.
@@ -282,14 +283,22 @@ export async function islamKysy(req, env, ctx) {
       laheta({ t: "haku", d: "Aloitan tutkimuksen", jaljella: raja.jaljella });
       // Ylätason cache_control = automaattinen välimuisti koko keskusteluhistorialle joka kierroksella.
       const body = { model: MALLI, max_tokens: 12000, cache_control: { type: "ephemeral" }, system: jarjestelma(), tools: TYOKALUT, messages: msgs };
+      yht.syyt = [];
+      const kirjoitaNyt = () => { const v = body.messages[body.messages.length - 1]; body.tool_choice = { type: "none" };
+        if (v.role === "assistant") body.messages.push({ role: "user", content: "Tutkimusaika tai hakubudjetti on käytetty. Kirjoita nyt lopullinen vastaus löytämiesi tietojen perusteella ohjeiden mukaisesti (lyhyt vastaus, erittelyt, epävarmuudet, ## Lähteet). Älä tee enempää hakuja." }); };
       for (let k = 0; k < KIERROKSET && auki; k++) {
-        if (k === KIERROKSET - 1 || tila.haut >= BUDJETTI.haut || tila.sivut >= BUDJETTI.sivut) body.tool_choice = { type: "none" };
+        if (k === KIERROKSET - 1 || tila.haut >= BUDJETTI.haut || tila.sivut >= BUDJETTI.sivut || Date.now() - alku > AIKARAJA) kirjoitaNyt();
+        tila.teksti = "";
         const { lohkot, syy, kaytto } = await kierros(env, body, laheta, tila);
-        yht.kierrokset++; yht.input += kaytto.input_tokens || 0; yht.cache_luku += kaytto.cache_read_input_tokens || 0; yht.cache_kirjoitus += kaytto.cache_creation_input_tokens || 0; yht.output += kaytto.output_tokens || 0;
+        yht.kierrokset++; yht.syyt.push(syy); yht.input += kaytto.input_tokens || 0; yht.cache_luku += kaytto.cache_read_input_tokens || 0; yht.cache_kirjoitus += kaytto.cache_creation_input_tokens || 0; yht.output += kaytto.output_tokens || 0;
         const st = kaytto.server_tool_use || {}; yht.haut += st.web_search_requests || 0; yht.sivut += st.web_fetch_requests || 0;
-        body.messages = [...body.messages, { role: "assistant", content: lohkot }];
+        if (lohkot.length) body.messages = [...body.messages, { role: "assistant", content: lohkot }];
         if (syy === "pause_turn") continue;
-        if (syy !== "tool_use") break;
+        if (syy !== "tool_use") {
+          // Varmistus: jos lopullista vastausta ei tullut (esim. tyhjä vastaus), pyydetään se vielä kerran ilman työkaluja.
+          if (!tila.teksti.trim() && body.tool_choice?.type !== "none" && k < KIERROKSET - 1) { kirjoitaNyt(); continue; }
+          break;
+        }
         const tulokset = [];
         for (const b of lohkot) {
           if (b.type !== "tool_use") continue;
@@ -305,7 +314,7 @@ export async function islamKysy(req, env, ctx) {
       yht.usd = +((yht.input * 3 + yht.cache_luku * 0.3 + yht.cache_kirjoitus * 3.75 + yht.output * 15) / 1e6 + yht.haut * 0.01).toFixed(2);
       laheta({ t: "loppu", sek: Math.round((Date.now() - alku) / 1000), kaytto: yht });
     } catch (e) {
-      laheta({ t: "virhe", d: "Tutkimus keskeytyi virheeseen. Yritä hetken päästä uudelleen." });
+      laheta({ t: "virhe", d: "Tutkimus keskeytyi virheeseen. Yritä hetken päästä uudelleen." + (onOma ? " [" + String(e.message || e).slice(0, 300) + "]" : "") });
       console.log("islamkysy virhe", String(e.message || e).slice(0, 300));
     }
     try { await w.close(); } catch {}
