@@ -22,10 +22,6 @@ jobs:
           echo "PAGE: $(curl -sS "$B/companies?name=yhdistys&page=2" | jq -c '{n:.totalResults, k:(.companies|length)}')"
           echo "LOM: $(curl -sS "$B/companies?name=islam&companyForm=16" | jq -c '{n:.totalResults}')"
           for Q in "Suomen Islamilainen Yhdyskunta" "Islamilainen" "Suomen Islam-seurakunta" "Rabita" "moske"; do echo "Q $Q: $(curl -sS -G "$B/companies" --data-urlencode "name=$Q" | jq -c '{n:.totalResults, x:[.companies[:8][]|{id:.businessId.value,n:([.names[]|select(.endDate==null)|.name][0]),s:.status,t:.tradeRegisterStatus,e:.endDate,r:[.registeredEntries[]?|select(.endDate==null)|{t:.type,r:.register,a:.authority}]}]}' | head -c 1800)"; done
-      - name: Ei
-        if: false
-        run: |
-          echo
       - name: Kysy live-sivulta
         if: inputs.tila == 'kysy'
         env: { KYS: "${{ inputs.kysymykset }}", CLOUDFLARE_API_TOKEN: "${{ secrets.CLOUDFLARE_API_TOKEN }}" }

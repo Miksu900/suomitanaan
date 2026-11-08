@@ -300,7 +300,8 @@ async function kysy(q){q=q.trim();if(!q||kaynnissa)return;if(q.length>1500){aler
   for(;;){const {value,done}=await rd.read();if(done)break;pus+=value;let i;
    while((i=pus.indexOf("\n"))>=0){const l=pus.slice(0,i);pus=pus.slice(i+1);if(!l.trim())continue;let e;try{e=JSON.parse(l)}catch{continue}
     if(e.t==="teksti"){teksti+=e.d;if(!ajastin)ajastin=requestAnimationFrame(render);st.textContent=`Kirjoitan vastausta · ${haut} hakua tehty`}
-    else if(e.t==="haku"){if(/^(Haen|Luen)/.test(e.d))haut++;const li=document.createElement("li");li.textContent=e.d;ol.append(li);ol.scrollTop=ol.scrollHeight;if(!teksti)st.textContent=e.d.length>70?e.d.slice(0,70)+"…":e.d}
+    else if(e.t==="haku"&&e.jaljella!=null&&e.jaljella<=5){document.getElementById("ai-info").textContent=`Tänään jäljellä ${e.jaljella} kysymystä.`}
+    if(e.t==="haku"){if(/^(Haen|Luen)/.test(e.d))haut++;const li=document.createElement("li");li.textContent=e.d;ol.append(li);ol.scrollTop=ol.scrollHeight;if(!teksti)st.textContent=e.d.length>70?e.d.slice(0,70)+"…":e.d}
     else if(e.t==="tulos"){const li=ol.lastElementChild;if(li)li.textContent+=" → "+e.d}
     else if(e.t==="tyhjenna"){const li=document.createElement("li");li.textContent="Välihuomio: "+teksti.trim().slice(0,200);ol.append(li);teksti="";m.innerHTML="";st.textContent="Tutkin edelleen…"}
     else if(e.t==="kasittely"){if(!teksti)st.textContent=`Käsittelen hakutuloksia · ${haut} hakua`}
