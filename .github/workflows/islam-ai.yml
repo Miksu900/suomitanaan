@@ -3,7 +3,7 @@ name: Islam-tekoäly testi
 on:
   workflow_dispatch:
     inputs:
-      tila: { description: "luotaa | kysy | kaappaus | siivoa", required: true, default: "kysy" }
+      tila: { description: "luotaa | kysy | kaappaus | raja | siivoa", required: true, default: "kysy" }
       kysymykset: { description: "Kysymykset |-merkillä eroteltuina (kysy). Tyhjä = vakiotestit", required: false, default: "" }
 permissions: { contents: write }
 jobs:
@@ -34,6 +34,10 @@ jobs:
           export OMA=$(printf '%s' "$HALLINTA-islamkysy" | sha256sum | cut -c1-32)
           mkdir -p out
           node .github/islam-ai-testi.mjs
+      - name: Rajatesti (ilman omistajakoodia)
+        if: inputs.tila == 'raja'
+        run: |
+          curl -sS -N --max-time 25 -X POST -H 'content-type: application/json' -d '{"kysymys":"Mitä zakat tarkoittaa? Vastaa yhdellä lauseella ilman hakuja."}' https://faktapiste.fi/api/islam/kysy | head -c 1500 || true
       - name: Mobiilikuvat
         if: inputs.tila == 'kaappaus'
         env: { KYSYMYS: "${{ inputs.kysymykset }}", CLOUDFLARE_API_TOKEN: "${{ secrets.CLOUDFLARE_API_TOKEN }}" }
