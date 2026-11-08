@@ -1,0 +1,48 @@
+name: Islam-tekoäly testi
+# faktapiste.fi/islam/ "Kysy tekoälyltä": luotaa (mallit ja työkaluversiot), kysy (live-kysymykset lokiin), kaappaus (mobiilikuvat haaraan islam-ai-tmp), siivoa.
+on:
+  workflow_dispatch:
+    inputs:
+      tila: { description: "luotaa | kysy | kaappaus | siivoa", required: true, default: "kysy" }
+      kysymykset: { description: "Kysymykset |-merkillä eroteltuina (kysy). Tyhjä = vakiotestit", required: false, default: "" }
+permissions: { contents: write }
+jobs:
+  aja:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Luotaa mallit ja työkalut
+        if: inputs.tila == 'luotaa'
+        env: { AK: "${{ secrets.ANTHROPIC_API_KEY }}" }
+        run: |
+          H=(-sS -H "x-api-key: $AK" -H "anthropic-version: 2023-06-01" -H "content-type: application/json")
+          echo "MALLIT:"; curl "${H[@]}" "https://api.anthropic.com/v1/models?limit=40" | jq -r '.data[]? | "\(.id)  \(.created_at)"'
+          for M in claude-sonnet-5-5 claude-opus-5-5 claude-sonnet-4-5; do
+            for T in '{"type":"web_search_20260209","name":"web_search","max_uses":1}' '{"type":"web_search_20250305","name":"web_search","max_uses":1}' '{"type":"web_fetch_20260209","name":"web_fetch","max_uses":1}' '{"type":"web_fetch_20250910","name":"web_fetch","max_uses":1}'; do
+              for B in "" "web-fetch-2025-09-10"; do
+                X=(); [ -n "$B" ] && X=(-H "anthropic-beta: $B")
+                R=$(curl "${H[@]}" "${X[@]}" https://api.anthropic.com/v1/messages -d "{\"model\":\"$M\",\"max_tokens\":5,\"tool_choice\":{\"type\":\"none\"},\"tools\":[$T],\"messages\":[{\"role\":\"user\",\"content\":\"Sano ok\"}]}")
+                echo "$M | $(echo $T | jq -r .type) | beta=$B => $(echo "$R" | jq -c '{t:.type, e:.error.message, s:.stop_reason}' | head -c 250)"
+              done
+            done
+          done
+      - name: Kysy live-sivulta
+        if: inputs.tila == 'kysy'
+        env: { KYS: "${{ inputs.kysymykset }}", CLOUDFLARE_API_TOKEN: "${{ secrets.CLOUDFLARE_API_TOKEN }}" }
+        run: |
+          export OMA=$(printf '%s' "$CLOUDFLARE_API_TOKEN-faktapiste" | sha256sum | cut -c1-40 | xargs -I{} sh -c 'printf "%s" "{}-islamkysy" | sha256sum | cut -c1-32')
+          mkdir -p out
+          node .github/islam-ai-testi.mjs
+      - name: Mobiilikuvat
+        if: inputs.tila == 'kaappaus'
+        run: |
+          npm i -s playwright@1.48.2 >/dev/null 2>&1 && npx playwright install --with-deps chromium >/dev/null 2>&1
+          mkdir -p out && node .github/islam-ai-kuvat.cjs
+      - name: Poista väliaikainen haara
+        if: inputs.tila == 'siivoa'
+        run: git push "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" --delete islam-ai-tmp
+      - name: Tallenna haaraan
+        if: always() && (inputs.tila == 'kaappaus' || inputs.tila == 'kysy')
+        run: |
+          cd out && git init -q -b islam-ai-tmp && git add -A && git -c user.name=bot -c user.email=bot@x commit -qm "${{ inputs.tila }}"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" islam-ai-tmp
