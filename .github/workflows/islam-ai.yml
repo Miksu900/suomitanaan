@@ -17,12 +17,11 @@ jobs:
         run: |
           H=(-sS -H "x-api-key: $AK" -H "anthropic-version: 2023-06-01" -H "content-type: application/json")
           echo "MALLIT:"; curl "${H[@]}" "https://api.anthropic.com/v1/models?limit=40" | jq -r '.data[]? | "\(.id)  \(.created_at)"'
-          SYS=$(python3 -c "print('Olet avulias tutkija. ' * 400)")
-          for i in 1 2; do
-            curl "${H[@]}" https://api.anthropic.com/v1/messages -d "$(jq -n --arg s "$SYS" '{model:"claude-sonnet-5-5",max_tokens:5,cache_control:{type:"ephemeral"},system:$s,messages:[{role:"user",content:"Sano ok"}]}')" | jq -c '{e:.error.message,u:.usage}'
-          done
-          curl "${H[@]}" https://api.anthropic.com/v1/messages -d '{"model":"claude-sonnet-5-5","max_tokens":400,"stream":true,"tools":[{"type":"web_search_20260209","name":"web_search","max_uses":2}],"messages":[{"role":"user","content":"Hae verkosta: Järvenpään moskeija rakennusvuosi. Vastaa yhdellä lauseella."}]}' > st.txt
-          grep '^data:' st.txt | sed 's/^data: //' | jq -c 'select(.type=="content_block_start" or .type=="message_delta" or (.type=="content_block_delta" and .delta.type=="input_json_delta")) | (.content_block // .delta // .) | if .type=="web_search_tool_result" then {type, n:(.content|length)} elif .type=="code_execution_tool_result" or .type=="bash_code_execution_tool_result" then {type} else . end' | head -c 4000
+          B=https://avoindata.prh.fi/opendata-ytj-api/v3
+          for C in YRMU SELTILA REK_KDI TLAJI KIELI; do echo "KOODI $C: $(curl -sS "$B/description?code=$C&lang=fi" | head -c 1500)"; done
+          echo "PAGE: $(curl -sS "$B/companies?name=yhdistys&page=2" | jq -c '{n:.totalResults, k:(.companies|length)}')"
+          echo "LOM: $(curl -sS "$B/companies?name=islam&companyForm=16" | jq -c '{n:.totalResults}')"
+          for Q in "Suomen Islamilainen Yhdyskunta" "Islamilainen" "Suomen Islam-seurakunta" "Rabita" "moske"; do echo "Q $Q: $(curl -sS -G "$B/companies" --data-urlencode "name=$Q" | jq -c '{n:.totalResults, x:[.companies[:8][]|{id:.businessId.value,n:([.names[]|select(.endDate==null)|.name][0]),s:.status,t:.tradeRegisterStatus,e:.endDate,r:[.registeredEntries[]?|select(.endDate==null)|{t:.type,r:.register,a:.authority}]}]}' | head -c 1800)"; done
       - name: Ei
         if: false
         run: |
