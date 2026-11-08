@@ -22,12 +22,16 @@ async function kysy(kysymys, historia, nimi) {
       const e = JSON.parse(l);
       if (e.t === "teksti") { if (ekaTeksti === null) ekaTeksti = (Date.now() - alku) / 1000; teksti += e.d; }
       else if (e.t === "loppu") loppu = e;
+      else if (e.t === "kasittely") continue;
+      else if (e.t === "tyhjenna") { tapahtumat.push(`[${((Date.now() - alku) / 1000).toFixed(0)}s] välihuomio poistettu: ${teksti.slice(0, 150).replace(/\n/g, " ")}`); teksti = ""; }
       else tapahtumat.push(`[${((Date.now() - alku) / 1000).toFixed(0)}s] ${e.t}: ${e.d || ""}`);
     }
   }
   return { aika: (Date.now() - alku) / 1000, eka, ekaTeksti, teksti, loppu, tapahtumat, nimi };
 }
 
+{ const r = await fetch(U, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ kysymys: "x".repeat(1600) }) }); console.log("PITUUSRAJA:", r.status, await r.text()); }
+{ const r = await fetch(U); console.log("GET:", r.status, await r.text()); }
 await Promise.all(ketjut.map(async (ketju, ki) => {
   const historia = []; let loki = "";
   for (const [qi, q] of ketju.entries()) {
@@ -35,6 +39,9 @@ await Promise.all(ketjut.map(async (ketju, ki) => {
     loki += `\n\n==================== KYSYMYS ${ki + 1}.${qi + 1}: ${q}\n`;
     loki += `aika ${v.aika?.toFixed(1)} s, ensimmäinen tapahtuma ${v.eka} s, ensimmäinen teksti ${v.ekaTeksti} s, ${JSON.stringify(v.loppu || v.virhe)}\n`;
     loki += (v.tapahtumat || []).join("\n") + "\n--------------------\n" + (v.teksti || "");
+    const urlit = [...new Set(((v.teksti || "").split(/##\s*Lähteet/i)[1] || "").match(/https?:\/\/[^\s)\]]+/g) || [])];
+    const tarkistus = await Promise.all(urlit.map(async u => { try { const r = await fetch(u, { redirect: "follow", headers: { "user-agent": "Mozilla/5.0 (Linux; Android 14) Chrome/130 Mobile Safari/537.36" }, signal: AbortSignal.timeout(20000) }); return r.status + " " + u; } catch (e) { return "VIRHE " + u; } }));
+    loki += "\n--------------------\nLÄHDEOSOITTEIDEN TARKISTUS (" + urlit.length + "):\n" + tarkistus.join("\n");
     historia.push({ rooli: "user", teksti: q }, { rooli: "assistant", teksti: v.teksti || "" });
   }
   writeFileSync(`out/ketju${ki + 1}.txt`, loki);

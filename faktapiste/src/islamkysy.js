@@ -6,7 +6,7 @@
 import PRH_LISTA from "./prh_islam.json";
 
 const MALLI = "claude-sonnet-5-5";
-export const RAJAT = { ipPaiva: 15, kaikkiPaiva: 300, kysymys: 1500, historia: 8, historiaTeksti: 12000 };
+export const RAJAT = { ipPaiva: 15, kaikkiPaiva: 150, kysymys: 1500, historia: 8, historiaTeksti: 12000 };
 const KIERROKSET = 10;
 // Koko tutkimuksen enimmäismäärät (kaikki kierrokset yhteensä); sen jälkeen malli kirjoittaa vastauksen ilman työkaluja.
 const BUDJETTI = { haut: 20, sivut: 14 };
@@ -43,6 +43,9 @@ VASTAUS:
 - Anna jokaiselle luvulle päivämäärä tai vuosi ja lähde. Kerro epävarmuus ja määritelmät. Älä koskaan keksi lukuja, nimiä tai lähteitä. Jos tietoa ei löytynyt, sano se suoraan ja kerro, mistä sen voi selvittää (esim. mille viranomaiselle voi tehdä tietopyynnön).
 - Pysy neutraalina ja faktapohjaisena: kerro, mitä lähteet sanovat, älä ota poliittista kantaa. Kiistanalaisissa asioissa esitä eri osapuolten näkemykset lähteineen.
 - Lopeta osioon "## Lähteet": numeroitu luettelo markdown-linkkeinä muodossa [Sivun nimi – julkaisija, pvm](https://osoite). Käytä vain osoitteita, jotka oikeasti löysit tutkimuksen aikana.
+- Latautuneet tai kiistanalaiset termit (esim. "islamisaatio", "rinnakkaisyhteiskunta", "no-go-alue"): älä kieltäydy äläkä jää termin ympärille. Selitä yhdellä tai kahdella lauseella, että termi on kiistanalainen ja mitä sillä eri tahoilla tarkoitetaan, ja käy sitten läpi mitattavat tosiasiat ja kilpailevat tulkinnat lähteineen.
+- Muiden maiden kysymyksissä tutki maa perusteellisesti: väestöarviot ja niiden menetelmät (kansalliset tilastovirastot, esim. INSEE/INED Ranskassa, ONS Britanniassa, SCB Ruotsissa, Destatis/BAMF Saksassa; Pew Research Center), moskeijoiden ja rukoushuoneiden määrä, hallituksen toimet ja lainsäädäntö, viranomais- ja parlamenttiraportit, koulujen ja julkisen tilan säännöt, merkittävät tapahtumat ja oikeuden päätökset, mielipidemittaukset (esim. IFOP) sekä eri osapuolten tulkinnat. Käytä alkuperäisiä lähteitä myös muilla kielillä ja kerro niiden sisältö suomeksi.
+- Jokainen lähde on oltava toimiva osoite, jonka avasit tai joka tuli hakutuloksissa. Älä muodosta osoitteita itse arvaamalla.
 - Jatkokysymyksissä hyödynnä aiempaa keskustelua, mutta tee tarvittaessa uusia hakuja.`;
 }
 
@@ -117,7 +120,7 @@ async function haeArkistosta(env, a) {
 
 const YTJ = "https://avoindata.prh.fi/opendata-ytj-api/v3/companies";
 const VAKIOSANAT = ["islam", "muslim", "moskei", "moskee", "masjid", "masjed", "mosque", "imam", "sunni", "shia", "shiia", "ahmadiyya", "ummah", "koraani", "quran", "tataari", "dawah", "salafi", "hidaya", "kulttuurisäätiö"];
-const ISLAM_RX = /islam|muslim|moskei|moskee|mosque|masji|masje|imam|ahmadiyy|ummah|koraan|quran|dawah|salaf|hidaya|(^|[\s(])al-|\bshiia?\b|\bshi'a\b|\bsunni|\bsunna\b|tataari|\btatar|ahlul|zahra|hussein/i;
+const ISLAM_RX = /(^|[^a-zåäöü])(islam|muslim)|moskei|moskee|mosque|masji|masje|imam|ahmadiyy|ummah|koraan|quran|dawah|salaf|hidaya|(^|[\s(])al-|\bshiia?\b|\bshi'a\b|\bsunni|\bsunna\b|tataari|\btatar|ahlul|zahra|hussein/i;
 async function ytjHaku(env, sana) {
   const avain = "valimuisti/ytj/" + encodeURIComponent(sana.toLowerCase()) + ".json";
   try {
@@ -148,8 +151,8 @@ async function haeRekisterista(env, a) {
   const omat = (Array.isArray(a.hakusanat) ? a.hakusanat : []).map(s => String(s).trim()).filter(s => s.length >= 3).slice(0, 15);
   const sanat = [...new Set([...VAKIOSANAT, ...omat.map(s => s.toLowerCase())])];
   const kartta = new Map(), haut = {};
-  const somalit = PRH_LISTA.yhdistykset.filter(y => y.luokka !== "islamilainen"), islamilaiset = PRH_LISTA.yhdistykset.filter(y => y.luokka === "islamilainen");
-  const somaliId = new Set(somalit.map(y => y.ytunnus));
+  const somalit = PRH_LISTA.yhdistykset.filter(y => /somali/.test(y.luokka)), islamilaiset = PRH_LISTA.yhdistykset.filter(y => y.luokka === "islamilainen");
+  const somaliId = new Set(PRH_LISTA.yhdistykset.filter(y => y.luokka !== "islamilainen").map(y => y.ytunnus)); // somalialaiset ja virheosumat eivät palaa YTJ:n kautta
   for (const y of islamilaiset) kartta.set(y.ytunnus || "rn:" + y.rekisterinumero, { nimi: y.nimi, ytunnus: y.ytunnus, rekisterinumero: y.rekisterinumero, muoto: "yhdistys" + (y.tyyppi ? " (" + y.tyyppi + ")" : ""), kotipaikka: y.kotipaikka, tila: "rekisterissä", tilan_ajankohta: y.tilan_ajankohta, lahde: ["yhdistysrekisteri"], islam_nimessa: true });
   const tulokset = await Promise.all(sanat.map(s => ytjHaku(env, s).then(r => [s, r], e => [s, { virhe: String(e.message || e) }])));
   for (const [s, r] of tulokset) {
