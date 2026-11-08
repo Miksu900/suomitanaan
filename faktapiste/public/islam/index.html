@@ -60,6 +60,52 @@ a{color:var(--kr)} a:focus-visible{outline:2px solid var(--accent);outline-offse
 .tag{font-size:.72rem;letter-spacing:.05em;text-transform:uppercase;font-weight:700}
 .tag.media{color:var(--kr)}.tag.viranomainen{color:var(--accent)}.tag.yhteiso{color:var(--is)}.tag.kunta{color:#b5543c}
 .uv .k{font-size:.92rem;color:var(--muted)}
+/* Kysy tekoälyltä */
+.ai{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px 18px;display:grid;gap:14px;position:relative;overflow:hidden;min-width:0}
+.ai::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:linear-gradient(90deg,var(--is),var(--accent),var(--kr))}
+.ai h2{font-size:1.6rem}
+.ai .lead{font-size:1rem}
+.ai form{display:grid;gap:10px}
+.ai textarea{width:100%;font:inherit;font-size:16px;line-height:1.45;padding:13px 14px;border:1.5px solid var(--line);border-radius:12px;background:var(--bg);color:var(--fg);resize:none;min-height:84px;max-height:40vh}
+.ai textarea:focus{outline:none;border-color:var(--is);box-shadow:0 0 0 3px color-mix(in srgb,var(--is) 20%,transparent)}
+.ai .rivi{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+.ai .laheta{font:inherit;font-weight:600;padding:11px 20px;border-radius:11px;border:0;background:var(--is);color:#fff;cursor:pointer;min-height:46px}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .ai .laheta{color:#0d1a15}}
+:root[data-theme="dark"] .ai .laheta{color:#0d1a15}
+.ai .laheta:disabled{opacity:.55;cursor:default}
+.ai .pieni{font-size:.82rem;color:var(--muted)}
+.ai .esim{display:flex;gap:8px;flex-wrap:wrap}
+.ai .esim button{font:inherit;font-size:.9rem;text-align:left;padding:8px 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer;line-height:1.35}
+.ai .esim button:hover{border-color:var(--is)}
+#ai-kesk{display:grid;gap:14px;min-width:0}
+#ai-kesk:empty{display:none}
+.ai .kys{justify-self:end;max-width:88%;background:color-mix(in srgb,var(--is) 13%,var(--surface));border:1px solid color-mix(in srgb,var(--is) 30%,var(--line));padding:10px 14px;border-radius:14px 14px 4px 14px;white-space:pre-wrap;overflow-wrap:anywhere}
+.ai .vas{display:grid;gap:10px;min-width:0}
+.ai .md{display:grid;gap:10px;min-width:0;overflow-wrap:anywhere}
+.ai .md h2,.ai .md h3,.ai .md h4{font-family:var(--display);font-size:1.15rem;margin:8px 0 0;line-height:1.25}
+.ai .md h4{font-size:1.02rem}
+.ai .md p{max-width:none}
+.ai .md ul,.ai .md ol{margin:0;padding-left:1.3em;display:grid;gap:5px}
+.ai .md a{color:var(--kr);overflow-wrap:anywhere}
+.ai .md code{font-size:.9em;background:var(--bg);padding:1px 5px;border-radius:5px}
+.ai .md blockquote{margin:0;border-left:3px solid var(--line);padding-left:12px;color:var(--muted)}
+.ai .md .tw{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+.ai .md table{min-width:0;font-size:.92rem}
+.ai .md th,.ai .md td{padding:8px 10px}
+.ai .md hr{border:0;border-top:1px solid var(--line);width:100%}
+.ai .tila{display:grid;gap:6px;border:1px dashed var(--line);border-radius:12px;padding:10px 12px;font-size:.9rem;color:var(--muted)}
+.ai .tila summary{cursor:pointer;display:flex;gap:10px;align-items:center;list-style:none;color:var(--fg)}
+.ai .tila summary::-webkit-details-marker{display:none}
+.ai .tila ol{font-size:.84rem;padding-left:1.3em;gap:3px;margin-top:6px;max-height:220px;overflow:auto}
+.ai .pyo{width:16px;height:16px;border-radius:50%;border:2px solid var(--line);border-top-color:var(--is);animation:pyo 1s linear infinite;flex:none}
+.ai .valmis .pyo{animation:none;border-color:var(--is);background:var(--is)}
+@keyframes pyo{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){.ai .pyo{animation-duration:3s}}
+.ai .toim{display:flex;gap:8px;flex-wrap:wrap}
+.ai .toim button,.ai .uusi{font:inherit;font-size:.88rem;padding:7px 12px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer;min-height:38px}
+.ai .virhe{color:#b5543c;font-weight:600}
+.ai .kursori::after{content:"▍";color:var(--is);animation:vilk 1s steps(2) infinite}
+@keyframes vilk{50%{opacity:0}}
 #lisaa{font:inherit;padding:10px 16px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;justify-self:start}
 </style>
 
@@ -70,6 +116,29 @@ a{color:var(--kr)} a:focus-visible{outline:2px solid var(--accent);outline-offse
     <h1>Kristinusko ja islam</h1>
     <p class="lead">Mitä uskonnot opettavat, missä ne ovat lähellä toisiaan ja missä ne eroavat. Lisäksi ajankohtaiset uutiset ja viranomaistiedot Suomesta ja Euroopasta sekä perustiedot islamista Suomessa.</p>
   </header>
+
+  <section class="ai" aria-labelledby="h-ai" id="kysy">
+    <div style="display:grid;gap:6px">
+      <span class="eyebrow">Tekoälytutkija</span>
+      <h2 id="h-ai">Kysy mitä tahansa islamiin liittyvää</h2>
+      <p class="lead">Tekoäly tutkii aiheen verkosta, viranomaislähteistä, PRH:n rekisteritiedoista ja Faktapisteen uutisarkistosta ja kertoo lähteet. Perusteellinen vastaus vie yleensä 1–3 minuuttia.</p>
+    </div>
+    <div id="ai-kesk" aria-live="polite"></div>
+    <form id="ai-lomake">
+      <textarea id="ai-kentta" rows="3" maxlength="1500" placeholder="Esim. Montako moskeijaa Suomessa on suunnitteilla?" aria-label="Kysymys tekoälylle"></textarea>
+      <div class="rivi">
+        <span class="pieni" id="ai-info">Tekoäly voi erehtyä. Tarkista tärkeät tiedot lähteistä.</span>
+        <span style="display:flex;gap:8px"><button type="button" class="uusi" id="ai-uusi" hidden>Uusi keskustelu</button><button class="laheta" id="ai-laheta" type="submit">Kysy</button></span>
+      </div>
+    </form>
+    <div class="esim" id="ai-esim">
+      <button type="button">Montako moskeijaa Suomeen on rakennettu, montako on rakenteilla tai suunnitteilla?</button>
+      <button type="button">Montako islamilaista säätiötä tai yhdistystä Suomessa on?</button>
+      <button type="button">Montako muslimia Suomessa on ja miten määrä on muuttunut?</button>
+      <button type="button">Mitä Supo on viime vuosina sanonut islamistisesta radikalisoitumisesta?</button>
+      <button type="button">Miten moskeijoiden ulkomaista rahoitusta valvotaan Euroopassa?</button>
+    </div>
+  </section>
 
   <section aria-labelledby="h-ajank" class="uv">
     <h2 id="h-ajank">Ajankohtaista: Suomi ja Eurooppa</h2>
@@ -143,7 +212,7 @@ a{color:var(--kr)} a:focus-visible{outline:2px solid var(--accent);outline-offse
     <p class="huom">Sivu kokoaa julkisia uutisia ja tiedotteita automaattisesti. Otsikot linkittävät alkuperäisiin lähteisiin, ja ulkomaiset otsikot on käännetty koneellisesti suomeksi. Faktapiste ei vastaa lähteiden sisällöstä.</p>
     <p class="lahde">Lähteet: <a href="https://www.mtvuutiset.fi/artikkeli/suomessa-on-noin-130-000-muslimitaustaista-miten-malmin-paivakotimoskeijan-johtajan-ulostulot-vertautuvat-heihin-ja-islamiin-suomessa-tutkija-vastaa/8783392" target="_blank" rel="noopener">MTV Uutiset (muslimitaustaisten määrä)</a>, <a href="https://en.wikipedia.org/wiki/Islam_in_Finland" target="_blank" rel="noopener">Wikipedia: Islam in Finland</a>, <a href="https://stat.fi/fi/julkaisu/cmg6f46k91y0e07w0qtdt6yl7" target="_blank" rel="noopener">Tilastokeskus: Väestörakenne 2025</a>.</p>
   </section>
-  <footer class="lahde" style="border-top:1px solid var(--line);padding-top:16px">Sivun ylläpitäjä: <a href="/">Faktapiste</a> · <a href="/tietosuoja/">Tietosuojaseloste</a> · Sivu ei käytä evästeitä eikä kerää kävijöistä henkilötietoja.</footer>
+  <footer class="lahde" style="border-top:1px solid var(--line);padding-top:16px">Sivun ylläpitäjä: <a href="/">Faktapiste</a> · <a href="/tietosuoja/">Tietosuojaseloste</a> · Sivu ei käytä evästeitä eikä kerää kävijöistä henkilötietoja. Tekoälylle esitetyt kysymykset käsittelee Anthropicin tekoäly (Claude) sen ehtojen mukaisesti. Faktapiste ei tallenna kysymyksiä eikä vastauksia: käyttörajaa varten säilytetään vain päiväkohtainen laskuri, jossa IP-osoite on muutettu tunnistamattomaksi tiivisteeksi, ja se poistetaan muutaman päivän kuluttua. Keskustelu säilyy vain omassa selaimessasi.</footer>
 </main>
 <script>
 let D=[];
@@ -168,6 +237,85 @@ for(const [id,f] of [["luokat",b=>luokka=b.dataset.c],["alueet",b=>alue=b.datase
 nayta();
 M.textContent="Ladataan uutisia…";
 fetch("/api/julkinen/islam.json").then(r=>r.json()).then(d=>{D=d.jutut||[];const p=document.getElementById("paiv");if(p&&d.paivitetty)p.textContent="Päivitetty "+d.paivitetty+".";nayta()}).catch(()=>{M.textContent="Uutisten lataus epäonnistui. Päivitä sivu."});
+</script>
+
+<script>
+(()=>{
+const K=document.getElementById("ai-kesk"),F=document.getElementById("ai-lomake"),T=document.getElementById("ai-kentta"),S=document.getElementById("ai-laheta"),N=document.getElementById("ai-uusi"),E=document.getElementById("ai-esim");
+const ls={get(k){try{return localStorage.getItem(k)}catch{return null}},set(k,v){try{localStorage.setItem(k,v)}catch{}},del(k){try{localStorage.removeItem(k)}catch{}}};
+try{const q=new URLSearchParams(location.search);if(q.get("oma")){ls.set("islam_oma",q.get("oma"));q.delete("oma");history.replaceState(null,"",location.pathname+(q.toString()?"?"+q:"")+location.hash)}}catch{}
+let hist=[];try{hist=JSON.parse(ls.get("islam_kesk")||"[]")}catch{hist=[]}
+let kaynnissa=false;
+const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function inline(t){t=esc(t);
+ const L=[];t=t.replace(/\[([^\]]+)\]\((https?:\/\/[^\s()]+(?:\([^\s()]*\)[^\s()]*)*)\)/g,(m,a,u)=>{L.push('<a href="'+u+'" target="_blank" rel="noopener noreferrer">'+a+'</a>');return "\u0000"+(L.length-1)+"\u0000"});
+ t=t.replace(/(^|[\s(])(https?:\/\/[^\s<)]+[^\s<).,;:])/g,(m,a,u)=>{L.push('<a href="'+u+'" target="_blank" rel="noopener noreferrer">'+u.replace(/^https?:\/\/(www\.)?/,"").slice(0,60)+'</a>');return a+"\u0000"+(L.length-1)+"\u0000"});
+ t=t.replace(/`([^`]+)`/g,"<code>$1</code>").replace(/\*\*([^*]+)\*\*/g,"<strong>$1</strong>").replace(/(^|[^*\w])\*([^*\s][^*]*)\*/g,"$1<em>$2</em>");
+ return t.replace(/\u0000(\d+)\u0000/g,(m,i)=>L[+i])}
+function md(src){const r=src.replace(/\r/g,"").split("\n");let h="",i=0;
+ const lista=(re,tag)=>{let o="<"+tag+">";while(i<r.length&&re.test(r[i])){o+="<li>"+inline(r[i].replace(re,""))+"</li>";i++;while(i<r.length&&/^\s{2,}\S/.test(r[i])&&!re.test(r[i])){o=o.replace(/<\/li>$/," "+inline(r[i].trim())+"</li>");i++}}return o+"</"+tag+">"};
+ while(i<r.length){const l=r[i];
+  if(!l.trim()){i++;continue}
+  let m;
+  if((m=l.match(/^(#{1,4})\s+(.*)/))){const n=Math.min(4,m[1].length+1);h+="<h"+n+">"+inline(m[2])+"</h"+n+">";i++;continue}
+  if(/^\s*([-*_])\s*\1\s*\1[\s\-*_]*$/.test(l)){h+="<hr>";i++;continue}
+  if(/^\s*[-*•]\s+/.test(l)){h+=lista(/^\s*[-*•]\s+/,"ul");continue}
+  if(/^\s*\d+[.)]\s+/.test(l)){h+=lista(/^\s*\d+[.)]\s+/,"ol");continue}
+  if(/^\s*>/.test(l)){let q="";while(i<r.length&&/^\s*>/.test(r[i])){q+=r[i].replace(/^\s*>\s?/,"")+" ";i++}h+="<blockquote>"+inline(q)+"</blockquote>";continue}
+  if(/^\s*\|/.test(l)&&i+1<r.length&&/^\s*\|?\s*:?-{2,}/.test(r[i+1])){const sol=x=>x.trim().replace(/^\||\|$/g,"").split("|").map(c=>c.trim());
+   let o='<div class="tw"><table><thead><tr>'+sol(l).map(c=>"<th>"+inline(c)+"</th>").join("")+"</tr></thead><tbody>";i+=2;
+   while(i<r.length&&/^\s*\|/.test(r[i])){o+="<tr>"+sol(r[i]).map(c=>"<td>"+inline(c)+"</td>").join("")+"</tr>";i++}h+=o+"</tbody></table></div>";continue}
+  let p=[];while(i<r.length&&r[i].trim()&&!/^(#{1,4}\s|\s*[-*•]\s+|\s*\d+[.)]\s+|\s*>|\s*\|)/.test(r[i])){p.push(r[i]);i++}
+  if(!p.length){p.push(l);i++}
+  h+="<p>"+p.map(inline).join("<br>")+"</p>"}
+ return h}
+function tallenna(){ls.set("islam_kesk",JSON.stringify(hist.slice(-12)))}
+function kupla(t){const d=document.createElement("div");d.className="kys";d.textContent=t;K.append(d);return d}
+function vastaus(teksti){const v=document.createElement("div");v.className="vas";const m=document.createElement("div");m.className="md";m.innerHTML=md(teksti);v.append(m);toiminnot(v,()=>teksti);K.append(v);return v}
+function toiminnot(v,get){const t=document.createElement("div");t.className="toim";const c=document.createElement("button");c.type="button";c.textContent="Kopioi vastaus";
+ c.onclick=async()=>{const s=get();try{await navigator.clipboard.writeText(s)}catch{const a=document.createElement("textarea");a.value=s;document.body.append(a);a.select();try{document.execCommand("copy")}catch{}a.remove()}c.textContent="Kopioitu ✓";setTimeout(()=>c.textContent="Kopioi vastaus",2000)};
+ t.append(c);v.append(t)}
+function piirra(){K.textContent="";for(const h of hist){if(h.rooli==="user")kupla(h.teksti);else vastaus(h.teksti)}paivitaUi()}
+function paivitaUi(){N.hidden=!hist.length&&!kaynnissa;E.hidden=hist.length>0||kaynnissa;T.placeholder=hist.length?"Kysy jatkokysymys…":"Esim. Montako moskeijaa Suomessa on suunnitteilla?";S.disabled=kaynnissa;S.textContent=kaynnissa?"Tutkitaan…":"Kysy"}
+let ohjain=null,lukko=null;
+async function kysy(q){q=q.trim();if(!q||kaynnissa)return;if(q.length>1500){alert("Kysymys on liian pitkä (enintään 1500 merkkiä).");return}
+ kaynnissa=true;T.value="";kasvata();const aiempi=hist.slice(-8);kupla(q);paivitaUi();
+ const v=document.createElement("div");v.className="vas";
+ const tila=document.createElement("details");tila.className="tila";const su=document.createElement("summary");const py=document.createElement("span");py.className="pyo";const st=document.createElement("span");st.textContent="Tutkin… haen lähteitä";su.append(py,st);
+ const ol=document.createElement("ol");tila.append(su,ol);const m=document.createElement("div");m.className="md kursori";v.append(tila,m);K.append(v);
+ v.scrollIntoView({behavior:"smooth",block:"start"});
+ try{lukko=await navigator.wakeLock?.request("screen")}catch{}
+ let teksti="",haut=0,ajastin=null,virhe=null;const alku=Date.now();
+ const kello=setInterval(()=>{if(!teksti)st.textContent=`Tutkin… ${haut} hakua · ${Math.round((Date.now()-alku)/1000)} s`},1000);
+ const render=()=>{ajastin=null;m.innerHTML=md(teksti)};
+ try{ohjain=new AbortController();
+  const h={"content-type":"application/json"};const oma=ls.get("islam_oma");if(oma)h["x-oma"]=oma;
+  const r=await fetch("/api/islam/kysy",{method:"POST",headers:h,body:JSON.stringify({kysymys:q,historia:aiempi}),signal:ohjain.signal});
+  if(!r.ok){let d={};try{d=await r.json()}catch{}throw new Error(d.virhe||"Palvelu ei vastannut (virhe "+r.status+"). Yritä hetken päästä uudelleen.")}
+  const rd=r.body.pipeThrough(new TextDecoderStream()).getReader();let pus="";
+  for(;;){const {value,done}=await rd.read();if(done)break;pus+=value;let i;
+   while((i=pus.indexOf("\n"))>=0){const l=pus.slice(0,i);pus=pus.slice(i+1);if(!l.trim())continue;let e;try{e=JSON.parse(l)}catch{continue}
+    if(e.t==="teksti"){teksti+=e.d;if(!ajastin)ajastin=requestAnimationFrame(render);st.textContent=`Kirjoitan vastausta · ${haut} hakua tehty`}
+    else if(e.t==="haku"){if(/^(Haen|Luen)/.test(e.d))haut++;const li=document.createElement("li");li.textContent=e.d;ol.append(li);ol.scrollTop=ol.scrollHeight;if(!teksti)st.textContent=e.d.length>70?e.d.slice(0,70)+"…":e.d}
+    else if(e.t==="tulos"){const li=ol.lastElementChild;if(li)li.textContent+=" → "+e.d}
+    else if(e.t==="kierros"){if(teksti&&!/\n\s*$/.test(teksti))teksti+="\n\n"}
+    else if(e.t==="virhe"){virhe=e.d}
+    else if(e.t==="loppu"){st.textContent=`Valmis · ${haut} hakua · ${e.sek} s`}}}
+  if(!teksti&&!virhe)virhe="Vastausta ei saatu. Yritä uudelleen.";
+ }catch(err){virhe=err.name==="AbortError"?"Keskeytetty.":(err.message&&!/fetch|network|load/i.test(err.message)?err.message:"Yhteys katkesi. Jos puhelimen näyttö sammui tai vaihdoit sovellusta, kysy uudelleen.")}
+ clearInterval(kello);try{lukko&&lukko.release()}catch{}lukko=null;
+ m.classList.remove("kursori");render();tila.classList.add("valmis");
+ if(virhe){const p=document.createElement("p");p.className="virhe";p.textContent=virhe;v.append(p);st.textContent=teksti?"Keskeytyi":"Ei vastausta"}
+ if(teksti){toiminnot(v,()=>teksti);hist.push({rooli:"user",teksti:q},{rooli:"assistant",teksti});tallenna()}
+ kaynnissa=false;ohjain=null;paivitaUi()}
+function kasvata(){T.style.height="auto";T.style.height=Math.min(T.scrollHeight+2,innerHeight*.4)+"px"}
+T.addEventListener("input",kasvata);
+T.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&!/Android|iPhone|iPad/i.test(navigator.userAgent)){e.preventDefault();kysy(T.value)}});
+F.addEventListener("submit",e=>{e.preventDefault();kysy(T.value)});
+E.querySelectorAll("button").forEach(b=>b.onclick=()=>kysy(b.textContent));
+N.onclick=()=>{if(ohjain)ohjain.abort();hist=[];ls.del("islam_kesk");kaynnissa=false;K.textContent="";paivitaUi();T.focus()};
+if(hist.length)piirra();else paivitaUi();
+})();
 </script>
 
 </body></html>

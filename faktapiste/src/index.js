@@ -1,5 +1,6 @@
 import { kauppa } from "./kauppa.js";
 import { omalahja } from "./omalahja.js";
+import { islamKysy, RAJAT as ISLAM_RAJAT } from "./islamkysy.js";
 // Faktapiste-keskustelu: Cloudflare Worker + SQLite Durable Object.
 // Staattiset sivut tulevat public/-kansiosta, /api/* ohjataan Durable Objectille "main".
 import { DurableObject } from "cloudflare:workers";
@@ -111,6 +112,7 @@ export default {
       await env.VIDEOT.put("julkinen/islam.json", t, { httpMetadata: { contentType: "application/json; charset=utf-8" } });
       return new Response(JSON.stringify({ ok: true, koko: t.length }), { headers: { "content-type": "application/json" } });
     }
+    if (u.pathname === "/api/islam/kysy") return islamKysy(req, env, ctx);
     if (u.pathname.startsWith("/api/")) return env.FP.get(env.FP.idFromName("main")).fetch(req);
     const jm = u.pathname.match(/^\/p\/(\d+)\/?$/);
     if (jm) return jakosivu(env, u, +jm[1]);
@@ -367,6 +369,23 @@ export class Faktapiste extends DurableObject {
     this.sql.exec("UPDATE rajat SET n=n+1 WHERE avain=?", avain); return true;
   }
 
+  // Islam-tekoälyn päiväkohtaiset laskurit: vain suolattu IP-tiiviste ja määrä, ei kysymyksiä.
+  islamRaja({ ip, pv, oma }) {
+    const t = nyt();
+    if (Math.random() < 0.05) this.sql.exec("DELETE FROM rajat WHERE avain LIKE 'islam:%' AND vanhenee<?", t);
+    const yhteensa = this.yksi("SELECT n FROM rajat WHERE avain=?", "islam:kaikki:" + pv);
+    if (!oma && yhteensa && yhteensa.n >= ISLAM_RAJAT.kaikkiPaiva) return { ok: false, syy: "kaikki" };
+    let jaljella = null;
+    if (!oma) {
+      const r = this.yksi("SELECT n FROM rajat WHERE avain=?", "islam:ip:" + pv + ":" + ip);
+      if (r && r.n >= ISLAM_RAJAT.ipPaiva) return { ok: false, syy: "ip" };
+      this.sql.exec("INSERT INTO rajat VALUES(?,1,?) ON CONFLICT(avain) DO UPDATE SET n=n+1", "islam:ip:" + pv + ":" + ip, t + 2 * 86400e3);
+      jaljella = ISLAM_RAJAT.ipPaiva - (r ? r.n + 1 : 1);
+    }
+    this.sql.exec("INSERT INTO rajat VALUES(?,1,?) ON CONFLICT(avain) DO UPDATE SET n=n+1", "islam:kaikki:" + pv, t + 3 * 86400e3);
+    return { ok: true, jaljella };
+  }
+
   kayttaja(req) {
     const t = evaste(req, "fp_s");
     if (!t) return null;
@@ -379,6 +398,7 @@ export class Faktapiste extends DurableObject {
     const u = new URL(req.url), p = u.pathname, m = req.method;
     try {
       if (p === "/_sisaanluku") return json(await this.sisaanluku());
+      if (p === "/_islamraja") return json(this.islamRaja(await req.json()));
       if (p === "/api/hallinta/sisaanluku" && this.env.HALLINTA && req.headers.get("x-avain") === this.env.HALLINTA) return json(await this.sisaanluku());
       if (p === "/api/hallinta/tila" && this.env.HALLINTA && req.headers.get("x-avain") === this.env.HALLINTA)
         return json({ postit: this.kaikki("SELECT lahde, COUNT(*) AS n FROM postit GROUP BY lahde"), kayttajat: this.yksi("SELECT COUNT(*) AS n FROM kayttajat").n });

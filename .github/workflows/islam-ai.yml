@@ -36,7 +36,8 @@ jobs:
         if: inputs.tila == 'kysy'
         env: { KYS: "${{ inputs.kysymykset }}", CLOUDFLARE_API_TOKEN: "${{ secrets.CLOUDFLARE_API_TOKEN }}" }
         run: |
-          export OMA=$(printf '%s' "$CLOUDFLARE_API_TOKEN-faktapiste" | sha256sum | cut -c1-40 | xargs -I{} sh -c 'printf "%s" "{}-islamkysy" | sha256sum | cut -c1-32')
+          HALLINTA=$(printf '%s' "$CLOUDFLARE_API_TOKEN-faktapiste" | sha256sum | cut -c1-40)
+          export OMA=$(printf '%s' "$HALLINTA-islamkysy" | sha256sum | cut -c1-32)
           mkdir -p out
           node .github/islam-ai-testi.mjs
       - name: Mobiilikuvat
