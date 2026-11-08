@@ -17,7 +17,13 @@ jobs:
         run: |
           H=(-sS -H "x-api-key: $AK" -H "anthropic-version: 2023-06-01" -H "content-type: application/json")
           echo "MALLIT:"; curl "${H[@]}" "https://api.anthropic.com/v1/models?limit=40" | jq -r '.data[]? | "\(.id)  \(.created_at)"'
-          for M in claude-sonnet-5-5 claude-opus-5-5 claude-sonnet-4-5; do
+          curl -sS -o d.json -w 'islam.json %{size_download} B %{time_total}s\n' https://faktapiste.fi/api/julkinen/islam.json
+          jq -c '.jutut[0], .jutut[-1]' d.json | head -c 1500; echo
+          for Q in islam muslim moskeija; do
+            echo "PRH $Q:"; curl -sS "https://avoindata.prh.fi/opendata-ytj-api/v3/companies?name=$Q" -o p.json -w '%{http_code}\n'; jq -c '{n:.totalResults, k:(.companies|length), eka:.companies[0]}' p.json | head -c 2500; echo
+            jq -r '.companies[]? | [.businessId.value, ([.names[]?|select(.endDate==null)|.name][0]), ([.companyForms[]?|select(.endDate==null)|.descriptions[]?|select(.languageCode=="1")|.description][0]), .tradeRegisterStatus, .status] | @tsv' p.json | head -40
+          done
+          for M in NONE; do
             for T in '{"type":"web_search_20260209","name":"web_search","max_uses":1}' '{"type":"web_search_20250305","name":"web_search","max_uses":1}' '{"type":"web_fetch_20260209","name":"web_fetch","max_uses":1}' '{"type":"web_fetch_20250910","name":"web_fetch","max_uses":1}'; do
               for B in "" "web-fetch-2025-09-10"; do
                 X=(); [ -n "$B" ] && X=(-H "anthropic-beta: $B")
