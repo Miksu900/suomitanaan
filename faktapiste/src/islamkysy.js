@@ -3,9 +3,13 @@
 // Tutkii aiheen Anthropicin web_search- ja web_fetch-palvelintyökaluilla sekä omilla työkaluilla (oma arkisto R2:ssa, PRH:n YTJ-avoin data).
 // Kysymyksiä ei tallenneta mihinkään: rajoja varten Durable Objectiin kirjataan vain päiväkohtainen laskuri (IP:stä suolattu tiiviste).
 
+import PRH_LISTA from "./prh_islam.json";
+
 const MALLI = "claude-sonnet-5-5";
 export const RAJAT = { ipPaiva: 15, kaikkiPaiva: 300, kysymys: 1500, historia: 8, historiaTeksti: 12000 };
-const KIERROKSET = 12;
+const KIERROKSET = 10;
+// Koko tutkimuksen enimmäismäärät (kaikki kierrokset yhteensä); sen jälkeen malli kirjoittaa vastauksen ilman työkaluja.
+const BUDJETTI = { haut: 20, sivut: 14 };
 
 const fiPv = ms => new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Helsinki" }).format(new Date(ms));
 async function tiiviste(s) { const d = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)); return [...new Uint8Array(d)].map(x => x.toString(16).padStart(2, "0")).join(""); }
@@ -19,7 +23,7 @@ TYÖTAPA – tutki kuin huolellinen toimittaja tai tutkija:
 1. Pilko kysymys osiin ja mieti, mistä kukin luku tai tieto löytyy luotettavimmin (ensisijaiset lähteet ensin).
 2. Tee useita hakuja eri sanamuodoilla, suomeksi, ruotsiksi ja englanniksi tarvittaessa. Avaa web_fetch-työkalulla tärkeimmät sivut (rekisterit, tilastot, viranomaisten ja kuntien päätökset, tutkimukset, luettelot) äläkä tyydy hakutulosten katkelmiin, kun tarvitset tarkan luvun.
 3. Käytä työkalua hae_arkistosta Faktapisteen omaan uutis- ja viranomaisarkistoon (n. 5 600 juttua, Suomi ja Eurooppa): se löytää esim. kuntien kaava- ja lupapäätöksiä, moskeijahankkeita ja paikallisuutisia. Käytä sanojen alkuosia (esim. "moskei", "rukoushuo", "islamilai").
-4. Käytä työkalua hae_ytj, kun kysytään suomalaisista yhdistyksistä, säätiöistä, uskonnollisista yhdyskunnista tai yrityksistä: se hakee PRH:n YTJ-avoimesta datasta nimellä (tulos kattaa vain ne, joilla on Y-tunnus). Tee useita nimihakuja (esim. islam, islamilainen, islamic, muslim, moskeija, masjid, al-, imaami, ummah, somali, tataari) ja laske tulokset itse. Kerro selvästi, että tämä ei ole täydellinen luettelo.
+4. Käytä työkalua hae_rekisterista AINA, kun kysytään suomalaisten islamilaisten yhdistysten, säätiöiden tai yhdyskuntien määrää tai luetteloa. Se yhdistää (a) PRH:n yhdistysrekisterin nimihaut 8.11.2026 (islam, muslimi, masjid, islamic, moskeija, mosque, imam, quran, koraani, ummah, dawah, sunna, shia, ahlul, zahra, hussein, tatar; virheosumat poistettu, kaikki rekisterissä) ja (b) PRH:n YTJ-avoimen datan nimihaut (vakiohakusanat + omasi), poistaa päällekkäisyydet Y-tunnuksella ja kertoo muodon, kotipaikan, päivämäärän ja tilan. Raportoi työkalun luvut (yhteenveto) suoraan: islamilaiset yhdistykset, säätiöt ja yhdyskunnat erikseen, rekisterissä olevat ja lopetetut erikseen, ja kerro, montako tuli yhdistysrekisteristä ja montako lisää YTJ:stä. Islamilaisiksi lasketaan VAIN yhteisöt, joiden nimi on selvästi islamilainen. Somalialaiset yhdistykset (haku "somali", nimessä ei uskontoa) ovat etnisiä tai kulttuurisia yhdistyksiä: älä laske niitä islamilaisiin, mainitse niiden määrä korkeintaan taustatietona ja sano tämä selvästi. Kerro aina rajoitukset: muilla nimillä (esim. kulttuurikeskus, al-…, Rabita, Diyanet) rekisteröityjä islamilaisia yhdistyksiä voi olla lisää; YTJ kattaa vain Y-tunnukselliset; yhdistysrekisteriin ei ole avointa rajapintaa. Uskonnonvapauslain mukaiset rekisteröidyt uskonnolliset yhdyskunnat ovat erillisessä PRH:n uskonnollisten yhdyskuntien rekisterissä: hae niiden määrä verkosta (esim. uskonnot.fi:n yhteisösivut https://www.uskonnot.fi/ , PRH, tutkimukset) ja avaa sivut web_fetchillä.
 5. Ristiintarkista luvut useasta lähteestä. Jos lähteet eroavat, kerro kaikki luvut, niiden päivämäärät ja syy eroon.
 6. Jatka tutkimista, kunnes kysymykseen on kunnollinen vastaus tai olet todennut, ettei tietoa ole julkisesti saatavilla. Älä kirjoita mitään väliaikaista tekstiä hakujen välissä: kirjoita vastaus vasta, kun tutkimus on valmis.
 
@@ -43,8 +47,8 @@ VASTAUS:
 }
 
 const TYOKALUT = [
-  { type: "web_search_20260209", name: "web_search", max_uses: 15 },
-  { type: "web_fetch_20260209", name: "web_fetch", max_uses: 12, max_content_tokens: 30000 },
+  { type: "web_search_20260209", name: "web_search", max_uses: 10 },
+  { type: "web_fetch_20260209", name: "web_fetch", max_uses: 8, max_content_tokens: 25000 },
   {
     name: "hae_arkistosta",
     description: "Hakee Faktapisteen omasta islam-uutisarkistosta (n. 5 600 uutista sekä viranomais-, kunta- ja yhteisötiedotetta Suomesta ja Euroopasta; ulkomaiset otsikot käännetty suomeksi). Haku osuu otsikkoon, alkuperäiseen otsikkoon, tiivistelmään ja lähteen nimeen. Palauttaa osuvimmat jutut uusimmasta alkaen otsikon, päivämäärän, lähteen ja linkin kanssa.",
@@ -63,15 +67,17 @@ const TYOKALUT = [
     },
   },
   {
-    name: "hae_ytj",
-    description: "Hakee Patentti- ja rekisterihallituksen YTJ-avoimesta datasta (avoindata.prh.fi) suomalaisia yhteisöjä nimen osalla: yhdistykset, säätiöt, uskonnolliset yhdyskunnat, yritykset. Palauttaa Y-tunnuksen, nimen, yhteisömuodon, rekisteröintipäivän, kotipaikan, toimialan ja tilan. Kattaa vain yhteisöt, joilla on Y-tunnus (moni pieni yhdistys puuttuu).",
+    name: "hae_rekisterista",
+    description: "Suomen islamilaiset yhdistykset, säätiöt ja uskonnolliset yhdyskunnat PRH:n rekistereistä: yhdistää PRH:n yhdistysrekisterin nimihaut 8.11.2026 (islam, muslimi, masjid, islamic, moskeija, mosque, imam, quran, koraani, ummah, dawah, sunna, shia, ahlul, zahra, hussein, tatar; vain selvästi islamilaiset nimet, somalialaiset yhdistykset erikseen taustaksi) ja YTJ-avoimen datan nimihaut, poistaa päällekkäisyydet Y-tunnuksella. Palauttaa yhteenvedon (määrät muodoittain ja tiloittain) ja luettelon (nimi, Y-tunnus, muoto, rekisteröity, kotipaikka, tila, lähde). Vakiohakusanat ovat aina mukana; voit lisätä omia.",
     input_schema: {
       type: "object",
       properties: {
-        nimet: { type: "array", items: { type: "string" }, description: "Yksi tai useampi nimihaku, esim. [\"islamilainen\", \"islamic\", \"muslim\"]" },
-        vain_aktiiviset: { type: "boolean", description: "true = jätä lakanneet pois (oletus false: lakanneet merkitään)" },
+        hakusanat: { type: "array", items: { type: "string" }, description: "Lisähakusanat YTJ-nimihakuun, esim. [\"rabita\", \"diyanet\"]" },
+        suodata: { type: "string", description: "Rajaa luettelon nimiin, joissa on tämä merkkijono (esim. \"säätiö\" tai kunnan nimi kotipaikassa)" },
+        vain_aktiiviset: { type: "boolean" },
+        myos_epaselvat: { type: "boolean", description: "true = näytä myös YTJ-osumat, joiden nimi ei viittaa islamiin (eivät mukana luvuissa)" },
+        nayta_somalialaiset: { type: "boolean", description: "true = liitä luetteloon somalialaiset yhdistykset (taustatietoa, ei islamilaisia)" },
       },
-      required: ["nimet"],
     },
   },
 ];
@@ -109,32 +115,82 @@ async function haeArkistosta(env, a) {
   };
 }
 
-async function haeYtj(a) {
-  const nimet = (Array.isArray(a.nimet) ? a.nimet : [String(a.nimet || "")]).map(s => String(s).trim()).filter(Boolean).slice(0, 10);
-  const nahty = new Map(), haut = {};
-  await Promise.all(nimet.map(async n => {
-    try {
-      const r = await fetch("https://avoindata.prh.fi/opendata-ytj-api/v3/companies?name=" + encodeURIComponent(n), { headers: { accept: "application/json" } });
-      if (!r.ok) { haut[n] = "virhe " + r.status; return; }
-      const d = await r.json(); haut[n] = d.totalResults ?? (d.companies || []).length;
-      for (const c of d.companies || []) {
-        const id = c.businessId?.value; if (!id || nahty.has(id)) continue;
-        const fi = arr => ((arr || []).find(x => x.languageCode === "1") || {}).description;
-        const nimi = ((c.names || []).find(x => !x.endDate) || (c.names || [])[0] || {}).name;
-        const muoto = fi(((c.companyForms || []).find(x => !x.endDate) || (c.companyForms || [])[0] || {}).descriptions);
-        const os = (c.addresses || [])[0] || {};
-        const kunta = ((os.postOffices || []).find(x => x.languageCode === "1") || (os.postOffices || [])[0] || {}).city;
-        nahty.set(id, { ytunnus: id, nimi, muoto, rekisteroity: c.businessId?.registrationDate || c.registrationDate, kotipaikka: kunta, toimiala: fi(c.mainBusinessLine?.descriptions), paattynyt: c.endDate || undefined });
-      }
-    } catch (e) { haut[n] = "virhe"; }
-  }));
-  let lista = [...nahty.values()];
-  if (a.vain_aktiiviset) lista = lista.filter(x => !x.paattynyt);
-  return { haut, yhteensa: lista.length, huom: "Vain Y-tunnuksen saaneet yhteisöt. Nimihaku osuu myös sanan keskelle, joten karsi epäolennaiset (esim. asunto-osakeyhtiöt).", yhteisot: lista.slice(0, 150) };
+const YTJ = "https://avoindata.prh.fi/opendata-ytj-api/v3/companies";
+const VAKIOSANAT = ["islam", "muslim", "moskei", "moskee", "masjid", "masjed", "mosque", "imam", "sunni", "shia", "shiia", "ahmadiyya", "ummah", "koraani", "quran", "tataari", "dawah", "salafi", "hidaya", "kulttuurisäätiö"];
+const ISLAM_RX = /islam|muslim|moskei|moskee|mosque|masji|masje|imam|ahmadiyy|ummah|koraan|quran|dawah|salaf|hidaya|(^|[\s(])al-|\bshiia?\b|\bshi'a\b|\bsunni|\bsunna\b|tataari|\btatar|ahlul|zahra|hussein/i;
+async function ytjHaku(env, sana) {
+  const avain = "valimuisti/ytj/" + encodeURIComponent(sana.toLowerCase()) + ".json";
+  try {
+    const o = env.VIDEOT && await env.VIDEOT.get(avain);
+    if (o && Date.now() - o.uploaded.getTime() < 86400e3) return await o.json();
+  } catch {}
+  const kaikki = []; let n = 0;
+  for (let sivu = 1; sivu <= 3; sivu++) {
+    const r = await fetch(YTJ + "?name=" + encodeURIComponent(sana) + (sivu > 1 ? "&page=" + sivu : ""), { headers: { accept: "application/json" } });
+    if (!r.ok) { if (sivu === 1) throw new Error("YTJ " + r.status); break; }
+    const d = await r.json(); n = d.totalResults || 0;
+    for (const c of d.companies || []) {
+      const fi = arr => ((arr || []).find(x => x.languageCode === "1") || (arr || [])[0] || {}).description;
+      const nimet = c.names || [];
+      const nimi = (nimet.find(x => !x.endDate) || nimet[0] || {}).name;
+      const muodot = c.companyForms || [];
+      const os = (c.addresses || [])[0] || {};
+      kaikki.push({ ytunnus: c.businessId?.value, nimi, muoto: fi((muodot.find(x => !x.endDate) || muodot[0] || {}).descriptions), rekisteroity: c.businessId?.registrationDate || c.registrationDate,
+        kotipaikka: ((os.postOffices || []).find(x => x.languageCode === "1") || (os.postOffices || [])[0] || {}).city, lopetettu: c.endDate || undefined, toimiala: fi(c.mainBusinessLine?.descriptions) });
+    }
+    if (!(d.companies || []).length || kaikki.length >= n) break;
+  }
+  const tulos = { n, yhteisot: kaikki };
+  try { env.VIDEOT && await env.VIDEOT.put(avain, JSON.stringify(tulos), { httpMetadata: { contentType: "application/json" } }); } catch {}
+  return tulos;
+}
+async function haeRekisterista(env, a) {
+  const omat = (Array.isArray(a.hakusanat) ? a.hakusanat : []).map(s => String(s).trim()).filter(s => s.length >= 3).slice(0, 15);
+  const sanat = [...new Set([...VAKIOSANAT, ...omat.map(s => s.toLowerCase())])];
+  const kartta = new Map(), haut = {};
+  const somalit = PRH_LISTA.yhdistykset.filter(y => y.luokka !== "islamilainen"), islamilaiset = PRH_LISTA.yhdistykset.filter(y => y.luokka === "islamilainen");
+  const somaliId = new Set(somalit.map(y => y.ytunnus));
+  for (const y of islamilaiset) kartta.set(y.ytunnus || "rn:" + y.rekisterinumero, { nimi: y.nimi, ytunnus: y.ytunnus, rekisterinumero: y.rekisterinumero, muoto: "yhdistys" + (y.tyyppi ? " (" + y.tyyppi + ")" : ""), kotipaikka: y.kotipaikka, tila: "rekisterissä", tilan_ajankohta: y.tilan_ajankohta, lahde: ["yhdistysrekisteri"], islam_nimessa: true });
+  const tulokset = await Promise.all(sanat.map(s => ytjHaku(env, s).then(r => [s, r], e => [s, { virhe: String(e.message || e) }])));
+  for (const [s, r] of tulokset) {
+    if (r.virhe) { haut[s] = r.virhe; continue; }
+    haut[s] = r.n;
+    for (const c of r.yhteisot) {
+      if (!c.ytunnus) continue;
+      const muoto = c.muoto || "";
+      if (!/yhdist|säätiö|yhdyskun|seurakun/i.test(muoto)) continue; // yritykset ja asunto-osakeyhtiöt pois
+      if (!c.nimi && !c.lopetettu) continue;
+      if (somaliId.has(c.ytunnus)) continue;
+      const vanha = kartta.get(c.ytunnus);
+      if (vanha) { vanha.lahde = [...new Set([...vanha.lahde, "YTJ"])]; vanha.ytj_muoto = muoto; vanha.rekisteroity ||= c.rekisteroity; if (c.lopetettu) { vanha.tila = "lopetettu"; vanha.lopetettu = c.lopetettu; } continue; }
+      kartta.set(c.ytunnus, { nimi: c.nimi || "(nimi ei näy, lopetettu)", ytunnus: c.ytunnus, muoto, rekisteroity: c.rekisteroity, kotipaikka: c.kotipaikka, tila: c.lopetettu ? "lopetettu" : "rekisterissä", lopetettu: c.lopetettu, lahde: ["YTJ"], islam_nimessa: ISLAM_RX.test(c.nimi || "") });
+    }
+  }
+  const muut = [...kartta.values()].filter(x => !x.islam_nimessa);
+  let lista = [...kartta.values()].filter(x => x.islam_nimessa || a.myos_epaselvat);
+  const luokka = x => /säätiö/i.test(x.ytj_muoto || x.muoto) ? "säätiö" : /uskonnollinen yhdyskunta$/i.test(x.ytj_muoto || "") ? "uskonnollinen yhdyskunta (YTJ-muoto)" : /uskonnollinen yhdyskunta\/seurakunta/.test(x.muoto) ? "yhdistys: uskonnollinen yhdyskunta/seurakunta" : "yhdistys";
+  const laske = l => { const o = {}; for (const x of l) { const k = luokka(x) + (x.tila === "lopetettu" ? " – lopetettu" : ""); o[k] = (o[k] || 0) + 1; } return o; };
+  const isl = [...kartta.values()].filter(x => x.islam_nimessa);
+  const yhteenveto = {
+    islamilaiset_yhteensa: isl.length, islamilaiset_rekisterissa: isl.filter(x => x.tila !== "lopetettu").length, islamilaiset_lopetetut_ytj: isl.filter(x => x.tila === "lopetettu").length,
+    muodoittain: laske(isl), yhdistysrekisterin_islamilaiset: islamilaiset.length, lisaksi_vain_ytj_islamilaiset: isl.filter(x => x.lahde.length === 1 && x.lahde[0] === "YTJ").length,
+    somalialaiset_yhdistykset_taustaksi: somalit.length + " (haku 'somali'; etnisiä/kulttuurisia yhdistyksiä, nimessä ei uskontoa – EI lasketa islamilaisiksi)",
+    ytj_osumat_joiden_nimi_ei_viittaa_islamiin: muut.length + " (eivät mukana luvuissa)",
+  };
+  if (a.nayta_somalialaiset) lista = lista.concat(somalit.map(y => ({ nimi: y.nimi, ytunnus: y.ytunnus, muoto: "yhdistys (somalialainen, ei uskonnollinen nimi)", kotipaikka: y.kotipaikka, tila: "rekisterissä", tilan_ajankohta: y.tilan_ajankohta, lahde: ["yhdistysrekisteri"] })));
+  if (a.vain_aktiiviset) lista = lista.filter(x => x.tila !== "lopetettu");
+  if (a.suodata) { const q = String(a.suodata).toLowerCase(); lista = lista.filter(x => ((x.nimi || "") + " " + (x.kotipaikka || "") + " " + (x.muoto || "")).toLowerCase().includes(q)); }
+  lista.sort((A, B) => (A.nimi || "").localeCompare(B.nimi || "", "fi"));
+  return {
+    lahteet: { yhdistysrekisteri: PRH_LISTA.lahde + ". " + PRH_LISTA.huom, ytj: "PRH:n YTJ-avoin data (avoindata.prh.fi), nimihaut " + new Date().toISOString().slice(0, 10) + " (välimuisti enintään 24 h). Vain Y-tunnukselliset; nimihaku osuu myös sanan keskelle, joten osa YTJ-osumista ei liity islamiin – karsi ne nimen perusteella (kenttä islam_nimessa on vain apu)." },
+    ytj_haut: haut, yhteenveto, nayttaa: lista.length,
+    yhteisot: lista.slice(0, 400).map(x => [x.nimi, x.ytunnus, luokka(x), x.kotipaikka || "", x.rekisteroity || x.tilan_ajankohta || "", x.tila + (x.lopetettu ? " " + x.lopetettu : ""), x.lahde.join("+"), x.islam_nimessa ? "" : "nimi ei viittaa islamiin"].join(" | ")),
+    sarakkeet: "nimi | Y-tunnus | muoto | kotipaikka | rekisteröity (YTJ) tai tilan ajankohta (yhdistysrekisteri) | tila | lähde | huom",
+  };
 }
 
 // Anthropicin SSE-virran luku: palauttaa sisältölohkot ja pysähtymissyyn, välittää tekstin ja edistymisen asiakkaalle.
-async function kierros(env, body, laheta) {
+async function kierros(env, body, laheta, tila) {
   const r = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: { "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
@@ -153,13 +209,13 @@ async function kierros(env, body, laheta) {
       if (e.type === "message_start") kaytto = { ...e.message?.usage };
       else if (e.type === "content_block_start") {
         const b = { ...e.content_block }; lohkot[e.index] = b;
-        if (b.type === "server_tool_use" || b.type === "tool_use") json[e.index] = "";
+        if (b.type === "server_tool_use" || b.type === "tool_use") { json[e.index] = ""; tila.tyokalu(b); }
         if (b.type === "text" && b.citations === undefined) delete b.citations;
         if (b.type === "web_search_tool_result") { const n = Array.isArray(b.content) ? b.content.length : 0; laheta({ t: "tulos", d: n ? n + " hakutulosta" : "ei tuloksia" }); }
         if (b.type === "web_fetch_tool_result") { const ok = b.content?.type === "web_fetch_result"; laheta({ t: "tulos", d: ok ? "sivu luettu" : "sivua ei saatu auki" }); }
       } else if (e.type === "content_block_delta") {
         const b = lohkot[e.index], d = e.delta;
-        if (d.type === "text_delta") { b.text = (b.text || "") + d.text; laheta({ t: "teksti", d: d.text }); }
+        if (d.type === "text_delta") { b.text = (b.text || "") + d.text; tila.teksti += d.text; laheta({ t: "teksti", d: d.text }); }
         else if (d.type === "input_json_delta") json[e.index] += d.partial_json;
         else if (d.type === "citations_delta") (b.citations ||= []).push(d.citation);
         else if (d.type === "thinking_delta") b.thinking = (b.thinking || "") + d.thinking;
@@ -167,13 +223,13 @@ async function kierros(env, body, laheta) {
       } else if (e.type === "content_block_stop") {
         const b = lohkot[e.index];
         if (e.index in json) {
-          try { b.input = json[e.index] ? JSON.parse(json[e.index]) : {}; } catch { b.input = {}; }
+          if (json[e.index]) { try { b.input = JSON.parse(json[e.index]); } catch { b.input = {}; } } else b.input ||= {};
           const inp = b.input || {};
-          if (b.name === "web_search") laheta({ t: "haku", d: "Haen verkosta: " + (inp.query || "") });
-          else if (b.name === "web_fetch") laheta({ t: "haku", d: "Luen sivua: " + (inp.url || "").replace(/^https?:\/\/(www\.)?/, "").slice(0, 80) });
+          if (b.name === "web_search") { tila.haut++; laheta({ t: "haku", d: "Haen verkosta: " + (inp.query || "") }); }
+          else if (b.name === "web_fetch") { tila.sivut++; laheta({ t: "haku", d: "Luen sivua: " + (inp.url || "").replace(/^https?:\/\/(www\.)?/, "").slice(0, 80) }); }
           else if (b.name === "hae_arkistosta") laheta({ t: "haku", d: "Haen Faktapisteen arkistosta: " + (inp.sanat || []).join(", ") });
-          else if (b.name === "hae_ytj") laheta({ t: "haku", d: "Haen PRH:n YTJ-rekisteristä: " + (inp.nimet || []).join(", ") });
-          else if (b.type === "server_tool_use") laheta({ t: "haku", d: "Käsittelen hakutuloksia" });
+          else if (b.name === "hae_rekisterista") laheta({ t: "haku", d: "Haen PRH:n rekistereistä (yhdistysrekisteri + YTJ)" + ((inp.hakusanat || []).length ? ": " + inp.hakusanat.join(", ") : "") });
+          else if (b.name === "code_execution") laheta({ t: "kasittely" });
         }
       } else if (e.type === "message_delta") { syy = e.delta?.stop_reason || syy; if (e.usage) kaytto = { ...kaytto, ...e.usage }; }
       else if (e.type === "error") throw new Error(e.error?.message || "virhe");
@@ -217,13 +273,16 @@ export async function islamKysy(req, env, ctx) {
   let auki = true;
   const laheta = o => { if (!auki) return; w.write(enc.encode(JSON.stringify(o) + "\n")).catch(() => { auki = false; }); };
   const tyo = (async () => {
-    const alku = Date.now(), yht = { input_tokens: 0, output_tokens: 0, haut: 0, sivut: 0, omat: 0 };
+    const alku = Date.now(), yht = { input: 0, cache_luku: 0, cache_kirjoitus: 0, output: 0, haut: 0, sivut: 0, omat: 0, kierrokset: 0 };
+    const tila = { teksti: "", haut: 0, sivut: 0, tyokalu() { if (tila.teksti.trim() && tila.teksti.length < 1500) { laheta({ t: "tyhjenna" }); tila.teksti = ""; } } };
     try {
       laheta({ t: "haku", d: "Aloitan tutkimuksen", jaljella: raja.jaljella });
-      const body = { model: MALLI, max_tokens: 12000, system: [{ type: "text", text: jarjestelma(), cache_control: { type: "ephemeral" } }], tools: TYOKALUT, messages: msgs };
+      // Ylätason cache_control = automaattinen välimuisti koko keskusteluhistorialle joka kierroksella.
+      const body = { model: MALLI, max_tokens: 12000, cache_control: { type: "ephemeral" }, system: jarjestelma(), tools: TYOKALUT, messages: msgs };
       for (let k = 0; k < KIERROKSET && auki; k++) {
-        const { lohkot, syy, kaytto } = await kierros(env, body, laheta);
-        yht.input_tokens += (kaytto.input_tokens || 0) + (kaytto.cache_read_input_tokens || 0) + (kaytto.cache_creation_input_tokens || 0); yht.output_tokens += kaytto.output_tokens || 0;
+        if (k === KIERROKSET - 1 || tila.haut >= BUDJETTI.haut || tila.sivut >= BUDJETTI.sivut) body.tool_choice = { type: "none" };
+        const { lohkot, syy, kaytto } = await kierros(env, body, laheta, tila);
+        yht.kierrokset++; yht.input += kaytto.input_tokens || 0; yht.cache_luku += kaytto.cache_read_input_tokens || 0; yht.cache_kirjoitus += kaytto.cache_creation_input_tokens || 0; yht.output += kaytto.output_tokens || 0;
         const st = kaytto.server_tool_use || {}; yht.haut += st.web_search_requests || 0; yht.sivut += st.web_fetch_requests || 0;
         body.messages = [...body.messages, { role: "assistant", content: lohkot }];
         if (syy === "pause_turn") continue;
@@ -232,14 +291,15 @@ export async function islamKysy(req, env, ctx) {
         for (const b of lohkot) {
           if (b.type !== "tool_use") continue;
           yht.omat++;
-          let out; try { out = b.name === "hae_arkistosta" ? await haeArkistosta(env, b.input || {}) : b.name === "hae_ytj" ? await haeYtj(b.input || {}) : { virhe: "tuntematon työkalu" }; } catch (e) { out = { virhe: String(e.message || e) }; }
+          let out; try { out = b.name === "hae_arkistosta" ? await haeArkistosta(env, b.input || {}) : b.name === "hae_rekisterista" ? await haeRekisterista(env, b.input || {}) : { virhe: "tuntematon työkalu" }; } catch (e) { out = { virhe: String(e.message || e) }; }
           if (out.osumia !== undefined) laheta({ t: "tulos", d: out.osumia + " osumaa arkistossa" });
-          if (out.yhteensa !== undefined) laheta({ t: "tulos", d: out.yhteensa + " yhteisöä YTJ:ssä" });
-          tulokset.push({ type: "tool_result", tool_use_id: b.id, content: JSON.stringify(out).slice(0, 60000) });
+          if (out.yhteenveto) laheta({ t: "tulos", d: out.yhteenveto.islamilaiset_yhteensa + " islamilaista yhteisöä rekistereissä" });
+          tulokset.push({ type: "tool_result", tool_use_id: b.id, content: JSON.stringify(out).slice(0, 80000) });
         }
         body.messages.push({ role: "user", content: tulokset });
-        laheta({ t: "kierros" });
       }
+      // Hinta-arvio (Sonnet: 3 $/M syöte, 0,30 $/M välimuistiluku, 3,75 $/M välimuistikirjoitus, 15 $/M tuotos, haku 0,01 $)
+      yht.usd = +((yht.input * 3 + yht.cache_luku * 0.3 + yht.cache_kirjoitus * 3.75 + yht.output * 15) / 1e6 + yht.haut * 0.01).toFixed(2);
       laheta({ t: "loppu", sek: Math.round((Date.now() - alku) / 1000), kaytto: yht });
     } catch (e) {
       laheta({ t: "virhe", d: "Tutkimus keskeytyi virheeseen. Yritä hetken päästä uudelleen." });

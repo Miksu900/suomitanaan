@@ -121,7 +121,7 @@ a{color:var(--kr)} a:focus-visible{outline:2px solid var(--accent);outline-offse
     <div style="display:grid;gap:6px">
       <span class="eyebrow">Tekoälytutkija</span>
       <h2 id="h-ai">Kysy mitä tahansa islamiin liittyvää</h2>
-      <p class="lead">Tekoäly tutkii aiheen verkosta, viranomaislähteistä, PRH:n rekisteritiedoista ja Faktapisteen uutisarkistosta ja kertoo lähteet. Perusteellinen vastaus vie yleensä 1–3 minuuttia.</p>
+      <p class="lead">Tekoäly tutkii aiheen verkosta, viranomaislähteistä, PRH:n rekisteritiedoista ja Faktapisteen uutisarkistosta ja kertoo lähteet. Perusteellinen vastaus vie yleensä 2–4 minuuttia; pidä sivu auki sillä aikaa.</p>
     </div>
     <div id="ai-kesk" aria-live="polite"></div>
     <form id="ai-lomake">
@@ -298,7 +298,8 @@ async function kysy(q){q=q.trim();if(!q||kaynnissa)return;if(q.length>1500){aler
     if(e.t==="teksti"){teksti+=e.d;if(!ajastin)ajastin=requestAnimationFrame(render);st.textContent=`Kirjoitan vastausta · ${haut} hakua tehty`}
     else if(e.t==="haku"){if(/^(Haen|Luen)/.test(e.d))haut++;const li=document.createElement("li");li.textContent=e.d;ol.append(li);ol.scrollTop=ol.scrollHeight;if(!teksti)st.textContent=e.d.length>70?e.d.slice(0,70)+"…":e.d}
     else if(e.t==="tulos"){const li=ol.lastElementChild;if(li)li.textContent+=" → "+e.d}
-    else if(e.t==="kierros"){if(teksti&&!/\n\s*$/.test(teksti))teksti+="\n\n"}
+    else if(e.t==="tyhjenna"){const li=document.createElement("li");li.textContent="Välihuomio: "+teksti.trim().slice(0,200);ol.append(li);teksti="";m.innerHTML="";st.textContent="Tutkin edelleen…"}
+    else if(e.t==="kasittely"){if(!teksti)st.textContent=`Käsittelen hakutuloksia · ${haut} hakua`}
     else if(e.t==="virhe"){virhe=e.d}
     else if(e.t==="loppu"){st.textContent=`Valmis · ${haut} hakua · ${e.sek} s`}}}
   if(!teksti&&!virhe)virhe="Vastausta ei saatu. Yritä uudelleen.";
