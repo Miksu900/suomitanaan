@@ -15,7 +15,7 @@ jobs:
     env:
       CF: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       API: https://api.cloudflare.com/client/v4
-      DOMAIN: ${{ vars.BLOGI_DOMAIN }}
+      DOMAIN: ${{ vars.BLOGI_DOMAIN || 'miikakoskela.fi' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
