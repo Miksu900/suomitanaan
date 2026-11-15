@@ -1,6 +1,6 @@
 ---
 otsikko: Muslimiveljeskunta vaikuttaa Euroopassa sisältä käsin – myös Suomessa
-pvm: 2026-11-16
+pvm: 2026-11-15
 tiivistelma: Egypti lisäsi terroristilistalleen 35 eurooppalaista järjestöä, joista yksi toimii Suomessa. Euroopassa järjestöt ovat laillisia. Ei olla naiiveja.
 ---
 Egypti on lisännyt terroristilistalleen 35 Euroopassa toimivaa järjestöä ja 36 henkilöä, jotka toimivat Muslimiveljeskuntaan yhteydessä olevissa järjestöissä.
