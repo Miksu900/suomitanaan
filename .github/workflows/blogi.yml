@@ -9,6 +9,8 @@ on:
   schedule:
     - cron: "5 4 * * *"
   workflow_dispatch:
+    inputs:
+      omalinkki: { description: "Lähetä omistajan tunnistuslinkki Telegramiin (kyllä/ei)", required: false, default: "ei" }
 jobs:
   julkaise:
     runs-on: ubuntu-latest
@@ -41,19 +43,47 @@ jobs:
           set -e
           {
             echo 'name = "blogi"'
+            echo 'main = "src/index.js"'
             echo 'compatibility_date = "2026-09-01"'
             echo 'workers_dev = true'
             if [ "${{ steps.cf.outputs.tila }}" = "active" ]; then
               echo "routes = [ { pattern = \"$DOMAIN\", custom_domain = true }, { pattern = \"www.$DOMAIN\", custom_domain = true } ]"
             fi
+            echo '[vars]'
+            echo 'TG_CHAT = "1893930799"'
             echo '[assets]'
             echo 'directory = "./public"'
+            echo 'binding = "ASSETS"'
+            echo 'run_worker_first = ["/api/*", "/oma"]'
             echo 'not_found_handling = "404-page"'
+            echo '[[durable_objects.bindings]]'
+            echo 'name = "BLOGI"'
+            echo 'class_name = "Blogi"'
+            echo '[[migrations]]'
+            echo 'tag = "v1"'
+            echo 'new_sqlite_classes = ["Blogi"]'
           } > wrangler.toml
           npx --yes wrangler@4.152.0 deploy
+          HALLINTA=$(printf '%s' "$CLOUDFLARE_API_TOKEN-blogi" | sha256sum | cut -c1-40)
+          jq -n --arg t "${{ secrets.TELEGRAM_BOT_TOKEN }}" --arg h "$HALLINTA" '{TELEGRAM_BOT_TOKEN:$t, HALLINTA:$h}' > /tmp/s.json
+          npx --yes wrangler@4.152.0 secret bulk /tmp/s.json; rm /tmp/s.json
+          if [ "${{ steps.cf.outputs.tila }}" = "active" ]; then
+            Z=$(curl -sS -H "Authorization: Bearer $CF" "$API/zones?name=$DOMAIN" | jq -r '.result[0].id // empty')
+            [ -n "$Z" ] && curl -sS -X POST "$API/zones/$Z/purge_cache" -H "Authorization: Bearer $CF" -H "content-type: application/json" -d '{"purge_everything":true}' >/dev/null || true
+          fi
       - name: Testi
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TG: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         run: |
           sleep 8
           U=https://blogi.${{ steps.cf.outputs.sub }}.workers.dev
           echo "::notice title=Blogin osoite::$U  (etusivu $(curl -s -o /dev/null -w '%{http_code}' $U/))"
+          echo "::notice title=API::tilastot $(curl -sS "$U/api/tilastot?polku=/" | head -c 300)  kommentit $(curl -sS "$U/api/kommentit?polku=/testi/" | head -c 200)"
+          HALLINTA=$(printf '%s' "$CLOUDFLARE_API_TOKEN-blogi" | sha256sum | cut -c1-40)
+          if [ "${{ inputs.omalinkki }}" = "kyllä" ]; then
+            B=$U; if [ "${{ steps.cf.outputs.tila }}" = "active" ]; then B=https://$DOMAIN; fi
+            curl -sS -X POST "https://api.telegram.org/bot$TG/sendMessage" -d chat_id=1893930799 -d disable_web_page_preview=true --data-urlencode "text=🔑 Avaa tämä linkki kerran omalla puhelimellasi, niin omia käyntejäsi ei lasketa blogin kävijöihin: $B/oma?k=$HALLINTA" | jq -c .ok
+            echo "::notice title=Yhteenveto::$(curl -sS "$U/api/hallinta/yhteenveto?k=$HALLINTA" | head -c 600)"
+          fi
           if [ "${{ steps.cf.outputs.tila }}" = "active" ]; then echo "::notice title=Oma domain::https://$DOMAIN ($(curl -s -o /dev/null -w '%{http_code}' https://$DOMAIN/ || true))"; fi
