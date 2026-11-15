@@ -134,7 +134,11 @@ function nayta(t){if(!t)return;const k=$('#kavijat');if(k)k.textContent=t.kavija
  if(t.jaot)for(const [kan,n] of Object.entries(t.jaot)){const e=document.querySelector('[data-kanava="'+kan+'"] .n');if(e)e.textContent=n}
  if(t.lukijat!=null&&$('#lukijat'))$('#lukijat').textContent=t.lukijat+' lukijaa';
  if(t.lukijat_kirjoituksittain)document.querySelectorAll('[data-polku]').forEach(e=>{const l=t.lukijat_kirjoituksittain[e.dataset.polku]||0,c=(t.kommentit_kirjoituksittain||{})[e.dataset.polku]||0;e.textContent=l+' lukijaa · '+c+' kommenttia'})}
-fetch('/api/kaynti?polku='+encodeURIComponent(P),{method:'POST'}).then(r=>r.json()).then(nayta).catch(()=>{});
+fetch('/api/tilastot?polku='+encodeURIComponent(P)).then(r=>r.json()).then(nayta).catch(()=>{});
+(function(){let id='';try{id=localStorage.getItem('bk_id')||'';if(!id){id=(crypto.randomUUID?crypto.randomUUID():String(Math.random()).slice(2)+Date.now());localStorage.setItem('bk_id',id)}}catch(e){}
+ let aika=0,toimi=false,lahti=false;const tarkista=()=>{if(!lahti&&aika>=5&&toimi){lahti=true;fetch('/api/kaynti?polku='+encodeURIComponent(P)+'&id='+encodeURIComponent(id),{method:'POST'}).then(r=>r.json()).then(nayta).catch(()=>{})}};
+ setInterval(()=>{if(document.visibilityState==='visible'){aika++;tarkista()}},1000);
+ ['scroll','touchstart','pointerdown','keydown','wheel'].forEach(e=>addEventListener(e,()=>{toimi=true;tarkista()},{passive:true,once:true}));})();
 const U=location.origin+P,T=document.title;
 const osoitteet={facebook:'https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(U),x:'https://x.com/intent/post?url='+encodeURIComponent(U)+'&text='+encodeURIComponent(T),whatsapp:'https://wa.me/?text='+encodeURIComponent(T+' '+U),telegram:'https://t.me/share/url?url='+encodeURIComponent(U)+'&text='+encodeURIComponent(T)};
 document.querySelectorAll('[data-kanava]').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.kanava;

@@ -31,7 +31,7 @@ export default {
       const stub = env.BLOGI.get(env.BLOGI.idFromName("blogi"));
       return stub.kasittele({
         polku: u.pathname, haku: Object.fromEntries(u.searchParams), metodi: req.method,
-        runko: req.method === "POST" ? await req.text() : "", tunnus: await tiiviste(ip + "|" + ua + "|" + pv()),
+        runko: req.method === "POST" ? await req.text() : "", tunnus: await tiiviste((u.searchParams.get("id") || (ip + "|" + ua)).slice(0, 80) + "|bk"),
         iptunnus: await tiiviste(ip + "|blogi"), botti: BOTIT.test(ua) || !ua, oma, isanta: u.origin
       });
     }
@@ -45,7 +45,7 @@ export class Blogi extends DurableObject {
     this.env = env;
     this.sql = ctx.storage.sql;
     this.sql.exec(`
-      CREATE TABLE IF NOT EXISTS kaynnit(pv TEXT, tunnus TEXT, polku TEXT, PRIMARY KEY(pv, tunnus, polku));
+      CREATE TABLE IF NOT EXISTS kaynnit2(tunnus TEXT, polku TEXT, pv TEXT, PRIMARY KEY(tunnus, polku));
       CREATE TABLE IF NOT EXISTS jaot(polku TEXT, kanava TEXT, n INTEGER DEFAULT 0, PRIMARY KEY(polku, kanava));
       CREATE TABLE IF NOT EXISTS kommentit(id INTEGER PRIMARY KEY AUTOINCREMENT, polku TEXT, nimi TEXT, teksti TEXT, aika INTEGER, ip TEXT, piilotettu INTEGER DEFAULT 0);
       CREATE INDEX IF NOT EXISTS kommentit_polku ON kommentit(polku, aika);
@@ -60,8 +60,8 @@ export class Blogi extends DurableObject {
 
     if (p === "/api/kaynti" && r.metodi === "POST") {
       if (!r.botti && !r.oma) {
-        this.sql.exec("INSERT OR IGNORE INTO kaynnit VALUES (?,?,?)", pv(), r.tunnus, kirjoitus);
-        this.sql.exec("INSERT OR IGNORE INTO kaynnit VALUES (?,?,?)", pv(), r.tunnus, "*");
+        this.sql.exec("INSERT OR IGNORE INTO kaynnit2 VALUES (?,?,?)", r.tunnus, kirjoitus, pv());
+        this.sql.exec("INSERT OR IGNORE INTO kaynnit2 VALUES (?,?,?)", r.tunnus, "*", pv());
       }
       return json(this.tilastot(kirjoitus));
     }
@@ -113,8 +113,8 @@ export class Blogi extends DurableObject {
     if (p === "/api/hallinta/yhteenveto") {
       if (!this.env.HALLINTA || r.haku.k !== this.env.HALLINTA) return json({ virhe: "ei oikeutta" }, 403);
       return json({
-        kavijat: this.rivit("SELECT pv, COUNT(*) n FROM kaynnit WHERE polku = '*' GROUP BY pv ORDER BY pv DESC LIMIT 30"),
-        kirjoitukset: this.rivit("SELECT polku, COUNT(*) n FROM kaynnit WHERE polku != '*' GROUP BY polku ORDER BY n DESC"),
+        kavijat: this.rivit("SELECT pv, COUNT(*) n FROM kaynnit2 WHERE polku = '*' GROUP BY pv ORDER BY pv DESC LIMIT 30"),
+        kirjoitukset: this.rivit("SELECT polku, COUNT(*) n FROM kaynnit2 WHERE polku != '*' GROUP BY polku ORDER BY n DESC"),
         jaot: this.rivit("SELECT * FROM jaot ORDER BY n DESC"),
         kommentteja: this.rivit("SELECT COUNT(*) n FROM kommentit WHERE piilotettu = 0")[0].n
       });
@@ -123,15 +123,15 @@ export class Blogi extends DurableObject {
   }
 
   tilastot(kirjoitus) {
-    const yht = this.rivit("SELECT COUNT(*) n FROM kaynnit WHERE polku = '*'")[0].n;
+    const yht = this.rivit("SELECT COUNT(*) n FROM kaynnit2 WHERE polku = '*'")[0].n;
     const t = { kavijat: yht };
     if (kirjoitus !== "/") {
-      t.lukijat = this.rivit("SELECT COUNT(*) n FROM kaynnit WHERE polku = ?", kirjoitus)[0].n;
+      t.lukijat = this.rivit("SELECT COUNT(*) n FROM kaynnit2 WHERE polku = ?", kirjoitus)[0].n;
       t.jaot = Object.fromEntries(KANAVAT.map(k => [k, 0]));
       for (const { kanava, n } of this.rivit("SELECT kanava, n FROM jaot WHERE polku = ?", kirjoitus)) t.jaot[kanava] = n;
       t.kommentteja = this.rivit("SELECT COUNT(*) n FROM kommentit WHERE polku = ? AND piilotettu = 0", kirjoitus)[0].n;
     } else {
-      t.lukijat_kirjoituksittain = Object.fromEntries(this.rivit("SELECT polku, COUNT(*) n FROM kaynnit WHERE polku != '*' GROUP BY polku").map(x => [x.polku, x.n]));
+      t.lukijat_kirjoituksittain = Object.fromEntries(this.rivit("SELECT polku, COUNT(*) n FROM kaynnit2 WHERE polku != '*' GROUP BY polku").map(x => [x.polku, x.n]));
       t.kommentit_kirjoituksittain = Object.fromEntries(this.rivit("SELECT polku, COUNT(*) n FROM kommentit WHERE piilotettu = 0 GROUP BY polku").map(x => [x.polku, x.n]));
     }
     return t;
