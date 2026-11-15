@@ -1,0 +1,59 @@
+name: Blogi (Miika Koskela)
+# Rakentaa blogin kirjoitukset (blogi/kirjoitukset/*.md) ja julkaisee ne Cloudflareen.
+# Ajastettu ajo julkaisee joka aamu klo 6 kirjoitukset, joiden päivämäärä on koittanut.
+# Oma domain kytketään automaattisesti, kun repo-muuttujassa BLOGI_DOMAIN oleva domain on aktiivinen Cloudflaressa.
+on:
+  push:
+    branches: [main]
+    paths: ["blogi/**", ".github/workflows/blogi.yml"]
+  schedule:
+    - cron: "5 4 * * *"
+  workflow_dispatch:
+jobs:
+  julkaise:
+    runs-on: ubuntu-latest
+    env:
+      CF: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      API: https://api.cloudflare.com/client/v4
+      DOMAIN: ${{ vars.BLOGI_DOMAIN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Tili ja domain
+        id: cf
+        run: |
+          h=(-sS -H "Authorization: Bearer $CF")
+          A=$(curl "${h[@]}" "$API/accounts" | jq -r '.result[0].id'); echo "account=$A" >> $GITHUB_OUTPUT
+          echo "sub=$(curl "${h[@]}" "$API/accounts/$A/workers/subdomain" | jq -r '.result.subdomain // empty')" >> $GITHUB_OUTPUT
+          T=puuttuu; if [ -n "$DOMAIN" ]; then T=$(curl "${h[@]}" "$API/zones?name=$DOMAIN" | jq -r '.result[0].status // "puuttuu"'); fi
+          echo "tila=$T" >> $GITHUB_OUTPUT; echo "::notice title=Domain ${DOMAIN:-ei asetettu}::$T"
+      - name: Sivut
+        run: |
+          if [ "${{ steps.cf.outputs.tila }}" = "active" ]; then export BLOGI_OSOITE="https://$DOMAIN"; else export BLOGI_OSOITE="https://blogi.${{ steps.cf.outputs.sub }}.workers.dev"; fi
+          python3 blogi/rakenna.py
+      - name: Julkaise
+        working-directory: blogi
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ steps.cf.outputs.account }}
+        run: |
+          set -e
+          {
+            echo 'name = "blogi"'
+            echo 'compatibility_date = "2026-09-01"'
+            echo 'workers_dev = true'
+            if [ "${{ steps.cf.outputs.tila }}" = "active" ]; then
+              echo "routes = [ { pattern = \"$DOMAIN\", custom_domain = true }, { pattern = \"www.$DOMAIN\", custom_domain = true } ]"
+            fi
+            echo '[assets]'
+            echo 'directory = "./public"'
+            echo 'not_found_handling = "404-page"'
+          } > wrangler.toml
+          npx --yes wrangler@4.152.0 deploy
+      - name: Testi
+        run: |
+          sleep 8
+          U=https://blogi.${{ steps.cf.outputs.sub }}.workers.dev
+          echo "::notice title=Blogin osoite::$U  (etusivu $(curl -s -o /dev/null -w '%{http_code}' $U/))"
+          if [ "${{ steps.cf.outputs.tila }}" = "active" ]; then echo "::notice title=Oma domain::https://$DOMAIN ($(curl -s -o /dev/null -w '%{http_code}' https://$DOMAIN/ || true))"; fi
