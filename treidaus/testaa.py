@@ -73,7 +73,7 @@ def testaa(df, h, kulut, nimi):
             "netto_%_yhteensa": float((bruttotuotot - kulut).sum() * 100) if kpl else None,
         }
     return {"kohde": nimi, "osuma_kaikki": osuma, "arvaus_pohjataso": pohja,
-            "testijakso": f"{pd.to_datetime(df.t.iloc[te.index[0]], unit='ms').date()} – {pd.to_datetime(df.t.iloc[te.index[-1]], unit='ms').date()}",
+            "testijakso": f"{pd.to_datetime(df.t.iloc[te.index[0]], unit=('us' if df.t.iloc[0]>1e14 else 'ms')).date()} – {pd.to_datetime(df.t.iloc[te.index[-1]], unit=('us' if df.t.iloc[0]>1e14 else 'ms')).date()}",
             "testihavaintoja": len(te), "kynnykset": tulos}
 
 KULUT = 0.002   # meno-paluu: 0,1 % kumpaankin suuntaan (Binancen perustaso)
