@@ -1,0 +1,250 @@
+[
+ {
+  "kohde": "Bitcoin",
+  "osuma_kaikki": 0.5312570781426954,
+  "arvaus_pohjataso": 0.522234805587014,
+  "testijakso": "2026-09-06 – 2026-10-31",
+  "testihavaintoja": 79470,
+  "kynnykset": {
+   "0.5": {
+    "kauppoja": 79470,
+    "osuma": 0.4941864854662137,
+    "brutto_%_per_kauppa": 0.0006124607281182911,
+    "netto_%_per_kauppa": -0.19938753927188174,
+    "netto_%_yhteensa": -15845.327745936442
+   },
+   "0.55": {
+    "kauppoja": 16861,
+    "osuma": 0.4818812644564379,
+    "brutto_%_per_kauppa": 0.0014955153540548865,
+    "netto_%_per_kauppa": -0.1985044846459452,
+    "netto_%_yhteensa": -3346.9841156152816
+   },
+   "0.6": {
+    "kauppoja": 6022,
+    "osuma": 0.46496180670873466,
+    "brutto_%_per_kauppa": 0.0019745975635058325,
+    "netto_%_per_kauppa": -0.19802540243649422,
+    "netto_%_yhteensa": -1192.5089734725682
+   }
+  },
+  "aikavali": "1 min"
+ },
+ {
+  "kohde": "Bitcoin",
+  "osuma_kaikki": 0.514030451742796,
+  "arvaus_pohjataso": 0.5054737636844092,
+  "testijakso": "2026-09-06 – 2026-10-31",
+  "testihavaintoja": 15894,
+  "kynnykset": {
+   "0.5": {
+    "kauppoja": 15894,
+    "osuma": 0.5132754498552913,
+    "brutto_%_per_kauppa": 0.0018854630401596473,
+    "netto_%_per_kauppa": -0.19811453695984046,
+    "netto_%_yhteensa": -3148.832450439704
+   },
+   "0.55": {
+    "kauppoja": 5125,
+    "osuma": 0.5305365853658537,
+    "brutto_%_per_kauppa": 0.004148576215718016,
+    "netto_%_per_kauppa": -0.19585142378428202,
+    "netto_%_yhteensa": -1003.7385468944453
+   },
+   "0.6": {
+    "kauppoja": 997,
+    "osuma": 0.5376128385155466,
+    "brutto_%_per_kauppa": 0.0042322203881365724,
+    "netto_%_per_kauppa": -0.1957677796118635,
+    "netto_%_yhteensa": -195.1804762730279
+   }
+  },
+  "aikavali": "10 min"
+ },
+ {
+  "kohde": "Bitcoin",
+  "osuma_kaikki": 0.51679879199698,
+  "arvaus_pohjataso": 0.5024537561343904,
+  "testijakso": "2026-09-06 – 2026-10-31",
+  "testihavaintoja": 5298,
+  "kynnykset": {
+   "0.5": {
+    "kauppoja": 5298,
+    "osuma": 0.5164212910532276,
+    "brutto_%_per_kauppa": 0.008890976777982913,
+    "netto_%_per_kauppa": -0.19110902322201714,
+    "netto_%_yhteensa": -1012.4956050302467
+   },
+   "0.55": {
+    "kauppoja": 2939,
+    "osuma": 0.5236474991493706,
+    "brutto_%_per_kauppa": 0.006670202137336033,
+    "netto_%_per_kauppa": -0.19332979786266402,
+    "netto_%_yhteensa": -568.1962759183696
+   },
+   "0.6": {
+    "kauppoja": 1207,
+    "osuma": 0.5045567522783762,
+    "brutto_%_per_kauppa": 0.0027852696522196576,
+    "netto_%_per_kauppa": -0.19721473034778036,
+    "netto_%_yhteensa": -238.03817952977093
+   }
+  },
+  "aikavali": "30 min"
+ },
+ {
+  "kohde": "Bitcoin",
+  "osuma_kaikki": 0.5681296320495828,
+  "arvaus_pohjataso": 0.5412287415759702,
+  "testijakso": "2026-10-22 – 2026-10-31",
+  "testihavaintoja": 53567,
+  "kynnykset": {
+   "0.5": {
+    "kauppoja": 53567,
+    "osuma": 0.505591128866653,
+    "brutto_%_per_kauppa": 0.0027766645585496773,
+    "netto_%_per_kauppa": -0.1972233354414504,
+    "netto_%_yhteensa": -10564.662409592174
+   },
+   "0.55": {
+    "kauppoja": 32429,
+    "osuma": 0.5193191279410404,
+    "brutto_%_per_kauppa": 0.0035909771857018462,
+    "netto_%_per_kauppa": -0.19640902281429823,
+    "netto_%_yhteensa": -6369.348200844877
+   },
+   "0.6": {
+    "kauppoja": 16691,
+    "osuma": 0.5455634773231083,
+    "brutto_%_per_kauppa": 0.004433375364233009,
+    "netto_%_per_kauppa": -0.19556662463576707,
+    "netto_%_yhteensa": -3264.2025317955886
+   }
+  },
+  "aikavali": "30 s"
+ },
+ {
+  "kohde": "Kulta (PAXG)",
+  "osuma_kaikki": 0.6238958097395243,
+  "arvaus_pohjataso": 0.6207625519063797,
+  "testijakso": "2026-09-06 – 2026-10-31",
+  "testihavaintoja": 79470,
+  "kynnykset": {
+   "0.5": {
+    "kauppoja": 79470,
+    "osuma": 0.3983389958474896,
+    "brutto_%_per_kauppa": 0.0005979723160971078,
+    "netto_%_per_kauppa": -0.19940202768390292,
+    "netto_%_yhteensa": -15846.479140039764
+   },
+   "0.55": {
+    "kauppoja": 45889,
+    "osuma": 0.34073525245701586,
+    "brutto_%_per_kauppa": 0.0008747163287214545,
+    "netto_%_per_kauppa": -0.1991252836712786,
+    "netto_%_yhteensa": -9137.660142391305
+   },
+   "0.6": {
+    "kauppoja": 32712,
+    "osuma": 0.29802518953289314,
+    "brutto_%_per_kauppa": 0.0006700367092874817,
+    "netto_%_per_kauppa": -0.19932996329071256,
+    "netto_%_yhteensa": -6520.48175916579
+   }
+  },
+  "aikavali": "1 min"
+ },
+ {
+  "kohde": "Kulta (PAXG)",
+  "osuma_kaikki": 0.5310179942116522,
+  "arvaus_pohjataso": 0.5335346671700012,
+  "testijakso": "2026-09-06 – 2026-10-31",
+  "testihavaintoja": 15894,
+  "kynnykset": {
+   "0.5": {
+    "kauppoja": 15894,
+    "osuma": 0.4857178809613691,
+    "brutto_%_per_kauppa": 0.002255567094797363,
+    "netto_%_per_kauppa": -0.19774443290520274,
+    "netto_%_yhteensa": -3142.9500165952923
+   },
+   "0.55": {
+    "kauppoja": 6857,
+    "osuma": 0.4781974624471343,
+    "brutto_%_per_kauppa": 0.0032240831393258625,
+    "netto_%_per_kauppa": -0.19677591686067422,
+    "netto_%_yhteensa": -1349.2924619136431
+   },
+   "0.6": {
+    "kauppoja": 2487,
+    "osuma": 0.44913550462404506,
+    "brutto_%_per_kauppa": 0.0014411743959685253,
+    "netto_%_per_kauppa": -0.1985588256040315,
+    "netto_%_yhteensa": -493.8157992772264
+   }
+  },
+  "aikavali": "10 min"
+ },
+ {
+  "kohde": "Kulta (PAXG)",
+  "osuma_kaikki": 0.5124575311438279,
+  "arvaus_pohjataso": 0.5218950547376369,
+  "testijakso": "2026-09-06 – 2026-10-31",
+  "testihavaintoja": 5298,
+  "kynnykset": {
+   "0.5": {
+    "kauppoja": 5298,
+    "osuma": 0.503208758021895,
+    "brutto_%_per_kauppa": 0.0032171508765786606,
+    "netto_%_per_kauppa": -0.1967828491234214,
+    "netto_%_yhteensa": -1042.5555346558865
+   },
+   "0.55": {
+    "kauppoja": 2956,
+    "osuma": 0.4983085250338295,
+    "brutto_%_per_kauppa": 0.0026755095016977016,
+    "netto_%_per_kauppa": -0.19732449049830236,
+    "netto_%_yhteensa": -583.2911939129817
+   },
+   "0.6": {
+    "kauppoja": 1250,
+    "osuma": 0.5168,
+    "brutto_%_per_kauppa": 0.006568256255012415,
+    "netto_%_per_kauppa": -0.19343174374498762,
+    "netto_%_yhteensa": -241.78967968123453
+   }
+  },
+  "aikavali": "30 min"
+ },
+ {
+  "kohde": "Kulta (PAXG)",
+  "osuma_kaikki": 0.6943453992196689,
+  "arvaus_pohjataso": 0.6908357757574626,
+  "testijakso": "2026-10-22 – 2026-10-31",
+  "testihavaintoja": 53567,
+  "kynnykset": {
+   "0.5": {
+    "kauppoja": 53567,
+    "osuma": 0.33781992644725295,
+    "brutto_%_per_kauppa": 0.0007889250386592444,
+    "netto_%_per_kauppa": -0.19921107496134083,
+    "netto_%_yhteensa": -10671.139652454145
+   },
+   "0.55": {
+    "kauppoja": 47256,
+    "osuma": 0.32482647706111395,
+    "brutto_%_per_kauppa": 0.0009153887013109243,
+    "netto_%_per_kauppa": -0.19908461129868912,
+    "netto_%_yhteensa": -9407.942391530854
+   },
+   "0.6": {
+    "kauppoja": 40521,
+    "osuma": 0.3072974507045729,
+    "brutto_%_per_kauppa": 0.0009452998989372248,
+    "netto_%_per_kauppa": -0.19905470010106283,
+    "netto_%_yhteensa": -8065.895502795166
+   }
+  },
+  "aikavali": "30 s"
+ }
+]
