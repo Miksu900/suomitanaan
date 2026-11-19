@@ -36,6 +36,7 @@ jobs:
           TAPAHTUMA: ${{ github.event_name }}
           VAIN: ${{ github.event.schedule == '53 9 * * *' && 'yle' || inputs.vain }}
           GH_TOKEN: ${{ github.token }}
+          EI_TG: ${{ (github.event.schedule == '53 9 * * *' || inputs.vain == 'yle') && '1' || '' }}
         run: cd mainokset && python3 vastinevahti.py
       - name: Tallenna tila
         if: always()

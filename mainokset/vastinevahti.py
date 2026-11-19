@@ -345,6 +345,8 @@ if __name__ == "__main__":
         for q in (YLE_HAUT if YLE else AREENA_HAUT): videot += areena_haku(q, 5 if YLE else 1)
     etu = "yle:" if YLE else ""
     nahty = set(); videot = [v for v in videot if etu + v["id"] not in kas and not (v["id"] in nahty or nahty.add(v["id"]))]
+    ohita = set(x.strip() for x in os.environ.get("OHITA", "").split(",") if x.strip())
+    if ohita: videot = [v for v in videot if v["id"].split(":")[-1] not in ohita]
     SH, SHS = int(os.environ.get("SHARD", "0") or 0), int(os.environ.get("SHARDS", "1") or 1)
     if SHS > 1: videot = [v for v in videot if int(hashlib.md5(v["id"].encode()).hexdigest(), 16) % SHS == SH]
     print(f"Videoehdokkaita: {len(videot)} (Areena {sum(v['id'].startswith('areena') for v in videot)})")
