@@ -1,0 +1,12 @@
+name: Areena-metatiedot
+on:
+  workflow_dispatch:
+    inputs:
+      idt: { description: "Areena-id:t välilyönnillä", required: true }
+jobs:
+  aja:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          pip install -q -U yt-dlp
+          for i in ${{ inputs.idt }}; do yt-dlp -j --skip-download "https://areena.yle.fi/$i" 2>/dev/null | jq -c '{id:"'$i'", title, upload_date, timestamp, release_date, series, description: (.description // "" | .[0:300])}' || echo "$i VIRHE"; done
