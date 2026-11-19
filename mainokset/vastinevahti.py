@@ -255,6 +255,7 @@ def mmss(s):
 
 # ---------- pääohjelma ----------
 def tallenna():
+    json.dump({"kasitellyt": sorted(kas)[-60000:], "loydot": loydot[-3000:]}, open("vastinevahti.json", "w"), ensure_ascii=False)
 
 if __name__ == "__main__":
     import atexit
