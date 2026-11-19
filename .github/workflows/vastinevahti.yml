@@ -1,0 +1,42 @@
+name: Vastinevahti
+# Etsii mediasta (uutiset, Yle Areena, YouTube) kohtia, joissa islamia puolustetaan/kaunistellaan, ja lähettää
+# valmiit pätkät Telegramiin: uutisista lainauskortti, videoista editoitu pystyklippi tekstityksellä ja lähteellä.
+on:
+  schedule:
+    - cron: "23 4 * * *"    # joka aamu n. 6.23 Suomen aikaa: uudet + osa vanhoista
+    - cron: "23 14 * * *"   # iltapäivällä uudet
+  workflow_dispatch:
+    inputs:
+      tila: { description: "uudet | vanhat | molemmat", required: false, default: "molemmat" }
+      maxv: { description: "Videoita enintään tällä ajolla", required: false, default: "3" }
+concurrency: vastinevahti
+jobs:
+  aja:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    permissions: { contents: write }
+    steps:
+      - uses: actions/checkout@v4
+      - name: Työkalut
+        run: |
+          sudo apt-get -qq update >/dev/null && sudo apt-get -qq install -y ffmpeg fonts-dejavu-core >/dev/null
+          pip install -q -U yt-dlp faster-whisper pillow
+      - name: Tila
+        run: |
+          git fetch -q origin uutisvinkit-tila && git show origin/uutisvinkit-tila:uskontovahti.json > mainokset/uskontovahti.json || echo '{}' > mainokset/uskontovahti.json
+          git fetch -q origin vastinevahti-tila && git show origin/vastinevahti-tila:vastinevahti.json > mainokset/vastinevahti.json || true
+      - name: Aja
+        env:
+          AK: ${{ secrets.ANTHROPIC_API_KEY }}
+          TG: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TILA: ${{ github.event_name == 'schedule' && (github.event.schedule == '23 4 * * *' && 'molemmat' || 'uudet') || inputs.tila }}
+          MAXV: ${{ inputs.maxv || '3' }}
+          TAPAHTUMA: ${{ github.event_name }}
+        run: cd mainokset && python3 vastinevahti.py
+      - name: Tallenna tila
+        if: always()
+        run: |
+          [ -f mainokset/vastinevahti.json ] || exit 0
+          mkdir /tmp/t && cd /tmp/t && git init -q && git checkout -q -b vastinevahti-tila
+          cp $GITHUB_WORKSPACE/mainokset/vastinevahti.json . && git add -A && git -c user.name=bot -c user.email=bot@x commit -qm tila
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" vastinevahti-tila
