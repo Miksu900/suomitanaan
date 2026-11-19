@@ -145,13 +145,14 @@ YLE_HAUT = ["islam", "muslimit", "muslimi", "moskeija", "islamofobia", "maahanmu
             "rasismi", "äärioikeisto", "perussuomalaiset", "monikulttuurisuus", "vihapuhe", "pakolaiset", "kotoutuminen", "ramadan",
             "huivi", "Gaza", "Palestiina", "somali", "syrjintä", "A-studio maahanmuutto", "MOT maahanmuutto", "Ykkösaamu maahanmuutto",
             "Spotlight islam", "rasismi Suomessa", "ennakkoluulot", "monikulttuurinen Suomi", "uskonnonvapaus", "Israel"]
-YLE_NAKOKULMA = """Avustat Miika Koskelaa, joka tekee paljastusvideon Ylen journalismin vasemmistovinoumasta ja islammyönteisyydestä.
-Etsi Ylen ohjelmista lyhyitä kohtia (8–25 s), jotka itsessään näyttävät vinouman niin, että katsoja näkee sen ilman selitystä. Esimerkiksi:
-- toimittaja tai juontaja käyttää arvottavia sanoja yhdestä suunnasta (esim. "äärioikeisto", "vihapuhe", "islamofobia") mutta ei toisesta
-- islamia tai islamilaisia yhteisöjä kuvataan kritiikittömän myönteisesti, ongelmat sivuutetaan tai vähätellään
-- maahanmuuton tai kotoutumisen ongelmat ohitetaan, kriitikot esitetään epäluotettavina tai rasisteina
-- haastateltavat ovat yksipuolisesti samaa mieltä, kysymykset ovat johdattelevia tai toimittaja ottaa kantaa
-Ole reilu: valitse vain kohtia, joissa vinouma näkyy selvästi itse pätkästä. Älä valitse tavallista neutraalia uutisointia."""
+YLE_NAKOKULMA = """Avustat Miika Koskelaa, joka tekee paljastusvideon Ylen journalismin vasemmistovinoumasta ja islam- ja maahanmuuttomyönteisyydestä.
+Etsi Ylen ohjelmista lyhyitä kohtia (8–25 s), joissa VINOUMA NÄKYY YLEN OMASSA TOIMINNASSA niin selvästi, että tavallinen katsoja huomaa sen ilman selitystä:
+- Ylen toimittaja, juontaja tai selostusääni käyttää leimaavia tai arvottavia sanoja vain yhteen suuntaan (esim. "äärioikeisto", "populisti", "vihapuhe", "rasistinen" kriitikoista – vastaavia ei käytetä vasemmistosta tai islamisteista)
+- toimittaja ottaa itse kantaa, esittää johdattelevan kysymyksen tai selittää ongelman pois (esim. maahanmuuton kustannukset, rikollisuus, työttömyys, kunniaväkivalta)
+- kriitikko tai perussuomalainen esitetään naurettavana, pelottavana tai epäluotettavana, tai häntä keskeytetään/painostetaan selvästi tiukemmin kuin muita
+- islam tai islamilainen toimija esitetään kritiikittömästi tavalla, jossa toimittaja itse kaunistelee tai ohittaa ilmeisen ongelman
+EI kelpaa: pelkkä myönteinen henkilötarina, haastateltavan oma mielipide ilman toimittajan kannanottoa, neutraali uutisointi, juhlapyhäjutut.
+Ole tiukka: jos vinouma ei näy itse pätkästä, älä valitse mitään (palauta tyhjä lista). Mieluummin ei yhtään kuin heikko pätkä."""
 
 def yt_haku(q, uusi):
     lkm = 25
