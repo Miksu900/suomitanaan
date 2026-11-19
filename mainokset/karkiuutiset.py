@@ -15,7 +15,11 @@ FI = datetime.timezone(datetime.timedelta(hours=2))
 
 ARVIO = """Arvioit uutisia Miika Koskelan Facebook-sivua varten. Miika kirjoittaa suoria, islamkriittisiä ja maahanmuuttokriittisiä
 kommentteja suomalaiselle yleisölle. Pisteytä jokainen uutinen 0–10 sen mukaan, kuinka hyvän ja helpon Facebook-postauksen siitä saa.
-TÄRKEIN KRITEERI: herättääkö uutinen lukijassa voimakkaan tunteen – suuttumuksen, järkytyksen, epäoikeudenmukaisuuden tunteen,
+TÄRKEIN KRITEERI: onko AIHE ITSESSÄÄN todella provosoiva – sellainen, että pelkkä otsikko saa tavallisen suomalaisen lukijan
+suuttumaan tai järkyttymään ilman mitään selitystä. 9–10 pistettä vain aiheille, jotka varmasti herättävät voimakkaan reaktion
+(esim. veronmaksajien rahaa islamistitahoille, terroristijärjestön kytkökset suomalaisiin toimijoihin, poliitikkojen tai viranomaisten
+silmien ummistaminen vakavalta asialta, uhrin kohtelu vs. tekijän kohtelu, lapsiin tai naisiin kohdistuva vääryys). Tavallinen uutinen,
+josta pitäisi ensin selittää miksi se on huolestuttava, saa korkeintaan 5. Arvioi myös: herättääkö voimakkaan tunteen – suuttumuksen, järkytyksen, epäoikeudenmukaisuuden tunteen,
 huolen tai "tämä ei voi olla totta" -reaktion (esim. veronmaksajien rahaa islamistitahoille, viranomaisten tai poliitikkojen sinisilmäisyys,
 uhrin kohtelu, kaksinaismoralismi, lasten tai naisten asema). Uutinen, joka jättää lukijan kylmäksi, saa korkeintaan 4 pistettä.
 Muut kriteerit:
@@ -123,7 +127,7 @@ button{{border:0;border-radius:8px;padding:8px 14px;background:var(--ac);color:#
 if __name__ == "__main__":
     try: tila = json.load(open("karki.json"))
     except Exception: tila = {}
-    pisteet, luonnokset, lahetetyt = tila.get("pisteet3", {}), tila.get("luonnokset7", {}), set(tila.get("lahetetyt", []))
+    pisteet, luonnokset, lahetetyt = tila.get("pisteet4", {}), tila.get("luonnokset7", {}), set(tila.get("lahetetyt", []))
     arkisto = json.load(open("uskontovahti.json")).get("arkisto", [])
     raja30 = (NYT - datetime.timedelta(days=30)).isoformat()[:16]
     kk = [x for x in arkisto if x.get("t", "") >= raja30 and x.get("u")]
@@ -150,7 +154,7 @@ if __name__ == "__main__":
     tanaan, aiheet = [], set()
     for x in jarj:
         a = re.sub(r"\W+", "", (x.get("aihe") or x["o"]).lower())[:40]
-        if x["t"] >= raja3 and x["u"] not in lahetetyt and x["p"] >= 6 and a not in aiheet:
+        if x["t"] >= raja3 and x["u"] not in lahetetyt and x["p"] >= 7 and a not in aiheet:
             aiheet.add(a); tanaan.append(x)
         if len(tanaan) == 5: break
     for x in {id(y): y for y in top + tanaan}.values():
@@ -184,6 +188,6 @@ if __name__ == "__main__":
             lahetetyt.update(x["u"] for x in tanaan)
         else: tg(f"Ei uusia kärkiuutisia tänään. 📋 <a href=\"{url}\">Kuukauden TOP 10</a>")
     pidettavat = {x["u"] for x in arkisto if x.get("t", "") >= (NYT - datetime.timedelta(days=45)).isoformat()[:16]}
-    json.dump({"pisteet3": {u: v for u, v in pisteet.items() if u in pidettavat}, "luonnokset7": {u: v for u, v in luonnokset.items() if u in pidettavat},
+    json.dump({"pisteet4": {u: v for u, v in pisteet.items() if u in pidettavat}, "luonnokset7": {u: v for u, v in luonnokset.items() if u in pidettavat},
                "lahetetyt": sorted(lahetetyt)[-3000:]}, open("karki.json", "w"), ensure_ascii=False)
     print(f"::notice title=Kärkiuutiset::TOP {len(top)}, tänään {len(tanaan)}; sivu {url[:45]}…")
