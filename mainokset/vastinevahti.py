@@ -145,7 +145,9 @@ AREENA_HAUT = ["islam", "muslimit", "moskeija", "islamofobia", "imaami", "ramada
 YLE_HAUT = ["islam", "muslimit", "muslimi", "moskeija", "islamofobia", "maahanmuutto", "maahanmuuttajat", "turvapaikanhakijat",
             "rasismi", "äärioikeisto", "perussuomalaiset", "monikulttuurisuus", "vihapuhe", "pakolaiset", "kotoutuminen", "ramadan",
             "huivi", "Gaza", "Palestiina", "somali", "syrjintä", "A-studio maahanmuutto", "MOT maahanmuutto", "Ykkösaamu maahanmuutto",
-            "Spotlight islam", "rasismi Suomessa", "ennakkoluulot", "monikulttuurinen Suomi", "uskonnonvapaus", "Israel"]
+            "Spotlight islam", "rasismi Suomessa", "ennakkoluulot", "monikulttuurinen Suomi", "uskonnonvapaus", "Israel",
+            "A-studio", "A-talk", "Ykkösaamu", "Pressiklubi", "MOT", "Spotlight", "Perjantai", "Yle Uutiset", "Silminnäkijä",
+            "hallitus leikkaukset", "Purra", "Riikka Purra", "Orpon hallitus", "turvapaikka", "perheenyhdistäminen", "kansalaisuus"]
 YLE_NAKOKULMA = """Avustat Miika Koskelaa, joka tekee paljastusvideon Ylen journalismin vasemmistovinoumasta ja islam- ja maahanmuuttomyönteisyydestä.
 Etsi Ylen ohjelmista lyhyitä kohtia (8–25 s), joissa VINOUMA NÄKYY YLEN OMASSA TOIMINNASSA niin selvästi, että tavallinen katsoja huomaa sen ilman selitystä:
 - Ylen toimittaja, juontaja tai selostusääni käyttää leimaavia tai arvottavia sanoja vain yhteen suuntaan (esim. "äärioikeisto", "populisti", "vihapuhe", "rasistinen" kriitikoista – vastaavia ei käytetä vasemmistosta tai islamisteista)
@@ -365,7 +367,8 @@ if __name__ == "__main__":
             + "\n\n".join(f"• {html.escape(v['o'])} <i>({html.escape(v['kanava'])})</i>\n{v['url']}" for v in yt)})
         kas.update(v["id"] for v in yt)
     OFFSET, SHARD, SHARDS = int(os.environ.get("OFFSET", "0") or 0), int(os.environ.get("SHARD", "0") or 0), int(os.environ.get("SHARDS", "1") or 1)
-    valitut = sorted([v for v in videot if v["id"].startswith("areena") and vp.get(v["id"], 0) >= 2], key=lambda v: -vp[v["id"]])[OFFSET:OFFSET + MAXV]
+    raja_p = int(os.environ.get("RAJA", "2") or 2)
+    valitut = sorted([v for v in videot if v["id"].startswith("areena") and vp.get(v["id"], 0) >= raja_p], key=lambda v: -vp[v["id"]])[OFFSET:OFFSET + MAXV]
     print(f"Ladataan {len(valitut)} Areena-ohjelmaa")
     for n, v in enumerate(valitut):
         kas.add(etu + v["id"])
