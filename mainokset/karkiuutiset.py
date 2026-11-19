@@ -45,7 +45,8 @@ ESIMERKKEJÄ hänen teksteistään (tyylin malliksi, ei kopioitavaksi):
 2) "Läpinäkyvyys. Tällä Turun moskeija on mainostanut arvojaan. Läpinäkyvyydestä ei kuitenkaan ole tietoakaan. Kysyin itse säätiöltä, mistä varat ovat peräisin, ja kuten arvaattekin, vastauksena oli vastaamattomuus. Ei mitään. Ei yhtään mitään, vaan jälleen vastauksena hiljaisuus. Viranomaisten pitäisi vaatia ja määrätä, että koko moskeijahanke perutaan."
 3) "Ei kannata olla naiivi. Niin vasemmistoa kuin islamisteja vetää yhteen voimakas viha Israelia kohtaan."
 4) (blogista) "Nämä järjestöt ja henkilöt toimivat aktiivisesti Euroopan maissa. Ne pyrkivät aktiivisesti viranomaisten yhteistyökumppaneiksi ja vaikuttamaan ensin paikallisella poliittisella tasolla. Muslimiveljeskunta siis käyttää hyväkseen demokraattisten maiden järjestelmää saadakseen aikaan epädemokraattisen järjestelmän. Erityisen huolestuttavaa on se, että jos tätä laillista ja "maltillista" islamismia kritisoi, kritiikki leimataan heti islamofobiaksi. Tosiasia on kuitenkin se, että näillä islamistisilla toimijoilla ei ole puhtaat jauhot pussissa. Riisutaan vaaleanpunaiset lasit päästä ja katsotaan asioita perusteellisesti ja kriittisesti. Ei olla naiiveja."
-SÄÄNNÖT: Käytä VAIN uutisen tietoja (otsikko, kuvaus, teksti) – älä keksi lukuja, nimiä, tapahtumia tai omia kokemuksia, joita Miikalla ei uutisen perusteella ole.
+SÄÄNNÖT: Sanaa "naiivi" korkeintaan kerran, eikä joka postauksessa. Älä väitä mitään muista maista tai aiemmista tapahtumista,
+ellei se lue uutisessa (ei esim. "Ruotsissa on jo vuosia…", jos uutinen ei kerro sitä). Käytä VAIN uutisen tietoja (otsikko, kuvaus, teksti) – älä keksi lukuja, nimiä, tapahtumia tai omia kokemuksia, joita Miikalla ei uutisen perusteella ole.
 Mielipide saa olla selvä, mutta faktat pitää pystyä todentamaan uutisesta. Älä yleistä kokonaista uskonto- tai kansanryhmää rikollisiksi
 (puhu islamismista, islamisteista, päättäjistä tai järjestöistä, kun asia koskee niitä). Älä kehota poistamaan ihmisiä maasta uskonnon perusteella.
 Vastaa pelkkänä JSON-objektina:
@@ -110,7 +111,7 @@ button{{border:0;border-radius:8px;padding:8px 14px;background:var(--ac);color:#
 if __name__ == "__main__":
     try: tila = json.load(open("karki.json"))
     except Exception: tila = {}
-    pisteet, luonnokset, lahetetyt = tila.get("pisteet2", {}), tila.get("luonnokset4", {}), set(tila.get("lahetetyt", []))
+    pisteet, luonnokset, lahetetyt = tila.get("pisteet2", {}), tila.get("luonnokset5", {}), set(tila.get("lahetetyt", []))
     arkisto = json.load(open("uskontovahti.json")).get("arkisto", [])
     raja30 = (NYT - datetime.timedelta(days=30)).isoformat()[:16]
     kk = [x for x in arkisto if x.get("t", "") >= raja30 and x.get("u")]
@@ -170,6 +171,6 @@ if __name__ == "__main__":
             lahetetyt.update(x["u"] for x in tanaan)
         else: tg(f"Ei uusia kärkiuutisia tänään. 📋 <a href=\"{url}\">Kuukauden TOP 10</a>")
     pidettavat = {x["u"] for x in arkisto if x.get("t", "") >= (NYT - datetime.timedelta(days=45)).isoformat()[:16]}
-    json.dump({"pisteet2": {u: v for u, v in pisteet.items() if u in pidettavat}, "luonnokset4": {u: v for u, v in luonnokset.items() if u in pidettavat},
+    json.dump({"pisteet2": {u: v for u, v in pisteet.items() if u in pidettavat}, "luonnokset5": {u: v for u, v in luonnokset.items() if u in pidettavat},
                "lahetetyt": sorted(lahetetyt)[-3000:]}, open("karki.json", "w"), ensure_ascii=False)
     print(f"::notice title=Kärkiuutiset::TOP {len(top)}, tänään {len(tanaan)}; sivu {url[:45]}…")
