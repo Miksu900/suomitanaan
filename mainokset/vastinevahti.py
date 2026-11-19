@@ -140,10 +140,20 @@ YT_HAUT = ["islam rauhanuskonto", "islam on rauhan uskonto", "islamofobia", "isl
            "muslimi rasismi Suomi", "imaami Suomi", "islamilainen yhdyskunta", "kunniaväkivalta Suomi", "moskeijahanke"]
 AREENA = "https://areena.api.yle.fi/v1/ui/search?app_id=areena-web-items&app_key=wlTs5D9OjIdeS9krPzRQR4I1PYVzoazN&language=fi&v=10&client=yle-areena-web&offset=0&limit=40&service=tv&query="
 AREENA_HAUT = ["islam", "muslimit", "moskeija", "islamofobia", "imaami", "ramadan"]
+# Yle-kokoelma (paljastusvideo): laajemmat aiheet, joissa vinouma näkyy
+YLE_HAUT = ["islam", "muslimit", "moskeija", "islamofobia", "maahanmuutto", "turvapaikanhakijat", "rasismi", "äärioikeisto",
+            "perussuomalaiset", "monikulttuurisuus", "vihapuhe", "pakolaiset", "kotoutuminen", "ramadan", "huivi", "Gaza"]
+YLE_NAKOKULMA = """Avustat Miika Koskelaa, joka tekee paljastusvideon Ylen journalismin vasemmistovinoumasta ja islammyönteisyydestä.
+Etsi Ylen ohjelmista lyhyitä kohtia (8–25 s), jotka itsessään näyttävät vinouman niin, että katsoja näkee sen ilman selitystä. Esimerkiksi:
+- toimittaja tai juontaja käyttää arvottavia sanoja yhdestä suunnasta (esim. "äärioikeisto", "vihapuhe", "islamofobia") mutta ei toisesta
+- islamia tai islamilaisia yhteisöjä kuvataan kritiikittömän myönteisesti, ongelmat sivuutetaan tai vähätellään
+- maahanmuuton tai kotoutumisen ongelmat ohitetaan, kriitikot esitetään epäluotettavina tai rasisteina
+- haastateltavat ovat yksipuolisesti samaa mieltä, kysymykset ovat johdattelevia tai toimittaja ottaa kantaa
+Ole reilu: valitse vain kohtia, joissa vinouma näkyy selvästi itse pätkästä. Älä valitse tavallista neutraalia uutisointia."""
 
 def yt_haku(q, uusi):
     lkm = 25
-    k = ["yt-dlp", "--flat-playlist", "-J", "--no-warnings", f"ytsearch{'date' if uusi else ''}{lkm}:{q}"]
+    k = ["yt-dlp", "--flat-playlist", "-J", "--no-warnings", (f"https://www.youtube.com/results?search_query={urllib.parse.quote(q)}&sp=CAI%253D" if uusi else f"ytsearch{lkm}:{q}")]
     try:
         r = subprocess.run(k, capture_output=True, text=True, timeout=120)
         d = json.loads(r.stdout or "null") or {}
@@ -210,11 +220,11 @@ def litteroi(video):
     segs, _ = _MALLI.transcribe(video, language="fi", vad_filter=True)
     return [(s.start, s.end, s.text.strip()) for s in segs]
 
-def valitse_kohdat(v, segs):
+def valitse_kohdat(v, segs, yle=False):
     rivit = "\n".join(f"[{a:.1f}-{b:.1f}] {t}" for a, b, t in segs)[:60000]
-    t = claude(NAKOKULMA + """
+    t = claude((YLE_NAKOKULMA if yle else NAKOKULMA) + """
 
-Saat videon litteroinnin aikaleimoineen. Valitse enintään 2 parasta kohtaa vastinevideota varten. Jokainen kohta 12–55 sekuntia,
+Saat videon litteroinnin aikaleimoineen. Valitse enintään 2 parasta kohtaa. Jokainen kohta """ + ("8–25" if yle else "12–55") + """ sekuntia,
 alkaa ja päättyy lauseen rajalla, ja sisältää itse väitteen niin, että se ymmärtää ilman muuta kontekstia.
 Jos videossa ei ole vastineen arvoista kohtaa, palauta tyhjä lista. Vastaa pelkkänä JSON-listana:
 [{"alku": 123.4, "loppu": 160.2, "lainaus": "ydinlause sanatarkasti litteroinnista", "puhuja": "kuka puhuu (jos tiedossa)",
@@ -248,6 +258,23 @@ def leikkaa(video, segs, a, b, lahde, ulos):
                     "-map", "[v]", "-map", "0:a?", "-af", f"volume={g:.1f}dB,alimiter=limit=0.89:level=false", "-r", "30",
                     "-c:v", "libx264", "-preset", "veryfast", "-crf", "23", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "128k",
                     "-movflags", "+faststart", ulos], check=True)
+
+def kokoelmaan(polku, nimi):
+    """Tallentaa Yle-kokoelman pätkän GitHub-releaseen 'yle-kokoelma' (paljastusvideota varten)."""
+    tok, repo = os.environ.get("GH_TOKEN", ""), os.environ.get("GITHUB_REPOSITORY", "")
+    if not tok or not repo: return ""
+    h = ["-H", f"authorization: Bearer {tok}", "-H", "accept: application/vnd.github+json"]
+    r = subprocess.run(["curl", "-sS", *h, f"https://api.github.com/repos/{repo}/releases/tags/yle-kokoelma"], capture_output=True, text=True).stdout
+    rid = (json.loads(r or "{}") or {}).get("id")
+    if not rid:
+        r = subprocess.run(["curl", "-sS", *h, "-X", "POST", f"https://api.github.com/repos/{repo}/releases", "-d",
+                            json.dumps({"tag_name": "yle-kokoelma", "name": "Yle-kokoelma (paljastusvideo)", "body": "Vastinevahdin keräämät Yle-pätkät"})],
+                           capture_output=True, text=True).stdout
+        rid = (json.loads(r or "{}") or {}).get("id")
+    if not rid: print("RELEASE-VIRHE", r[:200]); return ""
+    r = subprocess.run(["curl", "-sS", *h, "-H", "content-type: video/mp4", "--data-binary", f"@{polku}",
+                        f"https://uploads.github.com/repos/{repo}/releases/{rid}/assets?name={urllib.parse.quote(nimi)}"], capture_output=True, text=True).stdout
+    return (json.loads(r or "{}") or {}).get("browser_download_url", "")
 
 def mmss(s):
     s = int(s); return f"{s // 3600}:{s % 3600 // 60:02d}:{s % 60:02d}" if s >= 3600 else f"{s // 60}:{s % 60:02d}"
@@ -292,50 +319,71 @@ if __name__ == "__main__":
         tg("sendPhoto", {"chat_id": CHAT, "caption": cap, "parse_mode": "HTML"}, ("photo", p)); lahetetty += 1
         loydot.append({"tyyppi": "uutinen", "u": x["u"], "o": x["o"], "l": x.get("l", ""), "t": x["t"], **{k: a.get(k, "") for k in ("aihe", "puhuja", "miksi", "vastine")}, "lainaus": lainaus})
 
-    # Videot
+    # Videot. YouTube estää lataukset GitHubin palvelimilta, joten YouTubesta tulee vain linkki-ilmoitus;
+    # Yle Areenasta tehdään valmiit pätkät. VAIN=yle -> Yle-kokoelma (paljastusvideo).
+    YLE = VAIN == "yle"
     videot = []
-    for q in ([] if VAIN == "uutiset" else YT_HAUT):
-        if TILA in ("uudet", "molemmat"): videot += yt_haku(q, True)
-        if TILA in ("vanhat", "molemmat"): videot += yt_haku(q, False)
-    for q in ([] if VAIN == "uutiset" else AREENA_HAUT): videot += areena_haku(q)
-    nahty = set(); videot = [v for v in videot if v["id"] not in kas and not (v["id"] in nahty or nahty.add(v["id"]))]
-    print(f"Videoehdokkaita: {len(videot)}")
+    if VAIN not in ("uutiset", "yle"):
+        for q in YT_HAUT:
+            if TILA in ("uudet", "molemmat"): videot += yt_haku(q, True)
+            if TILA in ("vanhat", "molemmat"): videot += yt_haku(q, False)
+    if VAIN != "uutiset":
+        for q in (YLE_HAUT if YLE else AREENA_HAUT): videot += areena_haku(q)
+    etu = "yle:" if YLE else ""
+    nahty = set(); videot = [v for v in videot if etu + v["id"] not in kas and not (v["id"] in nahty or nahty.add(v["id"]))]
+    print(f"Videoehdokkaita: {len(videot)} (Areena {sum(v['id'].startswith('areena') for v in videot)})")
     vp = {}
+    ohje = (YLE_NAKOKULMA + "\n\nPisteytä Ylen ohjelmat otsikon ja kuvauksen perusteella 0–3: kuinka todennäköisesti ohjelmassa on lyhyt kohta, joka näyttää vinouman selvästi."
+            if YLE else NAKOKULMA + "\n\nPisteytä videot otsikon, kanavan ja kuvauksen perusteella 0–3: kuinka todennäköisesti videossa on suomenkielinen kohta, johon Miika voi tehdä vastineen. Ei-suomenkieliset = 0.")
     for i in range(0, len(videot), 50):
         osa = videot[i:i + 50]
-        t = claude(NAKOKULMA + "\n\nPisteytä videot otsikon, kanavan ja kuvauksen perusteella 0–3: kuinka todennäköisesti videossa on suomenkielinen kohta, johon Miika voi tehdä vastineen. Ei-suomenkieliset = 0. Vastaa pelkkänä JSON-listana: [{\"i\":0,\"p\":2}]",
+        t = claude(ohje + " Vastaa pelkkänä JSON-listana: [{\"i\":0,\"p\":2}]",
                    json.dumps([{"i": n, "o": v["o"], "c": v["kanava"], "k": v["k"][:200]} for n, v in enumerate(osa)], ensure_ascii=False), "claude-haiku-4-5", 3000)
         for r in json_osa(t) or []:
             try: vp[osa[int(r["i"])]["id"]] = int(r["p"])
             except Exception: pass
-    valitut = sorted([v for v in videot if vp.get(v["id"], 0) >= 2], key=lambda v: -vp[v["id"]])[:MAXV]
     for v in videot:
-        if vp.get(v["id"], 0) < 2: kas.add(v["id"])   # selvästi epäolennaiset merkitään käsitellyiksi
+        if vp.get(v["id"], 0) < 2: kas.add(etu + v["id"])
+    yt = [v for v in videot if v["id"].startswith("yt:") and vp.get(v["id"], 0) >= 3][:6]
+    if yt:
+        tg("sendMessage", {"chat_id": CHAT, "parse_mode": "HTML", "disable_web_page_preview": "true", "text":
+            "▶️ <b>YouTube: mahdollisia vastinevideoita</b>\n(YouTube estää automaattisen leikkauksen – lähetä video minulle, niin teen pätkän)\n\n"
+            + "\n\n".join(f"• {html.escape(v['o'])} <i>({html.escape(v['kanava'])})</i>\n{v['url']}" for v in yt)})
+        kas.update(v["id"] for v in yt)
+    valitut = sorted([v for v in videot if v["id"].startswith("areena") and vp.get(v["id"], 0) >= 2], key=lambda v: -vp[v["id"]])[:MAXV]
+    print(f"Ladataan {len(valitut)} Areena-ohjelmaa")
     for n, v in enumerate(valitut):
-        kas.add(v["id"])
+        kas.add(etu + v["id"])
         kansio = f"/tmp/v{n}"
         try:
             video, srt, meta = lataa(v, kansio)
             if not video: continue
             segs = srt_luku(srt) if srt else []
+            print("Tekstitys:", "Ylen oma" if len(segs) >= 5 else "litteroidaan", v["url"])
             if len(segs) < 5: segs = litteroi(video)
-            kohdat = valitse_kohdat({**v, **{k: meta[k] for k in ("o",) if meta.get(k)}}, segs)
+            kohdat = valitse_kohdat({**v, **{k: meta[k] for k in ("o",) if meta.get(k)}}, segs, YLE)
             pvm = meta.get("pvm", "")
             for j, k in enumerate(kohdat[:2]):
                 a, b = float(k["alku"]), float(k["loppu"])
-                if b - a < 5 or b - a > 75: continue
+                if b - a < 4 or b - a > 75: continue
                 lainaus = k.get("lainaus", "")
                 if lainaus and not loytyy(lainaus, " ".join(t for s, e, t in segs)): lainaus = ""
-                lahde = f"Lähde: {meta.get('kanava') or v['kanava']} – {(meta.get('o') or v['o'])[:60]}" + (f", {pvm}" if pvm else "")
+                nimi = (meta.get("o") or v["o"])[:60]
+                lahde = f"Lähde: Yle – {nimi}" + (f", {pvm}" if pvm else "")
                 ulos = f"{kansio}/klippi{j}.mp4"
                 leikkaa(video, segs, a, b, lahde, ulos)
-                url = v["url"] + (f"&t={int(a)}" if "youtube" in v["url"] else "")
-                cap = (f"🎬 <b>{html.escape(meta.get('o') or v['o'])}</b>\n{html.escape(meta.get('kanava') or v['kanava'])}{', ' + pvm if pvm else ''} · kohta {mmss(a)}–{mmss(b)}\n\n"
+                nro, linkki = "", ""
+                if YLE:
+                    nro = sum(1 for x in loydot if x.get("tyyppi") == "yle") + 1
+                    linkki = kokoelmaan(ulos, f"yle{nro:03d}_{v['id'].split(':')[1]}_{int(a)}.mp4")
+                cap = ((f"📼 <b>Yle-kokoelma #{nro}</b>\n" if YLE else "🎬 ")
+                       + f"<b>{html.escape(meta.get('o') or v['o'])}</b>\nYle{', ' + pvm if pvm else ''} · kohta {mmss(a)}–{mmss(b)}\n\n"
                        + (f"„{html.escape(lainaus)}” – {html.escape(k.get('puhuja',''))}\n\n" if lainaus else "")
-                       + f"🎯 {html.escape(k.get('miksi',''))}\n💬 Vastine-idea: {html.escape(k.get('vastine',''))}\n\n{url}")[:1020]
+                       + f"🎯 {html.escape(k.get('miksi',''))}\n💬 {'Kommentti-idea' if YLE else 'Vastine-idea'}: {html.escape(k.get('vastine',''))}\n\n{v['url']}")[:1020]
                 tg("sendVideo", {"chat_id": CHAT, "caption": cap, "parse_mode": "HTML", "supports_streaming": "true"}, ("video", ulos)); lahetetty += 1
-                loydot.append({"tyyppi": "video", "u": url, "o": meta.get("o") or v["o"], "l": meta.get("kanava") or v["kanava"], "t": pvm,
-                               "alku": a, "loppu": b, "lainaus": lainaus, **{x: k.get(x, "") for x in ("puhuja", "miksi", "vastine")}})
+                loydot.append({"tyyppi": "yle" if YLE else "video", "nro": nro, "u": v["url"], "o": meta.get("o") or v["o"], "t": pvm,
+                               "alku": a, "loppu": b, "lainaus": lainaus, "tiedosto": linkki, **{x: k.get(x, "") for x in ("puhuja", "miksi", "vastine")}})
+                tallenna()
         except Exception as e:
             print("VIDEOVIRHE", v["url"], str(e)[:300])
         subprocess.run(["rm", "-rf", kansio])

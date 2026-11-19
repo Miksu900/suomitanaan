@@ -5,11 +5,12 @@ on:
   schedule:
     - cron: "23 4 * * *"    # joka aamu n. 6.23 Suomen aikaa: uudet + osa vanhoista
     - cron: "23 14 * * *"   # iltapäivällä uudet
+    - cron: "53 9 * * *"    # Yle-kokoelma (paljastusvideon pätkät)
   workflow_dispatch:
     inputs:
       tila: { description: "uudet | vanhat | molemmat", required: false, default: "molemmat" }
       maxv: { description: "Videoita enintään tällä ajolla", required: false, default: "3" }
-      vain: { description: "tyhjä = kaikki | videot | uutiset", required: false, default: "" }
+      vain: { description: "tyhjä = kaikki | videot | uutiset | yle (Yle-kokoelma)", required: false, default: "" }
 concurrency: vastinevahti
 jobs:
   aja:
@@ -30,10 +31,11 @@ jobs:
         env:
           AK: ${{ secrets.ANTHROPIC_API_KEY }}
           TG: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TILA: ${{ github.event_name == 'schedule' && (github.event.schedule == '23 4 * * *' && 'molemmat' || 'uudet') || inputs.tila }}
+          TILA: ${{ github.event_name == 'schedule' && (github.event.schedule == '23 14 * * *' && 'uudet' || 'molemmat') || inputs.tila }}
           MAXV: ${{ inputs.maxv || '3' }}
           TAPAHTUMA: ${{ github.event_name }}
-          VAIN: ${{ inputs.vain }}
+          VAIN: ${{ github.event.schedule == '53 9 * * *' && 'yle' || inputs.vain }}
+          GH_TOKEN: ${{ github.token }}
         run: cd mainokset && python3 vastinevahti.py
       - name: Tallenna tila
         if: always()
