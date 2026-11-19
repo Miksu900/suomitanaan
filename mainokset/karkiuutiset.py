@@ -54,7 +54,8 @@ Mielipide saa olla selvä, mutta faktat pitää pystyä todentamaan uutisesta. �
 (puhu islamismista, islamisteista, päättäjistä tai järjestöistä, kun asia koskee niitä). Älä kehota poistamaan ihmisiä maasta uskonnon perusteella.
 Vastaa pelkkänä JSON-objektina:
 {"teksti": "postauksen teksti, viimeisellä rivillä 'Lähde: <media>'", "kuva": "mikä kuvakaappaus kannattaa ottaa (esim. otsikko + ingressi)",
- "koukku": "postauksen ydin yhdellä lauseella"}"""
+ "koukku": "postauksen ydin yhdellä lauseella",
+ "x": "X-postaus (enintään 260 merkkiä): iskevä ensimmäinen lause, ydinfakta ja lyhyt kannanotto, lopussa '(Lähde: <media>)'; ei linkkiä, korkeintaan yksi hashtag"}"""
 
 def claude(system, user, malli, tokens):
     if not AK: return None
@@ -95,7 +96,8 @@ def sivu(top, paivitetty):
 <h2><a href="{html.escape(x['u'])}" target="_blank" rel="noopener noreferrer">{html.escape(x['o'])}</a></h2>
 <p class="miksi">🎯 {html.escape(x.get('miksi',''))}</p>
 {f'<p class="kuva">📸 {html.escape(l.get("kuva",""))}</p>' if l.get('kuva') else ''}
-{f'<div class="t"><pre>{html.escape(l.get("teksti",""))}</pre><button onclick="navigator.clipboard.writeText(this.previousElementSibling.textContent);this.textContent=&quot;Kopioitu ✓&quot;">Kopioi teksti</button></div>' if l.get('teksti') else ''}
+{f'<div class="t"><b>Facebook</b><pre>{html.escape(l.get("teksti",""))}</pre><button onclick="navigator.clipboard.writeText(this.previousElementSibling.textContent);this.textContent=&quot;Kopioitu ✓&quot;">Kopioi Face-teksti</button></div>' if l.get('teksti') else ''}
+{f'<div class="t"><b>X</b><pre>{html.escape(l.get("x",""))}</pre><button onclick="navigator.clipboard.writeText(this.previousElementSibling.textContent);this.textContent=&quot;Kopioitu ✓&quot;">Kopioi X-teksti</button></div>' if l.get('x') else ''}
 </div></article>""")
     return f"""<!doctype html><html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Kärkiuutiset</title><meta name="robots" content="noindex,nofollow"><style>
@@ -114,7 +116,7 @@ button{{border:0;border-radius:8px;padding:8px 14px;background:var(--ac);color:#
 if __name__ == "__main__":
     try: tila = json.load(open("karki.json"))
     except Exception: tila = {}
-    pisteet, luonnokset, lahetetyt = tila.get("pisteet3", {}), tila.get("luonnokset5", {}), set(tila.get("lahetetyt", []))
+    pisteet, luonnokset, lahetetyt = tila.get("pisteet3", {}), tila.get("luonnokset6", {}), set(tila.get("lahetetyt", []))
     arkisto = json.load(open("uskontovahti.json")).get("arkisto", [])
     raja30 = (NYT - datetime.timedelta(days=30)).isoformat()[:16]
     kk = [x for x in arkisto if x.get("t", "") >= raja30 and x.get("u")]
@@ -164,7 +166,8 @@ if __name__ == "__main__":
             for n, x in enumerate(tanaan, 1):
                 l = x["luonnos"]
                 osat.append(f"<b>{n}. {html.escape(x['o'])}</b>\n<i>{html.escape(x.get('l',''))}, {pvm(x['t'])} · {x['p']}/10</i>\n🎯 {html.escape(x['miksi'])}\n"
-                            + (f"📸 {html.escape(l.get('kuva',''))}\n\n<code>{html.escape(l.get('teksti',''))}</code>\n" if l else "") + f"{x['u']}")
+                            + (f"📸 {html.escape(l.get('kuva',''))}\n\n<b>Face:</b>\n<code>{html.escape(l.get('teksti',''))}</code>\n" if l else "")
+                            + (f"\n<b>X:</b>\n<code>{html.escape(l.get('x',''))}</code>\n" if l.get('x') else "") + f"{x['u']}")
             viesti = "🔥 <b>Päivän 5 kärkiuutista Faceen</b>\n(paina tekstiä, niin se kopioituu)\n\n" + "\n\n➖➖➖\n\n".join(osat) + f"\n\n📋 <a href=\"{url}\">Kuukauden TOP 10</a>"
             if len(viesti) > 4000:   # Telegramin raja: lähetetään erikseen
                 tg("🔥 <b>Päivän 5 kärkiuutista Faceen</b>\n(paina tekstiä, niin se kopioituu)")
@@ -174,6 +177,6 @@ if __name__ == "__main__":
             lahetetyt.update(x["u"] for x in tanaan)
         else: tg(f"Ei uusia kärkiuutisia tänään. 📋 <a href=\"{url}\">Kuukauden TOP 10</a>")
     pidettavat = {x["u"] for x in arkisto if x.get("t", "") >= (NYT - datetime.timedelta(days=45)).isoformat()[:16]}
-    json.dump({"pisteet3": {u: v for u, v in pisteet.items() if u in pidettavat}, "luonnokset5": {u: v for u, v in luonnokset.items() if u in pidettavat},
+    json.dump({"pisteet3": {u: v for u, v in pisteet.items() if u in pidettavat}, "luonnokset6": {u: v for u, v in luonnokset.items() if u in pidettavat},
                "lahetetyt": sorted(lahetetyt)[-3000:]}, open("karki.json", "w"), ensure_ascii=False)
     print(f"::notice title=Kärkiuutiset::TOP {len(top)}, tänään {len(tanaan)}; sivu {url[:45]}…")
