@@ -228,7 +228,8 @@ Saat videon litteroinnin aikaleimoineen. Valitse enintään 2 parasta kohtaa. Jo
 alkaa ja päättyy lauseen rajalla, ja sisältää itse väitteen niin, että se ymmärtää ilman muuta kontekstia.
 Jos videossa ei ole vastineen arvoista kohtaa, palauta tyhjä lista. Vastaa pelkkänä JSON-listana:
 [{"alku": 123.4, "loppu": 160.2, "lainaus": "ydinlause sanatarkasti litteroinnista", "puhuja": "kuka puhuu (jos tiedossa)",
-  "miksi": "miksi tähän kannattaa vastata", "vastine": "ehdotus Miikan vastinelauseeksi"}]""",
+  "miksi": "miksi tähän kannattaa vastata", "vastine": "ehdotus Miikan vastinelauseeksi\"""" + (""",
+  "osa": 1 (1 = islammyönteisyys, 2 = maahanmuutto ja kotoutuminen, 3 = toimittajien sanavalinnat ja haastateltavat)""" if yle else "") + "}]",
                f"VIDEO: {v['o']}\nKANAVA: {v.get('kanava','')}\nKUVAUS: {v.get('k','')}\n\nLITTEROINTI:\n{rivit}", tokens=2000)
     return json_osa(t) or []
 
@@ -376,13 +377,16 @@ if __name__ == "__main__":
                 if YLE:
                     nro = sum(1 for x in loydot if x.get("tyyppi") == "yle") + 1
                     linkki = kokoelmaan(ulos, f"yle{nro:03d}_{v['id'].split(':')[1]}_{int(a)}.mp4")
-                cap = ((f"📼 <b>Yle-kokoelma #{nro}</b>\n" if YLE else "🎬 ")
+                OSAT = {1: "Osa 1: Islammyönteisyys", 2: "Osa 2: Maahanmuutto", 3: "Osa 3: Sanavalinnat ja haastateltavat"}
+                try: osa = int(k.get("osa") or 0)
+                except Exception: osa = 0
+                cap = ((f"🔴 <b>YLEN PALJASTUSVIDEO – pätkä #{nro}</b>\n{OSAT.get(osa, '')}\n\n" if YLE else "🎬 ")
                        + f"<b>{html.escape(meta.get('o') or v['o'])}</b>\nYle{', ' + pvm if pvm else ''} · kohta {mmss(a)}–{mmss(b)}\n\n"
                        + (f"„{html.escape(lainaus)}” – {html.escape(k.get('puhuja',''))}\n\n" if lainaus else "")
                        + f"🎯 {html.escape(k.get('miksi',''))}\n💬 {'Kommentti-idea' if YLE else 'Vastine-idea'}: {html.escape(k.get('vastine',''))}\n\n{v['url']}")[:1020]
                 tg("sendVideo", {"chat_id": CHAT, "caption": cap, "parse_mode": "HTML", "supports_streaming": "true"}, ("video", ulos)); lahetetty += 1
                 loydot.append({"tyyppi": "yle" if YLE else "video", "nro": nro, "u": v["url"], "o": meta.get("o") or v["o"], "t": pvm,
-                               "alku": a, "loppu": b, "lainaus": lainaus, "tiedosto": linkki, **{x: k.get(x, "") for x in ("puhuja", "miksi", "vastine")}})
+                               "alku": a, "loppu": b, "lainaus": lainaus, "tiedosto": linkki, "osa": k.get("osa", ""), **{x: k.get(x, "") for x in ("puhuja", "miksi", "vastine")}})
                 tallenna()
         except Exception as e:
             print("VIDEOVIRHE", v["url"], str(e)[:300])
