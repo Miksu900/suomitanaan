@@ -1,5 +1,5 @@
 name: Kärkiuutiset
-# Kuukauden TOP 10 -sivu (faktapiste.fi/api/oma/karki) ja aamun "3 parasta tänään" Telegramiin.
+# Kuukauden TOP 10 -sivu (faktapiste.fi/api/oma/karki) ja aamun "5 parasta tänään" Telegramiin.
 on:
   schedule:
     - cron: "7 5 * * *"   # n. 7.07 Suomen aikaa

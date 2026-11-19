@@ -2,7 +2,7 @@
 Lukee Uskontovahdin arkiston (uskontovahti.json), pisteyttää viimeisen 30 päivän uutiset sen mukaan, kuinka hyvä
 ja helppo niistä on tehdä iskevä Facebook-postaus, ja
   * päivittää yksityisen sivun faktapiste.fi/api/oma/karki?k=...  (kuukauden TOP 10 + valmiit luonnokset)
-  * lähettää aamulla Telegramiin "3 parasta tänään" valmiine teksteineen.
+  * lähettää aamulla Telegramiin "5 parasta tänään" valmiine teksteineen.
 Tila: karki.json (haara karki-tila): pisteet ja luonnokset välimuistissa, lähetetyt.
 Luonnokset perustuvat vain uutisen omiin tietoihin; mitään ei keksitä."""
 import os, re, json, html, hashlib, urllib.request, datetime
@@ -140,7 +140,7 @@ if __name__ == "__main__":
         a = re.sub(r"\W+", "", (x.get("aihe") or x["o"]).lower())[:40]
         if x["t"] >= raja3 and x["u"] not in lahetetyt and x["p"] >= 6 and a not in aiheet:
             aiheet.add(a); tanaan.append(x)
-        if len(tanaan) == 3: break
+        if len(tanaan) == 5: break
     for x in {id(y): y for y in top + tanaan}.values():
         if x["u"] in luonnokset: continue
         t = claude(LUONNOS, f"OTSIKKO: {x['o']}\nMEDIA: {x.get('l','')}\nPVM: {x['t'][:10]}\nKUVAUS: {x.get('k','')}\n\nTEKSTI:\n{teksti(x['u']) or '(ei saatavilla – käytä vain otsikkoa ja kuvausta)'}",
@@ -162,9 +162,9 @@ if __name__ == "__main__":
                 l = x["luonnos"]
                 osat.append(f"<b>{n}. {html.escape(x['o'])}</b>\n<i>{html.escape(x.get('l',''))}, {pvm(x['t'])} · {x['p']}/10</i>\n🎯 {html.escape(x['miksi'])}\n"
                             + (f"📸 {html.escape(l.get('kuva',''))}\n\n<code>{html.escape(l.get('teksti',''))}</code>\n" if l else "") + f"{x['u']}")
-            viesti = "🔥 <b>Päivän 3 kärkiuutista Faceen</b>\n(paina tekstiä, niin se kopioituu)\n\n" + "\n\n➖➖➖\n\n".join(osat) + f"\n\n📋 <a href=\"{url}\">Kuukauden TOP 10</a>"
+            viesti = "🔥 <b>Päivän 5 kärkiuutista Faceen</b>\n(paina tekstiä, niin se kopioituu)\n\n" + "\n\n➖➖➖\n\n".join(osat) + f"\n\n📋 <a href=\"{url}\">Kuukauden TOP 10</a>"
             if len(viesti) > 4000:   # Telegramin raja: lähetetään erikseen
-                tg("🔥 <b>Päivän 3 kärkiuutista Faceen</b>\n(paina tekstiä, niin se kopioituu)")
+                tg("🔥 <b>Päivän 5 kärkiuutista Faceen</b>\n(paina tekstiä, niin se kopioituu)")
                 for o in osat: tg(o[:4000])
                 tg(f"📋 <a href=\"{url}\">Kuukauden TOP 10</a>")
             else: tg(viesti)
