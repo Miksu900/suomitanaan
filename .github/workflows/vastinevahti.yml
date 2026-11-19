@@ -9,6 +9,7 @@ on:
     inputs:
       tila: { description: "uudet | vanhat | molemmat", required: false, default: "molemmat" }
       maxv: { description: "Videoita enintään tällä ajolla", required: false, default: "3" }
+      vain: { description: "tyhjä = kaikki | videot | uutiset", required: false, default: "" }
 concurrency: vastinevahti
 jobs:
   aja:
@@ -32,6 +33,7 @@ jobs:
           TILA: ${{ github.event_name == 'schedule' && (github.event.schedule == '23 4 * * *' && 'molemmat' || 'uudet') || inputs.tila }}
           MAXV: ${{ inputs.maxv || '3' }}
           TAPAHTUMA: ${{ github.event_name }}
+          VAIN: ${{ inputs.vain }}
         run: cd mainokset && python3 vastinevahti.py
       - name: Tallenna tila
         if: always()

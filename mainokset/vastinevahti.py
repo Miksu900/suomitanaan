@@ -69,8 +69,12 @@ def normi(t):
 
 def loytyy(lainaus, teksti):
     """Lainaus hyväksytään vain, jos se löytyy lähteestä (normalisoituna) sellaisenaan."""
-    l = normi(lainaus)
-    return len(l) > 15 and l in normi(teksti)
+    l, t = normi(lainaus), normi(teksti)
+    if len(l) <= 15: return False
+    if l in t: return True
+    import difflib   # sallitaan pienet erot (välimerkit, puhujan johdanto); pisimmän yhtenäisen osan oltava >= 80 %
+    m = difflib.SequenceMatcher(None, t, l, autojunk=False).find_longest_match(0, len(t), 0, len(l))
+    return m.size >= 0.8 * len(l)
 
 
 # ---------- artikkelit ----------
@@ -141,7 +145,9 @@ def yt_haku(q, uusi):
     lkm = 25
     k = ["yt-dlp", "--flat-playlist", "-J", "--no-warnings", f"ytsearch{'date' if uusi else ''}{lkm}:{q}"]
     try:
-        d = json.loads(subprocess.run(k, capture_output=True, text=True, timeout=120).stdout or "{}")
+        r = subprocess.run(k, capture_output=True, text=True, timeout=120)
+        d = json.loads(r.stdout or "null") or {}
+        if not d: print("YT-HAKU TYHJÄ", q, r.stderr[-200:])
     except Exception as e:
         print("YT-HAKUVIRHE", q, e); return []
     out = []
@@ -248,10 +254,15 @@ def mmss(s):
 
 
 # ---------- pääohjelma ----------
+def tallenna():
+
 if __name__ == "__main__":
+    import atexit
     try: tila = json.load(open("vastinevahti.json"))
     except Exception: tila = {}
     kas = set(tila.get("kasitellyt", [])); loydot = tila.get("loydot", [])
+    atexit.register(tallenna)
+    VAIN = os.environ.get("VAIN", "")   # "videot" = ohita uutiset, "uutiset" = ohita videot
     try: arkisto = json.load(open("uskontovahti.json")).get("arkisto", [])
     except Exception: arkisto = []
     fi = [x for x in arkisto if x.get("a") != "eu" and x.get("u") and x["u"] not in kas]
@@ -260,7 +271,8 @@ if __name__ == "__main__":
     if TILA in ("uudet", "molemmat"): ehdokkaat += sorted([x for x in fi if x["t"] >= raja], key=lambda x: x["t"], reverse=True)[:MAXA_UUDET]
     if TILA in ("vanhat", "molemmat"): ehdokkaat += sorted([x for x in fi if x["t"] < raja], key=lambda x: x["t"], reverse=True)[:MAXA_VANHAT]
     print(f"Artikkeleita arvioitavaksi: {len(ehdokkaat)} (arkistossa {len(arkisto)}, Suomi käsittelemättä {len(fi)})")
-    pisteet = esiarvio(ehdokkaat)
+    if VAIN == "videot": ehdokkaat = []
+    pisteet = esiarvio(ehdokkaat) if ehdokkaat else {}
     lahetetty = 0
     for x in ehdokkaat:
         kas.add(x["u"])
@@ -281,10 +293,10 @@ if __name__ == "__main__":
 
     # Videot
     videot = []
-    for q in YT_HAUT:
+    for q in ([] if VAIN == "uutiset" else YT_HAUT):
         if TILA in ("uudet", "molemmat"): videot += yt_haku(q, True)
         if TILA in ("vanhat", "molemmat"): videot += yt_haku(q, False)
-    for q in AREENA_HAUT: videot += areena_haku(q)
+    for q in ([] if VAIN == "uutiset" else AREENA_HAUT): videot += areena_haku(q)
     nahty = set(); videot = [v for v in videot if v["id"] not in kas and not (v["id"] in nahty or nahty.add(v["id"]))]
     print(f"Videoehdokkaita: {len(videot)}")
     vp = {}
@@ -329,4 +341,3 @@ if __name__ == "__main__":
     print(f"::notice title=Vastinevahti::{lahetetty} pätkää Telegramiin; löytöjä yhteensä {len(loydot)}")
     if lahetetty == 0 and os.environ.get("TAPAHTUMA") == "workflow_dispatch":
         tg("sendMessage", {"chat_id": CHAT, "text": "Vastinevahti: tällä ajolla ei löytynyt uusia vastineen arvoisia kohtia."})
-    json.dump({"kasitellyt": sorted(kas)[-60000:], "loydot": loydot[-3000:]}, open("vastinevahti.json", "w"), ensure_ascii=False)
