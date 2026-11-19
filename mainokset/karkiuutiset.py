@@ -27,6 +27,9 @@ Muut kriteerit:
 + konkreettisuus: luku, summa, nimi, päätös tai tapahtuma, jonka voi todentaa otsikosta
 + helppous: otsikon kuvakaappaus riittää todisteeksi, asia selviää yhdellä lauseella
 + tuoreus
+- lähteen uskottavuus: valtamedia (Yle, HS, IS, IL, MTV, STT, SVT, BBC, Reuters, Spiegel ym.) tai viranomainen = ei vähennystä;
+  pieni aktivisti- tai puoluesivusto (esim. Nieuw Rechts, FrihetsNytt, Die Freie Welt, Document.no, rairfoundation) = −2, koska
+  sellaisen kuvakaappaus kumotaan kommenteissa helposti ja tiedot voivat olla vääriä
 - tylsä, abstrakti, pelkkä tilasto ilman kärkeä, urheilu, ulkomaiden sota ilman Suomi/Eurooppa-kytköstä, yksityishenkilöt
 Anna lisäksi "aihe": 3–6 sanan tunniste tapahtumalle, sama tunniste kaikille saman tapahtuman uutisille (eri medioista ja kielillä).
 Vastaa pelkkänä JSON-listana: [{"i":0,"p":7,"miksi":"max 12 sanaa","aihe":"saksa 3d-aseet moskeija isku"}]"""
@@ -127,7 +130,7 @@ button{{border:0;border-radius:8px;padding:8px 14px;background:var(--ac);color:#
 if __name__ == "__main__":
     try: tila = json.load(open("karki.json"))
     except Exception: tila = {}
-    pisteet, luonnokset, lahetetyt = tila.get("pisteet4", {}), tila.get("luonnokset7", {}), set(tila.get("lahetetyt", []))
+    pisteet, luonnokset, lahetetyt = tila.get("pisteet5", {}), tila.get("luonnokset7", {}), set(tila.get("lahetetyt", []))
     arkisto = json.load(open("uskontovahti.json")).get("arkisto", [])
     raja30 = (NYT - datetime.timedelta(days=30)).isoformat()[:16]
     kk = [x for x in arkisto if x.get("t", "") >= raja30 and x.get("u")]
@@ -188,6 +191,6 @@ if __name__ == "__main__":
             lahetetyt.update(x["u"] for x in tanaan)
         else: tg(f"Ei uusia kärkiuutisia tänään. 📋 <a href=\"{url}\">Kuukauden TOP 10</a>")
     pidettavat = {x["u"] for x in arkisto if x.get("t", "") >= (NYT - datetime.timedelta(days=45)).isoformat()[:16]}
-    json.dump({"pisteet4": {u: v for u, v in pisteet.items() if u in pidettavat}, "luonnokset7": {u: v for u, v in luonnokset.items() if u in pidettavat},
+    json.dump({"pisteet5": {u: v for u, v in pisteet.items() if u in pidettavat}, "luonnokset7": {u: v for u, v in luonnokset.items() if u in pidettavat},
                "lahetetyt": sorted(lahetetyt)[-3000:]}, open("karki.json", "w"), ensure_ascii=False)
     print(f"::notice title=Kärkiuutiset::TOP {len(top)}, tänään {len(tanaan)}; sivu {url[:45]}…")
