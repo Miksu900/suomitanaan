@@ -141,8 +141,10 @@ YT_HAUT = ["islam rauhanuskonto", "islam on rauhan uskonto", "islamofobia", "isl
 AREENA = "https://areena.api.yle.fi/v1/ui/search?app_id=areena-web-items&app_key=wlTs5D9OjIdeS9krPzRQR4I1PYVzoazN&language=fi&v=10&client=yle-areena-web&offset=0&limit=40&service=tv&query="
 AREENA_HAUT = ["islam", "muslimit", "moskeija", "islamofobia", "imaami", "ramadan"]
 # Yle-kokoelma (paljastusvideo): laajemmat aiheet, joissa vinouma näkyy
-YLE_HAUT = ["islam", "muslimit", "moskeija", "islamofobia", "maahanmuutto", "turvapaikanhakijat", "rasismi", "äärioikeisto",
-            "perussuomalaiset", "monikulttuurisuus", "vihapuhe", "pakolaiset", "kotoutuminen", "ramadan", "huivi", "Gaza"]
+YLE_HAUT = ["islam", "muslimit", "muslimi", "moskeija", "islamofobia", "maahanmuutto", "maahanmuuttajat", "turvapaikanhakijat",
+            "rasismi", "äärioikeisto", "perussuomalaiset", "monikulttuurisuus", "vihapuhe", "pakolaiset", "kotoutuminen", "ramadan",
+            "huivi", "Gaza", "Palestiina", "somali", "syrjintä", "A-studio maahanmuutto", "MOT maahanmuutto", "Ykkösaamu maahanmuutto",
+            "Spotlight islam", "rasismi Suomessa", "ennakkoluulot", "monikulttuurinen Suomi", "uskonnonvapaus", "Israel"]
 YLE_NAKOKULMA = """Avustat Miika Koskelaa, joka tekee paljastusvideon Ylen journalismin vasemmistovinoumasta ja islammyönteisyydestä.
 Etsi Ylen ohjelmista lyhyitä kohtia (8–25 s), jotka itsessään näyttävät vinouman niin, että katsoja näkee sen ilman selitystä. Esimerkiksi:
 - toimittaja tai juontaja käyttää arvottavia sanoja yhdestä suunnasta (esim. "äärioikeisto", "vihapuhe", "islamofobia") mutta ei toisesta
@@ -169,12 +171,16 @@ def yt_haku(q, uusi):
                     "kanava": e.get("channel") or e.get("uploader") or "YouTube", "kesto": dur, "k": (e.get("description") or "")[:300]})
     return out
 
-def areena_haku(q):
-    try: d = json.loads(hae(AREENA + urllib.parse.quote(q)))
-    except Exception as e:
-        print("AREENA-HAKUVIRHE", q, str(e)[:120]); return []
+def areena_haku(q, sivuja=1):
+    data = []
+    for sv in range(sivuja):
+        try: d = json.loads(hae(AREENA.replace("offset=0", f"offset={sv * 40}") + urllib.parse.quote(q)))
+        except Exception as e:
+            print("AREENA-HAKUVIRHE", q, str(e)[:120]); break
+        data += d.get("data") or []
+        if len(d.get("data") or []) < 40: break
     out = []
-    for e in d.get("data") or []:
+    for e in data:
         uri = json.dumps(e)
         m = re.search(r"(1-\d{5,})", uri)
         if not m: continue
@@ -332,9 +338,11 @@ if __name__ == "__main__":
             if TILA in ("uudet", "molemmat"): videot += yt_haku(q, True)
             if TILA in ("vanhat", "molemmat"): videot += yt_haku(q, False)
     if VAIN != "uutiset":
-        for q in (YLE_HAUT if YLE else AREENA_HAUT): videot += areena_haku(q)
+        for q in (YLE_HAUT if YLE else AREENA_HAUT): videot += areena_haku(q, 5 if YLE else 1)
     etu = "yle:" if YLE else ""
     nahty = set(); videot = [v for v in videot if etu + v["id"] not in kas and not (v["id"] in nahty or nahty.add(v["id"]))]
+    SH, SHS = int(os.environ.get("SHARD", "0") or 0), int(os.environ.get("SHARDS", "1") or 1)
+    if SHS > 1: videot = [v for v in videot if int(hashlib.md5(v["id"].encode()).hexdigest(), 16) % SHS == SH]
     print(f"Videoehdokkaita: {len(videot)} (Areena {sum(v['id'].startswith('areena') for v in videot)})")
     vp = {}
     ohje = (YLE_NAKOKULMA + "\n\nPisteytä Ylen ohjelmat otsikon ja kuvauksen perusteella 0–3: kuinka todennäköisesti ohjelmassa on lyhyt kohta, joka näyttää vinouman selvästi."
@@ -355,7 +363,7 @@ if __name__ == "__main__":
             + "\n\n".join(f"• {html.escape(v['o'])} <i>({html.escape(v['kanava'])})</i>\n{v['url']}" for v in yt)})
         kas.update(v["id"] for v in yt)
     OFFSET, SHARD, SHARDS = int(os.environ.get("OFFSET", "0") or 0), int(os.environ.get("SHARD", "0") or 0), int(os.environ.get("SHARDS", "1") or 1)
-    valitut = sorted([v for v in videot if v["id"].startswith("areena") and vp.get(v["id"], 0) >= 2], key=lambda v: -vp[v["id"]])[OFFSET:OFFSET + MAXV][SHARD::SHARDS]
+    valitut = sorted([v for v in videot if v["id"].startswith("areena") and vp.get(v["id"], 0) >= 2], key=lambda v: -vp[v["id"]])[OFFSET:OFFSET + MAXV]
     print(f"Ladataan {len(valitut)} Areena-ohjelmaa")
     for n, v in enumerate(valitut):
         kas.add(etu + v["id"])
