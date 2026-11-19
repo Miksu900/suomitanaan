@@ -106,7 +106,7 @@ def sivu(top, paivitetty):
     for n, x in enumerate(top, 1):
         l = x.get("luonnos", {})
         kortit.append(f"""<article><div class="n">{n}</div><div class="b">
-<div class="m"><span class="p">{x['p']}/10</span> {html.escape(x.get('l',''))} · {pvm(x['t'])}{' · Eurooppa' if x.get('a') == 'eu' else ''}</div>
+<div class="m"><span class="p">{x['p']}/10</span> {html.escape(x.get('l',''))} · {pvm(x['t'])}{' · Eurooppa' if x.get('a') == 'eu' else ''}{' · 🏛 Puolueet: ' + html.escape(x.get('puolue','')) if x.get('lahde') == 'puolueet' else ''}</div>
 <h2><a href="{html.escape(x['u'])}" target="_blank" rel="noopener noreferrer">{html.escape(x['o'])}</a></h2>
 <p class="miksi">🎯 {html.escape(x.get('miksi',''))}</p>
 {f'<p class="kuva">📸 {html.escape(l.get("kuva",""))}</p>' if l.get('kuva') else ''}
@@ -132,6 +132,12 @@ if __name__ == "__main__":
     except Exception: tila = {}
     pisteet, luonnokset, lahetetyt = tila.get("pisteet5", {}), tila.get("luonnokset7", {}), set(tila.get("lahetetyt", []))
     arkisto = json.load(open("uskontovahti.json")).get("arkisto", [])
+    try:   # Puoluevahdin olennaiset jutut (maahanmuutto- ja kehitysapupolitiikka) samaan kilpailuun
+        pv = json.load(open("puoluevahti.json")).get("arkisto", [])
+        nahdyt = {x.get("u") for x in arkisto}
+        arkisto += [{"o": x["o"], "u": x["u"], "t": x["t"], "l": x.get("l", ""), "k": x.get("tiivis", ""), "a": "" if x.get("maa") == "Suomi" else "eu",
+                     "puolue": x.get("puolue", ""), "lahde": "puolueet"} for x in pv if x.get("ok") and x.get("u") not in nahdyt]
+    except Exception as e: print("Puoluevahti ei saatavilla:", e)
     raja30 = (NYT - datetime.timedelta(days=30)).isoformat()[:16]
     kk = [x for x in arkisto if x.get("t", "") >= raja30 and x.get("u")]
     uudet = [x for x in kk if x["u"] not in pisteet]

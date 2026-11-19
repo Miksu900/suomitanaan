@@ -15,6 +15,7 @@ jobs:
       - uses: actions/checkout@v4
       - run: |
           git fetch -q origin uutisvinkit-tila && git show origin/uutisvinkit-tila:uskontovahti.json > mainokset/uskontovahti.json
+          git fetch -q origin puoluevahti-tila && git show origin/puoluevahti-tila:puoluevahti.json > mainokset/puoluevahti.json || true
           git fetch -q origin karki-tila && git show origin/karki-tila:karki.json > mainokset/karki.json || true
       - env:
           AK: ${{ secrets.ANTHROPIC_API_KEY }}

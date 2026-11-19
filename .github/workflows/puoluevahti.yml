@@ -1,0 +1,35 @@
+name: Puoluevahti
+# Puolueiden maahanmuutto- ja kehitysapupolitiikka Suomessa ja Euroopassa -> yksityinen sivu + Telegram.
+on:
+  schedule:
+    - cron: "41 */4 * * *"   # 4 tunnin välein keräys; Telegram-koonti aamun ajossa (4.41 UTC)
+  workflow_dispatch:
+    inputs:
+      laheta: { description: "1 = lähetä Telegram-koonti nyt", required: false, default: "" }
+      taysi: { description: "1 = hae myös vanhemmat jutut (ilman aikarajaa)", required: false, default: "" }
+concurrency: puoluevahti
+jobs:
+  aja:
+    runs-on: ubuntu-latest
+    permissions: { contents: write }
+    steps:
+      - uses: actions/checkout@v4
+      - run: git fetch -q origin puoluevahti-tila && git show origin/puoluevahti-tila:puoluevahti.json > mainokset/puoluevahti.json || true
+      - env:
+          AK: ${{ secrets.ANTHROPIC_API_KEY }}
+          TG: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CF: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TAPAHTUMA: ${{ github.event_name }}
+          LAHETA: ${{ inputs.laheta }}
+          TAYSI: ${{ inputs.taysi }}
+        run: |
+          cd mainokset
+          # Telegram-koonti vain aamun ajossa (4.41 UTC = 6.41 Suomen aikaa) tai pyydettäessä
+          if [ "$GITHUB_EVENT_NAME" = "schedule" ] && [ "$(date -u +%H)" != "04" ]; then export TAPAHTUMA=keräys; fi
+          python3 puoluevahti.py
+      - if: always()
+        run: |
+          [ -f mainokset/puoluevahti.json ] || exit 0
+          mkdir /tmp/t && cd /tmp/t && git init -q && git checkout -q -b puoluevahti-tila
+          cp $GITHUB_WORKSPACE/mainokset/puoluevahti.json . && git add -A && git -c user.name=bot -c user.email=bot@x commit -qm tila
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" puoluevahti-tila
