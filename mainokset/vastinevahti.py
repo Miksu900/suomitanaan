@@ -53,6 +53,7 @@ def json_osa(t, avaus="["):
     except Exception: return None
 
 def tg(metodi, kentat, tiedosto=None):
+    if os.environ.get("EI_TG") == "1": return   # esim. Yle-pikaajo: Claude tarkistaa pätkät ennen Miikalle lähettämistä
     if not TG: print("TG puuttuu:", kentat.get("caption", kentat.get("text", ""))[:200]); return
     k = ["curl", "-sS", "--max-time", "120", f"https://api.telegram.org/bot{TG}/{metodi}"]
     for a, b in kentat.items(): k += ["--form-string", f"{a}={b}"]

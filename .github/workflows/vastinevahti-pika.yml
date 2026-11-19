@@ -33,6 +33,7 @@ jobs:
           SHARDS: ${{ inputs.koneita }}
           NROETU: "P${{ matrix.shard }}-"
           EI_TILAA: "1"
+          EI_TG: "1"
           WHISPER: base
           BEAM: "1"
           TAPAHTUMA: pika
