@@ -216,10 +216,10 @@ def srt_luku(p):
 def litteroi(video):
     from faster_whisper import WhisperModel
     global _MALLI
-    if "_MALLI" not in globals(): _MALLI = WhisperModel("small", compute_type="int8")
+    if "_MALLI" not in globals(): _MALLI = WhisperModel(os.environ.get("WHISPER", "small"), compute_type="int8")
     import numpy as np   # ääni puretaan ffmpegillä (PyAV-versioriippuvuus ohitetaan)
     raw = subprocess.run(["ffmpeg", "-v", "error", "-i", video, "-ac", "1", "-ar", "16000", "-f", "f32le", "-"], capture_output=True).stdout
-    segs, _ = _MALLI.transcribe(np.frombuffer(raw, np.float32), language="fi", vad_filter=True)
+    segs, _ = _MALLI.transcribe(np.frombuffer(raw, np.float32), language="fi", vad_filter=True, beam_size=int(os.environ.get("BEAM", "5")))
     return [(s.start, s.end, s.text.strip()) for s in segs]
 
 def valitse_kohdat(v, segs, yle=False):
@@ -285,6 +285,7 @@ def mmss(s):
 
 # ---------- pääohjelma ----------
 def tallenna():
+    if os.environ.get("EI_TILAA") == "1": return
     json.dump({"kasitellyt": sorted(kas)[-60000:], "loydot": loydot[-3000:]}, open("vastinevahti.json", "w"), ensure_ascii=False)
 
 if __name__ == "__main__":
@@ -353,7 +354,8 @@ if __name__ == "__main__":
             "▶️ <b>YouTube: mahdollisia vastinevideoita</b>\n(YouTube estää automaattisen leikkauksen – lähetä video minulle, niin teen pätkän)\n\n"
             + "\n\n".join(f"• {html.escape(v['o'])} <i>({html.escape(v['kanava'])})</i>\n{v['url']}" for v in yt)})
         kas.update(v["id"] for v in yt)
-    valitut = sorted([v for v in videot if v["id"].startswith("areena") and vp.get(v["id"], 0) >= 2], key=lambda v: -vp[v["id"]])[:MAXV]
+    OFFSET, SHARD, SHARDS = int(os.environ.get("OFFSET", "0") or 0), int(os.environ.get("SHARD", "0") or 0), int(os.environ.get("SHARDS", "1") or 1)
+    valitut = sorted([v for v in videot if v["id"].startswith("areena") and vp.get(v["id"], 0) >= 2], key=lambda v: -vp[v["id"]])[OFFSET:OFFSET + MAXV][SHARD::SHARDS]
     print(f"Ladataan {len(valitut)} Areena-ohjelmaa")
     for n, v in enumerate(valitut):
         kas.add(etu + v["id"])
@@ -377,8 +379,8 @@ if __name__ == "__main__":
                 leikkaa(video, segs, a, b, lahde, ulos)
                 nro, linkki = "", ""
                 if YLE:
-                    nro = sum(1 for x in loydot if x.get("tyyppi") == "yle") + 1
-                    linkki = kokoelmaan(ulos, f"yle{nro:03d}_{v['id'].split(':')[1]}_{int(a)}.mp4")
+                    nro = os.environ.get("NROETU", "") + str(sum(1 for x in loydot if x.get("tyyppi") == "yle") + 1)
+                    linkki = kokoelmaan(ulos, f"yle{nro}_{v['id'].split(':')[1]}_{int(a)}.mp4")
                 OSAT = {1: "Osa 1: Islammyönteisyys", 2: "Osa 2: Maahanmuutto", 3: "Osa 3: Sanavalinnat ja haastateltavat"}
                 try: osa = int(k.get("osa") or 0)
                 except Exception: osa = 0

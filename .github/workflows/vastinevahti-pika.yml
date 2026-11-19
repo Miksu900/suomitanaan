@@ -1,0 +1,37 @@
+name: Vastinevahti (Yle-pikaajo)
+# Rinnakkainen Yle-kokoelma-ajo: jakaa ohjelmat usealle koneelle, nopeampi litterointi. Ei tallenna tilaa.
+on:
+  workflow_dispatch:
+    inputs:
+      offset: { description: "Ohita näin monta parasta ohjelmaa (pääajo käsittelee ne)", required: false, default: "14" }
+      maxv: { description: "Ohjelmia yhteensä", required: false, default: "15" }
+jobs:
+  aja:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    permissions: { contents: write }
+    strategy:
+      fail-fast: false
+      matrix: { shard: [0, 1, 2] }
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          sudo apt-get -qq update >/dev/null && sudo apt-get -qq install -y ffmpeg fonts-dejavu-core >/dev/null
+          pip install -q -U yt-dlp faster-whisper pillow
+          git fetch -q origin vastinevahti-tila && git show origin/vastinevahti-tila:vastinevahti.json > mainokset/vastinevahti.json || true
+      - env:
+          AK: ${{ secrets.ANTHROPIC_API_KEY }}
+          TG: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+          TILA: molemmat
+          VAIN: yle
+          MAXV: ${{ inputs.maxv }}
+          OFFSET: ${{ inputs.offset }}
+          SHARD: ${{ matrix.shard }}
+          SHARDS: "3"
+          NROETU: "P${{ matrix.shard }}-"
+          EI_TILAA: "1"
+          WHISPER: base
+          BEAM: "1"
+          TAPAHTUMA: pika
+        run: cd mainokset && python3 vastinevahti.py
