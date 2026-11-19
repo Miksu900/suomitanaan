@@ -217,7 +217,9 @@ def litteroi(video):
     from faster_whisper import WhisperModel
     global _MALLI
     if "_MALLI" not in globals(): _MALLI = WhisperModel("small", compute_type="int8")
-    segs, _ = _MALLI.transcribe(video, language="fi", vad_filter=True)
+    import numpy as np   # ääni puretaan ffmpegillä (PyAV-versioriippuvuus ohitetaan)
+    raw = subprocess.run(["ffmpeg", "-v", "error", "-i", video, "-ac", "1", "-ar", "16000", "-f", "f32le", "-"], capture_output=True).stdout
+    segs, _ = _MALLI.transcribe(np.frombuffer(raw, np.float32), language="fi", vad_filter=True)
     return [(s.start, s.end, s.text.strip()) for s in segs]
 
 def valitse_kohdat(v, segs, yle=False):
@@ -300,7 +302,7 @@ if __name__ == "__main__":
     if TILA in ("uudet", "molemmat"): ehdokkaat += sorted([x for x in fi if x["t"] >= raja], key=lambda x: x["t"], reverse=True)[:MAXA_UUDET]
     if TILA in ("vanhat", "molemmat"): ehdokkaat += sorted([x for x in fi if x["t"] < raja], key=lambda x: x["t"], reverse=True)[:MAXA_VANHAT]
     print(f"Artikkeleita arvioitavaksi: {len(ehdokkaat)} (arkistossa {len(arkisto)}, Suomi käsittelemättä {len(fi)})")
-    if VAIN == "videot": ehdokkaat = []
+    if VAIN in ("videot", "yle"): ehdokkaat = []
     pisteet = esiarvio(ehdokkaat) if ehdokkaat else {}
     lahetetty = 0
     for x in ehdokkaat:
