@@ -368,7 +368,7 @@ if __name__ == "__main__":
             if len(segs) < 5: segs = litteroi(video)
             kohdat = valitse_kohdat({**v, **{k: meta[k] for k in ("o",) if meta.get(k)}}, segs, YLE)
             pvm = meta.get("pvm", "")
-            for j, k in enumerate(kohdat[:2]):
+            for j, k in enumerate(kohdat[:1 if YLE else 2]):   # Yle-kokoelmaan yksi pätkä per ohjelma
                 a, b = float(k["alku"]), float(k["loppu"])
                 if b - a < 4 or b - a > 75: continue
                 lainaus = k.get("lainaus", "")
