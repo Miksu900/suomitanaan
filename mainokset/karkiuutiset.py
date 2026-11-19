@@ -23,10 +23,22 @@ kommentteja suomalaiselle yleisölle. Pisteytä jokainen uutinen 0–10 sen muka
 - tylsä, abstrakti, pelkkä tilasto ilman kärkeä, urheilu, ulkomaiden sota ilman Suomi/Eurooppa-kytköstä, yksityishenkilöt
 Vastaa pelkkänä JSON-listana: [{"i":0,"p":7,"miksi":"max 12 sanaa"}]"""
 
-LUONNOS = """Kirjoitat Miika Koskelan Facebook-postauksen luonnoksen. Miikan tyyli: suora, lyhyt ja painokas, arkikieltä mutta
-kieliopillisesti oikein, ei hymiöitä, ei linkkejä, 3–6 virkettä. Usein loppuu kannanottoon tai kysymykseen lukijalle.
-Käytä VAIN uutisen tietoja (otsikko, kuvaus, teksti) – älä keksi lukuja, nimiä tai tapahtumia. Mielipide saa olla selvä,
-mutta faktat pitää pystyä todentamaan uutisesta. Älä yleistä kokonaista uskonto- tai kansanryhmää rikollisiksi.
+LUONNOS = """Kirjoitat Miika Koskelan Facebook-postauksen luonnoksen HÄNEN OMALLA TYYLILLÄÄN. Tyyliprofiili (hänen omista teksteistään):
+- aloittaa väitteellä tai varoituksella ("Meidän suomalaisten ei pidä olla naiiveja…", "Ei kannata olla naiivi.")
+- puhekielinen mutta vakava sävy: "No ei sillä, että…", "kuten arvaattekin", "niin", "kyllä"
+- pitkän virkkeen jälkeen lyhyt isku: "Ei mitään. Ei yhtään mitään." / "Sitä ei enää takaisin saa."
+- nimeää vastapuolen suoraan: "vihervasemmisto", "vasemmisto ja islamistit"
+- vertaa usein Ruotsiin tai Eurooppaan: "Ruotsissa on jo…, joten ei pidä olla naiivi, etteikö täällä Suomessakin…"
+- käyttää omaa kokemusta todisteena ("Kysyin itse…")
+- lopettaa vaatimukseen tai johtopäätökseen ("Viranomaisten pitäisi vaatia ja määrätä…") tai joskus kysymykseen lukijalle
+- ei hymiöitä, ei hashtageja, ei linkkejä, ei englanninkielisiä sanoja; 3–7 virkettä; oikeinkirjoitus kunnossa
+ESIMERKKEJÄ hänen teksteistään:
+1) "Meidän suomalaisten ei pidä olla naiiveja islamin motiivien suhteen. Ruotsissa on jo ollut valtavasti tätä naisten alistamista, joten ei pidä olla naiivi, etteikö sitä olisi täällä Suomessakin. Tämä on šarialain noudattamista ja vihervasemmiston mukaan sitä "parempaa" naisten alistamista."
+2) "Läpinäkyvyys. Tällä Turun moskeija on mainostanut arvojaan. Läpinäkyvyydestä ei kuitenkaan ole tietoakaan. Kysyin itse säätiöltä, mistä varat ovat peräisin, ja kuten arvaattekin, vastauksena oli vastaamattomuus. Ei mitään. Ei yhtään mitään, vaan jälleen vastauksena hiljaisuus. Viranomaisten pitäisi vaatia ja määrätä, että koko moskeijahanke perutaan."
+3) "Ei kannata olla naiivi. Niin vasemmistoa kuin islamisteja vetää yhteen voimakas viha Israelia kohtaan."
+SÄÄNNÖT: Käytä VAIN uutisen tietoja (otsikko, kuvaus, teksti) – älä keksi lukuja, nimiä, tapahtumia tai omia kokemuksia, joita Miikalla ei uutisen perusteella ole.
+Mielipide saa olla selvä, mutta faktat pitää pystyä todentamaan uutisesta. Älä yleistä kokonaista uskonto- tai kansanryhmää rikollisiksi
+(puhu islamismista, islamisteista, päättäjistä tai järjestöistä, kun asia koskee niitä). Älä kehota poistamaan ihmisiä maasta uskonnon perusteella.
 Vastaa pelkkänä JSON-objektina:
 {"teksti": "postauksen teksti, viimeisellä rivillä 'Lähde: <media>'", "kuva": "mikä kuvakaappaus kannattaa ottaa (esim. otsikko + ingressi)",
  "koukku": "postauksen ydin yhdellä lauseella"}"""
@@ -89,7 +101,7 @@ button{{border:0;border-radius:8px;padding:8px 14px;background:var(--ac);color:#
 if __name__ == "__main__":
     try: tila = json.load(open("karki.json"))
     except Exception: tila = {}
-    pisteet, luonnokset, lahetetyt = tila.get("pisteet", {}), tila.get("luonnokset", {}), set(tila.get("lahetetyt", []))
+    pisteet, luonnokset, lahetetyt = tila.get("pisteet", {}), tila.get("luonnokset2", {}), set(tila.get("lahetetyt", []))
     arkisto = json.load(open("uskontovahti.json")).get("arkisto", [])
     raja30 = (NYT - datetime.timedelta(days=30)).isoformat()[:16]
     kk = [x for x in arkisto if x.get("t", "") >= raja30 and x.get("u")]
@@ -144,6 +156,6 @@ if __name__ == "__main__":
             lahetetyt.update(x["u"] for x in tanaan)
         else: tg(f"Ei uusia kärkiuutisia tänään. 📋 <a href=\"{url}\">Kuukauden TOP 10</a>")
     pidettavat = {x["u"] for x in arkisto if x.get("t", "") >= (NYT - datetime.timedelta(days=45)).isoformat()[:16]}
-    json.dump({"pisteet": {u: v for u, v in pisteet.items() if u in pidettavat}, "luonnokset": {u: v for u, v in luonnokset.items() if u in pidettavat},
+    json.dump({"pisteet": {u: v for u, v in pisteet.items() if u in pidettavat}, "luonnokset2": {u: v for u, v in luonnokset.items() if u in pidettavat},
                "lahetetyt": sorted(lahetetyt)[-3000:]}, open("karki.json", "w"), ensure_ascii=False)
     print(f"::notice title=Kärkiuutiset::TOP {len(top)}, tänään {len(tanaan)}; sivu {url[:45]}…")
