@@ -5,6 +5,8 @@ on:
     inputs:
       offset: { description: "Ohita näin monta parasta ohjelmaa (pääajo käsittelee ne)", required: false, default: "14" }
       maxv: { description: "Ohjelmia yhteensä", required: false, default: "15" }
+      koneita: { description: "Rinnakkaisia koneita (1-20)", required: false, default: "3" }
+      shardit: { description: "JSON-lista 0..koneita-1", required: false, default: "[0,1,2]" }
 jobs:
   aja:
     runs-on: ubuntu-latest
@@ -12,7 +14,7 @@ jobs:
     permissions: { contents: write }
     strategy:
       fail-fast: false
-      matrix: { shard: [0, 1, 2] }
+      matrix: { shard: "${{ fromJSON(inputs.shardit) }}" }
     steps:
       - uses: actions/checkout@v4
       - run: |
@@ -28,7 +30,7 @@ jobs:
           MAXV: ${{ inputs.maxv }}
           OFFSET: ${{ inputs.offset }}
           SHARD: ${{ matrix.shard }}
-          SHARDS: "3"
+          SHARDS: ${{ inputs.koneita }}
           NROETU: "P${{ matrix.shard }}-"
           EI_TILAA: "1"
           WHISPER: base
