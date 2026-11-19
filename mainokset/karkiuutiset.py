@@ -21,7 +21,8 @@ kommentteja suomalaiselle yleisölle. Pisteytä jokainen uutinen 0–10 sen muka
 + helppous: otsikon kuvakaappaus riittää todisteeksi, asia selviää yhdellä lauseella
 + tuoreus
 - tylsä, abstrakti, pelkkä tilasto ilman kärkeä, urheilu, ulkomaiden sota ilman Suomi/Eurooppa-kytköstä, yksityishenkilöt
-Vastaa pelkkänä JSON-listana: [{"i":0,"p":7,"miksi":"max 12 sanaa"}]"""
+Anna lisäksi "aihe": 3–6 sanan tunniste tapahtumalle, sama tunniste kaikille saman tapahtuman uutisille (eri medioista ja kielillä).
+Vastaa pelkkänä JSON-listana: [{"i":0,"p":7,"miksi":"max 12 sanaa","aihe":"saksa 3d-aseet moskeija isku"}]"""
 
 LUONNOS = """Kirjoitat Miika Koskelan Facebook-postauksen luonnoksen HÄNEN OMALLA TYYLILLÄÄN. Tyyliprofiili (hänen omista teksteistään):
 - aloittaa väitteellä tai varoituksella ("Meidän suomalaisten ei pidä olla naiiveja…", "Ei kannata olla naiivi.")
@@ -32,7 +33,10 @@ LUONNOS = """Kirjoitat Miika Koskelan Facebook-postauksen luonnoksen HÄNEN OMAL
 - käyttää omaa kokemusta todisteena ("Kysyin itse…")
 - lopettaa vaatimukseen tai johtopäätökseen ("Viranomaisten pitäisi vaatia ja määrätä…") tai joskus kysymykseen lukijalle
 - ei hymiöitä, ei hashtageja, ei linkkejä, ei englanninkielisiä sanoja; 3–7 virkettä; oikeinkirjoitus kunnossa
-ESIMERKKEJÄ hänen teksteistään:
+Käytä profiilista vain 1–3 piirrettä per postaus ja vaihtele aloituksia – ÄLÄ kopioi esimerkkien lauseita sellaisenaan
+(esim. "Meidän suomalaisten ei pidä olla naiiveja", "Ei mitään. Ei yhtään mitään." ja "vihervasemmiston mukaan sitä parempaa" saa käyttää vain harvoin).
+Jokaisen postauksen pitää kuulostaa juuri tästä uutisesta kirjoitetulta.
+ESIMERKKEJÄ hänen teksteistään (tyylin malliksi, ei kopioitavaksi):
 1) "Meidän suomalaisten ei pidä olla naiiveja islamin motiivien suhteen. Ruotsissa on jo ollut valtavasti tätä naisten alistamista, joten ei pidä olla naiivi, etteikö sitä olisi täällä Suomessakin. Tämä on šarialain noudattamista ja vihervasemmiston mukaan sitä "parempaa" naisten alistamista."
 2) "Läpinäkyvyys. Tällä Turun moskeija on mainostanut arvojaan. Läpinäkyvyydestä ei kuitenkaan ole tietoakaan. Kysyin itse säätiöltä, mistä varat ovat peräisin, ja kuten arvaattekin, vastauksena oli vastaamattomuus. Ei mitään. Ei yhtään mitään, vaan jälleen vastauksena hiljaisuus. Viranomaisten pitäisi vaatia ja määrätä, että koko moskeijahanke perutaan."
 3) "Ei kannata olla naiivi. Niin vasemmistoa kuin islamisteja vetää yhteen voimakas viha Israelia kohtaan."
@@ -101,7 +105,7 @@ button{{border:0;border-radius:8px;padding:8px 14px;background:var(--ac);color:#
 if __name__ == "__main__":
     try: tila = json.load(open("karki.json"))
     except Exception: tila = {}
-    pisteet, luonnokset, lahetetyt = tila.get("pisteet", {}), tila.get("luonnokset2", {}), set(tila.get("lahetetyt", []))
+    pisteet, luonnokset, lahetetyt = tila.get("pisteet2", {}), tila.get("luonnokset3", {}), set(tila.get("lahetetyt", []))
     arkisto = json.load(open("uskontovahti.json")).get("arkisto", [])
     raja30 = (NYT - datetime.timedelta(days=30)).isoformat()[:16]
     kk = [x for x in arkisto if x.get("t", "") >= raja30 and x.get("u")]
@@ -113,19 +117,24 @@ if __name__ == "__main__":
                                          "alue": "Eurooppa" if x.get("a") == "eu" else "Suomi"} for n, x in enumerate(osa)], ensure_ascii=False),
                    "claude-haiku-4-5", 4000)
         for r in json_osa(t) or []:
-            try: pisteet[osa[int(r["i"])]["u"]] = {"p": int(r["p"]), "miksi": str(r.get("miksi", ""))[:120]}
+            try: pisteet[osa[int(r["i"])]["u"]] = {"p": int(r["p"]), "miksi": str(r.get("miksi", ""))[:120], "aihe": str(r.get("aihe", ""))[:60]}
             except Exception: pass
     for x in kk: x.update(pisteet.get(x["u"], {"p": 0, "miksi": ""}))
     jarj = sorted(kk, key=lambda x: (x["p"], x["t"]), reverse=True)
     # samasta aiheesta vain yksi (otsikon alun perusteella)
     nahty, top = set(), []
     for x in jarj:
-        a = re.sub(r"\W+", "", x["o"].lower())[:40]
+        a = re.sub(r"\W+", "", (x.get("aihe") or x["o"]).lower())[:40]
         if a in nahty: continue
         nahty.add(a); top.append(x)
         if len(top) == 10: break
     raja3 = (NYT - datetime.timedelta(days=3)).isoformat()[:16]
-    tanaan = [x for x in jarj if x["t"] >= raja3 and x["u"] not in lahetetyt and x["p"] >= 6][:3]
+    tanaan, aiheet = [], set()
+    for x in jarj:
+        a = re.sub(r"\W+", "", (x.get("aihe") or x["o"]).lower())[:40]
+        if x["t"] >= raja3 and x["u"] not in lahetetyt and x["p"] >= 6 and a not in aiheet:
+            aiheet.add(a); tanaan.append(x)
+        if len(tanaan) == 3: break
     for x in {id(y): y for y in top + tanaan}.values():
         if x["u"] in luonnokset: continue
         t = claude(LUONNOS, f"OTSIKKO: {x['o']}\nMEDIA: {x.get('l','')}\nPVM: {x['t'][:10]}\nKUVAUS: {x.get('k','')}\n\nTEKSTI:\n{teksti(x['u']) or '(ei saatavilla – käytä vain otsikkoa ja kuvausta)'}",
@@ -156,6 +165,6 @@ if __name__ == "__main__":
             lahetetyt.update(x["u"] for x in tanaan)
         else: tg(f"Ei uusia kärkiuutisia tänään. 📋 <a href=\"{url}\">Kuukauden TOP 10</a>")
     pidettavat = {x["u"] for x in arkisto if x.get("t", "") >= (NYT - datetime.timedelta(days=45)).isoformat()[:16]}
-    json.dump({"pisteet": {u: v for u, v in pisteet.items() if u in pidettavat}, "luonnokset2": {u: v for u, v in luonnokset.items() if u in pidettavat},
+    json.dump({"pisteet2": {u: v for u, v in pisteet.items() if u in pidettavat}, "luonnokset3": {u: v for u, v in luonnokset.items() if u in pidettavat},
                "lahetetyt": sorted(lahetetyt)[-3000:]}, open("karki.json", "w"), ensure_ascii=False)
     print(f"::notice title=Kärkiuutiset::TOP {len(top)}, tänään {len(tanaan)}; sivu {url[:45]}…")
