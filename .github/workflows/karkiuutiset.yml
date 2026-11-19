@@ -1,0 +1,31 @@
+name: Kärkiuutiset
+# Kuukauden TOP 10 -sivu (faktapiste.fi/api/oma/karki) ja aamun "3 parasta tänään" Telegramiin.
+on:
+  schedule:
+    - cron: "7 5 * * *"   # n. 7.07 Suomen aikaa
+  workflow_dispatch:
+    inputs:
+      laheta: { description: "1 = lähetä Telegram-viesti nyt", required: false, default: "1" }
+concurrency: karkiuutiset
+jobs:
+  aja:
+    runs-on: ubuntu-latest
+    permissions: { contents: write }
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          git fetch -q origin uutisvinkit-tila && git show origin/uutisvinkit-tila:uskontovahti.json > mainokset/uskontovahti.json
+          git fetch -q origin karki-tila && git show origin/karki-tila:karki.json > mainokset/karki.json || true
+      - env:
+          AK: ${{ secrets.ANTHROPIC_API_KEY }}
+          TG: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CF: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TAPAHTUMA: ${{ github.event_name }}
+          LAHETA: ${{ inputs.laheta }}
+        run: cd mainokset && python3 karkiuutiset.py
+      - if: always()
+        run: |
+          [ -f mainokset/karki.json ] || exit 0
+          mkdir /tmp/t && cd /tmp/t && git init -q && git checkout -q -b karki-tila
+          cp $GITHUB_WORKSPACE/mainokset/karki.json . && git add -A && git -c user.name=bot -c user.email=bot@x commit -qm tila
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" karki-tila
