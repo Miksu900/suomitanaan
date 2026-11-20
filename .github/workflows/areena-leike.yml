@@ -1,0 +1,24 @@
+name: Areena-leike
+# Lataa Areena-ohjelmasta raakaleikkeen (alku–loppu sekunteina) ja tallentaa sen releaseen "raakaleikkeet".
+on:
+  workflow_dispatch:
+    inputs:
+      id: { description: "Areena-id, esim. 1-2533853", required: true }
+      alku: { description: "Alku sekunteina", required: true }
+      loppu: { description: "Loppu sekunteina", required: true }
+jobs:
+  aja:
+    runs-on: ubuntu-latest
+    permissions: { contents: write }
+    steps:
+      - run: |
+          sudo apt-get -qq update >/dev/null && sudo apt-get -qq install -y ffmpeg >/dev/null
+          pip install -q -U yt-dlp
+          yt-dlp --no-warnings -q -f "bv*[height<=1080]+ba/b" --merge-output-format mp4 --print-to-file "%(upload_date)s|%(title)s" meta.txt -o "v.%(ext)s" "https://areena.yle.fi/${{ inputs.id }}"
+          cat meta.txt
+          N="leike_${{ inputs.id }}_${{ inputs.alku }}-${{ inputs.loppu }}.mp4"
+          ffmpeg -v error -y -ss ${{ inputs.alku }} -to ${{ inputs.loppu }} -i v.mp4 -c:v libx264 -preset veryfast -crf 18 -c:a aac -b:a 192k "$N"
+          gh release view raakaleikkeet -R "$GITHUB_REPOSITORY" >/dev/null 2>&1 || gh release create raakaleikkeet -R "$GITHUB_REPOSITORY" -t "Raakaleikkeet" -n "Areena-raakaleikkeet editointia varten"
+          gh release upload raakaleikkeet "$N" -R "$GITHUB_REPOSITORY" --clobber
+          echo "::notice title=Leike::$N $(cat meta.txt)"
+        env: { GH_TOKEN: "${{ github.token }}" }
