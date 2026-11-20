@@ -7,7 +7,9 @@ on:
   workflow_dispatch:
     inputs:
       tyyppi: { description: "korjaus, huijaus tai eduskunta (tyhjä = päivän vuoro)", required: false, default: "" }
-      aani: { description: "ElevenLabs voice_id (oletus Brian)", required: false, default: "nPczCjzI2devNBz1zQrb" }
+      aani: { description: "ElevenLabs voice_id (oletus Christoffer; Brian = nPczCjzI2devNBz1zQrb)", required: false, default: "3OArekHEkHv5XvmZirVD" }
+      url: { description: "Suomi Tänään -jutun osoite (pakottaa uutinen-tyypin)", required: false, default: "" }
+      tg: { description: "0 = älä lähetä Telegramiin (testi)", required: false, default: "1" }
 permissions:
   contents: write
 concurrency: { group: videokone, cancel-in-progress: false }
@@ -16,7 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      VOICE: ${{ inputs.aani || 'nPczCjzI2devNBz1zQrb' }}
+      VOICE: ${{ inputs.aani || '3OArekHEkHv5XvmZirVD' }}
+      UUTINEN_URL: ${{ inputs.url }}
     steps:
       - uses: actions/checkout@v4
       - name: Työkalut
@@ -29,7 +32,7 @@ jobs:
         run: |
           mkdir tyo && cd tyo
           git fetch -q origin videokone-tila && git show origin/videokone-tila:kaytetyt.json > kaytetyt.json || echo "[]" > kaytetyt.json
-          python3 ../videokone/aiheet.py "${{ inputs.tyyppi }}"
+          python3 ../videokone/aiheet.py "${{ inputs.url && 'uutinen' || inputs.tyyppi }}"
           echo "::notice title=Aihe::$(jq -r '.tyyppi + ": " + (.lauseet|join(" "))' aihe.json)"
       - name: Ääni
         env:
@@ -44,6 +47,7 @@ jobs:
         working-directory: tyo
         run: python3 ../videokone/render.py && ls -la video.mp4
       - name: Telegramiin
+        if: inputs.tg != '0'
         working-directory: tyo
         env:
           TG: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -55,6 +59,7 @@ jobs:
           curl -sS -X POST "https://api.telegram.org/bot$TG/sendMessage" -H "content-type: application/json" \
             -d "$(jq -n --arg t "$V" '{chat_id: "1893930799", text: $t, disable_web_page_preview: true}')" > /dev/null
       - name: Tallenna käytetyt aiheet
+        if: inputs.tg != '0'
         working-directory: tyo
         run: |
           mkdir tila && cp kaytetyt.json tila/ && cd tila && git init -q && git checkout -q -b videokone-tila && git add -A && git -c user.name=bot -c user.email=bot@x commit -qm tila

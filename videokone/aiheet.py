@@ -83,6 +83,17 @@ def ehdokas_eduskunta():
 
 def ehdokas_uutinen():
     """Suomi Tänään -uutinen, jossa on toimituksen näkökulmakappale (poliittiset jutut)."""
+    pakko = os.environ.get("UUTINEN_URL", "").strip()
+    if pakko:
+        sivu = hae(pakko, "text")
+        kpl = [html.unescape(re.sub(r"<[^>]+>", "", m)).strip() for m in re.findall(r"<p[^>]*>([\s\S]*?)</p>", sivu)]
+        kpl = [k for k in kpl if len(k) > 40]
+        nako = next((k for k in kpl if k.startswith("Suomi Tänään -näkökulma")), None)
+        ots = html.unescape(re.sub(r"<[^>]+>", "", (re.search(r"<h1[^>]*>([\s\S]*?)</h1>", sivu) or re.search(r"<title>([\s\S]*?)</title>", sivu)).group(1))).split(" | ")[0].strip()
+        ing = (re.search(r'<meta name="description" content="([^"]*)"', sivu) or [None, ""])[1]
+        runko = [k for k in kpl if k != nako and "Suomi Tänään" not in k[:20]][:6]
+        return {"avain": pakko, "otsikko": ots, "ingressi": html.unescape(ing), "kappaleet": runko,
+                "nakokulma": nako.split(":", 1)[1].strip() if nako else "", "url": pakko}
     x = hae("https://suomitanaan.fi/rss.xml", "text")
     for it in re.findall(r"<item>([\s\S]*?)</item>", x)[:20]:
         g = lambda t: html.unescape(re.sub(r"<!\[CDATA\[|\]\]>", "", (re.search(f"<{t}>([\\s\\S]*?)</{t}>", it) or [None, ""])[1])).strip()
@@ -127,7 +138,12 @@ def kasikirjoitus(tyyppi, data):
               "Täsmälleen 5 lausetta, yhteensä 45–70 sanaa (noin 25 sekuntia). Jokainen lause päättyy pisteeseen, kysymysmerkkiin tai huutomerkkiin, eikä lauseen sisällä saa olla muita pisteitä. "
               "Vastaa vain JSON: {\"lauseet\":[5 lausetta], \"koukku\":\"näytölle iso teksti, enintään 26 merkkiä, ilman pistettä\", "
               "\"kuvateksti\":\"somejulkaisun saateteksti 1–2 virkettä + linkki\", \"hashtagit\":[\"4–6 suomenkielistä tunnistetta ilman #\"], \"vinkit\":[]}")
-    user = OHJE[tyyppi] + "\n\nData:\n" + json.dumps({k: v for k, v in data.items() if k not in ("avain",)}, ensure_ascii=False)
+    ohje = OHJE[tyyppi]
+    if tyyppi == "uutinen" and not data.get("nakokulma"):
+        ohje = ("Aihe: Suomi Tänään -uutissivuston uutinen. Mainitse puheessa, että kyseessä on Suomi Tänään -uutinen.\n"
+                "Lauseet: 1) iskevä koukku uutisen ytimestä, 2), 3) ja 4) tärkeimmät faktat jutusta (vain jutun tiedot, luvut ja nimet sellaisinaan, ei omia mielipiteitä, ei ihmisryhmien leimaamista), "
+                "5) kehotus: \"Lue koko juttu, suomi tänään piste fi.\" Anna lisäksi kenttä \"fakta_naytolle\": jutun tärkein luku tai fakta näytölle enintään 60 merkkiä.")
+    user = ohje + "\n\nData:\n" + json.dumps({k: v for k, v in data.items() if k not in ("avain",)}, ensure_ascii=False)
     body = {"model": "claude-sonnet-5-5", "max_tokens": 900, "system": system, "messages": [{"role": "user", "content": user}], "thinking": {"type": "disabled"}}
     def kutsu(b):
         req = urllib.request.Request("https://api.anthropic.com/v1/messages", data=json.dumps(b).encode(), method="POST",

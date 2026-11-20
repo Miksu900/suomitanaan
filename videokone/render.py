@@ -166,7 +166,7 @@ elif TYYPPI == "huijaus":
 elif TYYPPI == "uutinen":
     UOTS = kortti("SUOMI TÄNÄÄN · UUTINEN", D["otsikko"], (180, 35, 44))
     UING = kortti("FAKTAT", D.get("ingressi") or " ".join(D.get("kappaleet", [])[:1]), (40, 110, 255), fs=46)
-    NAKO = A.get("nakokulma_naytolle") or D.get("nakokulma", "")[:90]
+    NAKO = (A.get("nakokulma_naytolle") or D.get("nakokulma", "")[:90]) if D.get("nakokulma") else ""
 else:
     OTS = kortti("EDUSKUNTA · " + ".".join(str(int(x)) for x in reversed(D["pv"].split("-"))), D["otsikko"], (40, 110, 255), fs=46)
     TULOS = pill("HYVÄKSYTTIIN" if D["hyvaksyttiin"] else "HYLÄTTIIN", M9(60), WHITE, (GREEN if D["hyvaksyttiin"] else RED) + (255,), 40, 22)
@@ -235,9 +235,13 @@ def kohtaus(base, si, lt, gt):
             paste_c(base, UOTS, W / 2, 470, 0.85, 0.5)
             paste_c(base, UING, W / 2, 1000, back(lt * 3))
         else:
-            paste_c(base, pill("SUOMI TÄNÄÄN -NÄKÖKULMA", M9(48), NAVY, GOLD + (255,), 34, 20), W / 2, 380, back(lt * 3))
-            paste_c(base, iso_teksti("”" + NAKO + "”", koko=96, vari=WHITE, vari2=WHITE), W / 2, 760, back(lt * 3 - 0.3))
-            paste_c(base, text_img("Mielipide", M8(40), GREY), W / 2, 1100, back(lt * 3 - 0.6))
+            if NAKO:
+                paste_c(base, pill("SUOMI TÄNÄÄN -NÄKÖKULMA", M9(48), NAVY, GOLD + (255,), 34, 20), W / 2, 380, back(lt * 3))
+                paste_c(base, iso_teksti("”" + NAKO + "”", koko=96, vari=WHITE, vari2=WHITE), W / 2, 760, back(lt * 3 - 0.3))
+                paste_c(base, text_img("Mielipide", M8(40), GREY), W / 2, 1100, back(lt * 3 - 0.6))
+            else:
+                paste_c(base, pill("SUOMI TÄNÄÄN", M9(48), NAVY, GOLD + (255,), 34, 20), W / 2, 380, back(lt * 3))
+                paste_c(base, iso_teksti(A.get("fakta_naytolle") or D["otsikko"][:60], koko=110), W / 2, 760, back(lt * 3 - 0.3))
     else:
         if si == 1:
             paste_c(base, OTS, W / 2, 760, back(lt * 3))
