@@ -156,6 +156,14 @@ Etsi Ylen ohjelmista lyhyitä kohtia (8–25 s), joissa VINOUMA NÄKYY YLEN OMAS
 - islam tai islamilainen toimija esitetään kritiikittömästi tavalla, jossa toimittaja itse kaunistelee tai ohittaa ilmeisen ongelman
 EI kelpaa: pelkkä myönteinen henkilötarina, haastateltavan oma mielipide ilman toimittajan kannanottoa, neutraali uutisointi, juhlapyhäjutut.
 Ole tiukka: jos vinouma ei näy itse pätkästä, älä valitse mitään (palauta tyhjä lista). Mieluummin ei yhtään kuin heikko pätkä."""
+if os.environ.get("LAAJA"):
+    YLE_HAUT = ["ilmastonmuutos", "ilmastokriisi", "Elokapina", "sukupuolen moninaisuus", "translaki", "Pride", "sateenkaari",
+                "Orpon hallitus leikkaukset", "Riikka Purra", "perussuomalaiset", "Trump", "Musk", "lakko", "SAK", "köyhyys",
+                "eriarvoisuus", "kehitysapu", "vihreät", "vasemmistoliitto", "Li Andersson", "feminismi", "rasismi",
+                "äärioikeisto", "populismi", "A-studio", "A-talk", "Ykkösaamu", "MOT", "Pressiklubi", "Yle Uutiset", "Ylen aamu",
+                "maahanmuutto", "turvapaikanhakijat", "islam", "monikulttuurisuus", "vihapuhe"]
+    YLE_NAKOKULMA = YLE_NAKOKULMA.replace("vasemmistovinoumasta ja islam- ja maahanmuuttomyönteisyydestä.",
+        "vasemmistovinoumasta MISTÄ TAHANSA AIHEESTA (maahanmuutto, islam, ilmasto, sukupuoli- ja sateenkaariasiat, talous ja leikkaukset, ay-liike, perussuomalaiset, Trump, oikeisto vs. vasemmisto).")
 if os.environ.get("LOYSA"):
     YLE_NAKOKULMA = YLE_NAKOKULMA.replace("EI kelpaa: pelkkä myönteinen henkilötarina, haastateltavan oma mielipide ilman toimittajan kannanottoa,",
         "KELPAA MYÖS: Yle antaa haastateltavan esittää yksipuolisen islam- tai maahanmuuttomyönteisen näkemyksen (esim. kaunistelee ongelmaa, vaatii ymmärrystä rikoksentekijöille, leimaa kriitikot) ilman että toimittaja haastaa tai esittää vastakkaista kantaa – kun asetelma näkyy pätkästä.\nEI kelpaa: pelkkä myönteinen henkilötarina,")
