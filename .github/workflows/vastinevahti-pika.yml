@@ -10,6 +10,7 @@ on:
       ohita: { description: "Pilkulla eroteltu lista jo käsitellyistä Areena-id:istä", required: false, default: "" }
       minvuosi: { description: "Vain ohjelmat tästä vuodesta alkaen", required: false, default: "" }
       shardit: { description: "JSON-lista 0..koneita-1", required: false, default: "[0,1,2]" }
+      loysa: { description: "1 = löysempi valinta (yksipuolinen haastateltava ilman vastakantaa kelpaa)", required: false, default: "" }
 jobs:
   aja:
     runs-on: ubuntu-latest
@@ -40,6 +41,7 @@ jobs:
           RAJA: ${{ inputs.raja }}
           OHITA: ${{ inputs.ohita }}
           MINVUOSI: ${{ inputs.minvuosi }}
+          LOYSA: ${{ inputs.loysa }}
           WHISPER: base
           BEAM: "1"
           TAPAHTUMA: pika
