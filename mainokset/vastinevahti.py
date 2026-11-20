@@ -153,6 +153,7 @@ Etsi Ylen ohjelmista lyhyitä kohtia (8–25 s), joissa VINOUMA NÄKYY YLEN OMAS
 - Ylen toimittaja, juontaja tai selostusääni käyttää leimaavia tai arvottavia sanoja vain yhteen suuntaan (esim. "äärioikeisto", "populisti", "vihapuhe", "rasistinen" kriitikoista – vastaavia ei käytetä vasemmistosta tai islamisteista)
 - toimittaja ottaa itse kantaa, esittää johdattelevan kysymyksen tai selittää ongelman pois (esim. maahanmuuton kustannukset, rikollisuus, työttömyys, kunniaväkivalta)
 - kriitikko tai perussuomalainen esitetään naurettavana, pelottavana tai epäluotettavana, tai häntä keskeytetään/painostetaan selvästi tiukemmin kuin muita
+- toimittajan KYSYMYS paljastaa vasemmistolaisen oletuksen tai asenteen, vaikka vastaus olisi mitä tahansa (esim. "eikö tämä ole rasismia?", "miten vastaatte siihen, että leikkaukset osuvat heikoimpiin?", "pelkäättekö, että perussuomalaisten puheet lisäävät vihaa?", ilmasto- tai tasa-arvotavoite oletetaan itsestään selväksi) – tai vastaavaa kriittistä kysymystä ei esitetä vasemmistolaiselle/maahanmuuttomyönteiselle vieraalle. Ota pätkään kysymys ja vastauksen alku.
 - islam tai islamilainen toimija esitetään kritiikittömästi tavalla, jossa toimittaja itse kaunistelee tai ohittaa ilmeisen ongelman
 EI kelpaa: pelkkä myönteinen henkilötarina, haastateltavan oma mielipide ilman toimittajan kannanottoa, neutraali uutisointi, juhlapyhäjutut.
 Ole tiukka: jos vinouma ei näy itse pätkästä, älä valitse mitään (palauta tyhjä lista). Mieluummin ei yhtään kuin heikko pätkä."""
