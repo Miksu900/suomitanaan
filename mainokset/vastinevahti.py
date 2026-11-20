@@ -198,6 +198,12 @@ def areena_haku(q, sivuja=1):
 
 def lataa(v, kansio):
     os.makedirs(kansio, exist_ok=True)
+    mv = int(os.environ.get("MINVUOSI", "0") or 0)
+    if mv:
+        try:
+            u = subprocess.run(["yt-dlp", "--no-warnings", "--skip-download", "--print", "%(upload_date)s", v["url"]], capture_output=True, text=True, timeout=120).stdout.strip()[:4]
+            if u.isdigit() and int(u) < mv: print("Liian vanha (metatieto), ohitetaan:", u, v["url"]); return None, None, {}
+        except Exception: pass
     k = ["yt-dlp", "--no-warnings", "-q", "-f", "bv*[height<=1080]+ba/b[height<=1080]/b", "--merge-output-format", "mp4",
          "--write-subs", "--write-auto-subs", "--sub-langs", "fi.*,fin.*,fi", "--convert-subs", "srt",
          "--max-filesize", "1500M", "-o", f"{kansio}/v.%(ext)s", "--print-to-file", "%(upload_date)s|%(title)s|%(channel)s", f"{kansio}/meta.txt", v["url"]]
@@ -378,6 +384,9 @@ if __name__ == "__main__":
         try:
             video, srt, meta = lataa(v, kansio)
             if not video: continue
+            mv = int(os.environ.get("MINVUOSI", "0") or 0)
+            if mv and meta.get("pvm") and int(meta["pvm"][-4:]) < mv:
+                print("Liian vanha, ohitetaan:", meta.get("pvm"), v["url"]); continue
             segs = srt_luku(srt) if srt else []
             print("Tekstitys:", "Ylen oma" if len(segs) >= 5 else "litteroidaan", v["url"])
             if len(segs) < 5: segs = litteroi(video)
