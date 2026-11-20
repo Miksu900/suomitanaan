@@ -164,6 +164,8 @@ if os.environ.get("LAAJA"):
                 "maahanmuutto", "turvapaikanhakijat", "islam", "monikulttuurisuus", "vihapuhe"]
     YLE_NAKOKULMA = YLE_NAKOKULMA.replace("vasemmistovinoumasta ja islam- ja maahanmuuttomyönteisyydestä.",
         "vasemmistovinoumasta MISTÄ TAHANSA AIHEESTA (maahanmuutto, islam, ilmasto, sukupuoli- ja sateenkaariasiat, talous ja leikkaukset, ay-liike, perussuomalaiset, Trump, oikeisto vs. vasemmisto).")
+if os.environ.get("LISAHAUT"):
+    YLE_HAUT = YLE_HAUT + [x.strip() for x in os.environ["LISAHAUT"].split(";") if x.strip()]
 if os.environ.get("LOYSA"):
     YLE_NAKOKULMA = YLE_NAKOKULMA.replace("EI kelpaa: pelkkä myönteinen henkilötarina, haastateltavan oma mielipide ilman toimittajan kannanottoa,",
         "KELPAA MYÖS: Yle antaa haastateltavan esittää yksipuolisen islam- tai maahanmuuttomyönteisen näkemyksen (esim. kaunistelee ongelmaa, vaatii ymmärrystä rikoksentekijöille, leimaa kriitikot) ilman että toimittaja haastaa tai esittää vastakkaista kantaa – kun asetelma näkyy pätkästä.\nEI kelpaa: pelkkä myönteinen henkilötarina,")
