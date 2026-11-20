@@ -166,7 +166,7 @@ if os.environ.get("LAAJA"):
     YLE_NAKOKULMA = YLE_NAKOKULMA.replace("vasemmistovinoumasta ja islam- ja maahanmuuttomyönteisyydestä.",
         "vasemmistovinoumasta MISTÄ TAHANSA AIHEESTA (maahanmuutto, islam, ilmasto, sukupuoli- ja sateenkaariasiat, talous ja leikkaukset, ay-liike, perussuomalaiset, Trump, oikeisto vs. vasemmisto).")
 if os.environ.get("LISAHAUT"):
-    YLE_HAUT = YLE_HAUT + [x.strip() for x in os.environ["LISAHAUT"].split(";") if x.strip()]
+    YLE_HAUT = ([] if os.environ.get("PARI") else YLE_HAUT) + [x.strip() for x in os.environ["LISAHAUT"].split(";") if x.strip()]
 if os.environ.get("LOYSA"):
     YLE_NAKOKULMA = YLE_NAKOKULMA.replace("EI kelpaa: pelkkä myönteinen henkilötarina, haastateltavan oma mielipide ilman toimittajan kannanottoa,",
         "KELPAA MYÖS: Yle antaa haastateltavan esittää yksipuolisen islam- tai maahanmuuttomyönteisen näkemyksen (esim. kaunistelee ongelmaa, vaatii ymmärrystä rikoksentekijöille, leimaa kriitikot) ilman että toimittaja haastaa tai esittää vastakkaista kantaa – kun asetelma näkyy pätkästä.\nEI kelpaa: pelkkä myönteinen henkilötarina,")
@@ -251,6 +251,19 @@ def litteroi(video):
     raw = subprocess.run(["ffmpeg", "-v", "error", "-i", video, "-ac", "1", "-ar", "16000", "-f", "f32le", "-"], capture_output=True).stdout
     segs, _ = _MALLI.transcribe(np.frombuffer(raw, np.float32), language="fi", vad_filter=True, beam_size=int(os.environ.get("BEAM", "5")))
     return [(s.start, s.end, s.text.strip()) for s in segs]
+
+PARI = os.environ.get("PARI", "")
+def valitse_parit(v, segs):
+    rivit = "\n".join(f"[{a:.1f}-{b:.1f}] {t}" for a, b, t in segs)[:150000]
+    t = claude("""Avustat Miika Koskelaa, joka tekee videon Ylen toimittajien kaksoisstandardeista.
+Etsi tästä Ylen ohjelmasta VERTAILUPARI: sama toimittaja/ohjelma kysyy vasemmistolaiselta (SDP, vasemmistoliitto, vihreät, tai maahanmuuttomyönteinen/vasemmistolainen vieras) yhdellä tavalla ja perussuomalaiselta (tai muulta maahanmuuttokriittiseltä) selvästi toisella tavalla – esim. vasemmistolaiselle pehmeä, myötäilevä tai avoin kysymys ja perussuomalaiselle syyttävä, leimaava, keskeyttävä tai rasismiin/vihaan liittävä kysymys. Tai samasta aiheesta vasemmistolaisen oletus otetaan annettuna ja persu laitetaan puolustuskannalle.
+Molemmat kohdat 6–25 s, alkavat ja päättyvät lauseen rajalla, sisältävät toimittajan kysymyksen ja vastauksen alun. Päättele puhujat litteroinnin sisällöstä (nimet, puolueet).
+Ole tiukka: ero pitää näkyä katsojalle suoraan. Jos selvää paria ei ole, palauta tyhjä lista. Vastaa pelkkänä JSON-listana (enintään 1 pari):
+[{"vasen": {"alku": 1.0, "loppu": 15.0, "kenelle": "esim. Li Andersson (vas.)", "kysymys": "toimittajan kysymys sanatarkasti"},
+  "persu": {"alku": 300.0, "loppu": 318.0, "kenelle": "esim. Riikka Purra (ps)", "kysymys": "toimittajan kysymys sanatarkasti"},
+  "miksi": "mikä ero kysymyksissä on", "vastine": "Miikan kommentti-idea"}]""",
+               f"OHJELMA: {v['o']}\nKUVAUS: {v.get('k','')}\n\nLITTEROINTI:\n{rivit}", tokens=2000)
+    return json_osa(t) or []
 
 def valitse_kohdat(v, segs, yle=False):
     rivit = "\n".join(f"[{a:.1f}-{b:.1f}] {t}" for a, b, t in segs)[:60000]
@@ -371,7 +384,9 @@ if __name__ == "__main__":
     if SHS > 1: videot = [v for v in videot if int(hashlib.md5(v["id"].encode()).hexdigest(), 16) % SHS == SH]
     print(f"Videoehdokkaita: {len(videot)} (Areena {sum(v['id'].startswith('areena') for v in videot)})")
     vp = {}
-    ohje = (YLE_NAKOKULMA + "\n\nPisteytä Ylen ohjelmat otsikon ja kuvauksen perusteella 0–3: kuinka todennäköisesti ohjelmassa on lyhyt kohta, joka näyttää vinouman selvästi."
+    if PARI and YLE:
+        ohje = "Pisteytä Ylen ohjelmat otsikon ja kuvauksen perusteella 0–3: kuinka todennäköisesti ohjelmassa Ylen toimittaja haastattelee tai kysyy kysymyksiä SEKÄ vasemmistolaiselle (SDP, vasemmistoliitto, vihreät) ETTÄ perussuomalaiselle poliitikolle (vaalitentit, puheenjohtajatentit, A-studio, Pressiklubi, Ykkösaamu, vaali-illat). Pelkkä yhden poliitikon henkilökuva = 1, ei poliitikkoja = 0."
+    else: ohje = (YLE_NAKOKULMA + "\n\nPisteytä Ylen ohjelmat otsikon ja kuvauksen perusteella 0–3: kuinka todennäköisesti ohjelmassa on lyhyt kohta, joka näyttää vinouman selvästi."
             if YLE else NAKOKULMA + "\n\nPisteytä videot otsikon, kanavan ja kuvauksen perusteella 0–3: kuinka todennäköisesti videossa on suomenkielinen kohta, johon Miika voi tehdä vastineen. Ei-suomenkieliset = 0.")
     for i in range(0, len(videot), 50):
         osa = videot[i:i + 50]
@@ -404,8 +419,30 @@ if __name__ == "__main__":
             segs = srt_luku(srt) if srt else []
             print("Tekstitys:", "Ylen oma" if len(segs) >= 5 else "litteroidaan", v["url"])
             if len(segs) < 5: segs = litteroi(video)
-            kohdat = valitse_kohdat({**v, **{k: meta[k] for k in ("o",) if meta.get(k)}}, segs, YLE)
             pvm = meta.get("pvm", "")
+            if PARI:
+                for pr in valitse_parit({**v, **{k: meta[k] for k in ("o",) if meta.get(k)}}, segs)[:1]:
+                    nimi = (meta.get("o") or v["o"])[:50]
+                    osat = []
+                    for avain, etiketti in (("vasen", "Kysymys"), ("persu", "Kysymys")):
+                        q = pr.get(avain) or {}
+                        a, b = float(q.get("alku", 0)), float(q.get("loppu", 0))
+                        if b - a < 4 or b - a > 40: osat = []; break
+                        ulos = f"{kansio}/pari_{avain}.mp4"
+                        leikkaa(video, segs, a, b, f"Yle – {nimi}{', ' + pvm if pvm else ''}\\N{etiketti}: {q.get('kenelle','')}", ulos)
+                        osat.append(ulos)
+                    if len(osat) != 2: continue
+                    ulos = f"{kansio}/pari.mp4"
+                    subprocess.run(["ffmpeg", "-y", "-v", "error", "-i", osat[0], "-i", osat[1], "-filter_complex",
+                                    "[0:v][0:a][1:v][1:a]concat=n=2:v=1:a=1[v][a]", "-map", "[v]", "-map", "[a]", "-c:v", "libx264",
+                                    "-preset", "veryfast", "-crf", "23", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", ulos], check=True)
+                    nro = os.environ.get("NROETU", "") + str(sum(1 for x in loydot if x.get("tyyppi") == "yle") + 1)
+                    linkki = kokoelmaan(ulos, f"pari{nro}_{v['id'].split(':')[1]}_{int(float(pr['vasen']['alku']))}.mp4")
+                    print("PARI LÖYTYI", v["url"], json.dumps(pr, ensure_ascii=False)[:600])
+                    loydot.append({"tyyppi": "yle", "nro": nro, "u": v["url"], "o": meta.get("o") or v["o"], "t": pvm, "pari": pr, "tiedosto": linkki})
+                    tallenna()
+                subprocess.run(["rm", "-rf", kansio]); continue
+            kohdat = valitse_kohdat({**v, **{k: meta[k] for k in ("o",) if meta.get(k)}}, segs, YLE)
             for j, k in enumerate(kohdat[:1 if YLE else 2]):   # Yle-kokoelmaan yksi pätkä per ohjelma
                 a, b = float(k["alku"]), float(k["loppu"])
                 if b - a < 4 or b - a > 75: continue

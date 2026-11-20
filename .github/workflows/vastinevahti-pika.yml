@@ -12,6 +12,7 @@ on:
       shardit: { description: "JSON-lista 0..koneita-1", required: false, default: "[0,1,2]" }
       laaja: { description: "1 = kaikki aiheet (ilmasto, sukupuoli, talous...)", required: false, default: "" }
       lisahaut: { description: "Lisähakusanat puolipisteellä eroteltuna", required: false, default: "" }
+      pari: { description: "1 = etsi vertailupareja (kysymys vasemmistolle vs persulle)", required: false, default: "" }
       loysa: { description: "1 = löysempi valinta (yksipuolinen haastateltava ilman vastakantaa kelpaa)", required: false, default: "" }
 jobs:
   aja:
@@ -46,6 +47,7 @@ jobs:
           LOYSA: ${{ inputs.loysa }}
           LAAJA: ${{ inputs.laaja }}
           LISAHAUT: ${{ inputs.lisahaut }}
+          PARI: ${{ inputs.pari }}
           WHISPER: base
           BEAM: "1"
           TAPAHTUMA: pika
