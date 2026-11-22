@@ -46,8 +46,14 @@ def aika(s):
 
 def jutut(media, data, google=False):
     try: root = ET.fromstring(data)
-    except Exception as e:
-        print("::warning title=RSS::" + media + " ei aukea: " + str(e)[:80]); return
+    except Exception:
+        try:   # rikkinäinen XML: siivoa ohjausmerkit ja irralliset &-merkit
+            t = data.decode("utf-8", "replace")
+            t = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\ufffe\uffff]", "", t)
+            t = re.sub(r"&(?!(?:amp|lt|gt|quot|apos|#\d+|#x[0-9a-fA-F]+);)", "&amp;", t)
+            root = ET.fromstring(t.encode("utf-8"))
+        except Exception as e:
+            print("::warning title=RSS::" + media + " ei aukea: " + str(e)[:80]); return
     for it in list(root.iter("item")) + list(root.iter("{http://www.w3.org/2005/Atom}entry")):
         def g(*n):
             for x in n:
