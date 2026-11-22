@@ -1,0 +1,36 @@
+name: Mediahälytys
+# Heti Telegramiin, kun päämedioihin tulee maahanmuutto- tai islamijuttu (Yle, HS, IS, Iltalehti, MTV, Uusi Suomi, Suomen Uutiset + Google Uutiset). 🔥 = sama aihe useassa mediassa.
+# Tila: haara halytys-tila (halytys.json). Ajetaan n. 5 min välein (GitHubin ajastus voi viivästyä).
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+    inputs:
+      ensiajo: { description: "1 = lähetä osumat vaikka tila on tyhjä (testi)", required: false, default: "" }
+concurrency: mediahalytys
+jobs:
+  aja:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: { contents: write }
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: mainokset/mediahalytys.py
+          sparse-checkout-cone-mode: false
+      - name: Edellinen tila
+        run: |
+          git fetch -q --depth=1 origin halytys-tila && git show origin/halytys-tila:halytys.json > mainokset/halytys.json || echo "ei aiempaa tilaa (ensiajo)"
+          cp mainokset/halytys.json /tmp/vanha.json 2>/dev/null || true
+      - name: Hae ja ilmoita
+        env:
+          TG: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          MH_LAHETA_ENSIAJO: ${{ inputs.ensiajo }}
+        run: cd mainokset && python3 mediahalytys.py
+      - name: Tallenna tila (vain jos muuttui)
+        run: |
+          [ -s mainokset/halytys.json ] || exit 0
+          cmp -s mainokset/halytys.json /tmp/vanha.json && exit 0
+          mkdir /tmp/t && cd /tmp/t && git init -q && git checkout -q -b halytys-tila
+          cp $GITHUB_WORKSPACE/mainokset/halytys.json . && git add -A && git -c user.name=bot -c user.email=bot@x commit -qm tila
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" halytys-tila
