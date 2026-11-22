@@ -17,6 +17,7 @@ jobs:
       - run: |
           git fetch origin uutisvinkit-tila && git show origin/uutisvinkit-tila:nahdyt.json > /tmp/nahdyt.json || true
           git show origin/uutisvinkit-tila:uskontovahti.json > mainokset/uskontovahti.json || true
+          git fetch -q origin halytys-tila && git show origin/halytys-tila:halytys.json > /tmp/halytys.json || true
       - env:
           TG: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           CF: ${{ secrets.CLOUDFLARE_API_TOKEN }}

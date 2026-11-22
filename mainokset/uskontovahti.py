@@ -222,6 +222,11 @@ if __name__ == "__main__":
     if os.environ.get("TAYSI") != "1":
         tuore = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=2)).isoformat()[:16]
         heti = [x for x in uudet if x.get("a") != "eu" and x["t"] >= tuore and x["u"] not in lahetetyt][:12]
+        try:   # Mediahälytys (5 min välein) on jo ilmoittanut nämä; ei kaksoisviestejä
+            mh = set(json.load(open("/tmp/halytys.json")).get("halytetyt", []))
+            canon = lambda u: re.sub(r"[?#].*$", "", u.strip()).rstrip("/")
+            heti = [x for x in heti if canon(x["u"]) not in mh]
+        except Exception: pass
         if heti:
             laheta("🔔 <b>Uutta: islam ja muslimit Suomessa</b>\n\n" + "\n".join(f"{rivi(x)}\n{x['u']}" for x in heti)[:3500])
             lahetetyt.update(x["u"] for x in heti)
